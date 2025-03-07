@@ -133,6 +133,7 @@ main {
   background-color: #f2efea;
   width: 100%;
   padding: 20px;
+  min-height: 100vh;
 }
 .contract-wizard {
   max-width: 600px;

@@ -34,3 +34,9 @@ export interface DatosContrato {
   horario: string;
   email: string,
 }
+export interface Question {
+  id: number;
+  createdAt: Date;
+  text: string;
+  surveyID: number;
+}

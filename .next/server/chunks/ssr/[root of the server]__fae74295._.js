@@ -14,12 +14,12 @@ module.exports = mod;
 var { g: global, d: __dirname } = __turbopack_context__;
 {
 // import { logger } from "@/logger";
+// const HOST = process.env.NEXT_PUBLIC_API_URL;
 __turbopack_context__.s({
     "isUser": (()=>isUser),
     "todayToSQL": (()=>todayToSQL),
     "validateDNI": (()=>validateDNI)
 });
-const HOST = ("TURBOPACK compile-time value", "http://localhost:3001");
 function todayToSQL() {
     const date = new Date();
     const formattedDate = date.toISOString().slice(0, 19).replace("T", " ");
@@ -27,7 +27,7 @@ function todayToSQL() {
 }
 async function isUser(id) {
     try {
-        const response = await fetch(`${HOST}/api/contracts/${id}`);
+        const response = await fetch(`/api/contracts/${id}`);
         const data = await response.json();
         if (data.success) {
             return true;
@@ -1696,14 +1696,14 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$ne
 ;
 ;
 ;
-const HOST = ("TURBOPACK compile-time value", "http://localhost:3001");
+// const HOST = process.env.NEXT_PUBLIC_API_URL;
 const StepFour = ({ contractData })=>{
     const [isLoading, setIsLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$15$2e$2$2e$0_$40$babel$2b$core$40$7$2e$26$2e$9_react$2d$dom$40$19$2e$0$2e$0_react$40$19$2e$0$2e$0_$5f$react$40$19$2e$0$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$15$2e$2$2e$0_$40$babel$2b$core$40$7$2e$26$2e$9_react$2d$dom$40$19$2e$0$2e$0_react$40$19$2e$0$2e$0_$5f$react$40$19$2e$0$2e$0$2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRouter"])();
     const handleDownload = async ()=>{
         setIsLoading(true);
         try {
-            const response = await fetch(`${HOST}/api/generate-pdf?id=${contractData.id}`);
+            const response = await fetch(`/api/generate-pdf?id=${contractData.id}`);
             if (response.status === 400) {
                 throw new Error("No se puede generar dos veces el mismo contrato para el mismo DNI/NIE. Recarga para intentar con otro DNI/NIE");
             }
@@ -1810,7 +1810,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$app$2f$helpers$2e$ts_
 ;
 ;
 ;
-const HOST = ("TURBOPACK compile-time value", "http://localhost:3001");
+// const HOST = process.env.NEXT_PUBLIC_API_URL;
 const imagePrefix = `${("TURBOPACK compile-time value", "/")}`;
 const Contract = ()=>{
     const [step, setStep] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$15$2e$2$2e$0_$40$babel$2b$core$40$7$2e$26$2e$9_react$2d$dom$40$19$2e$0$2e$0_react$40$19$2e$0$2e$0_$5f$react$40$19$2e$0$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(1);
@@ -1887,7 +1887,7 @@ const Contract = ()=>{
     const handleSubmit = async ()=>{
         setLoading(true);
         try {
-            const response = await fetch(`${HOST}/api/contracts`, {
+            const response = await fetch(`/api/contracts`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
