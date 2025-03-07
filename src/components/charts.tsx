@@ -51,7 +51,7 @@ interface ChartData {
   ratingPromedio: number;
 }
 export function ChartComponent() {
-  const currentMonth = "1";
+  const currentMonth = new Date().getMonth().toString();
   console.log(currentMonth);
   const [chartData, setChartData] = useState<ChartData[]>([]);
   // const [months, setMonths] = useState({ init: "", last: "" });
@@ -94,7 +94,7 @@ export function ChartComponent() {
         setChartData(result ?? []);
       }
     });
-  }, []);
+  }, [currentMonth]);
   return (
     <Card>
       {chartData.length > 0 ? (
