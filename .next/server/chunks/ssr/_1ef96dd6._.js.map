@@ -1,0 +1,9 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 6, "column": 0}, "map": {"version":3,"sources":[],"names":[],"mappings":"","debugId":null}},
+    {"offset": {"line": 6, "column": 0}, "map": {"version":3,"sources":[],"names":[],"mappings":"A"}},
+    {"offset": {"line": 24, "column": 0}, "map": {"version":3,"sources":["file:///home/charlie/Documents/dev/voluntarios/front/src/app/dashboard/page.tsx"],"sourcesContent":["import React from 'react'\n\nfunction Dashboard(){\n  return (\n    <div><ChartComp/></div>\n  )\n}\n\nexport default Dashboard"],"names":[],"mappings":";;;;;AAEA,SAAS;IACP,qBACE,+YAAC;kBAAI,cAAA,+YAAC;;;;;;;;;;AAEV;uCAEe","debugId":null}},
+    {"offset": {"line": 43, "column": 0}, "map": {"version":3,"sources":[],"names":[],"mappings":"A"}}]
+}

@@ -1,5 +1,6 @@
 {
-  "/encuesta/page": "app/encuesta/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/gracias/page": "app/gracias/page.js"
+  "/encuesta/page": "app/encuesta/page.js",
+  "/encuesta/confirmacion/page": "app/encuesta/confirmacion/page.js"
 }

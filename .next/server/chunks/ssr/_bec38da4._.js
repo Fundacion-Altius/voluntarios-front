@@ -61,10 +61,44 @@ __turbopack_context__.n(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$a
 var { g: global, d: __dirname } = __turbopack_context__;
 {
 __turbopack_context__.s({
-    "getAllQuestions": (()=>getAllQuestions)
+    "getAllQuestions": (()=>getAllQuestions),
+    "getSurveyResults": (()=>getSurveyResults),
+    "submitAnswer": (()=>submitAnswer)
 });
 async function getAllQuestions() {
     const response = await fetch(`${("TURBOPACK compile-time value", "http://localhost:3001")}/api/questions`);
+    const data = await response.json();
+    return data;
+}
+async function submitAnswer({ surveyID, ratings, additionalAnswer }) {
+    try {
+        console.log({
+            surveyID,
+            ratings,
+            additionalAnswer
+        });
+        const response = await fetch("/api/surveys/submit-answer", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                surveyID,
+                ratings,
+                additionalAnswer
+            })
+        });
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error(error);
+    }
+}
+async function getSurveyResults() {
+    const response = await fetch(`${("TURBOPACK compile-time value", "http://localhost:3001")}/api/surveys/get-report`);
     const data = await response.json();
     return data;
 }

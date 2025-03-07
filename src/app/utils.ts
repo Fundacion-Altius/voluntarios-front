@@ -52,3 +52,14 @@ function validateNIELetter(nie: string): boolean {
 
   return letters[combinedNumber % 23] !== letter ? false : true;
 }
+export function formatMonth(isoDateStr: string): string {
+  const date = new Date(isoDateStr);
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${month} ${year}`;
+}
+
+export function formatFullMonthYear(isoDateStr: string) {
+  const date = new Date(isoDateStr);
+  return date.toLocaleDateString("es-es", { month: "long", year: "numeric" });
+}
