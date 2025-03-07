@@ -1,13 +1,13 @@
 "use client";
 
-import { TrendingUp } from "lucide-react";
+// import { TrendingUp } from "lucide-react";
 import { Bar, BarChart, XAxis, YAxis } from "recharts";
 
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
+  // CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/chart";
 import { useEffect, useState } from "react";
 import { getSurveyResults } from "@/app/lib/api";
-import { formatFullMonthYear, formatMonth } from "@/app/utils";
+// import { formatFullMonthYear, formatMonth } from "@/app/utils";
 /* const chartData = [
   { month: "January", desktop: 186 },
   { month: "February", desktop: 305 },
@@ -46,9 +46,15 @@ interface MonthlyData {
   month: string;
   AnswersArray: SurveyData[];
 }
+interface ChartData {
+  pregunta: string;
+  ratingPromedio: number;
+}
 export function ChartComponent() {
-  const [chartData, setChartData] = useState([]);
-  const [months, setMonths] = useState({ init: "", last: "" });
+  const currentMonth = "1";
+  console.log(currentMonth);
+  const [chartData, setChartData] = useState<ChartData[]>([]);
+  // const [months, setMonths] = useState({ init: "", last: "" });
   function groupSurveyDataByMonth(data: SurveyData[]): MonthlyData[] {
     const monthlyGroups: { [month: string]: SurveyData[] } = {};
 
@@ -63,7 +69,7 @@ export function ChartComponent() {
     const result: MonthlyData[] = [];
     for (const month in monthlyGroups) {
       result.push({
-        month: month,
+        month: new Date(month).getMonth().toString(),
         AnswersArray: monthlyGroups[month],
       });
     }
@@ -75,22 +81,17 @@ export function ChartComponent() {
       if (data.success) {
         const apiResult = groupSurveyDataByMonth(data.data.reportJson?.data);
         console.log(apiResult);
-        // console.log(Object.values());
-        // setChartData(Object.values(apiResult));
-        /* const timestamps = data.data.reportJson?.data.map(
-          (item: Record<string, any>) => {
-            return new Date(item.month).getTime();
-          }
+
+        const currentMonthData = apiResult.find(
+          (item) => item.month === currentMonth
         );
-
-        // Get min and max timestamps.
-        const minTimestamp = Math.min(...timestamps);
-        const maxTimestamp = Math.max(...timestamps);
-
-        // Convert back to date strings (ISO format).
-        const minMonth2 = new Date(minTimestamp).toISOString();
-        const maxMonth2 = new Date(maxTimestamp).toISOString();
-        setMonths({ init: minMonth2, last: maxMonth2 }); */
+        const result = currentMonthData?.AnswersArray.map((item) => {
+          return {
+            pregunta: item.pregunta_id.toString(),
+            ratingPromedio: item.question_avg_rating,
+          };
+        });
+        setChartData(result ?? []);
       }
     });
   }, []);
@@ -98,12 +99,13 @@ export function ChartComponent() {
     <Card>
       {chartData.length > 0 ? (
         <>
-          {" "}
           <CardHeader>
             <CardTitle>Bar Chart - Horizontal</CardTitle>
             <CardDescription>
-              {formatFullMonthYear(months.init)} -{" "}
-              {formatFullMonthYear(months.last)}
+              {new Date().toLocaleDateString("es-es", {
+                month: "long",
+                year: "numeric",
+              })}
             </CardDescription>
           </CardHeader>
           <CardContent>

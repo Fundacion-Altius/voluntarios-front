@@ -1,6 +1,5 @@
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { Home } from "lucide-react";
+
 const imagePrefix = `${process.env.NEXT_PUBLIC_IMAGE_PREFIX}`;
 const Contract: React.FC = () => {
   return (

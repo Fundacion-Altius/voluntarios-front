@@ -3,7 +3,6 @@
 import { useState, FormEvent, ChangeEvent } from "react";
 import { StarRating } from "@/components/ratings/star-rating";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Question } from "../types";
 import { useRouter } from "next/navigation";
 import { submitAnswer } from "../lib/api";

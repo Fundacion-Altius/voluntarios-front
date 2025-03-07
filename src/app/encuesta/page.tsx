@@ -3,9 +3,8 @@ import ClientRatingForm from "./ClientRatingForm";
 import { getAllQuestions } from "../lib/api";
 import { Question } from "../types";
 
-interface PageProps {}
 
-export default async function RatingPage({}: PageProps) {
+export default async function RatingPage() {
   let questions: Question[] = [];
   let error: string = "";
 
