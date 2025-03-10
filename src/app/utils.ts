@@ -1,4 +1,6 @@
 // const HOST = process.env.NEXT_PUBLIC_API_URL;
+import { v4 as uuidv4 } from "uuid";
+
 export function todayToSQL() {
   const date = new Date();
   const formattedDate = date.toISOString().slice(0, 19).replace("T", " ");
@@ -63,3 +65,30 @@ export function formatFullMonthYear(isoDateStr: string) {
   const date = new Date(isoDateStr);
   return date.toLocaleDateString("es-es", { month: "long", year: "numeric" });
 }
+export const handleDownload = async (id: string) => {
+  try {
+    const response = await fetch(`/api/generate-pdf?id=${id}`);
+    if (response.status === 400) {
+      throw new Error(
+        "No se puede generar dos veces el mismo contrato para el mismo DNI/NIE. Recarga para intentar con otro DNI/NIE"
+      );
+    }
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `contrato${uuidv4()}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    return "Ok";
+  } catch (error) {
+    // logger.error(`Error downloading PDF: ${error}`);
+    alert(error);
+    return `Error submitting contract:, ${error}`;
+  } 
+};

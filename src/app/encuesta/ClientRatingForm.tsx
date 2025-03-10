@@ -5,7 +5,7 @@ import { StarRating } from "@/components/ratings/star-rating";
 import { Input } from "@/components/ui/input";
 import { Question } from "../types";
 import { useRouter } from "next/navigation";
-import { submitAnswer } from "../lib/api";
+import { submitAnswer } from "../api";
 import LoadingButton from "@/components/loading-button";
 
 interface ClientRatingFormProps {
@@ -41,10 +41,8 @@ export default function ClientRatingForm({
     e.preventDefault();
     setLoading(true);
     // For now, we simply log the data.
-    console.log("Ratings:", ratings);
-    console.log("Additional answer:", additionalAnswer);
     const surveyID = 1;
-    submitAnswer({surveyID, ratings, additionalAnswer});
+    submitAnswer({ surveyID, ratings, additionalAnswer });
     router.push("/encuesta/confirmacion");
   };
 

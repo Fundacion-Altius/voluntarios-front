@@ -1,8 +1,7 @@
 import Image from "next/image";
 import ClientRatingForm from "./ClientRatingForm";
-import { getAllQuestions } from "../lib/api";
+import { getAllQuestions } from "../api";
 import { Question } from "../types";
-
 
 export default async function RatingPage() {
   let questions: Question[] = [];
@@ -14,7 +13,7 @@ export default async function RatingPage() {
     console.error(err);
     error = "Error al cargar las preguntas";
   }
-  
+
   const imagePrefix = process.env.NEXT_PUBLIC_IMAGE_PREFIX;
 
   return (

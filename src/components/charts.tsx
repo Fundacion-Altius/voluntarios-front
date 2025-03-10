@@ -18,7 +18,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { useEffect, useState } from "react";
-import { getSurveyResults } from "@/app/lib/api";
+import { getSurveyResults } from "@/app/api";
 // import { formatFullMonthYear, formatMonth } from "@/app/utils";
 /* const chartData = [
   { month: "January", desktop: 186 },
@@ -52,7 +52,6 @@ interface ChartData {
 }
 export function ChartComponent() {
   const currentMonth = new Date().getMonth().toString();
-  console.log(currentMonth);
   const [chartData, setChartData] = useState<ChartData[]>([]);
   // const [months, setMonths] = useState({ init: "", last: "" });
   function groupSurveyDataByMonth(data: SurveyData[]): MonthlyData[] {
@@ -80,8 +79,6 @@ export function ChartComponent() {
     getSurveyResults().then((data) => {
       if (data.success) {
         const apiResult = groupSurveyDataByMonth(data.data.reportJson?.data);
-        console.log(apiResult);
-
         const currentMonthData = apiResult.find(
           (item) => item.month === currentMonth
         );

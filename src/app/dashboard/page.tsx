@@ -1,10 +1,22 @@
-import { ChartComponent } from '@/components/charts'
-import React from 'react'
+"use client";
+import { AppSidebar } from "@/components/app-sidebar";
+import { ChartComponent } from "@/components/charts";
 
-function Dashboard(){
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+
+export default function Page() {
   return (
-    <div className='w-[600px] h-[600px]'><ChartComponent/></div>
-  )
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <div className="w-[600px] h-[600px]">
+          <ChartComponent />
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
+  );
 }
-
-export default Dashboard
