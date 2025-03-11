@@ -4,6 +4,7 @@ export default function Confidencialidad() {
     <div className="contract-wizard">
       <Image alt="logo" src={"/logo.png"} width={400} height={100}></Image>
       <h2>ACUERDO DE CONFIDENCIALIDAD DEL VOLUNTARIADO</h2>
+      
       <p>
         Con la aceptación por parte del voluntario del Acuerdo de Voluntariado
         se indica lo siguiente:

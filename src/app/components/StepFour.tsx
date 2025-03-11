@@ -1,24 +1,24 @@
 import React, { useState } from "react";
 import { DatosContrato } from "../types";
 import { v4 as uuidv4 } from "uuid";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import {useRouter} from "next/navigation"
+ // import { logger } from "@/logger";
 
 interface StepFourProps {
   contractData: DatosContrato;
 }
-const HOST = process.env.NEXT_PUBLIC_API_URL;
+// const HOST = process.env.NEXT_PUBLIC_API_URL;
 const StepFour: React.FC<StepFourProps> = ({ contractData }) => {
   const [isLoading, setIsLoading] = useState(false);
-
+  const router = useRouter();
   const handleDownload = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${HOST}/api/generate-pdf`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(contractData),
-      });
+      const response = await fetch(
+        `/api/generate-pdf?id=${contractData.id}`
+      );
       if (response.status === 400) {
         throw new Error(
           "No se puede generar dos veces el mismo contrato para el mismo DNI/NIE. Recarga para intentar con otro DNI/NIE"
@@ -51,8 +51,10 @@ const StepFour: React.FC<StepFourProps> = ({ contractData }) => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      router.push("gracias")
     } catch (error) {
-      console.error("Error downloading PDF:", error);
+      // logger.error(`Error downloading PDF: ${error}`);
+      return `Error submitting contract:, ${error}`;
       alert(error);
     } finally {
       setIsLoading(false);
@@ -62,9 +64,11 @@ const StepFour: React.FC<StepFourProps> = ({ contractData }) => {
   return (
     <div className="step">
       <p>Tu contrato se ha enviado y procesado correctamente</p>
-      <button onClick={handleDownload} disabled={isLoading}>
-        {isLoading ? "Descargando PDF..." : "Descargar contrato"}
-      </button>
+      <div className="flex w-full justify-end  ">
+        <Button onClick={handleDownload} disabled={isLoading} className="flex w-full md:max-w-[180px] ">
+          <Download /> {isLoading ? "Descargando PDF..." : "Descargar contrato"}
+        </Button>
+      </div>
     </div>
   );
 };

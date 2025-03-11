@@ -1,7 +1,9 @@
+
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "types": ["jest", "@testing-library/jest-dom", "@testing-library/react", "chai", "chai-string"]
+    "types": ["jest", "node", "@testing-library/jest-dom", "@testing-library/react", "chai", "chai-string"]
   },
   "include": ["**/*.test.ts", "**/*.spec.ts", "**/*.test.tsx", "**/*.spec.tsx"]
 }
+

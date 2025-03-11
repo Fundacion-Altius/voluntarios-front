@@ -1,0 +1,10 @@
+node_modules
+*.log
+*.md
+.git
+.gitignore
+Dockerfile*
+eslint*
+tsconfig.test.json
+setupTests.ts
+components.json

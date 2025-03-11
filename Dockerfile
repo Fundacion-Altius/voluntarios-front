@@ -1,19 +1,45 @@
-# Use an official Node runtime as the base image
-FROM node:20
+# Stage 1: Build the app
+FROM node:18 AS build
 
-# Set the working directory in the container
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+# Install pnpm globally
+RUN npm install -g pnpm
 
-# Install project dependencies
-RUN npm install  
+# Copy package files
+COPY package.json pnpm-lock.yaml* ./
 
-# The project code will be mounted as a volume, so we don't need to copy it here
+# Install dependencies with pnpm
+RUN pnpm install --frozen-lockfile
 
-# Expose the port the app runs on
+# Copy the rest of the project files
+COPY . .
+
+# Build the application
+RUN pnpm  build
+
+# Stage 2: Production image
+FROM node:18-slim AS production
+
+WORKDIR /app
+
+# Install pnpm globally in the production stage, if you need to run commands using pnpm
+RUN npm install -g pnpm
+
+# Copy pnpm lockfile and package manifest (optional but may be useful for pnpm)
+COPY --from=build /app/package*.json ./
+COPY --from=build /app/pnpm-lock.yaml ./
+
+# Copy the production build
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/.next ./.next
+COPY --from=build /app/public ./public
+
+# Set production environment
+ENV NODE_ENV=production
+
+# Expose port 3000
 EXPOSE 3000
 
-# The command will be overridden by docker-compose for development
-CMD ["npm", "start"]
+# Start the app using pnpm
+CMD ["pnpm", "start"]

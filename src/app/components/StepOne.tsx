@@ -1,20 +1,18 @@
-import { Dispatch, SetStateAction, useState, useEffect } from "react";
-import { AreasT, DatosContrato, ModalidadT } from "../types";
-import { isUser, validateDNI } from "../utils";
-interface StepOneProps {
-  contractData: DatosContrato;
-  handleInputChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => void;
-  nextStep: () => void;
-  setDatosContrato: Dispatch<SetStateAction<DatosContrato>>;
-}
+import { useState, useEffect } from "react";
+import { AreasT, ModalidadT } from "../types";
+import { isUser, validateDNI } from "../helpers";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import LoadingButton from "@/components/loading-button";
+import { StepOneProps } from "./Contract";
 
 const StepOne: React.FC<StepOneProps> = ({
   contractData,
   handleInputChange,
   nextStep,
   setDatosContrato,
+  loading,
+  setLoading,
 }) => {
   const [optional, setOptional] = useState<string>("");
   const [dniError, setDniError] = useState<string>(""); // State to store DNI validation error
@@ -60,6 +58,7 @@ const StepOne: React.FC<StepOneProps> = ({
       <form
         onSubmit={async (e) => {
           e.preventDefault();
+          setLoading(true)
           /* TODO: Check if id is already registered in the system */
           if (await isUser(contractData.id)) {
             alert(
@@ -84,17 +83,19 @@ const StepOne: React.FC<StepOneProps> = ({
               lugar: "",
               firma: "",
             });
+            setLoading(false);
           } else {
             nextStep();
+            setLoading(false);
           }
         }}
       >
         <div className="form-group">
-          <label htmlFor="nombre">
+          <Label htmlFor="nombre">
             NOMBRE Y APELLIDOS DEL VOLUNTARIO/A{" "}
             <span style={{ color: "red" }}>*</span>{" "}
-          </label>
-          <input
+          </Label>
+          <Input
             type="text"
             id="nombre"
             name="nombre"
@@ -104,10 +105,10 @@ const StepOne: React.FC<StepOneProps> = ({
           />
         </div>
         <div className="form-group">
-          <label htmlFor="id">
+          <Label htmlFor="id">
             DNI / NIE <span style={{ color: "red" }}>*</span>{" "}
-          </label>
-          <input
+          </Label>
+          <Input
             type="text"
             data-testid="id-input"
             id="id"
@@ -118,14 +119,20 @@ const StepOne: React.FC<StepOneProps> = ({
           />
           {/* Simplified rendering logic */}
           {shouldShowValidationText && <p>Validando...</p>}
-          {shouldShowSuccessMessage && <p data-testid="id-ok">DNI/NIE con formato válido</p>}
-          {shouldShowErrorMessage && <p style={{ color: "red" }} data-testid="id-error">{dniError}</p>}
+          {shouldShowSuccessMessage && (
+            <p data-testid="id-ok">DNI/NIE con formato válido</p>
+          )}
+          {shouldShowErrorMessage && (
+            <p style={{ color: "red" }} data-testid="id-error">
+              {dniError}
+            </p>
+          )}
         </div>
         <div className="form-group">
-          <label htmlFor="domicilio">
+          <Label htmlFor="domicilio">
             DOMICILIO <span style={{ color: "red" }}>*</span>{" "}
-          </label>
-          <input
+          </Label>
+          <Input
             type="text"
             id="domicilio"
             name="domicilio"
@@ -135,8 +142,8 @@ const StepOne: React.FC<StepOneProps> = ({
           />
         </div>
         <div className="form-group">
-          <label htmlFor="empresa">EMPRESA / ORGANIZACIÓN</label>
-          <input
+          <Label htmlFor="empresa">EMPRESA / ORGANIZACIÓN</Label>
+          <Input
             type="text"
             id="empresa"
             name="empresa"
@@ -149,7 +156,7 @@ const StepOne: React.FC<StepOneProps> = ({
             Mayor de edad <span style={{ color: "red" }}>*</span>{" "}
           </p>
           <div className="flex">
-            <input
+            <Input
               type="radio"
               id="adulto"
               name="adulto"
@@ -157,8 +164,8 @@ const StepOne: React.FC<StepOneProps> = ({
               checked={contractData.adulto === "SI"}
               onChange={handleInputChange}
             />
-            <label htmlFor="adulto">SI</label>
-            <input
+            <Label htmlFor="adulto">SI</Label>
+            <Input
               type="radio"
               id="menor"
               name="adulto"
@@ -166,14 +173,14 @@ const StepOne: React.FC<StepOneProps> = ({
               checked={contractData.adulto === "NO"}
               onChange={handleInputChange}
             />
-            <label htmlFor="menor">NO</label>
+            <Label htmlFor="menor">NO</Label>
           </div>
         </section>
         <div className="form-group">
-          <label htmlFor="telefono">
+          <Label htmlFor="telefono">
             TELÉFONO <span style={{ color: "red" }}>*</span>{" "}
-          </label>
-          <input
+          </Label>
+          <Input
             type="tel"
             id="telefono"
             name="telefono"
@@ -183,10 +190,10 @@ const StepOne: React.FC<StepOneProps> = ({
           />
         </div>
         <div className="form-group">
-          <label htmlFor="email">
+          <Label htmlFor="email">
             EMAIL <span style={{ color: "red" }}>*</span>{" "}
-          </label>
-          <input
+          </Label>
+          <Input
             type="email"
             id="email"
             name="email"
@@ -202,7 +209,7 @@ const StepOne: React.FC<StepOneProps> = ({
           </p>
           {areasOptions.map((area) => (
             <div key={area} className="flex">
-              <input
+              <Input
                 type="checkbox"
                 id={area}
                 name="areas"
@@ -233,10 +240,10 @@ const StepOne: React.FC<StepOneProps> = ({
                   }
                 }}
               />
-              <label htmlFor={area}>{area}</label>
+              <Label htmlFor={area}>{area}</Label>
               {area === "Otra" &&
                 (contractData.areas.includes("Otra") || !!optional) && (
-                  <input
+                  <Input
                     style={{ marginInlineStart: "1rem" }}
                     type="text"
                     id="otraArea"
@@ -274,7 +281,7 @@ const StepOne: React.FC<StepOneProps> = ({
           {["días", "semanas", "meses", "años", "indeterminado", "otros"].map(
             (option) => (
               <div key={option} className="flex">
-                <input
+                <Input
                   type="radio"
                   id={option}
                   name="duracion"
@@ -290,14 +297,14 @@ const StepOne: React.FC<StepOneProps> = ({
                     }
                   }}
                 />
-                <label htmlFor={option}>{option}</label>
+                <Label htmlFor={option}>{option}</Label>
                 {option === "otros" &&
                   contractData.duracion !== "días" &&
                   contractData.duracion !== "semanas" &&
                   contractData.duracion !== "meses" &&
                   contractData.duracion !== "años" &&
                   contractData.duracion !== "indeterminado" && (
-                    <input
+                    <Input
                       style={{ marginLeft: "1rem" }}
                       type="text"
                       name="duracion"
@@ -317,7 +324,7 @@ const StepOne: React.FC<StepOneProps> = ({
           </p>
           {modalidadOptions.map((modalidad: ModalidadT) => (
             <div key={modalidad} className="flex">
-              <input
+              <Input
                 type="checkbox"
                 id={modalidad}
                 name="modalidad"
@@ -325,20 +332,21 @@ const StepOne: React.FC<StepOneProps> = ({
                 checked={contractData.modalidad.includes(modalidad)}
                 onChange={handleInputChange}
               />
-              <label htmlFor={modalidad}>{modalidad}</label>
+              <Label htmlFor={modalidad}>{modalidad}</Label>
             </div>
           ))}
         </section>
         <div className="form-group">
-          <label htmlFor="lugar">
+          <Label htmlFor="lugar">
             LUGAR DE LA ACTIVIDAD DE VOLUNTARIADO{" "}
             <span style={{ color: "red" }}>*</span>{" "}
-          </label>
+          </Label>
           <select
             id="lugar"
             name="lugar"
             value={contractData.lugar}
             onChange={handleInputChange}
+            className="bg-gray-800 text-white border border-gray-600 rounded p-2"
             required
           >
             <option value="">Seleccione una ciudad</option>
@@ -355,7 +363,7 @@ const StepOne: React.FC<StepOneProps> = ({
             <span style={{ color: "red" }}>*</span>{" "}
           </p>
           <div className="flex">
-            <input
+            <Input
               type="radio"
               id="dias-lab-ma"
               name="horario"
@@ -363,10 +371,10 @@ const StepOne: React.FC<StepOneProps> = ({
               checked={contractData.horario === "días laborables mañana"}
               onChange={handleInputChange}
             />
-            <label htmlFor="dias-lab-ma">Días laborables mañana</label>
+            <Label htmlFor="dias-lab-ma">Días laborables mañana</Label>
           </div>
           <div className="flex">
-            <input
+            <Input
               type="radio"
               id="dias-lab-ta"
               name="horario"
@@ -374,10 +382,10 @@ const StepOne: React.FC<StepOneProps> = ({
               checked={contractData.horario === "días laborables tarde"}
               onChange={handleInputChange}
             />
-            <label htmlFor="dias-lab-ta">Días laborables tarde</label>
+            <Label htmlFor="dias-lab-ta">Días laborables tarde</Label>
           </div>
           <div className="flex">
-            <input
+            <Input
               type="radio"
               id="fines"
               name="horario"
@@ -385,10 +393,10 @@ const StepOne: React.FC<StepOneProps> = ({
               checked={contractData.horario === "fines de semana"}
               onChange={handleInputChange}
             />
-            <label htmlFor="fines">Fines de semana</label>
+            <Label htmlFor="fines">Fines de semana</Label>
           </div>
           <div className="flex">
-            <input
+            <Input
               type="radio"
               id="ind"
               name="horario"
@@ -396,11 +404,13 @@ const StepOne: React.FC<StepOneProps> = ({
               checked={contractData.horario === "indistinto"}
               onChange={handleInputChange}
             />
-            <label htmlFor="ind">Indistintamente</label>
+            <Label htmlFor="ind">Indistintamente</Label>
           </div>
         </section>
-        <div className="buttons">
-          <button type="submit">Siguiente {">"}</button>
+        {/* <div className="buttons">
+        </div> */}
+        <div className="flex justify-end">
+          <LoadingButton isLoading={loading}>Siguiente {">"}</LoadingButton>
         </div>
       </form>
     </div>

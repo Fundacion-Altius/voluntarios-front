@@ -1,0 +1,6 @@
+{
+  "/dashboard/voluntarios/page": "app/dashboard/voluntarios/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/dashboard/voluntarios/[id]/page": "app/dashboard/voluntarios/[id]/page.js",
+  "/_not-found/page": "app/_not-found/page.js"
+}
