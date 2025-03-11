@@ -53,6 +53,7 @@ export interface Contract {
   domicilio: string;
   empresa?: string;
   adulto: AdultT;
+  firma: Record<string, string>;
   telefono: string;
   areas: AreasT[];
   duracion?: DuracionT;

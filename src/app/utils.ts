@@ -90,5 +90,25 @@ export const handleDownload = async (id: string) => {
     // logger.error(`Error downloading PDF: ${error}`);
     alert(error);
     return `Error submitting contract:, ${error}`;
-  } 
+  }
 };
+export function formatDateToDDMMYYYY(isoDate: string): string {
+  // Parse the ISO date string into a Date object
+  const date = new Date(isoDate);
+
+  // Validate the date
+  if (isNaN(date.getTime())) {
+    return "Invalid Date";
+  }
+
+  // Extract day, month, and year
+  const day = String(date.getDate()).padStart(2, "0"); // Ensure two digits
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+  const year = date.getFullYear();
+
+  // Return the formatted date as DD-MM-YYYY
+  return `${day}/${month}/${year}`;
+}
+export function capitalize(str: string): string {
+  return str.split(" ").map((word) => word[0].toUpperCase() + word.slice(1)).join(" ");
+}

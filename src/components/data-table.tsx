@@ -85,8 +85,10 @@ export function DataTable<TData extends Identifiable, TValue>({
       if (!ids.length) return;
 
       setBulkActionLoading(true);
-      const url = endpoint ? `${host || ''}/${endpoint}` : '/api/contracts/bulk-delete';
-      console.log('Sending request to:', url);
+      const url = endpoint
+        ? `${host || ""}/${endpoint}`
+        : "/api/contracts/bulk-delete";
+      console.log("Sending request to:", url);
       try {
         const res = await fetch(url, {
           method: "POST",
@@ -139,37 +141,39 @@ export function DataTable<TData extends Identifiable, TValue>({
       <div className="flex justify-between">
         <div className="flex items-center py-4 md:w-[100%] mr-2">
           <Input
-            placeholder="Filter names..."
-            value={(table.getColumn("nombre")?.getFilterValue() as string) ?? ""}
+            placeholder="Filtrar por nombre..."
+            value={
+              (table.getColumn("nombre")?.getFilterValue() as string) ?? ""
+            }
             onChange={(event) =>
               table.getColumn("nombre")?.setFilterValue(event.target.value)
             }
           />
         </div>
         <div className="flex items-center py-4">
-          <Link href={`${basePath}/add`} onClick={() => setAddNewLoading(true)}>
+          {/* <Link href={`${basePath}/add`} onClick={() => setAddNewLoading(true)}>
             <LoadingButton isLoading={addNewLoading}>Add new</LoadingButton>
-          </Link>
+          </Link> */}
         </div>
       </div>
 
       {/* Bulk action section */}
       <div className="flex items-center space-x-2 mb-4">
-        <span className="text-sm font-medium">Action:</span>
+        <span className="text-sm font-medium">Acción:</span>
         <select
           className="p-2 border rounded"
           value={action}
           onChange={(e) => setAction(e.target.value)}
         >
-          <option value="">Select action</option>
-          <option value="delete">Delete selected item(s)</option>
+          <option value="">Seleccionar acción</option>
+          <option value="delete">Borrar item(s) seleccionado(s)</option>
         </select>
         <LoadingButton
           isLoading={bulkActionLoading}
           disabled={!table.getFilteredSelectedRowModel().rows.length || !action}
           onClick={handleBulkAction}
         >
-          Apply
+          Ejecutar
         </LoadingButton>
       </div>
 
@@ -212,9 +216,7 @@ export function DataTable<TData extends Identifiable, TValue>({
                         (cell.column.id === "id" ||
                           cell.column.id === "product") ? (
                         <Link
-                          href={`/${basePath}/${encodeURIComponent(
-                            cell.getValue()
-                          )}`}
+                          href={`${basePath}${cell.getValue()}`}
                           className="text-blue-500 hover:underline"
                         >
                           {cell.getValue()}
@@ -232,7 +234,7 @@ export function DataTable<TData extends Identifiable, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  No se han creado datos aún.
                 </TableCell>
               </TableRow>
             )}
@@ -242,11 +244,11 @@ export function DataTable<TData extends Identifiable, TValue>({
 
       {/* Pagination controls */}
       <div className="flex text-sm text-muted-foreground w-full justify-center p-2">
-        {table.getFilteredSelectedRowModel().rows.length} of{" "}
-        {table.getFilteredRowModel().rows.length} row(s) selected.
+        {table.getFilteredSelectedRowModel().rows.length} de{" "}
+        {table.getFilteredRowModel().rows.length} fila(s) seleccionada(s).
       </div>
       <div className="flex w-full items-center justify-center text-sm font-medium">
-        Page {table.getState().pagination.pageIndex + 1} of{" "}
+        Página {table.getState().pagination.pageIndex + 1} de{" "}
         {table.getPageCount()}
       </div>
       <div className="flex items-center space-x-2 w-full justify-center">
@@ -274,7 +276,7 @@ export function DataTable<TData extends Identifiable, TValue>({
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >
-          <span className="sr-only">Go to next page</span>
+          <span className="sr-only">Ir a la siguiente página</span>
           <ChevronRight />
         </Button>
         <Button
@@ -283,7 +285,7 @@ export function DataTable<TData extends Identifiable, TValue>({
           onClick={() => table.setPageIndex(table.getPageCount() - 1)}
           disabled={!table.getCanNextPage()}
         >
-          <span className="sr-only">Go to last page</span>
+          <span className="sr-only">Ir a la página previa</span>
           <ChevronsRight />
         </Button>
       </div>

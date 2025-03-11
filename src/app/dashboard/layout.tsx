@@ -1,12 +1,12 @@
 "use client";
-import { AppSidebar } from "@/components/app-sidebar";
-import { CustomTrigger } from "@/components/custom-sidebar-trigger";
-import { SidebarProvider } from "@/components/ui/sidebar";
 /* 
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react"; */
 
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import { CustomTrigger } from "@/components/custom-sidebar-trigger";
 import Image from "next/image";
 
 export default function Layout({ children }: { children: React.ReactNode }) {

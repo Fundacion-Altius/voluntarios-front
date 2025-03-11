@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 // import { ContractProvider } from "./context";
+import { appWithTranslation } from 'next-i18next';
 
 const inter = Inter({
   subsets: ["latin"],

@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { DataTable } from "@/components/data-table";
 import { Contract } from "@/app/types";
 import { ColumnDef, flexRender } from "@tanstack/react-table";
+import { usePathname } from "next/navigation";
 
 interface ClientDataTableProps<TData, TValue> {
   initialData: TData[];
@@ -18,38 +19,9 @@ export function ClientDataTable<TData extends Contract, TValue>({
   columns,
   endpoint,
 }: ClientDataTableProps<TData, TValue>) {
+  const pathname = usePathname();
   const [data, setData] = useState<TData[]>(initialData);
   const [loading, setLoading] = useState(false);
-
-  // Create a modified version of the columns to pass refreshData
-  const columnsWithRefresh = useMemo(() => {
-    // We need to modify the columns to include our refreshData function
-    return columns.map((col) => {
-      // If this is the actions column, we need to make sure it has access to refreshData
-      if (col.id === "actions") {
-        return {
-          ...col,
-          cell: (info: any) => {
-            // Pass the refresh function through the info context
-            return flexRender(col.cell, {
-              ...info,
-              table: {
-                ...info.table,
-                options: {
-                  ...info.table.options,
-                  meta: {
-                    ...info.table.options.meta,
-                    refreshData: fetchData,
-                  },
-                },
-              },
-            });
-          },
-        };
-      }
-      return col;
-    });
-  }, [columns]);
 
   const fetchData = async () => {
     console.log("Fetching fresh data...");
@@ -73,10 +45,7 @@ export function ClientDataTable<TData extends Contract, TValue>({
     }
   };
 
-  // For debugging
-  useEffect(() => {
-    console.log("ClientDataTable mounted with data:", initialData);
-  }, [initialData]);
+// get current URL
 
   return (
     <>
@@ -86,6 +55,7 @@ export function ClientDataTable<TData extends Contract, TValue>({
         data={data}
         endpoint={endpoint}
         onRefresh={fetchData}
+        basePath={`${pathname}/`}
       />
     </>
   );

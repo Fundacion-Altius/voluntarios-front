@@ -1,182 +1,216 @@
-import * as React from "react"
+"use client";
 
-import { SearchForm } from "@/components/search-form"
-import { VersionSwitcher } from "@/components/version-switcher"
+import * as React from "react";
+import Image from "next/image";
+import Link from "next/link";
+// import { useRef } from "react";
+import {
+  // AudioWaveform,
+  // BookOpen,
+  // Bot,
+  ChevronUp,
+  // Command,
+  // Frame,
+  // GalleryVerticalEnd,
+  // Map,
+  // PieChart,
+  // Settings2,
+  // SquareTerminal,
+  Store,
+  Users,
+  User2,
+  Warehouse,
+  HandHeart,
+} from "lucide-react";
+
+import { NavMain } from "@/components/nav-main";
+// import { NavProjects } from "@/components/nav-projects";
+// import { NavUser } from "@/components/nav-user";
+// import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
+  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+// import { useContainerWidth } from "@/lib/hooks";
+// import { title } from "process";
 
-// This is sample data.
+// Sample data.
 const data = {
-  versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
   navMain: [
     {
-      title: "Getting Started",
-      url: "#",
+      title: "Voluntarios",
+      url: "/dashboard/voluntarios",
+      icon: HandHeart,
+      isActive: true,
       items: [
         {
-          title: "Installation",
-          url: "#",
+          title: "Contratos",
+          url: "/dashboard/voluntarios",
+        },
+
+        {
+          title: "Encuestas",
+          url: "/dashboard/voluntarios/encuestas",
         },
         {
-          title: "Project Structure",
-          url: "#",
+          title: "Actividades",
+          url: "/dashboard/voluntarios/actividades",
+        },
+        {
+          title: "Cuerpo Europeo de Solidaridad",
+          url: "/dashboard/voluntarios/ces",
         },
       ],
     },
-    {
-      title: "Building Your Application",
+    /* {
+      title: "Warehouse",
       url: "#",
+      icon: Warehouse,
+      isActive: true,
       items: [
         {
-          title: "Routing",
-          url: "#",
+          title: "Products",
+          url: "/products",
         },
         {
-          title: "Data Fetching",
-          url: "#",
-          isActive: true,
+          title: "Categories",
+          url: "/categories"
         },
         {
-          title: "Rendering",
-          url: "#",
+          title: "Product Images",
+          url: "/product-images"
+        }
+      ],
+    },{ 
+    title: "Storefront",
+    url: "#",
+    icon: Store,
+    items: [
+      {
+        title: "Start Pickup",
+        url: "/storefront/pickup",
         },
+        
+      ],
+    },
+    { 
+      title: "Users",
+      url: "#",
+      icon: Users,
+      items: [
         {
-          title: "Caching",
-          url: "#",
-        },
-        {
-          title: "Styling",
-          url: "#",
-        },
-        {
-          title: "Optimizing",
-          url: "#",
-        },
-        {
-          title: "Configuring",
-          url: "#",
-        },
-        {
-          title: "Testing",
-          url: "#",
-        },
-        {
-          title: "Authentication",
-          url: "#",
-        },
-        {
-          title: "Deploying",
-          url: "#",
-        },
-        {
-          title: "Upgrading",
-          url: "#",
-        },
-        {
-          title: "Examples",
-          url: "#",
-        },
+          title: "Staff",
+          url: "/users/staff",
+          },
+          {
+            title: "Volunteers",
+            url: "#",
+          },
+          {
+            title: "Beneficiaries",
+            url: "#",
+          },
+        ],
+      }, */
+    /* {
+    {
+      title: "Documentation",
+      url: "#",
+      icon: BookOpen,
+      items: [
+        { title: "Introduction", url: "#" },
+        { title: "Get Started", url: "#" },
+        { title: "Tutorials", url: "#" },
+        { title: "Changelog", url: "#" },
       ],
     },
     {
-      title: "API Reference",
+      title: "Settings",
       url: "#",
+      icon: Settings2,
       items: [
-        {
-          title: "Components",
-          url: "#",
-        },
-        {
-          title: "File Conventions",
-          url: "#",
-        },
-        {
-          title: "Functions",
-          url: "#",
-        },
-        {
-          title: "next.config.js Options",
-          url: "#",
-        },
-        {
-          title: "CLI",
-          url: "#",
-        },
-        {
-          title: "Edge Runtime",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Architecture",
-      url: "#",
-      items: [
-        {
-          title: "Accessibility",
-          url: "#",
-        },
-        {
-          title: "Fast Refresh",
-          url: "#",
-        },
-        {
-          title: "Next.js Compiler",
-          url: "#",
-        },
-        {
-          title: "Supported Browsers",
-          url: "#",
-        },
-        {
-          title: "Turbopack",
-          url: "#",
-        },
+        { title: "General", url: "#" },
+        { title: "Team", url: "#" },
+        { title: "Billing", url: "#" },
+        { title: "Limits", url: "#" },
       ],
     },
   ],
-}
+  projects: [
+    {
+      name: "Design Engineering",
+      url: "#",
+      icon: Frame,
+    },
+    {
+      name: "Sales & Marketing",
+      url: "#",
+      icon: PieChart,
+    },
+    {
+      name: "Travel",
+      url: "#",
+      icon: Map,
+    },
+    */
+  ],
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  // Create a ref for the SidebarHeader container.
+  // const headerRef = useRef<HTMLDivElement>(null);
+  // const headerWidth = useContainerWidth(headerRef);
+
   return (
-    <Sidebar {...props}>
+    <Sidebar collapsible="icon" {...props}>
+      {/* <SidebarHeader ref={headerRef}> */}
       <SidebarHeader>
-        <VersionSwitcher
-          versions={data.versions}
-          defaultVersion={data.versions[0]}
-        />
-        <SearchForm />
+        <Link
+          href="/"
+          className="flex items-center justify-center lg:justify-start gap-2"
+        >
+          <Image src="/logo.png" alt="logo" width={300} height={100} />
+        </Link>
       </SidebarHeader>
       <SidebarContent>
-        {/* We create a SidebarGroup for each parent. */}
-        {data.navMain.map((item) => (
-          <SidebarGroup key={item.title}>
-            <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {item.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={item.isActive}>
-                      <a href={item.url}>{item.title}</a>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+        <NavMain items={data.navMain} />
+        {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton>
+                  <User2 /> Usuario
+                  <ChevronUp className="ml-auto" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                side="top"
+                className="w-[--radix-popper-anchor-width]"
+              >
+                <DropdownMenuItem>
+                  <span>Sign out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }
