@@ -1,4 +1,5 @@
 {
   "/dashboard/voluntarios/page": "app/dashboard/voluntarios/page.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js"
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/_not-found/page": "app/_not-found/page.js"
 }

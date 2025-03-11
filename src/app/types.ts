@@ -63,4 +63,5 @@ export interface Contract {
   derechoConfidencialidad: boolean;
   horario: string;
   email: string;
+  estado: "pendiente" | "activo" | "inactivo";
 }

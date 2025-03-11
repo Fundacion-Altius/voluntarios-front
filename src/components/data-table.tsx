@@ -1,7 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-
-import { useState } from "react";
-
 import {
   ChevronLeft,
   ChevronRight,
@@ -10,14 +8,15 @@ import {
 } from "lucide-react";
 import {
   ColumnDef,
-  flexRender,
-  SortingState,
-  getSortedRowModel,
-  getCoreRowModel,
-  useReactTable,
-  getPaginationRowModel,
   ColumnFiltersState,
+  SortingState,
+  flexRender,
+  getCoreRowModel,
   getFilteredRowModel,
+  useReactTable,
+  getSortedRowModel,
+  getPaginationRowModel,
+  CellContext,
 } from "@tanstack/react-table";
 
 import {
@@ -28,12 +27,26 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "./ui/button";
-import { Input } from "@/components/ui/input";
+import Link from "next/link";
+import Image from "next/image";
+
+import { Suspense, useState } from "react";
+
 import { useRouter } from "next/navigation";
 import LoadingButton from "./loading-button";
+import SkeletonRectangle from "./skeletons/skeleton-rectangle";
+import SkeletonSquare from "./skeletons/skeleton-square";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 
-const host = process.env?.NEXT_PUBLIC_API_URL;
+// Example host and API endpoint
+const host = process.env?.NEXT_PUBLIC_URL;
+
+// Define table meta for refresh functionality
+interface TableMeta {
+  refreshData?: () => void;
+}
+
 interface Identifiable {
   id: string | number;
 }
@@ -43,6 +56,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   basePath?: string;
   endpoint?: string;
+  onRefresh?: () => Promise<void>;
 }
 
 export function DataTable<TData extends Identifiable, TValue>({
@@ -50,13 +64,54 @@ export function DataTable<TData extends Identifiable, TValue>({
   data,
   basePath,
   endpoint,
+  onRefresh,
 }: DataTableProps<TData, TValue>) {
   const router = useRouter();
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = useState({});
-  const [action, setAction] = useState(""); // new state to track the selected action
-  const [loading, setLoading] = useState(false);
+  const [action, setAction] = useState(""); // track the selected action
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
+  const [addNewLoading, setAddNewLoading] = useState(false);
+
+  // Handler for bulk actions
+  const handleBulkAction = async () => {
+    if (action === "delete") {
+      // Get IDs of selected rows
+      const ids = table
+        .getFilteredSelectedRowModel()
+        .rows.map((row) => row.original.id);
+
+      if (!ids.length) return;
+
+      setBulkActionLoading(true);
+      const url = endpoint ? `${host || ''}/${endpoint}` : '/api/contracts/bulk-delete';
+      console.log('Sending request to:', url);
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ ids }),
+        });
+
+        if (!res.ok) {
+          throw new Error("Bulk delete failed");
+        }
+
+        setRowSelection({});
+
+        // Refresh data if available
+        if (onRefresh) await onRefresh();
+        else router.refresh();
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setBulkActionLoading(false);
+      }
+    }
+  };
 
   const table = useReactTable({
     data,
@@ -68,56 +123,37 @@ export function DataTable<TData extends Identifiable, TValue>({
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
     onRowSelectionChange: setRowSelection,
-
+    meta: {
+      refreshData: onRefresh,
+    } as TableMeta,
     state: {
       sorting,
       columnFilters,
       rowSelection,
     },
   });
-  const handleBulkAction = async () => {
-    if (action === "delete") {
-      // Get IDs of selected rows. Adjust this if your row data uses a different key.
-      const ids = table
-        .getFilteredSelectedRowModel()
-        .rows.map((row) => row.original.id);
-      if (!ids.length) return;
-      setLoading(true);
-      try {
-        // Replace `/api/bulk-delete/` with your actual Django endpoint
-        const res = await fetch(`${host}/${endpoint}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            // Include CSRF token if needed
-          },
-          body: JSON.stringify({ ids }),
-        });
-        if (!res.ok) {
-          throw new Error("Bulk delete failed");
-        }
 
-        setRowSelection({});
-        router.push("/dashboard/voluntarios");
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    // You can add more actions here if needed.
-  };
   return (
-    <div className="rounded-md border">
-      <div className="flex items-center py-4 md:w-[100%] mr-2">
-        <Input
-          placeholder="Filter names..."
-          value={(table.getColumn("nombre")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("nombre")?.setFilterValue(event.target.value)
-          }
-        />
+    <div className="w-full">
+      {/* Top bar with filter and add new button */}
+      <div className="flex justify-between">
+        <div className="flex items-center py-4 md:w-[100%] mr-2">
+          <Input
+            placeholder="Filter names..."
+            value={(table.getColumn("nombre")?.getFilterValue() as string) ?? ""}
+            onChange={(event) =>
+              table.getColumn("nombre")?.setFilterValue(event.target.value)
+            }
+          />
+        </div>
+        <div className="flex items-center py-4">
+          <Link href={`${basePath}/add`} onClick={() => setAddNewLoading(true)}>
+            <LoadingButton isLoading={addNewLoading}>Add new</LoadingButton>
+          </Link>
+        </div>
       </div>
+
+      {/* Bulk action section */}
       <div className="flex items-center space-x-2 mb-4">
         <span className="text-sm font-medium">Action:</span>
         <select
@@ -127,22 +163,23 @@ export function DataTable<TData extends Identifiable, TValue>({
         >
           <option value="">Select action</option>
           <option value="delete">Delete selected item(s)</option>
-          {/* Add more actions if needed */}
         </select>
         <LoadingButton
-          isLoading={loading}
+          isLoading={bulkActionLoading}
           disabled={!table.getFilteredSelectedRowModel().rows.length || !action}
           onClick={handleBulkAction}
         >
           Apply
         </LoadingButton>
       </div>
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
+
+      {/* Table */}
+      <div className="rounded-md border w-full">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
@@ -151,35 +188,59 @@ export function DataTable<TData extends Identifiable, TValue>({
                           header.getContext()
                         )}
                   </TableHead>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
                 ))}
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
+                  {row.getVisibleCells().map((cell: any) => (
+                    <TableCell key={cell.id}>
+                      {cell.column.id === "select" ||
+                      cell.column.id === "actions" ? (
+                        // For select and actions columns, use the column's custom cell renderer
+                        flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )
+                      ) : typeof cell.getValue() === "string" &&
+                        (cell.column.id === "id" ||
+                          cell.column.id === "product") ? (
+                        <Link
+                          href={`/${basePath}/${encodeURIComponent(
+                            cell.getValue()
+                          )}`}
+                          className="text-blue-500 hover:underline"
+                        >
+                          {cell.getValue()}
+                        </Link>
+                      ) : (
+                        renderImageOrValue(cell.getValue())
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  No results.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
+      {/* Pagination controls */}
       <div className="flex text-sm text-muted-foreground w-full justify-center p-2">
         {table.getFilteredSelectedRowModel().rows.length} of{" "}
         {table.getFilteredRowModel().rows.length} row(s) selected.
@@ -228,4 +289,63 @@ export function DataTable<TData extends Identifiable, TValue>({
       </div>
     </div>
   );
+}
+
+function renderImageOrValue(value: any) {
+  if (Array.isArray(value)) {
+    return (
+      <div className="flex gap-2">
+        {value.slice(0, 3).map((url, idx) => (
+          <div
+            key={idx}
+            className="relative w-12 h-12 overflow-hidden rounded-md"
+          >
+            <Suspense fallback={<SkeletonSquare />}>
+              <Image
+                src={`${host}${url}`}
+                alt="Thumbnail"
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                style={{ objectFit: "cover" }}
+              />
+            </Suspense>
+          </div>
+        ))}
+      </div>
+    );
+  } else if (typeof value === "string" && value.startsWith("http")) {
+    return (
+      <div className="relative w-12 h-12 overflow-hidden rounded-md">
+        <Suspense fallback={<SkeletonSquare />}>
+          <Image
+            src={value}
+            alt="Thumbnail"
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            style={{ objectFit: "cover" }}
+          />
+        </Suspense>
+      </div>
+    );
+  } else if (typeof value === "string" && value.startsWith("/media")) {
+    return (
+      <div className="relative w-12 h-12 overflow-hidden rounded-md">
+        <Suspense fallback={<SkeletonSquare />}>
+          <Image
+            src={`${value}`}
+            alt="Thumbnail"
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            style={{ objectFit: "cover" }}
+          />
+        </Suspense>
+      </div>
+    );
+  } else {
+    return (
+      <Suspense fallback={<SkeletonRectangle />}>
+        {value == null || value === "" ? "N/D" : String(value)}
+      </Suspense>
+    );
+  }
 }

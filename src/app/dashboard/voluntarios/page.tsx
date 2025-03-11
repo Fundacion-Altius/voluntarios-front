@@ -1,19 +1,25 @@
+// Page.tsx - Server Component
 import React from "react";
 import { columns } from "./columns";
 import { getContracts } from "@/app/api";
-import { DataTable } from "@/components/data-table";
+import { ClientDataTable } from "@/components/client-data-table";
 
 async function Page() {
   const contracts = await getContracts();
 
-  const renderComponent = () => {
-    if (!contracts.result) {
-      return <p>{contracts.error}</p>;
-    } else {
-      return <DataTable columns={columns} data={contracts?.data} endpoint="api/contracts/bulk-delete"/>;
-    }
-  };
-  return <>{renderComponent()};</>;
+  return (
+    <>
+      {!contracts.result ? (
+        <p>{contracts.error}</p>
+      ) : (
+        <ClientDataTable 
+          initialData={contracts?.data} 
+          columns={columns} 
+          endpoint="api/contracts/bulk-delete" 
+        />
+      )}
+    </>
+  );
 }
 
 export default Page;
