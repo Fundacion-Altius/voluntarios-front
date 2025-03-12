@@ -40,7 +40,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
 // Example host and API endpoint
-const host = process.env?.NEXT_PUBLIC_URL;
+const host = process.env?.NEXT_PUBLIC_API_URL || "";
 
 // Define table meta for refresh functionality
 interface TableMeta {
@@ -85,9 +85,7 @@ export function DataTable<TData extends Identifiable, TValue>({
       if (!ids.length) return;
 
       setBulkActionLoading(true);
-      const url = endpoint
-        ? `${host || ""}/${endpoint}`
-        : "/api/contracts/bulk-delete";
+      const url = `${host}/api/contracts/bulk-delete`;
       console.log("Sending request to:", url);
       try {
         const res = await fetch(url, {

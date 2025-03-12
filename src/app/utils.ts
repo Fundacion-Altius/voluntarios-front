@@ -65,9 +65,11 @@ export function formatFullMonthYear(isoDateStr: string) {
   const date = new Date(isoDateStr);
   return date.toLocaleDateString("es-es", { month: "long", year: "numeric" });
 }
+const host = process.env?.NEXT_PUBLIC_API_URL || "";
+
 export const handleDownload = async (id: string) => {
   try {
-    const response = await fetch(`/api/generate-pdf?id=${id}`);
+    const response = await fetch(`${host}/api/generate-pdf?id=${id}`);
     if (response.status === 400) {
       throw new Error(
         "No se puede generar dos veces el mismo contrato para el mismo DNI/NIE. Recarga para intentar con otro DNI/NIE"

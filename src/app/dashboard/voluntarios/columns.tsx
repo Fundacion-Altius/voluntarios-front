@@ -25,8 +25,8 @@ const ActionButtons = ({ info }: { info: CellContext<Contract, unknown> }) => {
 
   const refreshData = (table.options.meta as TableMeta | undefined)
     ?.refreshData;
-  const host = process.env?.NEXT_PUBLIC_URL || "";
-
+  const host = process.env?.NEXT_PUBLIC_API_URL || "";
+  console.log(host);
   const handleActivate = async () => {
     setIsActivating(true);
     setError(null);
@@ -58,7 +58,7 @@ const ActionButtons = ({ info }: { info: CellContext<Contract, unknown> }) => {
     setError(null);
 
     try {
-      const response = await fetch(`/api/contracts/${row.original.id}`, {
+      const response = await fetch(`${host}/api/contracts/${row.original.id}`, {
         method: "DELETE",
       });
 
