@@ -23,14 +23,6 @@
       "static/chunks/368-74f389d64fbe467d.js",
       "static/chunks/app/confidencialidad/page-0018c0dfc5f96acb.js"
     ],
-    "/datos/page": [
-      "static/chunks/webpack-34ae5e468ab05dd9.js",
-      "static/chunks/bf82a2c9-5ecb96320663632c.js",
-      "static/chunks/781-3e0133e21253815a.js",
-      "static/chunks/main-app-b471d15d4110b5d8.js",
-      "static/chunks/368-74f389d64fbe467d.js",
-      "static/chunks/app/datos/page-ea8ab9e9fd569e37.js"
-    ],
     "/dashboard/page": [
       "static/chunks/webpack-34ae5e468ab05dd9.js",
       "static/chunks/bf82a2c9-5ecb96320663632c.js",
@@ -38,7 +30,15 @@
       "static/chunks/main-app-b471d15d4110b5d8.js",
       "static/chunks/437-e8db1a64cde63327.js",
       "static/chunks/106-3cab7760da9c0f0f.js",
-      "static/chunks/app/dashboard/page-1c109c7e7c724608.js"
+      "static/chunks/app/dashboard/page-dbd520bb8cef4165.js"
+    ],
+    "/datos/page": [
+      "static/chunks/webpack-34ae5e468ab05dd9.js",
+      "static/chunks/bf82a2c9-5ecb96320663632c.js",
+      "static/chunks/781-3e0133e21253815a.js",
+      "static/chunks/main-app-b471d15d4110b5d8.js",
+      "static/chunks/368-74f389d64fbe467d.js",
+      "static/chunks/app/datos/page-ea8ab9e9fd569e37.js"
     ],
     "/encuesta/confirmacion/page": [
       "static/chunks/webpack-34ae5e468ab05dd9.js",
@@ -55,7 +55,7 @@
       "static/chunks/main-app-b471d15d4110b5d8.js",
       "static/chunks/368-74f389d64fbe467d.js",
       "static/chunks/437-e8db1a64cde63327.js",
-      "static/chunks/app/encuesta/page-1f12f8649f5cdbb7.js"
+      "static/chunks/app/encuesta/page-b6ecb0f1712d4650.js"
     ],
     "/gracias/page": [
       "static/chunks/webpack-34ae5e468ab05dd9.js",
