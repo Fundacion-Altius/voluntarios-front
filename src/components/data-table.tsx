@@ -149,9 +149,9 @@ export function DataTable<TData extends Identifiable, TValue>({
           />
         </div>
         <div className="flex items-center py-4">
-          {/* <Link href={`${basePath}/add`} onClick={() => setAddNewLoading(true)}>
-            <LoadingButton isLoading={addNewLoading}>Add new</LoadingButton>
-          </Link> */}
+          <Link href={`${basePath}/add`} onClick={() => setAddNewLoading(true)}>
+            <LoadingButton isLoading={addNewLoading}>Añadir nuevo</LoadingButton>
+          </Link>
         </div>
       </div>
 

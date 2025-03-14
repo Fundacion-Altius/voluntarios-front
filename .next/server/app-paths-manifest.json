@@ -1,7 +1,17 @@
 {
-  "/dashboard/page": "app/dashboard/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/dashboard/voluntarios/page": "app/dashboard/voluntarios/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/(auth)/login/page": "app/(auth)/login/page.js",
+  "/(auth)/register/page": "app/(auth)/register/page.js",
+  "/confidencialidad/page": "app/confidencialidad/page.js",
+  "/datos/page": "app/datos/page.js",
+  "/encuesta/confirmacion/page": "app/encuesta/confirmacion/page.js",
+  "/encuesta/page": "app/encuesta/page.js",
+  "/gracias/page": "app/gracias/page.js",
+  "/imagen/page": "app/imagen/page.js",
+  "/page": "app/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
   "/dashboard/voluntarios/[id]/page": "app/dashboard/voluntarios/[id]/page.js",
-  "/_not-found/page": "app/_not-found/page.js"
+  "/dashboard/voluntarios/add/page": "app/dashboard/voluntarios/add/page.js",
+  "/dashboard/voluntarios/page": "app/dashboard/voluntarios/page.js"
 }
