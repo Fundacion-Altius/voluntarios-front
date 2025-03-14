@@ -27,7 +27,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "http://localhost:3001/api/:path*",
+        destination: "https://voluntarios-back.onrender.com/api/:path*",
         // destination: 'http://back:3001/api/:path*',
       },
     ];
