@@ -1,6 +1,6 @@
 {
-  "/dashboard/voluntarios/page": "app/dashboard/voluntarios/page.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/datos/page": "app/datos/page.js",
-  "/_not-found/page": "app/_not-found/page.js"
+  "/(auth)/login/callback/page": "app/(auth)/login/callback/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/(auth)/login/page": "app/(auth)/login/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js"
 }

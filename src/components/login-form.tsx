@@ -22,6 +22,18 @@ export function LoginForm({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const handleOAuthLogin = async (provider: "google" | "microsoft") => {
+    try {
+      setLoading(true);
+      const response = await fetch(`http://localhost:3001/api/auth/oauth/${provider}/url`);
+      const { url } = await response.json();
+      window.location.href = url;
+    } catch (error) {
+      console.error("OAuth error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -92,6 +104,17 @@ export function LoginForm({
           </form>
         </CardContent>
       </Card>
+      <div className="flex flex-col gap-3">
+        <Button onClick={() => handleOAuthLogin("google")} disabled={loading}>
+          Continue with Google
+        </Button>
+        <Button
+          onClick={() => handleOAuthLogin("microsoft")}
+          disabled={loading}
+        >
+          Continue with Microsoft
+        </Button>
+      </div>
     </div>
   );
 }
