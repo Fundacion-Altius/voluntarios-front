@@ -16,6 +16,7 @@ const customJestConfig = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+  testPathIgnorePatterns: ['<rootDir>/e2e/'],
   testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.tsx?$',
 }
 

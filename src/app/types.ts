@@ -5,6 +5,7 @@ export type AreasT =
   | "Coaching"
   | "Formación"
   | "CEPI"
+  | "Nave"
   | "Otra"
   | string;
 export type DuracionT =

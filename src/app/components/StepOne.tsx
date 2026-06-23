@@ -26,6 +26,7 @@ const StepOne: React.FC<StepOneProps> = ({
     "Coaching",
     "Formación",
     "CEPI",
+    "Nave",
     "Otra",
   ];
   const modalidadOptions: ModalidadT[] = ["Presencial", "Online", "Híbrido"];
