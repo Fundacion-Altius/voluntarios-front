@@ -7,6 +7,7 @@ import StepFour from "./StepFour";
 import { AreasT, DatosContrato, ModalidadT } from "../types";
 import Image from "next/image";
 import { todayToSQL } from "../utils";
+import { apiPost } from "../lib/csrf";
 const HOST = process.env.NEXT_PUBLIC_API_URL;
 
 const imagePrefix = `${process.env.NEXT_PUBLIC_IMAGE_PREFIX}`;
@@ -35,6 +36,14 @@ const Contract: React.FC = () => {
 
   const nextStep = () => setStep(step + 1);
   const prevStep = () => setStep(step - 1);
+
+  const handleRadioChange = (name: string, value: string) => {
+    if (name === "modalidad") {
+      setDatosContrato({ ...datosContrato, modalidad: [value] as ModalidadT[] });
+    } else {
+      setDatosContrato({ ...datosContrato, [name]: value });
+    }
+  };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -80,13 +89,7 @@ const Contract: React.FC = () => {
 
   const handleSubmit = async () => {
     try {
-      const response = await fetch(`${HOST}/api/contracts`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(datosContrato),
-      });
+      const response = await apiPost("/api/contracts", datosContrato);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -108,6 +111,7 @@ const Contract: React.FC = () => {
             contractData={datosContrato}
             setDatosContrato={setDatosContrato}
             handleInputChange={handleInputChange}
+            handleRadioChange={handleRadioChange}
             nextStep={nextStep}
           />
         );

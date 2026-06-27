@@ -1,5 +1,14 @@
 import '@testing-library/jest-dom'
 
+global.ResizeObserver = class ResizeObserver {
+  constructor(callback) {
+    this.callback = callback;
+  }
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
 // Add any custom Jest matchers if needed
 // Example:
 // expect.extend({

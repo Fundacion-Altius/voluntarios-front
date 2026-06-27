@@ -1,24 +1,20 @@
 import React, { useState } from "react";
 import { DatosContrato } from "../types";
 import { v4 as uuidv4 } from "uuid";
+import { apiPost } from "../lib/csrf";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface StepFourProps {
   contractData: DatosContrato;
 }
-const HOST = process.env.NEXT_PUBLIC_API_URL;
 const StepFour: React.FC<StepFourProps> = ({ contractData }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDownload = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${HOST}/api/generate-pdf`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(contractData),
-      });
+      const response = await apiPost("/api/generate-pdf", contractData);
       if (response.status === 400) {
         throw new Error(
           "No se puede generar dos veces el mismo contrato para el mismo DNI/NIE. Recarga para intentar con otro DNI/NIE"
@@ -30,17 +26,13 @@ const StepFour: React.FC<StepFourProps> = ({ contractData }) => {
       /* 
       const data = await response.json();
       console.log({ data });
-      // Create a link element to initiate the download
       const link = document.createElement("a");
       link.href = data.url;
       link.setAttribute("download", `${data.url}.pdf`);
       link.setAttribute("target", "_blank");
 
-      // Append the link to the body and click it programmatically
       document.body.appendChild(link);
       link.click();
-
-      // Clean up
       link.remove(); */
 
       const blob = await response.blob();
@@ -60,12 +52,14 @@ const StepFour: React.FC<StepFourProps> = ({ contractData }) => {
   };
 
   return (
-    <div className="step">
-      <p>Tu contrato se ha enviado y procesado correctamente</p>
-      <button onClick={handleDownload} disabled={isLoading}>
-        {isLoading ? "Descargando PDF..." : "Descargar contrato"}
-      </button>
-    </div>
+    <Card className="step">
+      <CardContent className="space-y-4 text-center">
+        <p>Tu contrato se ha enviado y procesado correctamente</p>
+        <Button onClick={handleDownload} disabled={isLoading}>
+          {isLoading ? "Descargando PDF..." : "Descargar contrato"}
+        </Button>
+      </CardContent>
+    </Card>
   );
 };
 

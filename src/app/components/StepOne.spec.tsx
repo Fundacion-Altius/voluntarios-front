@@ -71,6 +71,28 @@ describe("StepOne Component", () => {
     expect(screen.getByText(/HORARIO/i)).toBeInTheDocument();
   });
 
+  it("renders styled shadcn Input components", () => {
+    setup();
+    const inputs = document.querySelectorAll('input');
+    expect(inputs.length).toBeGreaterThan(0);
+  });
+
+  it("renders styled shadcn Checkbox components", () => {
+    setup();
+    const checkboxes = document.querySelectorAll('[data-slot="checkbox"]');
+    expect(checkboxes.length).toBeGreaterThan(0);
+  });
+
+  it("renders styled shadcn Select component", () => {
+    setup();
+    expect(document.querySelector('[data-slot="select-trigger"]')).toBeInTheDocument();
+  });
+
+  it("renders styled shadcn Button component", () => {
+    setup();
+    expect(document.querySelector('[data-slot="button"]')).toBeInTheDocument();
+  });
+
   it("shows error message when DNI input is invalid", async () => {
     const { user } = setup();
 

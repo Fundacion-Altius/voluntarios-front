@@ -1,10 +1,4 @@
-/* // generate code that configure context to 
-interface ContractData {
-  name: string;
-  date: string;
-  signature: string;
-}
-*/
+'use client';
 import React, { ReactNode, createContext, useState } from "react";
 
 
