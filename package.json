@@ -13,7 +13,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "jest --inspect-brk",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:email-flow": "playwright test e2e/contract-email-flow.spec.ts --workers=1",
+    "test:e2e:email-flow:prod": "playwright test e2e/contract-email-flow-prod.spec.ts --workers=1"
   },
   "dependencies": {
     "@hey-api/client-fetch": "^0.10.0",
