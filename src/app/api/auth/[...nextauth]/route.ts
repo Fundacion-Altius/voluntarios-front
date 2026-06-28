@@ -13,10 +13,12 @@ declare module 'next-auth' {
   }
 }
 
-const handler = NextAuth({
-  providers: [
+const providers = [];
+
+if (process.env.AZURE_AD_CLIENT_ID) {
+  providers.push(
     AzureADProvider({
-      clientId: process.env.AZURE_AD_CLIENT_ID || '',
+      clientId: process.env.AZURE_AD_CLIENT_ID,
       clientSecret: process.env.AZURE_AD_CLIENT_SECRET || '',
       tenantId: process.env.AZURE_AD_TENANT_ID || 'common',
       authorization: {
@@ -25,7 +27,10 @@ const handler = NextAuth({
         },
       },
     }),
-    CredentialsProvider({
+  );
+}
+
+providers.push(CredentialsProvider({
       name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
@@ -71,7 +76,10 @@ const handler = NextAuth({
         };
       },
     }),
-  ],
+);
+
+const handler = NextAuth({
+  providers,
   callbacks: {
     async signIn({ account, profile }) {
       return true;

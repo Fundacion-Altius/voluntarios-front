@@ -52,7 +52,7 @@ describe('useAuth', () => {
     expect(result.current.user).toEqual(mockUser);
   });
 
-  it('calls signIn with azure-ad on login', () => {
+  it('calls signIn with credentials on login', () => {
     (useSession as jest.Mock).mockReturnValue({
       data: null,
       status: 'unauthenticated',
@@ -64,7 +64,7 @@ describe('useAuth', () => {
       result.current.login();
     });
 
-    expect(signIn).toHaveBeenCalledWith('azure-ad', { callbackUrl: '/dashboard' });
+    expect(signIn).toHaveBeenCalledWith('credentials', { callbackUrl: '/dashboard' });
   });
 
   it('calls signOut with callback on logout', () => {

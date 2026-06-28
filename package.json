@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/predev.js",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -15,6 +16,8 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "@hey-api/client-fetch": "^0.10.0",
+    "@tanstack/react-query": "^5.60.0",
     "@tanstack/react-table": "^8.21.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -32,6 +35,7 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
+    "@hey-api/openapi-ts": "^0.64.0",
     "@playwright/test": "^1.61.0",
     "@tailwindcss/postcss": "^4.3.1",
     "@testing-library/dom": "^10.4.0",

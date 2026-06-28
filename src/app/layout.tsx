@@ -4,6 +4,7 @@ import "./globals.css";
 import { ContractProvider } from "./context";
 import { AuthProvider } from "./auth/AuthProvider";
 import { ThemeProvider } from "@/lib/theme-provider";
+import { QueryProvider } from "./QueryProvider";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -35,13 +36,15 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body>
-        <ThemeProvider>
-          <AuthProvider>
-            <ContractProvider>
-              {children}
-            </ContractProvider>
-          </AuthProvider>
-        </ThemeProvider>
+        <QueryProvider>
+          <ThemeProvider>
+            <AuthProvider>
+              <ContractProvider>
+                {children}
+              </ContractProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </QueryProvider>
       </body>
     </html>
   );

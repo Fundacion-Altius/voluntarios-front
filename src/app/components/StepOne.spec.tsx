@@ -42,6 +42,7 @@ function setup(contractData = defaultContractData) {
       <StepOne
         contractData={contractData}
         handleInputChange={mockHandleInputChange}
+        handleRadioChange={jest.fn()}
         nextStep={mockNextStep}
         setDatosContrato={mockSetDatosContrato}
       />

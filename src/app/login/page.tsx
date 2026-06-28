@@ -25,6 +25,7 @@ function getCSRFTokenFromCookie(): string | null {
 }
 
 function LoginContent() {
+  const azureAdEnabled = process.env.NEXT_PUBLIC_AZURE_AD_ENABLED === 'true';
   const searchParams = useSearchParams();
   const error = searchParams.get('error');
   const router = useRouter();
@@ -135,30 +136,32 @@ function LoginContent() {
             <div className="h-px flex-1 bg-border" />
           </div>
 
-          <Button
-            onClick={() => {
-              setMsLoading(true);
-              signIn('azure-ad', { callbackUrl: '/dashboard' });
-            }}
-            className="w-full"
-            variant="outline"
-            disabled={msLoading}
-          >
-            {msLoading ? (
-              <svg className="animate-spin size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 23 23" className="size-4">
-                <path fill="#f25022" d="M1 1h10v10H1z" />
-                <path fill="#7fba00" d="M12 1h10v10H12z" />
-                <path fill="#00a4ef" d="M1 12h10v10H1z" />
-                <path fill="#ffb900" d="M12 12h10v10H12z" />
-              </svg>
-            )}
-            Sign in with Microsoft
-          </Button>
+          {azureAdEnabled && (
+            <Button
+              onClick={() => {
+                setMsLoading(true);
+                signIn('azure-ad', { callbackUrl: '/dashboard' });
+              }}
+              className="w-full"
+              variant="outline"
+              disabled={msLoading}
+            >
+              {msLoading ? (
+                <svg className="animate-spin size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 23 23" className="size-4">
+                  <path fill="#f25022" d="M1 1h10v10H1z" />
+                  <path fill="#7fba00" d="M12 1h10v10H12z" />
+                  <path fill="#00a4ef" d="M1 12h10v10H1z" />
+                  <path fill="#ffb900" d="M12 12h10v10H12z" />
+                </svg>
+              )}
+              Sign in with Microsoft
+            </Button>
+          )}
         </CardContent>
       </Card>
     </main>
