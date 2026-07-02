@@ -1,3 +1,10 @@
+export interface Question {
+  id: number;
+  createdAt: Date;
+  text: string;
+  surveyID: number;
+}
+
 export type AdultT = "SI" | "NO"
 export type AreasT =
   | "Reparto de Alimentos"
