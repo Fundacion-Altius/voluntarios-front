@@ -1,0 +1,48 @@
+# Docker ignore file for voluntarios-front
+
+# Node modules
+node_modules/
+
+# Git files
+.git/
+.gitignore
+
+# Build output
+.next/
+out/
+
+# Logs
+logs
+*.log
+
+# Environment files
+.env
+.env.*
+.env.local
+!.env.example
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Coverage
+coverage/
+
+# Temporary files
+.DS_Store
+*.tmp
+
+# Cache
+.pnpm-store/
+
+# Documentation
+README.md
+LICENSE
+
+# Test files
+*.spec.ts
+*.test.ts
+*.spec.js
+*.test.js

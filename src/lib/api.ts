@@ -1,8 +1,9 @@
 import { createClient } from '@hey-api/client-fetch';
 import { getAuthToken, getCSRFToken } from '@/app/lib/csrf';
+import { getAPIUrl } from './utils';
 
 export const client = createClient({
-  baseUrl: process.env.NEXT_PUBLIC_API_URL,
+  baseUrl: getAPIUrl(),
   credentials: 'include',
 });
 

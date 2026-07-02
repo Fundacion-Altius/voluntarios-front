@@ -61,7 +61,7 @@ const Contract: React.FC = () => {
     <main>
       <Image
         alt="logo"
-        src={`${imagePrefix}logo.png`}
+        src={`${imagePrefix}/logo.png`}
         width={400}
         height={100}
         className="logo"

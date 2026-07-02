@@ -5,6 +5,7 @@ import { ContractProvider } from "./context";
 import { AuthProvider } from "./auth/AuthProvider";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { QueryProvider } from "./QueryProvider";
+import { isProduction, isStaging } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -25,6 +26,54 @@ const themeScript = `
 })();
 `;
 
+const analyticsScript = `
+(function() {
+  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    var startTime = performance.now();
+    window._analyticsEndpoint = '/api/analytics';
+    
+    // Track page load performance
+    window.addEventListener('load', function() {
+      var loadTime = performance.now() - startTime;
+      console.log('Page load time:', loadTime + 'ms');
+      
+      // Send to analytics endpoint if available
+      if (window._analyticsEndpoint) {
+        fetch(window._analyticsEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event: 'page_load',
+            path: window.location.pathname,
+            loadTime: loadTime,
+            timestamp: new Date().toISOString()
+          })
+        }).catch(() => {});
+      }
+    });
+    
+    // Track errors
+    window.addEventListener('error', function(event) {
+      console.error('Error tracked:', event.message);
+      if (window._analyticsEndpoint) {
+        fetch(window._analyticsEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event: 'error',
+            message: event.message,
+            file: event.filename,
+            line: event.lineno,
+            col: event.colno,
+            timestamp: new Date().toISOString()
+          })
+        }).catch(() => {});
+      }
+    });
+  }
+})();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -34,6 +83,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {(isProduction() || isStaging()) && (
+          <script dangerouslySetInnerHTML={{ __html: analyticsScript }} />
+        )}
       </head>
       <body>
         <QueryProvider>
