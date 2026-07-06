@@ -3,10 +3,9 @@
 import { useState, FormEvent, ChangeEvent } from "react";
 import { StarRating } from "@/components/ratings/star-rating";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Question } from "../types";
 import { useRouter } from "next/navigation";
-import { submitAnswer } from "../lib/api";
+import { submitAnswer } from "../api";
 import LoadingButton from "@/components/loading-button";
 
 interface ClientRatingFormProps {
@@ -41,8 +40,9 @@ export default function ClientRatingForm({
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+    // For now, we simply log the data.
     const surveyID = 1;
-    submitAnswer({surveyID, ratings, additionalAnswer});
+    submitAnswer({ surveyID, ratings, additionalAnswer });
     router.push("/encuesta/confirmacion");
   };
 

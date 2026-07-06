@@ -1,108 +1,101 @@
 import React from "react";
-import { DatosContrato } from "../types";
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@radix-ui/react-label";
+import { StepThreeProps } from "./Contract";
+import LoadingButton from "@/components/loading-button";
 
-interface StepThreeProps {
-  contractData: DatosContrato;
-  handleSubmit: () => void;
-  prevStep: () => void;
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}
+
 
 const StepThree: React.FC<StepThreeProps> = ({
   contractData,
   handleInputChange,
   handleSubmit,
+  loading,
   prevStep,
 }) => {
   return (
-    <Card className="step">
-      <CardContent className="space-y-4">
-        <p>
-          <span style={{ color: "red" }}>*</span> indica campo obligatorio
-        </p>
+    <div className="step">
+      <p>
+        <span style={{ color: "red" }}>*</span> indica campo obligatorio
+      </p>
 
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id="datos"
-            name="derechoDatos"
-            checked={contractData.derechoDatos}
-            onCheckedChange={(checked) =>
-              handleInputChange({
-                target: {
-                  id: "datos",
-                  name: "derechoDatos",
-                  type: "checkbox",
-                  checked: checked as boolean,
-                },
-              } as unknown as React.ChangeEvent<HTMLInputElement>)
-            }
-          />
-          <Label htmlFor="datos">
-            Acepto la{" "}
-            <Link href="/datos" target="_blank">
-              autorización para tratamiento de datos
-            </Link>{" "}
-            <span style={{ color: "red" }}>*</span>
-          </Label>
-        </div>
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id="confidencialidad"
-            name="derechoConfidencialidad"
-            checked={contractData.derechoConfidencialidad}
-            onCheckedChange={(checked) =>
-              handleInputChange({
-                target: {
-                  id: "confidencialidad",
-                  name: "derechoConfidencialidad",
-                  type: "checkbox",
-                  checked: checked as boolean,
-                },
-              } as unknown as React.ChangeEvent<HTMLInputElement>)
-            }
-          />
-          <Label htmlFor="confidencialidad">
-            Acepto la{" "}
-            <Link href="/confidencialidad" target="_blank">
-              autorización de confidencialidad
-            </Link>{" "}
-            <span style={{ color: "red" }}>*</span>
-          </Label>
-        </div>
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id="imagen"
-            name="derechoImagen"
-            checked={contractData.derechoImagen}
-            onCheckedChange={(checked) =>
-              handleInputChange({
-                target: {
-                  id: "imagen",
-                  name: "derechoImagen",
-                  type: "checkbox",
-                  checked: checked as boolean,
-                },
-              } as unknown as React.ChangeEvent<HTMLInputElement>)
-            }
-          />
-          <Label htmlFor="imagen">
-            Acepto la{" "}
-            <Link href="/imagen" target="_blank">
-              cesión de derechos de imagen
-            </Link>
-          </Label>
-        </div>
-        <div className="buttons">
-          <Button variant="outline" onClick={prevStep}>{"<"} Volver</Button>
-          <Button onClick={handleSubmit} type="button">Enviar contrato</Button>
-        </div>
-      </CardContent>
-    </Card>
+      <div className="flex items-center">
+        <Input
+          type="checkbox"
+          id="datos"
+          name="derechoDatos"
+          onChange={handleInputChange}
+          checked={contractData.derechoDatos}
+          required
+        />
+        <Label
+          htmlFor="datos"
+          className="border-b border-dotted border-slate-700"
+        >
+          Acepto la{" "}
+          <Link href="/datos" target="_blank">
+            autorización para tratamiento de datos
+          </Link>{" "}
+          <span style={{ color: "red" }}>*</span>
+        </Label>
+      </div>
+      <div className="flex items-center">
+        <Input
+          type="checkbox"
+          id="confidencialidad"
+          name="derechoConfidencialidad"
+          checked={contractData.derechoConfidencialidad}
+          onChange={handleInputChange}
+          required
+        />
+        <Label
+          htmlFor="confidencialidad"
+          className="border-b border-dotted border-slate-700"
+        >
+          Acepto la{" "}
+          <Link href="/confidencialidad" target="_blank">
+            autorización de confidencialidad
+          </Link>{" "}
+          <span style={{ color: "red" }}>*</span>
+        </Label>
+      </div>
+      <div className="flex items-center">
+        <Input
+          type="checkbox"
+          id="imagen"
+          name="derechoImagen"
+          checked={contractData.derechoImagen}
+          onChange={handleInputChange}
+        />
+        <Label
+          htmlFor="imagen"
+          className="border-b border-dotted border-slate-700"
+        >
+          Acepto la{" "}
+          <Link href="/imagen" target="_blank">
+            cesión de derechos de imagen
+          </Link>
+        </Label>
+      </div>
+      <div className="flex flex-col md:flex-row w-full gap-2 mt-8 justify-between">
+        <Button
+          onClick={prevStep}
+          variant="outline"
+          className="flex flex-1 order-2 md:order-1 md:max-w-[100px]"
+        >
+          {"<"} Volver
+        </Button>
+        <LoadingButton
+          isLoading={loading}
+          onClick={handleSubmit}
+          className="flex flex-1 order-1 md:order-2 md:max-w-[150px]"
+        >
+          Enviar contrato
+        </LoadingButton>
+      </div>
+    </div>
   );
 };
 

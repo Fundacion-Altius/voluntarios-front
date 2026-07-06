@@ -1,7 +1,6 @@
-"use client";
-
+"use-client";
 import { useState } from "react";
-import { Star } from "lucide-react";
+import { Star } from "lucide-react"; // Import only the Star icon
 
 interface StarRatingProps {
   value: number;
@@ -32,7 +31,7 @@ export const StarRating: React.FC<StarRatingProps> = ({
 
   return (
     <div className="flex items-center space-x-2 ">
-      {Array.from({ length: maxRating }).map((_, index) => {
+      {[...Array(maxRating).keys()].map((index) => {
         const rating = index + 1;
         const isFilled = rating <= (hoverRating || value);
         return (

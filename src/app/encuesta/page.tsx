@@ -1,11 +1,9 @@
 import Image from "next/image";
 import ClientRatingForm from "./ClientRatingForm";
-import { getAllQuestions } from "../lib/api";
+import { getAllQuestions } from "../api";
 import { Question } from "../types";
 
-interface PageProps {}
-
-export default async function RatingPage({}: PageProps) {
+export default async function RatingPage() {
   let questions: Question[] = [];
   let error: string = "";
 
@@ -16,7 +14,7 @@ export default async function RatingPage({}: PageProps) {
     error = "Error al cargar las preguntas";
   }
 
-  const imagePrefix = (process.env.NEXT_PUBLIC_IMAGE_PREFIX || '/').replace(/\/$/, '') || '/';
+  const imagePrefix = process.env.NEXT_PUBLIC_IMAGE_PREFIX;
 
   return (
     <main>
@@ -25,7 +23,7 @@ export default async function RatingPage({}: PageProps) {
           <div className="flex">
             <Image
               alt="logo"
-              src={`${imagePrefix}/logo.png`}
+              src={`${imagePrefix}logo.png`}
               width={400}
               height={100}
               className="logo"
