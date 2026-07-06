@@ -16,7 +16,7 @@ export default async function RatingPage({}: PageProps) {
     error = "Error al cargar las preguntas";
   }
 
-  const imagePrefix = `${process.env.NEXT_PUBLIC_IMAGE_PREFIX || '/'}`.replace(/\/$/, '');
+  const imagePrefix = (process.env.NEXT_PUBLIC_IMAGE_PREFIX || '/').replace(/\/$/, '') || '/';
 
   return (
     <main>

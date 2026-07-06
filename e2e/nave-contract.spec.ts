@@ -9,7 +9,10 @@ const PUBLIC_DIR = path.resolve('/home/student/Documentos/dev/voluntarios/volunt
 test('contract form renders styled shadcn elements', async ({ page }) => {
   const errors: string[] = [];
   page.on('console', (msg) => {
-    if (msg.type() === 'error') errors.push(msg.text());
+    if (msg.type() === 'error') {
+      console.log('Console error:', msg.text());
+      errors.push(msg.text());
+    }
   });
 
   await page.goto(FRONTEND_URL, { waitUntil: 'networkidle' });

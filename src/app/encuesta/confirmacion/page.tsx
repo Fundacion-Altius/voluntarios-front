@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Home } from "lucide-react";
-const imagePrefix = `${process.env.NEXT_PUBLIC_IMAGE_PREFIX || '/'}`.replace(/\/$/, '');
+const imagePrefix = (process.env.NEXT_PUBLIC_IMAGE_PREFIX || '/').replace(/\/$/, '') || '/';
 const Contract: React.FC = () => {
   return (
     <main>
