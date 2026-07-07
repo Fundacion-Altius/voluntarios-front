@@ -1,6 +1,6 @@
 'use client';
-import { useAuth } from '../auth/useAuth';
-import { RoleBadge } from '../components/RoleBadge';
+import { useAuth } from '@/app/auth/useAuth';
+import { RoleBadge } from '@/app/components/RoleBadge';
 import { DataTable } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -9,7 +9,7 @@ import { LugarFilter } from '@/components/ui/lugar-filter';
 import { columns } from './columns';
 import { useContracts } from './useContracts';
 
-export default function DashboardPage() {
+export default function ContratosPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const {
     data,
@@ -33,7 +33,7 @@ export default function DashboardPage() {
 
   if (authLoading) {
     return (
-      <div className="space-y-4 p-6">
+      <div className="space-y-4">
         <div className="flex items-center gap-4">
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-8 w-32" />
