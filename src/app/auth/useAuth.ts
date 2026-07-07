@@ -9,7 +9,7 @@ export function useAuth() {
     isLoading: status === 'loading',
     isAuthenticated: status === 'authenticated',
     login: (provider?: string) =>
-      signIn(provider || 'credentials', { callbackUrl: '/dashboard' }),
+      signIn(provider || 'credentials', { callbackUrl: '/admin/dashboard' }),
     logout: () => signOut({ callbackUrl: '/login' }),
   };
 }

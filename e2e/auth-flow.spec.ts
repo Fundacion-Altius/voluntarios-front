@@ -7,15 +7,15 @@ test.describe('Auth Flow', () => {
     await expect(page.getByText('Sign in with Microsoft')).toBeVisible();
   });
 
-  test('dashboard redirects unauthenticated user to login', async ({ page }) => {
-    await page.goto('/dashboard');
+  test('admin dashboard redirects unauthenticated user to login', async ({ page }) => {
+    await page.goto('/admin/dashboard');
     await page.waitForLoadState('networkidle');
 
     await page.waitForURL('**/login', { timeout: 15000 });
     await expect(page.getByText('Accede con tu cuenta de Fundación Altius')).toBeVisible();
   });
 
-  test('credentials login sets auth cookie', async ({ page, context }) => {
+  test('credentials login sets auth cookie and redirects to admin dashboard', async ({ page, context }) => {
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
 
@@ -30,8 +30,8 @@ test.describe('Auth Flow', () => {
     await page.fill('input[type="password"]', 'admin123');
     await page.click('button[type="submit"]');
 
-    // After successful login, the page should navigate to /dashboard
-    await page.waitForURL('**/dashboard', { timeout: 20000 });
+    // After successful login, the admin should navigate to /admin/dashboard
+    await page.waitForURL('**/admin/dashboard', { timeout: 20000 });
 
     // Check that auth cookies are set
     const cookies = await context.cookies();

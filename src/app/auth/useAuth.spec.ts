@@ -64,7 +64,7 @@ describe('useAuth', () => {
       result.current.login();
     });
 
-    expect(signIn).toHaveBeenCalledWith('credentials', { callbackUrl: '/dashboard' });
+    expect(signIn).toHaveBeenCalledWith('credentials', { callbackUrl: '/admin/dashboard' });
   });
 
   it('calls signOut with callback on logout', () => {

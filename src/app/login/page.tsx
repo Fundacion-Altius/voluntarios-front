@@ -75,7 +75,7 @@ function LoginContent() {
           return;
         }
 
-        router.push('/dashboard');
+        router.push('/admin/dashboard');
     } catch {
       setCredError('Connection error. Please try again.');
       setLoading(false);
@@ -140,7 +140,7 @@ function LoginContent() {
             <Button
               onClick={() => {
                 setMsLoading(true);
-                signIn('azure-ad', { callbackUrl: '/dashboard' });
+                signIn('azure-ad', { callbackUrl: '/admin/dashboard' });
               }}
               className="w-full"
               variant="outline"
