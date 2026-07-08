@@ -5,7 +5,7 @@
   "scripts": {
     "predev": "node scripts/predev.js",
     "dev": "next dev",
-    "build": "next build",
+    "build": "npx update-browserslist-db@latest && next build",
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
