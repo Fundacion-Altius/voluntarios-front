@@ -24,9 +24,11 @@ const ConfirmationPage: React.FC = () => {
         <h3 className="mb-3">¡Gracias!</h3>
         <p>Tu respuesta nos ayudará a seguir prestando el mejor servicio posible.</p>
         <div className="flex w-full mt-10">
-          <Button className="flex w-full">
-            <Home />
-            <a href={"/"}>Volver al inicio</a>
+          <Button className="flex w-full" asChild>
+            <a href="/">
+              <Home />
+              Volver al inicio
+            </a>
           </Button>
         </div>
       </div>

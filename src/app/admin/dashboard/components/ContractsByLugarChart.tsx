@@ -40,7 +40,7 @@ export function ContractsByLugarChart({ data }: Props) {
             <Tooltip />
             <Bar
               dataKey="count"
-              fill="hsl(var(--primary))"
+              fill="hsl(var(--chart-1))"
               radius={[4, 4, 0, 0]}
               name="Contratos"
             />

@@ -11,7 +11,7 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--muted-foreground))'];
+const COLORS = ['hsl(var(--chart-2))', 'hsl(var(--chart-5))'];
 
 interface Props {
   corporate: number;

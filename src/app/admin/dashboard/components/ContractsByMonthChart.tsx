@@ -41,9 +41,9 @@ export function ContractsByMonthChart({ data }: Props) {
             <Line
               type="monotone"
               dataKey="count"
-              stroke="hsl(var(--primary))"
+              stroke="hsl(var(--chart-1))"
               strokeWidth={2}
-              dot={{ r: 4 }}
+              dot={{ r: 4, fill: "hsl(var(--chart-1))", stroke: "hsl(var(--chart-1))" }}
               name="Contratos"
             />
           </LineChart>
