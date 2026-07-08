@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChartTooltipContent } from './ChartTooltipContent';
 
 interface Props {
   data: { lugar: string; count: number }[];
@@ -37,10 +38,10 @@ export function ContractsByLugarChart({ data }: Props) {
               allowDecimals={false}
               className="text-muted-foreground"
             />
-            <Tooltip />
+            <Tooltip content={<ChartTooltipContent />} />
             <Bar
               dataKey="count"
-              fill="hsl(var(--chart-1))"
+              fill="var(--chart-1)"
               radius={[4, 4, 0, 0]}
               name="Contratos"
             />

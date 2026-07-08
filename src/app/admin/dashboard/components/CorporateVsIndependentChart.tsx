@@ -10,8 +10,9 @@ import {
   type PieLabelRenderProps,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChartTooltipContent } from './ChartTooltipContent';
 
-const COLORS = ['hsl(var(--chart-2))', 'hsl(var(--chart-5))'];
+const COLORS = ['var(--chart-2)', 'var(--chart-5)'];
 
 interface Props {
   corporate: number;
@@ -48,7 +49,7 @@ export function CorporateVsIndependentChart({ corporate, independent }: Props) {
                 <Cell key={`cell-${index}`} fill={COLORS[index]} />
               ))}
             </Pie>
-            <Tooltip />
+            <Tooltip content={<ChartTooltipContent />} />
             <Legend />
           </PieChart>
         </ResponsiveContainer>

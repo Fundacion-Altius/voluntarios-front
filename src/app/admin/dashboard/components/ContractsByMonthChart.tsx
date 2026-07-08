@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChartTooltipContent } from './ChartTooltipContent';
 
 interface Props {
   data: { month: string; count: number }[];
@@ -37,13 +38,13 @@ export function ContractsByMonthChart({ data }: Props) {
               allowDecimals={false}
               className="text-muted-foreground"
             />
-            <Tooltip />
+            <Tooltip content={<ChartTooltipContent />} />
             <Line
               type="monotone"
               dataKey="count"
-              stroke="hsl(var(--chart-1))"
+              stroke="var(--chart-1)"
               strokeWidth={2}
-              dot={{ r: 4, fill: "hsl(var(--chart-1))", stroke: "hsl(var(--chart-1))" }}
+              dot={{ r: 4, fill: "var(--chart-1)", stroke: "var(--chart-1)" }}
               name="Contratos"
             />
           </LineChart>
