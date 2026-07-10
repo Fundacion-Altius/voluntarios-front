@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSession } from 'next-auth/react';
+import { getCSRFToken } from '@/app/lib/csrf';
 
 export interface User {
   user_id: string;
@@ -53,14 +54,21 @@ export function useUsers() {
     fetchUsers();
   }, [fetchUsers]);
 
-  const createUser = async (user: { name: string; email: string; role: string; password?: string }) => {
+  const authHeaders = (includeCsrf = true): Record<string, string> => {
     const token = (session as any)?.authToken;
+    const h: Record<string, string> = {};
+    if (token) h['Authorization'] = `Bearer ${token}`;
+    if (includeCsrf) {
+      const csrf = getCSRFToken();
+      if (csrf) h['X-CSRF-Token'] = csrf;
+    }
+    return h;
+  };
+
+  const createUser = async (user: { name: string; email: string; role: string; password?: string }) => {
     const res = await fetch(`${API_URL}/api/users`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       credentials: 'include',
       body: JSON.stringify(user),
     });
@@ -72,13 +80,9 @@ export function useUsers() {
   };
 
   const updateUser = async (id: string, user: { display_name?: string; email?: string }) => {
-    const token = (session as any)?.authToken;
     const res = await fetch(`${API_URL}/api/users/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       credentials: 'include',
       body: JSON.stringify(user),
     });
@@ -87,13 +91,9 @@ export function useUsers() {
   };
 
   const updateUserRole = async (id: string, role: string) => {
-    const token = (session as any)?.authToken;
     const res = await fetch(`${API_URL}/api/users/${id}/role`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       credentials: 'include',
       body: JSON.stringify({ role }),
     });
@@ -102,10 +102,9 @@ export function useUsers() {
   };
 
   const deleteUser = async (id: string) => {
-    const token = (session as any)?.authToken;
     const res = await fetch(`${API_URL}/api/users/${id}`, {
       method: 'DELETE',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      headers: authHeaders(),
       credentials: 'include',
     });
     if (!res.ok) throw new Error('Failed to delete user');

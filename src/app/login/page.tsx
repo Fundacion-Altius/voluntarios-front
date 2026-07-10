@@ -55,8 +55,34 @@ function LoginContent() {
       });
 
       const data = await res.json();
+
+      // Status-aware messaging
+      if (data.user?.status === 'candidate') {
+        setCredError('Tu solicitud de voluntariado aún está en revisión. Te notificaremos cuando sea aprobada.');
+        setLoading(false);
+        return;
+      }
+      if (data.user?.status === 'inactive') {
+        setCredError('Tu cuenta ha sido desactivada. Por favor, contacta con la fundación para más información.');
+        setLoading(false);
+        return;
+      }
+      if (data.user?.status === 'on-reserve') {
+        setCredError('Estás en nuestra lista de espera. Te notificaremos cuando haya disponibilidad.');
+        setLoading(false);
+        return;
+      }
+
       if (!res.ok) {
         setCredError(data.error || 'Invalid email or password');
+        setLoading(false);
+        return;
+      }
+
+      // If user has no password_hash (candidate who hasn't set password), redirect to set-password
+      if (data.user?.status === 'active' && !data.user?.has_password) {
+        const token = data.setupToken || '';
+        router.push(`/crear-password?token=${token}`);
         setLoading(false);
         return;
       }

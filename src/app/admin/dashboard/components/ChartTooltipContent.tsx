@@ -1,6 +1,6 @@
 'use client';
 
-import type { TooltipProps } from 'recharts';
+import type { TooltipContentProps } from 'recharts';
 
 type ValueType = string | number | Array<string | number>;
 
@@ -8,7 +8,7 @@ export function ChartTooltipContent({
   active,
   payload,
   label,
-}: TooltipProps<ValueType, string>) {
+}: Partial<TooltipContentProps<ValueType, string>>) {
   if (!active || !payload?.length) return null;
 
   return (

@@ -13,6 +13,7 @@ export default async function RatingPage({}: PageProps) {
     console.log('Fetching questions from:', API_URL);
     const res = await fetch(`${API_URL}/api/questions`, {
       credentials: 'include',
+      cache: 'no-store',
     });
     console.log('Response status:', res.status);
     if (!res.ok) throw new Error('Failed to fetch questions');
