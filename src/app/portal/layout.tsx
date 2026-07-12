@@ -5,17 +5,23 @@ import { useAuth } from '@/app/auth/useAuth';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Home, Calendar, Award, Trophy, LogOut } from 'lucide-react';
+import { Home, Calendar, Award, Trophy, Newspaper, LogOut } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading, logout } = useAuth();
+  const { isAuthenticated, isLoading, user, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) router.push('/login');
-  }, [isLoading, isAuthenticated, router]);
+    if (!isLoading && !isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+    if (!isLoading && isAuthenticated && (user as any)?.role !== 'general') {
+      router.push('/admin/dashboard');
+    }
+  }, [isLoading, isAuthenticated, user, router]);
 
   if (isLoading) {
     return (
@@ -33,6 +39,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     { href: '/portal/actividades', label: 'Actividades', icon: Calendar },
     { href: '/portal/logros', label: 'Logros', icon: Award },
     { href: '/portal/ranking', label: 'Ranking', icon: Trophy },
+    { href: '/portal/noticias', label: 'Noticias', icon: Newspaper },
   ];
 
   return (

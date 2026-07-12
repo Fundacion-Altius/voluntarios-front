@@ -1,9 +1,49 @@
-import { request as playwrightRequest } from '@playwright/test';
+import { request as playwrightRequest, type Page } from '@playwright/test';
 
 export const BACKEND_URL = 'http://localhost:3001';
+const FRONTEND_URL = 'http://localhost:3000';
 
 export function randomId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+}
+
+/**
+ * Authenticate in the browser context by calling NextAuth's internal
+ * credentials endpoint via the Playwright request fixture, extracting the
+ * session cookie from Set-Cookie, and injecting it into the browser page.
+ * This avoids the race condition between signIn() and SessionProvider.
+ */
+export async function loginAsBrowser(
+  page: Page,
+  email: string,
+  password: string,
+): Promise<void> {
+  const csrfRes = await page.request.get(`${FRONTEND_URL}/api/auth/csrf`);
+  const { csrfToken } = await csrfRes.json();
+
+  const authRes = await page.request.post(
+    `${FRONTEND_URL}/api/auth/callback/credentials`,
+    {
+      form: { csrfToken, email, password, json: 'true' },
+    },
+  );
+
+  const raw = authRes.headers()['set-cookie'] || '';
+  const match = raw.match(/next-auth\.session-token=([^;]+)/);
+  if (!match) {
+    throw new Error(
+      `Failed to extract next-auth.session-token from Set-Cookie: ${raw}`,
+    );
+  }
+
+  await page.context().addCookies([
+    {
+      name: 'next-auth.session-token',
+      value: match[1],
+      domain: 'localhost',
+      path: '/',
+    },
+  ]);
 }
 
 export async function loginAs(

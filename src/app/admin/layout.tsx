@@ -18,7 +18,7 @@ import {
   SidebarProvider,
 } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/ui/topbar';
-import { LayoutDashboard, Users, FileText, ClipboardList, BarChart3, UserCheck, CalendarCheck, Trophy, Scan } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, ClipboardList, BarChart3, UserCheck, CalendarCheck, Trophy, Scan, Newspaper } from 'lucide-react';
 
 export default function AdminLayout({
   children,
@@ -32,8 +32,12 @@ export default function AdminLayout({
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/login');
+      return;
     }
-  }, [isLoading, isAuthenticated, router]);
+    if (!isLoading && isAuthenticated && (user as any)?.role === 'general') {
+      router.push('/portal');
+    }
+  }, [isLoading, isAuthenticated, user, router]);
 
   if (isLoading) {
     return (
@@ -73,6 +77,8 @@ export default function AdminLayout({
     { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
     { href: '/admin/candidatos', label: 'Candidatos', icon: UserCheck },
     { href: '/admin/actividades', label: 'Actividades', icon: CalendarCheck },
+    { href: '/admin/blog', label: 'Blog', icon: Newspaper },
+    { href: '/admin/onboarding', label: 'Onboarding', icon: ClipboardList },
     { href: '/admin/scanner', label: 'Escáner', icon: Scan },
     { href: '/admin/ranking', label: 'Ranking', icon: Trophy },
   ];

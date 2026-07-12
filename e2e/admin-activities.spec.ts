@@ -1,13 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { adminLogin, BACKEND_URL, randomId } from './helpers';
+import { adminLogin, loginAsBrowser, BACKEND_URL, randomId } from './helpers';
 
 async function loginAsAdmin(page: any) {
-  await page.goto('/login');
-  await page.waitForSelector('input[type="email"]', { timeout: 10000 });
-  await page.locator('input[type="email"]').fill('admin@fundacionaltius.org');
-  await page.locator('input[type="password"]').fill('admin123');
-  await page.getByRole('button', { name: 'Iniciar sesión' }).click();
-  await page.waitForURL('**/admin/dashboard', { timeout: 20000 });
+  await loginAsBrowser(page, 'admin@fundacionaltius.org', 'admin123');
+  await page.goto('/admin/dashboard', { waitUntil: 'networkidle' });
+  await page.getByText('Admin Panel').waitFor({ timeout: 15000 });
 }
 
 test.describe('Admin Activities CRUD', () => {

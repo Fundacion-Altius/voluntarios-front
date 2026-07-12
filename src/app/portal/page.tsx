@@ -25,6 +25,9 @@ export default function PortalPage() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [certUrl, setCertUrl] = useState<string | null>(null);
+  const [recentPosts, setRecentPosts] = useState<any[]>([]);
+  const [onboarding, setOnboarding] = useState<any>(null);
+  const [dismissedOnboarding, setDismissedOnboarding] = useState(false);
   const authRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
@@ -44,9 +47,13 @@ export default function PortalPage() {
     Promise.all([
       fetch(`${API_URL}/api/gamification/profile`, { headers, credentials: 'include' }),
       fetch(`${API_URL}/api/activities/sessions/upcoming`, { headers, credentials: 'include' }),
-    ]).then(([profRes, bookRes]) => {
+      fetch(`${API_URL}/api/blog/posts?page=1&pageSize=5`, { headers, credentials: 'include' }),
+      fetch(`${API_URL}/api/onboarding/my-progress`, { headers, credentials: 'include' }),
+    ]).then(([profRes, bookRes, blogRes, onbRes]) => {
       if (profRes.ok) profRes.json().then(setProfile);
       if (bookRes.ok) bookRes.json().then(setBookings);
+      if (blogRes.ok) blogRes.json().then((d) => setRecentPosts(d.data || []));
+      if (onbRes.ok) onbRes.json().then(setOnboarding);
     }).catch(() => {}).finally(() => {
       setLoading(false);
     });
@@ -109,6 +116,83 @@ export default function PortalPage() {
             <div className="flex flex-wrap gap-2">
               {profile.badges.map((b: any) => (
                 <Badge key={b.id} variant="secondary">{b.badge_type.replace(/-/g, ' ')}</Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Onboarding Checklist */}
+      {onboarding && onboarding.completed < onboarding.total && !dismissedOnboarding && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Comienza tu voluntariado</CardTitle>
+            <Button variant="ghost" size="sm" onClick={() => setDismissedOnboarding(true)} className="text-muted-foreground">x</Button>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {onboarding.tasks?.map((task: any) => (
+                <div key={task.id} className="flex items-center justify-between rounded-md border p-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`flex size-6 shrink-0 items-center justify-center rounded-full border text-xs ${task.completed ? 'border-green-500 bg-green-50 text-green-600' : 'border-muted-foreground/30 text-muted-foreground'}`}>
+                      {task.completed ? '✓' : task.order}
+                    </div>
+                    <div>
+                      <p className={`text-sm ${task.completed ? 'text-muted-foreground line-through' : ''}`}>{task.title}</p>
+                      {task.description && <p className="text-xs text-muted-foreground">{task.description}</p>}
+                    </div>
+                  </div>
+                  {!task.completed && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={async () => {
+                        try {
+                          const headers: Record<string, string> = { Authorization: `Bearer ${authRef.current}` };
+                          const res = await fetch(`${API_URL}/api/onboarding/my-progress/complete`, {
+                            method: 'POST',
+                            headers: { ...headers, 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify({ task_id: task.id }),
+                          });
+                          if (res.ok) {
+                            setOnboarding((prev: any) => ({
+                              ...prev,
+                              tasks: prev.tasks.map((t: any) =>
+                                t.id === task.id ? { ...t, completed: true } : t
+                              ),
+                            }));
+                          }
+                        } catch {}
+                      }}
+                    >
+                      Completar
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Recent News */}
+      {recentPosts.length > 0 && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Últimas noticias</CardTitle>
+            <a href="/portal/noticias" className="text-sm text-primary hover:underline">Ver más</a>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {recentPosts.slice(0, 3).map((post: any) => (
+                <a key={post.id} href={`/portal/noticias/${post.slug}`} className="block rounded-md border p-3 transition-colors hover:bg-muted/50">
+                  <p className="font-medium text-sm">{post.title}</p>
+                  {post.excerpt && <p className="mt-1 text-xs text-muted-foreground line-clamp-1">{post.excerpt}</p>}
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {new Date(post.published_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' })}
+                  </p>
+                </a>
               ))}
             </div>
           </CardContent>

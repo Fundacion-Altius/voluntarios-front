@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { adminLogin, BACKEND_URL, randomId } from './helpers';
+import { adminLogin, loginAsBrowser, BACKEND_URL } from './helpers';
 
 test.describe('Gamification API', () => {
   let adminToken: string;
@@ -105,18 +105,9 @@ test.describe('Gamification API', () => {
 });
 
 test.describe('Portal UI (authenticated)', () => {
-  async function loginAs(page: any, email: string, password: string) {
-    await page.goto('/login');
-    await page.waitForSelector('input[type="email"]', { timeout: 10000 });
-    await page.locator('input[type="email"]').fill(email);
-    await page.locator('input[type="password"]').fill(password);
-    await page.getByRole('button', { name: 'Iniciar sesión' }).click();
-    await page.waitForURL('**/admin/dashboard', { timeout: 20000 });
-  }
 
   test('portal page shows profile with level and badges', async ({ page }) => {
-    await loginAs(page, 'general@fundacionaltius.org', 'general123');
-    // Navigate to a known-working page first, then click link for client-side nav
+    await loginAsBrowser(page, 'general@fundacionaltius.org', 'general123');
     await page.goto('/portal/ranking', { waitUntil: 'networkidle' });
     await page.getByRole('link', { name: 'Mi perfil' }).click();
     await page.waitForURL('**/portal', { timeout: 10000 });
@@ -129,7 +120,7 @@ test.describe('Portal UI (authenticated)', () => {
   });
 
   test('portal ranking page shows top 3', async ({ page }) => {
-    await loginAs(page, 'general@fundacionaltius.org', 'general123');
+    await loginAsBrowser(page, 'general@fundacionaltius.org', 'general123');
     await page.goto('/portal/ranking');
     await page.waitForSelector('h2, h3', { timeout: 10000 });
 
@@ -139,7 +130,7 @@ test.describe('Portal UI (authenticated)', () => {
   });
 
   test('portal logros page shows badges', async ({ page }) => {
-    await loginAs(page, 'general@fundacionaltius.org', 'general123');
+    await loginAsBrowser(page, 'general@fundacionaltius.org', 'general123');
     await page.goto('/portal/logros');
     await page.waitForSelector('h2, h3', { timeout: 10000 });
 
@@ -148,7 +139,7 @@ test.describe('Portal UI (authenticated)', () => {
   });
 
   test('admin ranking page shows weekly history', async ({ page }) => {
-    await loginAs(page, 'admin@fundacionaltius.org', 'admin123');
+    await loginAsBrowser(page, 'admin@fundacionaltius.org', 'admin123');
     await page.goto('/admin/ranking');
     await page.waitForSelector('h2, h3', { timeout: 10000 });
 

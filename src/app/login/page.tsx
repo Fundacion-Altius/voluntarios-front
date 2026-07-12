@@ -1,6 +1,6 @@
 'use client';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { Suspense, useState } from 'react';
 import Image from 'next/image';
 import { Eye, EyeOff } from 'lucide-react';
@@ -29,6 +29,7 @@ function LoginContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get('error');
   const router = useRouter();
+  const { update: updateSession } = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -91,6 +92,7 @@ function LoginContent() {
           email: data.user.email,
           name: data.user.display_name || data.user.name,
           role: data.user.role,
+          user_type: data.user.user_type,
           authToken: data.authToken,
           redirect: false,
         });
@@ -101,7 +103,12 @@ function LoginContent() {
           return;
         }
 
-        router.push('/admin/dashboard');
+        // Force SessionProvider to re-fetch session so layout guards
+        // see the authenticated user immediately
+        await updateSession();
+
+        const target = data.user?.role === 'general' ? '/portal' : '/admin/dashboard';
+        router.push(target);
     } catch {
       setCredError('Connection error. Please try again.');
       setLoading(false);

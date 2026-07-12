@@ -6,10 +6,12 @@ declare module 'next-auth' {
   interface Session {
     csrfToken?: string;
     authToken?: string;
+    user_type?: string;
   }
   interface User {
     role?: string;
     authToken?: string;
+    user_type?: string;
   }
 }
 
@@ -37,6 +39,7 @@ providers.push(CredentialsProvider({
         password: { label: 'Contraseña', type: 'password' },
         name: { label: 'Name' },
         role: { label: 'Role' },
+        user_type: { label: 'User Type' },
         csrfToken: { label: 'CSRF Token' },
         authToken: { label: 'Auth Token' },
       },
@@ -49,6 +52,7 @@ providers.push(CredentialsProvider({
             email: credentials.email as string,
             name: credentials.name as string,
             role: credentials.role as string,
+            user_type: credentials.user_type as string,
             csrfToken: credentials.csrfToken as string,
             authToken: credentials.authToken as string,
           };
@@ -71,6 +75,7 @@ providers.push(CredentialsProvider({
           email: data.user.email,
           name: data.user.display_name || data.user.name,
           role: data.user.role,
+          user_type: data.user.user_type,
           csrfToken: data.csrfToken,
           authToken: data.authToken,
         };
@@ -89,6 +94,7 @@ const handler = NextAuth({
         session.user.email = token.email || '';
         session.user.name = token.name || '';
         (session.user as any).role = token.role as string;
+        (session.user as any).user_type = token.user_type as string;
         session.csrfToken = token.csrfToken as string;
         session.authToken = token.authToken as string;
       }
@@ -105,6 +111,7 @@ const handler = NextAuth({
             if (res.ok) {
               const profile = await res.json();
               token.role = profile.role;
+              token.user_type = profile.user_type;
             }
           } catch {}
         }
@@ -112,6 +119,7 @@ const handler = NextAuth({
       }
       if (user) {
         token.role = (user as any).role || token.role;
+        token.user_type = (user as any).user_type || token.user_type;
         token.csrfToken = (user as any).csrfToken || token.csrfToken;
         token.authToken = (user as any).authToken || token.authToken;
       }
