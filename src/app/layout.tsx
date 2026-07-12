@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { ContractProvider } from "./context";
 import { AuthProvider } from "./auth/AuthProvider";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { PushNotificationSetup } from "@/components/PushNotificationSetup";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { QueryProvider } from "./QueryProvider";
 
@@ -31,14 +34,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <link rel="manifest" href="/manifest.json" />
       </head>
       <body>
         <QueryProvider>
           <ThemeProvider>
             <AuthProvider>
+              <ServiceWorkerRegister />
+              <PushNotificationSetup />
               <ContractProvider>
                 {children}
               </ContractProvider>

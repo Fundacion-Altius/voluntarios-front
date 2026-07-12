@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Home, Calendar, Award, Trophy, LogOut } from 'lucide-react';
+import { NotificationBell } from '@/components/NotificationBell';
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, logout } = useAuth();
@@ -40,6 +41,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <span className="text-lg font-bold">Mi Portal</span>
           <div className="flex items-center gap-2">
+            <NotificationBell />
             {links.map((l) => {
               const Icon = l.icon;
               const isActive = pathname === l.href;

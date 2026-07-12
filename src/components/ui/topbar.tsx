@@ -5,6 +5,7 @@ import { useAuth } from '@/app/auth/useAuth';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { Skeleton } from '@/components/ui/skeleton';
+import { NotificationBell } from '@/components/NotificationBell';
 
 interface TopBarProps {
   hamburger?: React.ReactNode;
@@ -20,6 +21,7 @@ export function TopBar({ hamburger }: TopBarProps) {
         <span className="font-semibold">Fundación Altius - Panel de Administración</span>
       </div>
       <div className="flex items-center gap-4">
+        <NotificationBell />
         <ThemeToggle />
         {user ? (
           <span className="text-sm text-muted-foreground">

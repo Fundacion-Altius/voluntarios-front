@@ -31,10 +31,15 @@ export default function PortalPage() {
     if (session) authRef.current = (session as any)?.authToken;
   }, [session]);
 
-  useEffect(() => {
+  const fetchHeaders = () => {
     const token = authRef.current;
     const headers: Record<string, string> = {};
     if (token) headers['Authorization'] = `Bearer ${token}`;
+    return headers;
+  };
+
+  useEffect(() => {
+    const headers = fetchHeaders();
 
     Promise.all([
       fetch(`${API_URL}/api/gamification/profile`, { headers, credentials: 'include' }),
