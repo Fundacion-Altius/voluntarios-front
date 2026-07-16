@@ -7,7 +7,7 @@ import StepFour from "./StepFour";
 import Image from "next/image";
 import { useContractForm } from "@/hooks/useContractForm";
 
-const imagePrefix = `${process.env.NEXT_PUBLIC_IMAGE_PREFIX}`;
+const imagePrefix = (process.env.NEXT_PUBLIC_IMAGE_PREFIX || '/').replace(/\/$/, '');
 const Contract: React.FC = () => {
   const {
     step,
@@ -61,7 +61,7 @@ const Contract: React.FC = () => {
     <main>
       <Image
         alt="logo"
-        src={`${imagePrefix}logo.png`}
+        src={`${imagePrefix}/logo.png`}
         width={400}
         height={100}
         className="logo"

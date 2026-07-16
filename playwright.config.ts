@@ -21,12 +21,12 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { browserName: 'chromium' },
-      testIgnore: '**/real-flow.spec.ts',
+      testIgnore: '**/08-real-flow.spec.ts',
     },
     {
       name: 'real-api',
       use: { browserName: 'chromium' },
-      testMatch: '**/real-flow.spec.ts',
+      testMatch: '**/08-real-flow.spec.ts',
       retries: 1,
     },
   ],

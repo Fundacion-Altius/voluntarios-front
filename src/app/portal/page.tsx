@@ -28,6 +28,7 @@ export default function PortalPage() {
   const [recentPosts, setRecentPosts] = useState<any[]>([]);
   const [onboarding, setOnboarding] = useState<any>(null);
   const [dismissedOnboarding, setDismissedOnboarding] = useState(false);
+  const [myCourses, setMyCourses] = useState<any[]>([]);
   const authRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
@@ -49,11 +50,13 @@ export default function PortalPage() {
       fetch(`${API_URL}/api/activities/sessions/upcoming`, { headers, credentials: 'include' }),
       fetch(`${API_URL}/api/blog/posts?page=1&pageSize=5`, { headers, credentials: 'include' }),
       fetch(`${API_URL}/api/onboarding/my-progress`, { headers, credentials: 'include' }),
-    ]).then(([profRes, bookRes, blogRes, onbRes]) => {
+      fetch(`${API_URL}/api/courses/my-enrollments`, { headers, credentials: 'include' }),
+    ]).then(([profRes, bookRes, blogRes, onbRes, coursesRes]) => {
       if (profRes.ok) profRes.json().then(setProfile);
       if (bookRes.ok) bookRes.json().then(setBookings);
       if (blogRes.ok) blogRes.json().then((d) => setRecentPosts(d.data || []));
       if (onbRes.ok) onbRes.json().then(setOnboarding);
+      if (coursesRes.ok) coursesRes.json().then(setMyCourses);
     }).catch(() => {}).finally(() => {
       setLoading(false);
     });
@@ -192,6 +195,35 @@ export default function PortalPage() {
                   <p className="mt-1 text-xs text-muted-foreground">
                     {new Date(post.published_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' })}
                   </p>
+                </a>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* My Courses */}
+      {myCourses.length > 0 && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Mis cursos</CardTitle>
+            <a href="/portal/cursos" className="text-sm text-primary hover:underline">Ver más</a>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {myCourses.slice(0, 3).map((enrollment: any) => (
+                <a key={enrollment.id} href={`/portal/cursos/${enrollment.course_id}`} className="block rounded-md border p-3 transition-colors hover:bg-muted/50">
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium text-sm">{enrollment.course_title || 'Curso'}</p>
+                    <Badge variant={enrollment.status === 'completed' ? 'default' : 'secondary'}>
+                      {enrollment.status === 'completed' ? 'Completado' : `${enrollment.progress_pct}%`}
+                    </Badge>
+                  </div>
+                  {enrollment.progress_pct > 0 && (
+                    <div className="mt-2 h-2 w-full rounded-full bg-muted">
+                      <div className="h-2 rounded-full bg-primary transition-all" style={{ width: `${enrollment.progress_pct}%` }} />
+                    </div>
+                  )}
                 </a>
               ))}
             </div>

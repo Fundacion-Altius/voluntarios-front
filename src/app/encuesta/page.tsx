@@ -10,21 +10,18 @@ export default async function RatingPage({}: PageProps) {
 
   try {
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-    console.log('Fetching questions from:', API_URL);
     const res = await fetch(`${API_URL}/api/questions`, {
       credentials: 'include',
       cache: 'no-store',
     });
-    console.log('Response status:', res.status);
     if (!res.ok) throw new Error('Failed to fetch questions');
     questions = await res.json();
-    console.log('Questions loaded:', questions.length);
   } catch (err) {
     console.error('Fetch error:', err);
     error = "Error al cargar las preguntas";
   }
 
-  const imagePrefix = `${process.env.NEXT_PUBLIC_IMAGE_PREFIX || '/'}`.replace(/\/$/, '');
+  const imagePrefix = (process.env.NEXT_PUBLIC_IMAGE_PREFIX || '/').replace(/\/$/, '');
 
   return (
     <main>
