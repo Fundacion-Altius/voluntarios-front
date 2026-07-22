@@ -3,7 +3,7 @@ import { adminLogin, loginAsBrowser, BACKEND_URL, randomId } from './helpers';
 
 async function loginAsAdmin(page: any) {
   await loginAsBrowser(page, 'admin@fundacionaltius.org', 'admin123');
-  await page.goto('/admin/dashboard', { waitUntil: 'networkidle' });
+  await page.goto('/admin/dashboard', { waitUntil: 'load' });
   await page.getByText('Admin Panel').waitFor({ timeout: 15000 });
 }
 

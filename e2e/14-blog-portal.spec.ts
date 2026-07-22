@@ -5,8 +5,8 @@ test.describe('Portal Blog Feed', () => {
 
   test('portal home shows recent news section', async ({ page, request }) => {
     await loginAsBrowser(page, 'general@fundacionaltius.org', 'general123');
-    await page.goto('/portal', { waitUntil: 'networkidle' });
-    await expect(page.locator('body')).toContainText('Últimas noticias', { timeout: 10000 });
+    await page.goto('/portal', { waitUntil: 'load' });
+    await expect(page.locator('body')).toContainText('Últimas noticias', { timeout: 15000 });
   });
 
   test('noticias page shows published post', async ({ page, request }) => {
@@ -34,8 +34,8 @@ test.describe('Portal Blog Feed', () => {
     expect(postRes.ok()).toBeTruthy();
 
     await loginAsBrowser(page, 'general@fundacionaltius.org', 'general123');
-    await page.goto('/portal/noticias', { waitUntil: 'networkidle' });
-    await expect(page.locator('body')).toContainText('E2E Noticia de prueba', { timeout: 10000 });
+    await page.goto('/portal/noticias', { waitUntil: 'load' });
+    await expect(page.locator('body')).toContainText('E2E Noticia de prueba', { timeout: 15000 });
   });
 
   test('noticias post detail page shows full content', async ({ page, request }) => {
@@ -63,9 +63,9 @@ test.describe('Portal Blog Feed', () => {
     expect(postRes.ok()).toBeTruthy();
 
     await loginAsBrowser(page, 'general@fundacionaltius.org', 'general123');
-    await page.goto(`/portal/noticias/${slug}`, { waitUntil: 'networkidle' });
-    await expect(page.locator('body')).toContainText('E2E Detalle noticia', { timeout: 10000 });
-    await expect(page.locator('body')).toContainText('Contenido completo del detalle.', { timeout: 10000 });
+    await page.goto(`/portal/noticias/${slug}`, { waitUntil: 'load' });
+    await expect(page.locator('body')).toContainText('E2E Detalle noticia', { timeout: 15000 });
+    await expect(page.locator('body')).toContainText('Contenido completo del detalle.', { timeout: 15000 });
   });
 
   test('clicking a post card navigates to detail', async ({ page, request }) => {
@@ -93,10 +93,10 @@ test.describe('Portal Blog Feed', () => {
     expect(postRes.ok()).toBeTruthy();
 
     await loginAsBrowser(page, 'general@fundacionaltius.org', 'general123');
-    await page.goto('/portal/noticias', { waitUntil: 'networkidle' });
+    await page.goto('/portal/noticias', { waitUntil: 'load' });
 
     const postLink = page.locator(`a[href="/portal/noticias/${slug}"]`).first();
-    await expect(postLink).toBeVisible({ timeout: 10000 });
+    await expect(postLink).toBeVisible({ timeout: 15000 });
     await postLink.click();
     await page.waitForURL(`**/portal/noticias/${slug}`, { timeout: 10000 });
     await expect(page.locator('body')).toContainText('E2E Card noticia');

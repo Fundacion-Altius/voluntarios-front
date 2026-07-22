@@ -5,7 +5,7 @@ import { useAuth } from '@/app/auth/useAuth';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Home, Calendar, Award, Trophy, Newspaper, LogOut, BookOpen } from 'lucide-react';
+import { Home, Calendar, Award, Trophy, Newspaper, LogOut, BookOpen, Users, MessageSquare } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
@@ -41,6 +41,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     { href: '/portal/ranking', label: 'Ranking', icon: Trophy },
     { href: '/portal/noticias', label: 'Noticias', icon: Newspaper },
     { href: '/portal/cursos', label: 'Cursos', icon: BookOpen },
+    { href: '/portal/proyectos', label: 'Proyectos', icon: Users },
+    { href: '/portal/proyectos/mensajes', label: 'Mensajes', icon: MessageSquare },
   ];
 
   return (

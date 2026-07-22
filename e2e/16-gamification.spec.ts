@@ -108,7 +108,7 @@ test.describe('Portal UI (authenticated)', () => {
 
   test('portal page shows profile with level and badges', async ({ page }) => {
     await loginAsBrowser(page, 'general@fundacionaltius.org', 'general123');
-    await page.goto('/portal/ranking', { waitUntil: 'networkidle' });
+    await page.goto('/portal/ranking', { waitUntil: 'load' });
     await page.getByRole('link', { name: 'Mi perfil' }).click();
     await page.waitForURL('**/portal', { timeout: 10000 });
     await page.waitForTimeout(3000);

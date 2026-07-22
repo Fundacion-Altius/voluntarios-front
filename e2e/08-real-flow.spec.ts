@@ -6,7 +6,7 @@ test.describe('Real API Flow @real-api', () => {
 
   test('full real API flow: wizard -> PDF download', async ({ page }) => {
     // ───── Step 1: Fill personal data ─────
-    await page.goto('/', { waitUntil: 'networkidle' });
+    await page.goto('/', { waitUntil: 'load' });
     await page.locator('input#nombre').fill('Real E2E Test');
     await page.locator('input#id').fill('X6090907R');
     await page.locator('input#domicilio').fill('123 Real St');

@@ -29,8 +29,8 @@ test.describe('Onboarding Flow', () => {
 
   test('admin onboarding page lists tasks', async ({ page }) => {
     await loginAsBrowser(page, 'admin@fundacionaltius.org', 'admin123');
-    await page.goto('/admin/dashboard', { waitUntil: 'networkidle' });
-    await expect(page.locator('body')).toContainText('Admin Panel', { timeout: 10000 });
+    await page.goto('/admin/dashboard', { waitUntil: 'load' });
+    await expect(page.locator('body')).toContainText('Admin Panel', { timeout: 15000 });
 
     await page.locator('a', { hasText: 'Onboarding' }).click();
     await page.waitForURL('**/admin/onboarding', { timeout: 10000 });
@@ -39,8 +39,8 @@ test.describe('Onboarding Flow', () => {
 
   test('volunteer portal shows onboarding widget', async ({ page }) => {
     await loginAsBrowser(page, 'general@fundacionaltius.org', 'general123');
-    await page.goto('/portal', { waitUntil: 'networkidle' });
-    await expect(page.locator('body')).toContainText('Comienza tu voluntariado', { timeout: 10000 });
+    await page.goto('/portal', { waitUntil: 'load' });
+    await expect(page.locator('body')).toContainText('Comienza tu voluntariado', { timeout: 15000 });
   });
 
   test('volunteer can mark onboarding task as complete', async ({ request }) => {

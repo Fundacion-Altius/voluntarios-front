@@ -22,8 +22,7 @@ test.describe('Contract Generation Flow', () => {
         headers: CORS_HEADERS,
       });
     });
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.goto('/', { waitUntil: 'load' });
   });
 
   test('full contract generation flow', async ({ page }) => {

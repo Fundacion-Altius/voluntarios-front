@@ -32,7 +32,7 @@ export default function CursosPage() {
         if (!res.ok) throw new Error('Error al cargar cursos');
         return res.json();
       })
-      .then((data) => setCourses(data.success ? data.data : data))
+      .then((data) => setCourses(data?.data ?? (data.success ? data.data : data)))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [session]);

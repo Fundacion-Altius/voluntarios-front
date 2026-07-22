@@ -8,7 +8,7 @@ test.describe('Admin Blog Editor', () => {
 
   test('blog page renders and lists posts', async ({ page }) => {
     await loginAsBrowser(page, 'admin@fundacionaltius.org', 'admin123');
-    await page.goto('/admin/dashboard', { waitUntil: 'networkidle' });
+    await page.goto('/admin/dashboard', { waitUntil: 'load' });
     await expect(page.locator('body')).toContainText('Admin Panel', { timeout: 10000 });
 
     await page.locator('a', { hasText: 'Blog' }).click();
