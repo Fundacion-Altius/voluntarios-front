@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,7 @@ interface NotificationItem {
   type: string;
   status: string;
   created_at: string;
+  metadata?: Record<string, unknown>;
 }
 
 export function NotificationBell() {
@@ -33,6 +35,7 @@ export function NotificationBell() {
   const [open, setOpen] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const mountedRef = useRef(true);
+  const router = useRouter();
 
   const authToken = (session as any)?.authToken;
 
@@ -106,6 +109,21 @@ export function NotificationBell() {
     }
   };
 
+  const handleNotificationClick = (n: NotificationItem) => {
+    handleMarkRead(n.id);
+
+    if (n.type === 'video_call_started' || n.type === 'video_call_ended') {
+      try {
+        const metadata = typeof n.metadata === 'string' ? JSON.parse(n.metadata) : n.metadata;
+        const roomId = metadata?.roomId;
+        if (roomId) {
+          router.push(`/portal/sala/${roomId}`);
+          return;
+        }
+      } catch {}
+    }
+  };
+
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
@@ -136,8 +154,8 @@ export function NotificationBell() {
           notifications.map((n) => (
             <DropdownMenuItem
               key={n.id}
-              className="flex flex-col items-start gap-1 py-3"
-              onClick={() => handleMarkRead(n.id)}
+              className="flex cursor-pointer flex-col items-start gap-1 py-3"
+              onClick={() => handleNotificationClick(n)}
             >
               <span className="text-sm font-medium">{n.title}</span>
               <span className="text-xs text-muted-foreground line-clamp-2">{n.body}</span>

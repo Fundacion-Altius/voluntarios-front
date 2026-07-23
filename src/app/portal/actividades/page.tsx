@@ -40,6 +40,26 @@ export default function ActividadesPortalPage() {
 
   useEffect(() => { fetchSessions(); }, [fetchSessions]);
 
+  const handleJoinLive = async (sessionId: string) => {
+    const token = (session as any)?.authToken;
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_URL}/api/video/rooms?activity_session_id=${sessionId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('No active video room');
+      const data = await res.json();
+      const rooms = data.data || [];
+      const room = rooms[0];
+      if (room?.roomId) {
+        window.location.href = `/portal/sala/${room.roomId}`;
+      } else {
+        throw new Error('No active video room');
+      }
+    } catch (err: any) { setError(err.message); }
+  };
+
   const handleBook = async (sessionId: string) => {
     setBookingId(sessionId);
     try {
@@ -76,11 +96,16 @@ export default function ActividadesPortalPage() {
               <CardContent>
                 <p className="text-xs text-muted-foreground">{new Date(s.date).toLocaleDateString()}</p>
                 <p className="text-xs text-muted-foreground">{s.is_cancelled === 'true' ? 'Cancelada' : 'Disponible'}</p>
-                {s.is_cancelled !== 'true' && (
-                  <Button size="sm" className="mt-3" onClick={() => handleBook(s.id)} disabled={bookingId === s.id}>
-                    {bookingId === s.id ? 'Reservando...' : 'Reservar'}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {s.is_cancelled !== 'true' && (
+                    <Button size="sm" onClick={() => handleBook(s.id)} disabled={bookingId === s.id}>
+                      {bookingId === s.id ? 'Reservando...' : 'Reservar'}
+                    </Button>
+                  )}
+                  <Button size="sm" variant="secondary" onClick={() => handleJoinLive(s.id)}>
+                    Unirse a clase en vivo
                   </Button>
-                )}
+                </div>
               </CardContent>
             </Card>
           ))}
