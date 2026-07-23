@@ -76,20 +76,45 @@ test.describe('Real API Flow @real-api', () => {
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toMatch(/\.pdf$/);
 
-    // ───── Cleanup ─────
+    // ───── Step 5: Field-fidelity assertions ─────
     const loginRes = await page.request.fetch(`${BACKEND_URL}/api/auth/login`, {
       method: 'POST',
       data: { email: 'admin@fundacionaltius.org', password: 'admin123' },
     });
-    if (loginRes.ok()) {
-      const { authToken, csrfToken } = await loginRes.json();
-      await page.request.fetch(`${BACKEND_URL}/api/contracts/${contractId}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          'X-CSRF-Token': csrfToken,
-        },
-      });
-    }
+    expect(loginRes.ok()).toBeTruthy();
+    const { authToken, csrfToken } = await loginRes.json();
+
+    const contractRes = await page.request.fetch(`${BACKEND_URL}/api/contracts/${contractId}`, {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+        'X-CSRF-Token': csrfToken,
+      },
+    });
+    expect(contractRes.ok()).toBeTruthy();
+    const contractData = (await contractRes.json())?.data || (await contractRes.json());
+
+    expect(contractData.nombre).toBe('Real E2E Test');
+    expect(contractData.email).toBe('real-e2e@test.com');
+    expect(contractData.lugar).toBe('Madrid');
+    expect(contractData.areas).toContain('Nave');
+    expect(contractData.domicilio).toBe('123 Real St');
+    expect(contractData.telefono).toBe('123456789');
+    expect(contractData.derechoDatos).toBe(true);
+    expect(contractData.derechoImagen).toBe(true);
+    expect(contractData.derechoConfidencialidad).toBe(true);
+    // Verify firma is encrypted (object with iv/compressedEncryptedData, not the raw base64 string)
+    expect(contractData.firma).not.toBe('data:image/png;base64,');
+    expect(typeof contractData.firma).toBe('object');
+    expect(contractData.firma).toHaveProperty('iv');
+    expect(contractData.firma).toHaveProperty('compressedEncryptedData');
+
+    // ───── Cleanup ─────
+    await page.request.fetch(`${BACKEND_URL}/api/contracts/${contractId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+        'X-CSRF-Token': csrfToken,
+      },
+    });
   });
 });

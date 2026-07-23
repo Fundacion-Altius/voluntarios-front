@@ -6,7 +6,7 @@ test.describe('Survey Flow (real API)', () => {
 
     await expect(page).toHaveURL('/encuesta');
 
-    const questionText = page.getByText('¿Cómo calificarías tu experiencia general como voluntario en');
+    const questionText = page.getByText('¿Cómo valoras la organización de la actividad?');
     await expect(questionText).toBeVisible({ timeout: 10000 });
 
     const starButtons = page.getByRole('button', { name: /Rate \d out of 5/ });
