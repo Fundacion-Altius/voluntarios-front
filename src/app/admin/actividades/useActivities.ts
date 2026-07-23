@@ -46,6 +46,7 @@ export function useActivities() {
     } catch (err: any) {
       if (thisFetchId === fetchIdRef.current) { setError(err.message); setIsLoading(false); }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
   useEffect(() => { fetchTypes(); }, [fetchTypes]);

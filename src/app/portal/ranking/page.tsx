@@ -24,6 +24,7 @@ export default function RankingPage() {
       .then((r) => r.json())
       .then((d) => { if (thisFetchId === fetchIdRef.current) setData(d); })
       .finally(() => { if (thisFetchId === fetchIdRef.current) setLoading(false); });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-48 w-full rounded-lg" /></div>;

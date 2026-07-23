@@ -24,6 +24,7 @@ export default function LogrosPage() {
       .then((r) => r.json())
       .then((data) => { if (thisFetchId === fetchIdRef.current) setBadges(data.success ? data.data : data); })
       .finally(() => { if (thisFetchId === fetchIdRef.current) setLoading(false); });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-32 w-full rounded-lg" /></div>;

@@ -144,6 +144,7 @@ export default function EditarCursoPage() {
 
   useEffect(() => {
     if (isAuthenticated) fetchCourse();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, token]);
 
   const handleUpdateCourse = async (e: React.FormEvent) => {

@@ -32,7 +32,8 @@ export default function AdminOnboardingPage() {
     }
   };
 
-  useEffect(() => { fetchTasks(); }, [authToken]);
+  useEffect(() => { fetchTasks(); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authToken]);
 
   const resetForm = () => {
     setNewTask(false);

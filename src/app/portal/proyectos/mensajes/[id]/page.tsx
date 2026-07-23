@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Send } from 'lucide-react';
+import { useRealtimeChat } from '@/hooks/useRealtimeChat';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -45,6 +46,22 @@ export default function ConversationDetailPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
+
+  const handleIncomingMessage = useCallback((msg: any) => {
+    setMessages((prev) => {
+      if (prev.some((m) => m.id === msg.id)) return prev;
+      return [...prev, msg];
+    });
+  }, []);
+
+  useRealtimeChat({
+    conversationId: id,
+    authToken: authRef.current,
+    onMessage: handleIncomingMessage,
+  });
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -64,15 +81,6 @@ export default function ConversationDetailPage() {
       body: JSON.stringify({ body: newMessage.trim() }),
     });
     if (res.ok) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          body: newMessage.trim(),
-          sender_id: (session?.user as any)?.id,
-          created_at: new Date().toISOString(),
-        },
-      ]);
       setNewMessage('');
     }
   };

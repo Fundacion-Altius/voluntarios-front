@@ -35,6 +35,7 @@ export default function ActividadesPortalPage() {
       setSessions(data.success ? data.data : data);
     } catch (err: any) { setError(err.message); }
     finally { if (thisFetchId === fetchIdRef.current) setLoading(false); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
   useEffect(() => { fetchSessions(); }, [fetchSessions]);

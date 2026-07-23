@@ -33,6 +33,7 @@ export default function AdminBlogPage() {
 
   useEffect(() => {
     fetchPosts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authToken]);
 
   const handleDelete = async (id: string) => {

@@ -34,6 +34,7 @@ export default function RankingAdminPage() {
     } catch (err: any) {
       if (thisFetchId === fetchIdRef.current) { setError(err.message); setIsLoading(false); }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
   useEffect(() => { fetchRankings(); }, [fetchRankings]);

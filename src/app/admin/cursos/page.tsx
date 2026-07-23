@@ -90,6 +90,7 @@ export default function CursosPage() {
 
   useEffect(() => {
     if (isAuthenticated) fetchCourses();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, token]);
 
   const handleDelete = async () => {

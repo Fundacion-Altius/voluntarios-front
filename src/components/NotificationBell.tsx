@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useRealtimeNotification } from '@/hooks/useRealtimeNotification';
+import { useRealtimeNotification, type RealtimeNotification } from '@/hooks/useRealtimeNotification';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -38,10 +38,10 @@ export function NotificationBell() {
 
   useRealtimeNotification({
     authToken,
-    onNotification: useCallback((n) => {
+    onNotification: useCallback((n: RealtimeNotification) => {
       setNotifications((prev) => {
         if (prev.some((existing) => existing.id === n.id)) return prev;
-        return [n, ...prev].slice(0, 5);
+        return [{ ...n, status: 'unread' }, ...prev].slice(0, 5);
       });
       setUnreadCount((prev) => prev + 1);
     }, []),

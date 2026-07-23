@@ -35,6 +35,7 @@ export default function CursosPage() {
       .then((data) => setCourses(data?.data ?? (data.success ? data.data : data)))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
   if (loading) {

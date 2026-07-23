@@ -49,6 +49,7 @@ export default function CursoDetailPage() {
       .finally(() => {
         if (thisFetchId === fetchIdRef.current) setLoading(false);
       });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, session]);
 
   const handleEnroll = async () => {

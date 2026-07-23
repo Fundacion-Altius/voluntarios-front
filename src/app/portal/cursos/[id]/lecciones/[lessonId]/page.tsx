@@ -50,6 +50,7 @@ export default function LeccionPage() {
       .finally(() => {
         if (thisFetchId === fetchIdRef.current) setLoading(false);
       });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId, lessonId, session]);
 
   const allLessons = course?.modules?.flatMap((m: any) => m.lessons || []) || [];
