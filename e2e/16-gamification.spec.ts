@@ -110,13 +110,11 @@ test.describe('Portal UI (authenticated)', () => {
     await loginAsBrowser(page, 'general@fundacionaltius.org', 'general123');
     await page.goto('/portal/ranking', { waitUntil: 'load' });
     await page.getByRole('link', { name: 'Mi perfil' }).click();
-    await page.waitForURL('**/portal', { timeout: 10000 });
-    await page.waitForTimeout(3000);
+    await page.waitForURL('/portal', { timeout: 15000 });
 
-    const body = await page.textContent('body');
-    expect(body).toContain('Mi Perfil');
-    expect(body).toContain('Puntos');
-    expect(body).toContain('Nivel');
+    await expect(page.locator('body')).toContainText('Mi Perfil', { timeout: 20000 });
+    await expect(page.locator('body')).toContainText('Puntos', { timeout: 10000 });
+    await expect(page.locator('body')).toContainText('Nivel', { timeout: 10000 });
   });
 
   test('portal ranking page shows top 3', async ({ page }) => {

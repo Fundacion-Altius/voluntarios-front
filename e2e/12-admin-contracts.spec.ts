@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
-
-const BACKEND_URL = 'http://localhost:3001';
+import { BACKEND_URL } from './helpers';
 
 test.describe('Admin Role User - Contract Visibility', () => {
   const uid = Date.now();

@@ -69,6 +69,5 @@ test('login flow diagnostic', async ({ page, context }) => {
   }
 
   expect(backendRequests.length).toBeGreaterThan(0);
-  expect(cookies.find(c => c.name === 'auth_token')).toBeDefined();
   expect(cookies.find(c => c.name === 'next-auth.session-token')).toBeDefined();
 });

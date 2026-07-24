@@ -30,7 +30,7 @@ test.describe('Auth Flow', () => {
 
     // Check that auth cookies are set
     const cookies = await context.cookies();
-    const authCookie = cookies.find(c => c.name === 'auth_token');
+    const authCookie = cookies.find(c => c.name === 'next-auth.session-token');
     expect(authCookie).toBeDefined();
     expect(authCookie?.httpOnly).toBe(true);
   });

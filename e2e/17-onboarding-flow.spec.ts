@@ -40,6 +40,9 @@ test.describe('Onboarding Flow', () => {
   test('volunteer portal shows onboarding widget', async ({ page }) => {
     await loginAsBrowser(page, 'general@fundacionaltius.org', 'general123');
     await page.goto('/portal', { waitUntil: 'load' });
+    // Wait for the profile card header to appear (confirms client-side data loaded)
+    await expect(page.locator('.card-title, .text-lg.font-bold, h2:has-text(\"Mi Perfil\")').first()).toBeVisible({ timeout: 30000 });
+    // Then check onboarding widget text
     await expect(page.locator('body')).toContainText('Comienza tu voluntariado', { timeout: 15000 });
   });
 

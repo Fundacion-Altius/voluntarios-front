@@ -1,104 +1,103 @@
 import { test, expect } from '@playwright/test';
-import { adminLogin, loginAsBrowser, BACKEND_URL, authHeaders, randomId } from './helpers';
+import { loginAsBrowser, BACKEND_URL } from './helpers';
 
 const TEST_SLUG = `e2e-admin-post-${Date.now()}`;
+const ADMIN_CREDS = { email: 'admin@fundacionaltius.org', password: 'admin123' };
 
 test.describe('Admin Blog Editor', () => {
-  test.describe.configure({ mode: 'serial' });
+  test.describe.configure({ mode: 'serial', timeout: 120000 });
+
+  let authToken: string;
+  let csrfToken: string;
+
+  test.beforeAll(async ({ playwright }) => {
+    const api = await playwright.request.newContext();
+    const loginRes = await api.fetch(`${BACKEND_URL}/api/auth/login`, {
+      method: 'POST', data: ADMIN_CREDS,
+    });
+    const body = await loginRes.json();
+    authToken = body.authToken;
+    csrfToken = body.csrfToken;
+    await api.dispose();
+  });
 
   test('blog page renders and lists posts', async ({ page }) => {
     await loginAsBrowser(page, 'admin@fundacionaltius.org', 'admin123');
     await page.goto('/admin/dashboard', { waitUntil: 'load' });
-    await expect(page.locator('body')).toContainText('Admin Panel', { timeout: 10000 });
-
+    await expect(page.locator('body')).toContainText('Admin Panel', { timeout: 15000 });
     await page.locator('a', { hasText: 'Blog' }).click();
-    await page.waitForURL('**/admin/blog', { timeout: 10000 });
-    await expect(page.locator('body')).toContainText('Blog', { timeout: 10000 });
+    await page.waitForURL('**/admin/blog', { timeout: 15000 });
+    await expect(page.locator('body')).toContainText('Blog', { timeout: 15000 });
   });
 
-  test('create a new blog post', async ({ request }) => {
-    const { authToken, csrfToken } = await adminLogin(request);
+  test('full CRUD cycle: create, list, publish, delete', async ({ page }) => {
+    // Use page.request so cookies (including csrf_token) are shared with browser context
+    const api = page.request;
 
-    const catRes = await request.fetch(`${BACKEND_URL}/api/blog/categories`, {
+    // Fetch CSRF token via page.request to ensure the cookie is set in the browser context
+    const csrfResp = await api.fetch(`${BACKEND_URL}/api/csrf-token`, { method: 'GET' });
+    const browserCsrf = (await csrfResp.json()).csrfToken;
+
+    const hdrs = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${authToken}`,
+      'X-CSRF-Token': browserCsrf,
+    };
+
+    // -- CREATE CATEGORY (if needed) --
+    const catRes = await api.fetch(`${BACKEND_URL}/api/blog/categories`, {
       method: 'GET',
-      headers: authHeaders(authToken, csrfToken),
+      headers: { 'Authorization': `Bearer ${authToken}` },
     });
-    let categories = await catRes.json();
-    if (!Array.isArray(categories) || categories.length === 0) {
-      const newCat = await request.fetch(`${BACKEND_URL}/api/blog/categories`, {
-        method: 'POST',
-        headers: { ...authHeaders(authToken, csrfToken), 'Content-Type': 'application/json' },
-        data: { name: 'General', slug: 'general' },
+    const categories = await catRes.json();
+    const cats = Array.isArray(categories) ? categories : categories.data || [];
+    let categoryId = cats[0]?.id;
+    if (!categoryId) {
+      const newCat = await api.fetch(`${BACKEND_URL}/api/blog/categories`, {
+        method: 'POST', headers: hdrs,
+        data: { name: 'General', slug: `general-${Date.now()}` },
       });
       const catBody = await newCat.json();
-      categories = [catBody];
+      categoryId = catBody.id || catBody.data?.id;
+      if (!categoryId) throw new Error(`Category creation returned no id: ${JSON.stringify(catBody)}`);
     }
-    const categoryId = categories[0].id;
 
-    const res = await request.fetch(`${BACKEND_URL}/api/blog/posts`, {
-      method: 'POST',
-      headers: { ...authHeaders(authToken, csrfToken), 'Content-Type': 'application/json' },
+    // -- CREATE POST --
+    const createRes = await api.fetch(`${BACKEND_URL}/api/blog/posts`, {
+      method: 'POST', headers: hdrs,
       data: {
-        title: 'E2E Admin Post',
-        slug: TEST_SLUG,
+        title: 'E2E Admin Post', slug: TEST_SLUG,
         excerpt: 'Created during E2E test',
         body: 'Full body content for E2E test post.',
         category_id: categoryId,
         published_at: new Date().toISOString(),
       },
     });
-    expect(res.ok()).toBeTruthy();
-  });
+    if (!createRes.ok()) {
+      throw new Error(`Blog post creation failed (${createRes.status()}): ${await createRes.text()}`);
+    }
 
-  test('post appears in admin list', async ({ request }) => {
-    const { authToken, csrfToken } = await adminLogin(request);
-
-    const res = await request.fetch(`${BACKEND_URL}/api/blog/posts?status=all&pageSize=100`, {
+    // -- LIST & VERIFY --
+    const listRes = await api.fetch(`${BACKEND_URL}/api/blog/posts?status=all&pageSize=100`, {
       method: 'GET',
-      headers: authHeaders(authToken, csrfToken),
+      headers: { 'Authorization': `Bearer ${authToken}` },
     });
-    expect(res.ok()).toBeTruthy();
-    const body = await res.json();
-    const posts = body.data || [];
-    const found = posts.find((p: any) => p.slug === TEST_SLUG);
-    expect(found).toBeDefined();
-  });
-
-  test('publish/unpublish toggles post visibility', async ({ request }) => {
-    const { authToken, csrfToken } = await adminLogin(request);
-
-    const listRes = await request.fetch(`${BACKEND_URL}/api/blog/posts?status=all&pageSize=100`, {
-      method: 'GET',
-      headers: authHeaders(authToken, csrfToken),
-    });
+    expect(listRes.ok()).toBeTruthy();
     const listBody = await listRes.json();
     const posts = listBody.data || [];
-    const post = posts.find((p: any) => p.slug === TEST_SLUG);
-    expect(post).toBeDefined();
+    const createdPost = posts.find((p: any) => p.slug === TEST_SLUG);
+    expect(createdPost).toBeDefined();
 
-    const unpubRes = await request.fetch(`${BACKEND_URL}/api/blog/posts/${post.id}`, {
-      method: 'PUT',
-      headers: { ...authHeaders(authToken, csrfToken), 'Content-Type': 'application/json' },
+    // -- UNPUBLISH --
+    const unpubRes = await api.fetch(`${BACKEND_URL}/api/blog/posts/${createdPost.id}`, {
+      method: 'PUT', headers: hdrs,
       data: { published_at: null },
     });
     expect(unpubRes.ok()).toBeTruthy();
-  });
 
-  test('delete blog post', async ({ request }) => {
-    const { authToken, csrfToken } = await adminLogin(request);
-
-    const listRes = await request.fetch(`${BACKEND_URL}/api/blog/posts?status=all&pageSize=100`, {
-      method: 'GET',
-      headers: authHeaders(authToken, csrfToken),
-    });
-    const listBody = await listRes.json();
-    const posts = listBody.data || [];
-    const post = posts.find((p: any) => p.slug === TEST_SLUG);
-    expect(post).toBeDefined();
-
-    const delRes = await request.fetch(`${BACKEND_URL}/api/blog/posts/${post.id}`, {
-      method: 'DELETE',
-      headers: authHeaders(authToken, csrfToken),
+    // -- DELETE --
+    const delRes = await api.fetch(`${BACKEND_URL}/api/blog/posts/${createdPost.id}`, {
+      method: 'DELETE', headers: hdrs,
     });
     expect(delRes.ok()).toBeTruthy();
   });

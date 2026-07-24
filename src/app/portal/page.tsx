@@ -44,13 +44,21 @@ export default function PortalPage() {
 
   useEffect(() => {
     const headers = fetchHeaders();
+    const FETCH_TIMEOUT = 15000;
+
+    const fetchWithTimeout = (url: string) => {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+      return fetch(url, { headers, credentials: 'include', signal: controller.signal })
+        .finally(() => clearTimeout(id));
+    };
 
     Promise.all([
-      fetch(`${API_URL}/api/gamification/profile`, { headers, credentials: 'include' }),
-      fetch(`${API_URL}/api/activities/upcoming`, { headers, credentials: 'include' }),
-      fetch(`${API_URL}/api/blog/posts?page=1&pageSize=5`, { headers, credentials: 'include' }),
-      fetch(`${API_URL}/api/onboarding/my-progress`, { headers, credentials: 'include' }),
-      fetch(`${API_URL}/api/courses/my-enrollments`, { headers, credentials: 'include' }),
+      fetchWithTimeout(`${API_URL}/api/gamification/profile`),
+      fetchWithTimeout(`${API_URL}/api/activities/upcoming`),
+      fetchWithTimeout(`${API_URL}/api/blog/posts?page=1&pageSize=5`),
+      fetchWithTimeout(`${API_URL}/api/onboarding/my-progress`),
+      fetchWithTimeout(`${API_URL}/api/courses/my-enrollments`),
     ]).then(([profRes, bookRes, blogRes, onbRes, coursesRes]) => {
       if (profRes.ok) profRes.json().then(setProfile);
       if (bookRes.ok) bookRes.json().then(setBookings);
