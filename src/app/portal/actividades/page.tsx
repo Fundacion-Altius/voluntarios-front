@@ -28,7 +28,7 @@ export default function ActividadesPortalPage() {
     const thisFetchId = ++fetchIdRef.current;
     setLoading(true); setError('');
     try {
-      const res = await fetch(`${API_URL}/api/activities/sessions/upcoming`, { headers: fetchHeaders(), credentials: 'include' });
+      const res = await fetch(`${API_URL}/api/activities/upcoming`, { headers: fetchHeaders(), credentials: 'include' });
       if (thisFetchId !== fetchIdRef.current) return;
       if (!res.ok) throw new Error('Error al cargar sesiones');
       const data = await res.json();

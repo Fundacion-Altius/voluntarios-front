@@ -19,6 +19,7 @@ export default function VideoRoomPage({ params }: { params: { roomId: string } }
   const attentionCanvasRef = useRef<HTMLCanvasElement>(null);
   const [role, setRole] = useState<'host' | 'guest'>('guest');
   const [joining, setJoining] = useState(false);
+  const [joinError, setJoinError] = useState<string | null>(null);
 
   const { state, startLocalStream, toggleMic, toggleCamera, toggleScreenShare, join, cleanup } = useMediasoupRoom(
     params.roomId,
@@ -41,10 +42,12 @@ export default function VideoRoomPage({ params }: { params: { roomId: string } }
   const handleJoin = async () => {
     if (!session?.authToken) return;
     setJoining(true);
+    setJoinError(null);
     try {
       await startLocalStream(true, true);
-      await join();
+      await join(session?.authToken);
     } catch (err: any) {
+      setJoinError(err?.message || err?.toString() || 'Failed to join room');
       cleanup();
       setJoining(false);
     }
@@ -101,6 +104,7 @@ export default function VideoRoomPage({ params }: { params: { roomId: string } }
           <Button className="w-full" onClick={handleJoin} disabled={!session?.authToken || joining}>
             {joining ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Joining...</> : 'Join room'}
           </Button>
+          {joinError && <p className="text-sm text-destructive">{joinError}</p>}
           {!session?.authToken && <p className="text-sm text-destructive">You must be logged in to join</p>}
         </CardContent>
       </Card>

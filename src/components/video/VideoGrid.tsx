@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { Video } from 'lucide-react';
 
 export function VideoGrid({ peers, localStream, userId }: { peers: Map<string, { video?: MediaStream; audio?: MediaStream }>; localStream: MediaStream | null; userId: string }) {
@@ -25,10 +26,24 @@ export function VideoGrid({ peers, localStream, userId }: { peers: Map<string, {
 }
 
 function VideoTile({ stream, label }: { stream: MediaStream | undefined; label: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const el = videoRef.current;
+    if (el && stream) {
+      el.srcObject = stream;
+    }
+    return () => {
+      if (el) {
+        el.srcObject = null;
+      }
+    };
+  }, [stream]);
+
   return (
     <div className="relative overflow-hidden rounded-lg bg-black">
       {stream ? (
-        <video autoPlay playsInline muted={label.startsWith('You')} className="h-48 w-full object-cover md:h-56" />
+        <video ref={videoRef} autoPlay playsInline muted={label.startsWith('You')} className="h-48 w-full object-cover md:h-56" />
       ) : (
         <div className="flex h-48 w-full items-center justify-center bg-muted md:h-56">
           <span className="text-xs text-muted-foreground">No video</span>

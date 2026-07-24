@@ -47,7 +47,7 @@ export default function PortalPage() {
 
     Promise.all([
       fetch(`${API_URL}/api/gamification/profile`, { headers, credentials: 'include' }),
-      fetch(`${API_URL}/api/activities/sessions/upcoming`, { headers, credentials: 'include' }),
+      fetch(`${API_URL}/api/activities/upcoming`, { headers, credentials: 'include' }),
       fetch(`${API_URL}/api/blog/posts?page=1&pageSize=5`, { headers, credentials: 'include' }),
       fetch(`${API_URL}/api/onboarding/my-progress`, { headers, credentials: 'include' }),
       fetch(`${API_URL}/api/courses/my-enrollments`, { headers, credentials: 'include' }),

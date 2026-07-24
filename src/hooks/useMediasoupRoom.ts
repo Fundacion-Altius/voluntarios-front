@@ -16,6 +16,17 @@ type MediasoupRoomState = {
 };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL as string;
+function deriveWsUrl(): string {
+  try {
+    const url = new URL(API_URL);
+    const protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${protocol}//${url.host}`;
+  } catch {
+    return 'ws://localhost:3001';
+  }
+}
+
+const WS_BASE = deriveWsUrl();
 const TURN_HOST = process.env.NEXT_PUBLIC_TURN_HOST || 'localhost';
 const TURN_PORT = Number(process.env.NEXT_PUBLIC_TURN_PORT || 3478);
 const TURN_USERNAME = process.env.NEXT_PUBLIC_TURN_USERNAME || 'voluntarios';
@@ -81,6 +92,10 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
     }
   }, []);
 
+  const sendSignal = useCallback((targetPeerId: string, data: Record<string, unknown>) => {
+    sendToWs({ type: 'video.signal', roomId, data });
+  }, [sendToWs, roomId]);
+
   const closePeerConnection = useCallback((peerId: string) => {
     const pc = peerConnectionsRef.current.get(peerId);
     if (pc) {
@@ -91,6 +106,14 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
     removePeerStream(peerId, 'audio');
   }, [removePeerStream]);
 
+  const startNegotiation = useCallback(async (pc: RTCPeerConnection, peerId: string) => {
+    try {
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      sendSignal(peerId, { type: 'offer', sdp: JSON.parse(JSON.stringify(pc.localDescription)) });
+    } catch {}
+  }, [sendSignal]);
+
   const setupPeerConnection = useCallback(
     (peerId: string): RTCPeerConnection => {
       const pc = new RTCPeerConnection({ iceServers: buildIceServers() });
@@ -98,7 +121,7 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
 
       pc.onicecandidate = (event) => {
         if (event.candidate) {
-          sendToWs({ type: 'ice-candidate', candidate: event.candidate.toJSON(), targetPeerId: peerId });
+          sendSignal(peerId, { type: 'ice-candidate', candidate: event.candidate.toJSON() });
         }
       };
 
@@ -109,8 +132,8 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
         updatePeer(peerId, stream, kind);
       };
 
-      pc.onconnectionstatechange = () => {
-        if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
+      pc.oniceconnectionstatechange = () => {
+        if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
           closePeerConnection(peerId);
         }
       };
@@ -123,7 +146,7 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
 
       return pc;
     },
-    [sendToWs, updatePeer, closePeerConnection],
+    [sendSignal, updatePeer, closePeerConnection],
   );
 
   const handleWsMessage = useCallback(
@@ -131,17 +154,45 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
       try {
         const msg = JSON.parse(event.data);
         switch (msg.type) {
-          case 'new-router-rtp-capabilities':
+          case 'signal': {
+            const data = msg.data as Record<string, unknown> | undefined;
+            const from = msg.from as string | undefined;
+            if (!from || !data || from === userIdRef.current) break;
+            const sdp = data.sdp as { type: string; sdp: string } | undefined;
+            const candidate = data.candidate as RTCIceCandidateInit | undefined;
+
+            try {
+              if (sdp) {
+                let pc = peerConnectionsRef.current.get(from);
+                if (!pc) {
+                  pc = setupPeerConnection(from);
+                }
+                if (sdp.type === 'offer') {
+                  await pc.setRemoteDescription(new RTCSessionDescription(sdp as RTCSessionDescriptionInit));
+                  const answer = await pc.createAnswer();
+                  await pc.setLocalDescription(answer);
+                  sendSignal(from, { type: 'answer', sdp: JSON.parse(JSON.stringify(pc.localDescription)) });
+                } else if (sdp.type === 'answer') {
+                  await pc.setRemoteDescription(new RTCSessionDescription(sdp as RTCSessionDescriptionInit));
+                }
+              }
+              if (candidate) {
+                const pc = peerConnectionsRef.current.get(from);
+                if (pc && pc.remoteDescription) {
+                  await pc.addIceCandidate(new RTCIceCandidate(candidate));
+                }
+              }
+            } catch {}
             break;
-          case 'new-transport':
-            sendToWs({ type: 'connect-transport', transportId: msg.transportId });
-            break;
+          }
           case 'new-peers':
-          case 'new-peer': {
-            const peers = Array.isArray(msg.peers) ? msg.peers : msg.id ? [msg] : [];
+          case 'new-peer':
+          case 'peer-joined': {
+            const peers = Array.isArray(msg.peers) ? msg.peers : msg.id ? [msg] : msg.from ? [{ id: msg.from }] : [];
             for (const peer of peers) {
               if (peer.id && peer.id !== userIdRef.current && !peerConnectionsRef.current.has(peer.id)) {
-                setupPeerConnection(peer.id);
+                const pc = setupPeerConnection(peer.id);
+                startNegotiation(pc, peer.id);
               }
             }
             break;
@@ -157,7 +208,7 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
         }
       } catch {}
     },
-    [setupPeerConnection, closePeerConnection, sendToWs, setStatePartial],
+    [setupPeerConnection, closePeerConnection, sendSignal, setStatePartial, startNegotiation],
   );
 
   const startLocalStream = useCallback(async (withVideo = true, withAudio = true): Promise<MediaStream> => {
@@ -166,7 +217,7 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
       audio: withAudio,
     });
     localStreamRef.current = stream;
-    setStatePartial({ localStream: stream });
+    setStatePartial({ localStream: stream, isMicOn: withAudio, isCameraOn: withVideo });
     return stream;
   }, [setStatePartial]);
 
@@ -203,25 +254,29 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
     }
   }, [setStatePartial]);
 
-  const cleanup = useCallback(() => {
+  const cleanupConnections = useCallback(() => {
     if (wsRef.current) {
       wsRef.current.close();
       wsRef.current = null;
     }
     peerConnectionsRef.current.forEach((pc) => pc.close());
     peerConnectionsRef.current.clear();
+    joinedRef.current = false;
+  }, []);
+
+  const cleanup = useCallback(() => {
+    cleanupConnections();
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
     localStreamRef.current = null;
     screenStreamRef.current?.getTracks().forEach((t) => t.stop());
     screenStreamRef.current = null;
-    joinedRef.current = false;
-  }, []);
+  }, [cleanupConnections]);
 
-  const join = useCallback(async () => {
+  const join = useCallback(async (authToken?: string) => {
     if (!roomId) return;
-    cleanup();
-    const wsUrl = `${API_URL.replace(/^http/, 'ws')}/ws/video`;
-    const ws = new WebSocket(wsUrl);
+    cleanupConnections();
+    const tokenParam = authToken ? `?token=${encodeURIComponent(authToken)}` : '';
+    const ws = new WebSocket(`${WS_BASE}/ws/video${tokenParam}`);
     wsRef.current = ws;
     userIdRef.current = `u_${Math.random().toString(36).slice(2, 8)}`;
     setStatePartial({ userId: userIdRef.current });
@@ -234,13 +289,13 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
     ws.onmessage = handleWsMessage;
 
     ws.onclose = () => {
-      cleanup();
+      cleanupConnections();
     };
 
     ws.onerror = () => {
       setStatePartial({ error: 'WebSocket connection failed' });
     };
-  }, [API_URL, roomId, role, sendToWs, handleWsMessage, setStatePartial, cleanup]);
+  }, [roomId, role, sendToWs, handleWsMessage, setStatePartial, cleanupConnections]);
 
   useEffect(() => {
     return () => cleanup();
