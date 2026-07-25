@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+import { getApiBaseUrl } from '@/lib/apiUrl';
+
+const API_URL = getApiBaseUrl();
 
 function deriveWsUrl(): string {
   try {

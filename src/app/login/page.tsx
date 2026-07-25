@@ -8,8 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 // Helper function to get CSRF token from cookies
 function getCSRFTokenFromCookie(): string | null {
   if (typeof document !== 'undefined') {
@@ -45,14 +43,13 @@ function LoginContent() {
       // First, get CSRF token from cookie
       const csrfToken = getCSRFTokenFromCookie();
       
-      const res = await fetch(`${API_URL}/api/auth/login`, {
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'X-CSRF-Token': csrfToken || ''
         },
         body: JSON.stringify({ email, password }),
-        credentials: 'include',
       });
 
       const data = await res.json();

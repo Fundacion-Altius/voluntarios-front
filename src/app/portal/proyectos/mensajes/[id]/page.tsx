@@ -9,7 +9,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Send } from 'lucide-react';
 import { useRealtimeChat } from '@/hooks/useRealtimeChat';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { getApiBaseUrl } from '@/lib/apiUrl';
+
+const API_URL = getApiBaseUrl();
 
 export default function ConversationDetailPage() {
   const { id } = useParams<{ id: string }>();

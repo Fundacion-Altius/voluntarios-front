@@ -24,7 +24,9 @@ import {
 } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { getApiBaseUrl } from '@/lib/apiUrl';
+
+const API_URL = getApiBaseUrl();
 
 interface Lesson {
   id: number;

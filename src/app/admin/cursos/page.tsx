@@ -28,7 +28,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Plus, Edit2, Trash2, BookOpen } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { getApiBaseUrl } from '@/lib/apiUrl';
+
+const API_URL = getApiBaseUrl();
 
 interface Course {
   id: number;

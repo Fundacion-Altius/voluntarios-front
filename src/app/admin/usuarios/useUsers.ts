@@ -14,7 +14,9 @@ export interface User {
   last_login?: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { getApiBaseUrl } from '@/lib/apiUrl';
+
+const API_URL = getApiBaseUrl();
 
 export function useUsers() {
   const { data: session } = useSession();

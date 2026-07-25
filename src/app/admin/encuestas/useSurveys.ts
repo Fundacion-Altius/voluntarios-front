@@ -25,7 +25,9 @@ export interface SurveyReport {
   total: number;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { getApiBaseUrl } from '@/lib/apiUrl';
+
+const API_URL = getApiBaseUrl();
 
 export function useSurveys() {
   const { data: session } = useSession();

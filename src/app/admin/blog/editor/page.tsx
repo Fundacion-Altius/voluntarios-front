@@ -12,7 +12,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Save, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { getApiBaseUrl } from '@/lib/apiUrl';
+
+const API_URL = getApiBaseUrl();
 
 export default function BlogEditorPage() {
   const { data: session } = useSession();

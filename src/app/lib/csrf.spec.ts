@@ -1,6 +1,7 @@
 import { getCSRFToken, setAuthToken, getAuthToken } from './csrf';
+import { getApiBaseUrl } from '@/lib/apiUrl';
 
-const ORIGINAL_ENV = process.env.NEXT_PUBLIC_API_URL;
+const ORIGINAL_ENV = getApiBaseUrl();
 
 function clearCookies(): void {
   document.cookie.split(';').forEach((c) => {

@@ -11,7 +11,9 @@ export interface Candidate {
   created_at: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { getApiBaseUrl } from '@/lib/apiUrl';
+
+const API_URL = getApiBaseUrl();
 
 export function useCandidates() {
   const { data: session } = useSession();

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "predev": "node scripts/predev.js",
-    "dev": "next dev --hostname 0.0.0.0",
+    "dev": "node server.js",
     "build": "npx update-browserslist-db@latest && next build",
     "start": "next start",
     "lint": "next lint",
@@ -61,6 +61,7 @@
     "autoprefixer": "^10.5.0",
     "eslint": "^8",
     "eslint-config-next": "14.2.4",
+    "http-proxy": "^1.18.1",
     "jest-environment-jsdom": "^29.7.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.1",

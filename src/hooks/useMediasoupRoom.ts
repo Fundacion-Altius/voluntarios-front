@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { getApiBaseUrl } from '@/lib/apiUrl';
 
 type RoomRole = 'host' | 'guest';
 
@@ -15,10 +16,17 @@ type MediasoupRoomState = {
   error: string | null;
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL as string;
 function deriveWsUrl(): string {
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      return `${protocol}//${window.location.host}`;
+    }
+  }
+  const api = getApiBaseUrl();
   try {
-    const url = new URL(API_URL);
+    const url = new URL(api);
     const protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
     return `${protocol}//${url.host}`;
   } catch {
@@ -27,7 +35,14 @@ function deriveWsUrl(): string {
 }
 
 const WS_BASE = deriveWsUrl();
-const TURN_HOST = process.env.NEXT_PUBLIC_TURN_HOST || 'localhost';
+function turnHost(): string {
+  if (typeof window !== 'undefined') {
+    const h = window.location.hostname;
+    if (h !== 'localhost' && h !== '127.0.0.1') return h;
+  }
+  return process.env.NEXT_PUBLIC_TURN_HOST || 'localhost';
+}
+const TURN_HOST = turnHost();
 const TURN_PORT = Number(process.env.NEXT_PUBLIC_TURN_PORT || 3478);
 const TURN_USERNAME = process.env.NEXT_PUBLIC_TURN_USERNAME || 'voluntarios';
 const TURN_PASSWORD = process.env.NEXT_PUBLIC_TURN_PASSWORD || 'turnpassword';

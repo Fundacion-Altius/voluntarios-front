@@ -16,7 +16,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useRealtimeNotification, type RealtimeNotification } from '@/hooks/useRealtimeNotification';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { getApiBaseUrl } from '@/lib/apiUrl';
+
+const API_URL = getApiBaseUrl();
 
 interface NotificationItem {
   id: string;

@@ -1,4 +1,6 @@
-const HOST = process.env.NEXT_PUBLIC_API_URL;
+import { getApiBaseUrl } from '@/lib/apiUrl';
+
+const HOST = getApiBaseUrl();
 
 let _authToken: string | null = null;
 

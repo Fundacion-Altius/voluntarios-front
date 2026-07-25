@@ -3,7 +3,9 @@
 import { useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { getApiBaseUrl } from '@/lib/apiUrl';
+
+const API_URL = getApiBaseUrl();
 
 export function PushNotificationSetup() {
   const { data: session } = useSession();

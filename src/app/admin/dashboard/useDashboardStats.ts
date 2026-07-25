@@ -13,7 +13,9 @@ export interface DashboardStats {
   recentContracts: { id: string; nombre: string; empresa: string | null; fecha: string }[];
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { getApiBaseUrl } from '@/lib/apiUrl';
+
+const API_URL = getApiBaseUrl();
 
 export function useDashboardStats() {
   const { data: session } = useSession();

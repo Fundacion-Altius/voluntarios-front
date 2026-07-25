@@ -11,7 +11,9 @@ import {
 } from '@/components/ui/dialog';
 import { MessageSquare, Plus, ArrowLeft } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { getApiBaseUrl } from '@/lib/apiUrl';
+
+const API_URL = getApiBaseUrl();
 
 export default function MensajesPage() {
   const router = useRouter();

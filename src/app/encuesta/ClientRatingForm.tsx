@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { Question, SurveySubmission } from "@/app/types";
 import { useRouter } from "next/navigation";
+import { getApiBaseUrl } from '@/lib/apiUrl';
 
 interface ClientRatingFormProps {
   questions: Question[];
@@ -44,7 +45,7 @@ export default function ClientRatingForm({
     setSubmitError("");
     
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const API_URL = getApiBaseUrl();
       const submission: SurveySubmission = {
         surveyID: 1,
         ratings,

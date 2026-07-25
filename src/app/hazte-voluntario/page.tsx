@@ -9,7 +9,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { getCSRFToken } from '@/app/lib/csrf';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { getApiBaseUrl } from '@/lib/apiUrl';
+
+const API_URL = getApiBaseUrl();
 
 const INTERESES_OPTS = [
   'Acompañamiento', 'Apoyo escolar', 'Cocina', 'Jardinería', 'Mantenimiento',

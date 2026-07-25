@@ -43,7 +43,9 @@ import {
 } from '@/components/ui/dialog';
 import { ArrowLeft, Plus, ChevronDown, ChevronRight, Trash2, Edit2, BookOpen } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { getApiBaseUrl } from '@/lib/apiUrl';
+
+const API_URL = getApiBaseUrl();
 
 interface Lesson {
   id: number;
