@@ -21,12 +21,23 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { browserName: 'chromium' },
-      testIgnore: '**/08-real-flow.spec.ts',
+      testIgnore: ['**/08-real-flow.spec.ts', '**/26-video-*.spec.ts'],
     },
     {
       name: 'real-api',
       use: { browserName: 'chromium' },
       testMatch: '**/08-real-flow.spec.ts',
+      retries: 1,
+    },
+    {
+      name: 'video',
+      use: {
+        browserName: 'chromium',
+        launchOptions: {
+          args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'],
+        },
+      },
+      testMatch: '**/26-video-*.spec.ts',
       retries: 1,
     },
   ],

@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { Device } from 'mediasoup-client';
+import type { Transport, Producer, Consumer, RtpCapabilities, DtlsParameters } from 'mediasoup-client/types';
 import { getApiBaseUrl } from '@/lib/apiUrl';
 
 type RoomRole = 'host' | 'guest';
@@ -14,6 +16,7 @@ type MediasoupRoomState = {
   isCameraOn: boolean;
   isScreenSharing: boolean;
   error: string | null;
+  connected: boolean;
 };
 
 function deriveWsUrl(): string {
@@ -35,6 +38,7 @@ function deriveWsUrl(): string {
 }
 
 const WS_BASE = deriveWsUrl();
+
 function turnHost(): string {
   if (typeof window !== 'undefined') {
     const h = window.location.hostname;
@@ -65,14 +69,24 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
     isCameraOn: false,
     isScreenSharing: false,
     error: null,
+    connected: false,
   });
 
   const wsRef = useRef<WebSocket | null>(null);
-  const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
+  const deviceRef = useRef<Device | null>(null);
+  const sendTransportRef = useRef<Transport | null>(null);
+  const recvTransportRef = useRef<Transport | null>(null);
+  const producerRef = useRef<Producer | null>(null);
+  const screenProducerRef = useRef<Producer | null>(null);
+  const consumersRef = useRef<Map<string, Consumer>>(new Map());
   const localStreamRef = useRef<MediaStream | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
   const joinedRef = useRef(false);
   const userIdRef = useRef<string>('');
+
+  const resolveTransportSend = useRef<((d: unknown) => void) | null>(null);
+  const resolveTransportRecv = useRef<((d: unknown) => void) | null>(null);
+  const resolveRouterCaps = useRef<((caps: RtpCapabilities) => void) | null>(null);
 
   const setStatePartial = useCallback((partial: Partial<MediasoupRoomState>) => {
     setState((prev) => ({ ...prev, ...partial }));
@@ -87,133 +101,88 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
     });
   }, []);
 
-  const removePeerStream = useCallback((peerId: string, kind: 'video' | 'audio') => {
+  const removePeer = useCallback((peerId: string) => {
     setState((prev) => {
       const peers = new Map(prev.peers);
-      const existing = peers.get(peerId);
-      if (existing && existing[kind]) {
-        const next = { ...existing };
-        delete next[kind];
-        if (Object.keys(next).length === 0) peers.delete(peerId);
-        else peers.set(peerId, next);
-      }
+      peers.delete(peerId);
       return { ...prev, peers };
     });
   }, []);
 
   const sendToWs = useCallback((payload: Record<string, unknown>) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify(payload));
-    }
+    wsRef.current?.readyState === WebSocket.OPEN && wsRef.current.send(JSON.stringify(payload));
   }, []);
 
-  const sendSignal = useCallback((targetPeerId: string, data: Record<string, unknown>) => {
+  const sendSignal = useCallback((data: Record<string, unknown>) => {
     sendToWs({ type: 'video.signal', roomId, data });
   }, [sendToWs, roomId]);
 
-  const closePeerConnection = useCallback((peerId: string) => {
-    const pc = peerConnectionsRef.current.get(peerId);
-    if (pc) {
-      pc.close();
-      peerConnectionsRef.current.delete(peerId);
+  const connectTransport = useCallback((transport: Transport, direction: 'send' | 'recv'): void => {
+    (transport as any).on('connect', ({ dtlsParameters }: { dtlsParameters: DtlsParameters }, callback: () => void, _errback: (err: Error) => void) => {
+      sendSignal({ type: 'connect-transport', transportId: transport.id, dtlsParameters });
+      callback();
+    });
+    if (direction === 'send') {
+      (transport as any).on('produce', ({ kind, rtpParameters }: { kind: string; rtpParameters: unknown }, callback: (data: { id: string }) => void, _errback: (err: Error) => void) => {
+        sendSignal({ type: 'produce', transportId: transport.id, kind, rtpParameters });
+        callback({ id: '' });
+      });
     }
-    removePeerStream(peerId, 'video');
-    removePeerStream(peerId, 'audio');
-  }, [removePeerStream]);
-
-  const startNegotiation = useCallback(async (pc: RTCPeerConnection, peerId: string) => {
-    try {
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      sendSignal(peerId, { type: 'offer', sdp: JSON.parse(JSON.stringify(pc.localDescription)) });
-    } catch {}
   }, [sendSignal]);
-
-  const setupPeerConnection = useCallback(
-    (peerId: string): RTCPeerConnection => {
-      const pc = new RTCPeerConnection({ iceServers: buildIceServers() });
-      peerConnectionsRef.current.set(peerId, pc);
-
-      pc.onicecandidate = (event) => {
-        if (event.candidate) {
-          sendSignal(peerId, { type: 'ice-candidate', candidate: event.candidate.toJSON() });
-        }
-      };
-
-      pc.ontrack = (event) => {
-        const stream = event.streams[0];
-        if (!stream) return;
-        const kind = event.track.kind as 'video' | 'audio';
-        updatePeer(peerId, stream, kind);
-      };
-
-      pc.oniceconnectionstatechange = () => {
-        if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
-          closePeerConnection(peerId);
-        }
-      };
-
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach((track) => {
-          pc.addTrack(track, localStreamRef.current!);
-        });
-      }
-
-      return pc;
-    },
-    [sendSignal, updatePeer, closePeerConnection],
-  );
 
   const handleWsMessage = useCallback(
     async (event: MessageEvent) => {
       try {
         const msg = JSON.parse(event.data);
         switch (msg.type) {
-          case 'signal': {
-            const data = msg.data as Record<string, unknown> | undefined;
-            const from = msg.from as string | undefined;
-            if (!from || !data || from === userIdRef.current) break;
-            const sdp = data.sdp as { type: string; sdp: string } | undefined;
-            const candidate = data.candidate as RTCIceCandidateInit | undefined;
-
-            try {
-              if (sdp) {
-                let pc = peerConnectionsRef.current.get(from);
-                if (!pc) {
-                  pc = setupPeerConnection(from);
-                }
-                if (sdp.type === 'offer') {
-                  await pc.setRemoteDescription(new RTCSessionDescription(sdp as RTCSessionDescriptionInit));
-                  const answer = await pc.createAnswer();
-                  await pc.setLocalDescription(answer);
-                  sendSignal(from, { type: 'answer', sdp: JSON.parse(JSON.stringify(pc.localDescription)) });
-                } else if (sdp.type === 'answer') {
-                  await pc.setRemoteDescription(new RTCSessionDescription(sdp as RTCSessionDescriptionInit));
-                }
-              }
-              if (candidate) {
-                const pc = peerConnectionsRef.current.get(from);
-                if (pc && pc.remoteDescription) {
-                  await pc.addIceCandidate(new RTCIceCandidate(candidate));
-                }
-              }
-            } catch {}
-            break;
-          }
-          case 'new-peers':
-          case 'new-peer':
-          case 'peer-joined': {
-            const peers = Array.isArray(msg.peers) ? msg.peers : msg.id ? [msg] : msg.from ? [{ id: msg.from }] : [];
-            for (const peer of peers) {
-              if (peer.id && peer.id !== userIdRef.current && !peerConnectionsRef.current.has(peer.id)) {
-                const pc = setupPeerConnection(peer.id);
-                startNegotiation(pc, peer.id);
-              }
+          case 'new-router-rtp-capabilities': {
+            const resolve = resolveRouterCaps.current;
+            if (resolve) {
+              resolveRouterCaps.current = null;
+              resolve(msg.rtpCapabilities as RtpCapabilities);
             }
             break;
           }
+          case 'new-transport': {
+            const resolveSend = resolveTransportSend.current;
+            const resolveRecv = resolveTransportRecv.current;
+            if (resolveSend && !sendTransportRef.current) {
+              resolveTransportSend.current = null;
+              resolveSend(msg);
+            } else if (resolveRecv) {
+              resolveTransportRecv.current = null;
+              resolveRecv(msg);
+            }
+            break;
+          }
+          case 'new-producer': {
+            const dev = deviceRef.current;
+            const recv = recvTransportRef.current;
+            if (!dev || !recv) break;
+            sendSignal({ type: 'consume', transportId: recv.id, producerId: msg.producerId, rtpCapabilities: (dev as any).rtpCapabilities });
+            break;
+          }
+          case 'new-consumer': {
+            if (consumersRef.current.has(msg.consumerId)) break;
+            const recv = recvTransportRef.current;
+            if (!recv) break;
+            const consumer = await (recv as any).consume({
+              id: msg.consumerId,
+              producerId: msg.producerId,
+              kind: msg.kind,
+              rtpParameters: msg.rtpParameters,
+            });
+            consumer.observer.on('trackchange', () => {
+              updatePeer(msg.producerId, new MediaStream([consumer.track]), msg.kind);
+            });
+            if (consumer.track) {
+              updatePeer(msg.producerId, new MediaStream([consumer.track]), msg.kind);
+            }
+            consumersRef.current.set(consumer.id, consumer);
+            break;
+          }
           case 'peer-left':
-            closePeerConnection(msg.from);
+            removePeer(msg.from);
             break;
           case 'call-ended':
             setStatePartial({ error: 'This call has ended' });
@@ -223,7 +192,7 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
         }
       } catch {}
     },
-    [setupPeerConnection, closePeerConnection, sendSignal, setStatePartial, startNegotiation],
+    [setStatePartial, removePeer, updatePeer, sendSignal],
   );
 
   const startLocalStream = useCallback(async (withVideo = true, withAudio = true): Promise<MediaStream> => {
@@ -233,6 +202,12 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
     });
     localStreamRef.current = stream;
     setStatePartial({ localStream: stream, isMicOn: withAudio, isCameraOn: withVideo });
+    if (sendTransportRef.current && producerRef.current === null) {
+      const audioTrack = stream.getAudioTracks()[0];
+      if (audioTrack) {
+        producerRef.current = await sendTransportRef.current.produce({ track: audioTrack });
+      }
+    }
     return stream;
   }, [setStatePartial]);
 
@@ -258,25 +233,42 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
       screenStreamRef.current = screenStream;
       const screenTrack = screenStream.getVideoTracks()[0];
       setStatePartial({ isScreenSharing: true });
+      if (sendTransportRef.current) {
+        screenProducerRef.current = await sendTransportRef.current.produce({ track: screenTrack });
+      }
       screenTrack.onended = () => {
+        screenProducerRef.current?.close();
+        screenProducerRef.current = null;
         screenStreamRef.current = null;
         setStatePartial({ isScreenSharing: false });
       };
     } else {
-      screenStreamRef.current.getTracks().forEach((t) => t.stop());
+      screenProducerRef.current?.close();
+      screenProducerRef.current = null;
+      screenStreamRef.current?.getTracks().forEach((t) => t.stop());
       screenStreamRef.current = null;
       setStatePartial({ isScreenSharing: false });
     }
   }, [setStatePartial]);
 
   const cleanupConnections = useCallback(() => {
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
-    peerConnectionsRef.current.forEach((pc) => pc.close());
-    peerConnectionsRef.current.clear();
+    producerRef.current?.close();
+    producerRef.current = null;
+    screenProducerRef.current?.close();
+    screenProducerRef.current = null;
+    consumersRef.current.forEach((c) => c.close());
+    consumersRef.current.clear();
+    sendTransportRef.current?.close();
+    sendTransportRef.current = null;
+    recvTransportRef.current?.close();
+    recvTransportRef.current = null;
+    wsRef.current?.close();
+    wsRef.current = null;
+    deviceRef.current = null;
     joinedRef.current = false;
+    resolveTransportSend.current = null;
+    resolveTransportRecv.current = null;
+    resolveRouterCaps.current = null;
   }, []);
 
   const cleanup = useCallback(() => {
@@ -290,27 +282,58 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
   const join = useCallback(async (authToken?: string) => {
     if (!roomId) return;
     cleanupConnections();
+
     const tokenParam = authToken ? `?token=${encodeURIComponent(authToken)}` : '';
     const ws = new WebSocket(`${WS_BASE}/ws/video${tokenParam}`);
     wsRef.current = ws;
     userIdRef.current = `u_${Math.random().toString(36).slice(2, 8)}`;
-    setStatePartial({ userId: userIdRef.current });
     joinedRef.current = true;
 
-    ws.onopen = async () => {
-      sendToWs({ type: 'video.join', roomId, role });
-    };
+    return new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('join timeout')), 15000);
 
-    ws.onmessage = handleWsMessage;
+      ws.onopen = async () => {
+        try {
+          sendToWs({ type: 'video.join', roomId, role });
+          const caps = await new Promise<RtpCapabilities>((r) => { resolveRouterCaps.current = r; sendSignal({ type: 'get-router-rtp-capabilities' }); });
+          const device = new Device();
+          await device.load({ routerRtpCapabilities: caps });
+          deviceRef.current = device;
 
-    ws.onclose = () => {
-      cleanupConnections();
-    };
+          const sendData = await new Promise<unknown>((r) => { resolveTransportSend.current = r; sendSignal({ type: 'create-webrtc-transport', direction: 'send' }); });
+          const sd = sendData as Record<string, unknown>;
+          const sendTransport = device.createSendTransport({ id: sd.transportId as string, iceParameters: sd.iceParameters as any, iceCandidates: sd.iceCandidates as any[], dtlsParameters: sd.dtlsParameters as any, iceServers: buildIceServers(), iceTransportPolicy: 'all' as RTCIceTransportPolicy });
+          connectTransport(sendTransport, 'send');
+          sendTransportRef.current = sendTransport;
 
-    ws.onerror = () => {
-      setStatePartial({ error: 'WebSocket connection failed' });
-    };
-  }, [roomId, role, sendToWs, handleWsMessage, setStatePartial, cleanupConnections]);
+          const recvData = await new Promise<unknown>((r) => { resolveTransportRecv.current = r; sendSignal({ type: 'create-webrtc-transport', direction: 'recv' }); });
+          const rd = recvData as Record<string, unknown>;
+          const recvTransport = device.createRecvTransport({ id: rd.transportId as string, iceParameters: rd.iceParameters as any, iceCandidates: rd.iceCandidates as any[], dtlsParameters: rd.dtlsParameters as any, iceServers: buildIceServers(), iceTransportPolicy: 'all' as RTCIceTransportPolicy });
+          connectTransport(recvTransport, 'recv');
+          recvTransportRef.current = recvTransport;
+
+          if (localStreamRef.current && producerRef.current === null) {
+            const audioTrack = localStreamRef.current.getAudioTracks()[0];
+            if (audioTrack) {
+              producerRef.current = await sendTransport.produce({ track: audioTrack });
+            }
+          }
+
+          setStatePartial({ connected: true });
+          clearTimeout(timeout);
+          resolve();
+        } catch (err: any) {
+          setStatePartial({ error: err.message });
+          clearTimeout(timeout);
+          reject(err);
+        }
+      };
+
+      ws.onmessage = handleWsMessage;
+      ws.onclose = () => cleanupConnections();
+      ws.onerror = () => { setStatePartial({ error: 'WebSocket connection failed' }); clearTimeout(timeout); reject(new Error('WebSocket connection failed')); };
+    });
+  }, [roomId, role, sendToWs, sendSignal, handleWsMessage, setStatePartial, cleanupConnections, connectTransport]);
 
   useEffect(() => {
     return () => cleanup();
@@ -322,8 +345,6 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
     toggleMic,
     toggleCamera,
     toggleScreenShare,
-    sendToWs,
-    handleWsMessage,
     join,
     cleanup,
     userIdRef,
