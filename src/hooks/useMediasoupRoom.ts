@@ -17,6 +17,7 @@ type MediasoupRoomState = {
   isScreenSharing: boolean;
   error: string | null;
   connected: boolean;
+  cameraRecoveryNeedsGesture: boolean;
 };
 
 function deriveWsUrl(): string {
@@ -70,6 +71,7 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
     isScreenSharing: false,
     error: null,
     connected: false,
+    cameraRecoveryNeedsGesture: false,
   });
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -77,6 +79,7 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
   const sendTransportRef = useRef<Transport | null>(null);
   const recvTransportRef = useRef<Transport | null>(null);
   const producerRef = useRef<Producer | null>(null);
+  const videoProducerRef = useRef<Producer | null>(null);
   const screenProducerRef = useRef<Producer | null>(null);
   const consumersRef = useRef<Map<string, Consumer>>(new Map());
   const localStreamRef = useRef<MediaStream | null>(null);
@@ -84,6 +87,12 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
   const joinedRef = useRef(false);
   const userIdRef = useRef<string>('');
 
+  const monitorCleanupRef = useRef<(() => void) | null>(null);
+  const setupTrackMonitorRef = useRef<(track: MediaStreamTrack) => void>();
+
+  const localProducerIdsRef = useRef<Set<string>>(new Set());
+
+  const pendingProducersRef = useRef<Array<{ peerId: string; producerId: string; kind: string }>>([]);
   const resolveTransportSend = useRef<((d: unknown) => void) | null>(null);
   const resolveTransportRecv = useRef<((d: unknown) => void) | null>(null);
   const resolveRouterCaps = useRef<((caps: RtpCapabilities) => void) | null>(null);
@@ -97,6 +106,26 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
       const peers = new Map(prev.peers);
       const existing = peers.get(peerId) || {};
       peers.set(peerId, { ...existing, [kind]: stream });
+      return { ...prev, peers };
+    });
+  }, []);
+
+  const setPeerTrack = useCallback((peerId: string, track: MediaStreamTrack, kind: 'video' | 'audio') => {
+    setState((prev) => {
+      const peers = new Map(prev.peers);
+      const existing = peers.get(peerId) || {};
+      const currentVideo = existing.video;
+      const currentAudio = existing.audio;
+
+      let allTracks: MediaStreamTrack[] = [track];
+      if (kind === 'video' && currentAudio) {
+        allTracks = [...currentAudio.getAudioTracks(), track];
+      } else if (kind === 'audio' && currentVideo) {
+        allTracks = [...currentVideo.getVideoTracks(), track];
+      }
+
+      const stream = new MediaStream(allTracks);
+      peers.set(peerId, { ...existing, [kind]: stream, video: stream.getVideoTracks().length > 0 ? stream : existing.video, audio: stream.getAudioTracks().length > 0 ? stream : existing.audio });
       return { ...prev, peers };
     });
   }, []);
@@ -133,7 +162,8 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
   const handleWsMessage = useCallback(
     async (event: MessageEvent) => {
       try {
-        const msg = JSON.parse(event.data);
+        const rawMsg = JSON.parse(event.data);
+        const msg = (rawMsg.type === 'signal' && rawMsg.data && typeof rawMsg.data === 'object') ? rawMsg.data : rawMsg;
         switch (msg.type) {
           case 'new-router-rtp-capabilities': {
             const resolve = resolveRouterCaps.current;
@@ -156,14 +186,20 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
             break;
           }
           case 'new-producer': {
+            const isSelf = (msg.peerId && msg.peerId === userIdRef.current) || localProducerIdsRef.current.has(msg.producerId as string);
+            if (isSelf) break;
             const dev = deviceRef.current;
             const recv = recvTransportRef.current;
-            if (!dev || !recv) break;
-            sendSignal({ type: 'consume', transportId: recv.id, producerId: msg.producerId, rtpCapabilities: (dev as any).rtpCapabilities });
+            if (!dev || !recv) {
+              pendingProducersRef.current.push({ peerId: msg.peerId as string, producerId: msg.producerId as string, kind: msg.kind as string });
+              break;
+            }
+            sendSignal({ type: 'consume', transportId: recv.id, producerId: msg.producerId, peerId: msg.peerId, rtpCapabilities: (dev as any).rtpCapabilities });
             break;
           }
           case 'new-consumer': {
             if (consumersRef.current.has(msg.consumerId)) break;
+            if (msg.peerId && msg.peerId === userIdRef.current) break;
             const recv = recvTransportRef.current;
             if (!recv) break;
             const consumer = await (recv as any).consume({
@@ -173,10 +209,12 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
               rtpParameters: msg.rtpParameters,
             });
             consumer.observer.on('trackchange', () => {
-              updatePeer(msg.producerId, new MediaStream([consumer.track]), msg.kind);
+              if (consumer.track) {
+                setPeerTrack(msg.peerId as string, consumer.track, msg.kind as 'video' | 'audio');
+              }
             });
             if (consumer.track) {
-              updatePeer(msg.producerId, new MediaStream([consumer.track]), msg.kind);
+              setPeerTrack(msg.peerId as string, consumer.track, msg.kind as 'video' | 'audio');
             }
             consumersRef.current.set(consumer.id, consumer);
             break;
@@ -192,7 +230,7 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
         }
       } catch {}
     },
-    [setStatePartial, removePeer, updatePeer, sendSignal],
+    [setStatePartial, removePeer, updatePeer, setPeerTrack, sendSignal],
   );
 
   const startLocalStream = useCallback(async (withVideo = true, withAudio = true): Promise<MediaStream> => {
@@ -201,6 +239,19 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
       audio: withAudio,
     });
     localStreamRef.current = stream;
+    const videoTrack = stream.getVideoTracks()[0];
+    if (videoTrack) {
+      videoTrack.addEventListener('ended', () => {
+        console.warn('[video-instrument] Video track ended. readyState:', videoTrack.readyState, 'muted:', videoTrack.muted);
+      });
+      videoTrack.addEventListener('mute', () => {
+        console.warn('[video-instrument] Video track mute event. readyState:', videoTrack.readyState, 'muted:', videoTrack.muted);
+      });
+      videoTrack.addEventListener('unmute', () => {
+        console.warn('[video-instrument] Video track unmute event. readyState:', videoTrack.readyState, 'muted:', videoTrack.muted);
+      });
+      setupTrackMonitorRef.current?.(videoTrack);
+    }
     setStatePartial({ localStream: stream, isMicOn: withAudio, isCameraOn: withVideo });
     if (sendTransportRef.current && producerRef.current === null) {
       const audioTrack = stream.getAudioTracks()[0];
@@ -215,6 +266,27 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
     if (!localStreamRef.current) return;
     const audioTrack = localStreamRef.current.getAudioTracks()[0];
     if (!audioTrack) return;
+    console.warn('toggleMic: audioTrack.readyState:', audioTrack.readyState, 'muted:', audioTrack.muted);
+    if (audioTrack.readyState !== 'live') {
+      try {
+        const newStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+        const newTrack = newStream.getAudioTracks()[0];
+        audioTrack.stop();
+        if (producerRef.current) {
+          await producerRef.current.replaceTrack({ track: newTrack });
+          console.log('toggleMic: replaceTrack on producer succeeded');
+        }
+        const oldAudioTrack = localStreamRef.current.getAudioTracks()[0];
+        if (oldAudioTrack) localStreamRef.current.removeTrack(oldAudioTrack);
+        localStreamRef.current.addTrack(newTrack);
+        setStatePartial({ isMicOn: true });
+        return;
+      } catch (err: any) {
+        console.error('toggleMic: getUserMedia failed:', { name: err.name, message: err.message });
+        setStatePartial({ error: err?.message ?? 'No se pudo recuperar el micrófono' });
+        return;
+      }
+    }
     audioTrack.enabled = !audioTrack.enabled;
     setStatePartial({ isMicOn: audioTrack.enabled });
   }, [setStatePartial]);
@@ -223,8 +295,30 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
     if (!localStreamRef.current) return;
     const videoTrack = localStreamRef.current.getVideoTracks()[0];
     if (!videoTrack) return;
+    console.warn('toggleCamera: videoTrack.readyState:', videoTrack.readyState, 'muted:', videoTrack.muted);
+    if (videoTrack.readyState !== 'live') {
+      try {
+        const newStream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 }, audio: false });
+        const newTrack = newStream.getVideoTracks()[0];
+        videoTrack.stop();
+        if (videoProducerRef.current) {
+          await videoProducerRef.current.replaceTrack({ track: newTrack });
+          console.log('toggleCamera: replaceTrack on producer succeeded');
+        }
+        const oldVideoTrack = localStreamRef.current.getVideoTracks()[0];
+        if (oldVideoTrack) localStreamRef.current.removeTrack(oldVideoTrack);
+        localStreamRef.current.addTrack(newTrack);
+        setupTrackMonitorRef.current?.(newTrack);
+        setStatePartial({ isCameraOn: true, cameraRecoveryNeedsGesture: false });
+        return;
+      } catch (err: any) {
+        console.error('toggleCamera: getUserMedia failed:', { name: err.name, message: err.message });
+        setStatePartial({ error: err?.message ?? 'No se pudo recuperar la cámara' });
+        return;
+      }
+    }
     videoTrack.enabled = !videoTrack.enabled;
-    setStatePartial({ isCameraOn: videoTrack.enabled });
+    setStatePartial({ isCameraOn: videoTrack.enabled, cameraRecoveryNeedsGesture: false });
   }, [setStatePartial]);
 
   const toggleScreenShare = useCallback(async () => {
@@ -254,6 +348,8 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
   const cleanupConnections = useCallback(() => {
     producerRef.current?.close();
     producerRef.current = null;
+    videoProducerRef.current?.close();
+    videoProducerRef.current = null;
     screenProducerRef.current?.close();
     screenProducerRef.current = null;
     consumersRef.current.forEach((c) => c.close());
@@ -269,6 +365,7 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
     resolveTransportSend.current = null;
     resolveTransportRecv.current = null;
     resolveRouterCaps.current = null;
+    localProducerIdsRef.current.clear();
   }, []);
 
   const cleanup = useCallback(() => {
@@ -312,16 +409,30 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
           connectTransport(recvTransport, 'recv');
           recvTransportRef.current = recvTransport;
 
-          if (localStreamRef.current && producerRef.current === null) {
+          if (localStreamRef.current) {
             const audioTrack = localStreamRef.current.getAudioTracks()[0];
-            if (audioTrack) {
+            if (audioTrack && producerRef.current === null) {
               producerRef.current = await sendTransport.produce({ track: audioTrack });
+              localProducerIdsRef.current.add(producerRef.current.id);
+            }
+            const videoTrack = localStreamRef.current.getVideoTracks()[0];
+            if (videoTrack && videoProducerRef.current === null) {
+              videoProducerRef.current = await sendTransport.produce({ track: videoTrack });
+              localProducerIdsRef.current.add(videoProducerRef.current.id);
             }
           }
 
           setStatePartial({ connected: true });
           clearTimeout(timeout);
           resolve();
+          const dev = deviceRef.current;
+          const recv = recvTransportRef.current;
+          if (dev && recv) {
+            for (const p of pendingProducersRef.current) {
+              sendSignal({ type: 'consume', transportId: recv.id, producerId: p.producerId, peerId: p.peerId, rtpCapabilities: (dev as any).rtpCapabilities });
+            }
+            pendingProducersRef.current = [];
+          }
         } catch (err: any) {
           setStatePartial({ error: err.message });
           clearTimeout(timeout);
@@ -338,6 +449,80 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
   useEffect(() => {
     return () => cleanup();
   }, [cleanup]);
+
+  useEffect(() => {
+    const setup = (track: MediaStreamTrack) => {
+      monitorCleanupRef.current?.();
+
+      let recovering = false;
+
+      const attemptRecovery = async (eventType: string) => {
+        if (recovering) return;
+        recovering = true;
+        console.warn(`[video-monitor] track ${eventType} event — readyState: ${track.readyState}, muted: ${track.muted}`);
+        try {
+          const newStream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 }, audio: false });
+          const newTrack = newStream.getVideoTracks()[0];
+          console.log(`[video-monitor] getUserMedia succeeded, new track readyState: ${newTrack.readyState}`);
+
+          if (videoProducerRef.current) {
+            await videoProducerRef.current.replaceTrack({ track: newTrack });
+            console.log('[video-monitor] replaceTrack on producer succeeded');
+          }
+
+          const oldTrack = localStreamRef.current?.getVideoTracks()[0];
+          if (oldTrack) localStreamRef.current?.removeTrack(oldTrack);
+          if (localStreamRef.current) localStreamRef.current.addTrack(newTrack);
+
+          setup(newTrack);
+
+          setStatePartial({ isCameraOn: true, cameraRecoveryNeedsGesture: false });
+          console.log('[video-monitor] camera recovery succeeded');
+        } catch (err: any) {
+          console.error(`[video-monitor] getUserMedia failed:`, { name: err.name, message: err.message, constraint: err.constraint });
+          if (err.name === 'NotAllowedError') {
+            setStatePartial({ cameraRecoveryNeedsGesture: true });
+          } else {
+            setStatePartial({ error: 'No se pudo recuperar la cámara automáticamente' });
+          }
+        } finally {
+          recovering = false;
+        }
+      };
+
+      const onEnded = () => attemptRecovery('ended');
+      const onMute = () => {
+        console.warn('[video-monitor] track muted event (temporary WebRTC state)');
+      };
+      const onUnmute = () => {
+        console.log('[video-monitor] track unmuted — camera available again');
+      };
+
+      track.addEventListener('ended', onEnded);
+      track.addEventListener('mute', onMute);
+      track.addEventListener('unmute', onUnmute);
+
+      const cleanup = () => {
+        track.removeEventListener('ended', onEnded);
+        track.removeEventListener('mute', onMute);
+        track.removeEventListener('unmute', onUnmute);
+      };
+      monitorCleanupRef.current = cleanup;
+    };
+
+    setupTrackMonitorRef.current = setup;
+
+    const stream = localStreamRef.current;
+    const videoTrack = stream?.getVideoTracks()[0];
+    if (videoTrack) {
+      setup(videoTrack);
+    }
+
+    return () => {
+      monitorCleanupRef.current?.();
+      monitorCleanupRef.current = null;
+    };
+  }, [setStatePartial]);
 
   return {
     state,

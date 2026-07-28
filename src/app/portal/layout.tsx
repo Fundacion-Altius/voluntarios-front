@@ -1,17 +1,15 @@
 'use client';
-import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/auth/useAuth';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import { Home, Calendar, Award, Trophy, Newspaper, LogOut, BookOpen, Users, MessageSquare } from 'lucide-react';
+import Sidebar from '@/components/portal/Sidebar';
+import BottomNav from '@/components/portal/BottomNav';
 import { NotificationBell } from '@/components/NotificationBell';
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, user, logout } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -26,7 +24,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   if (isLoading) {
     return (
       <main className="min-h-screen bg-background p-6">
-        <Skeleton className="h-8 w-48 mb-6" />
+        <Skeleton className="mb-6 h-8 w-48" />
         <Skeleton className="h-64 w-full rounded-lg" />
       </main>
     );
@@ -34,42 +32,34 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
   if (!isAuthenticated) return null;
 
-  const links = [
-    { href: '/portal', label: 'Mi perfil', icon: Home },
-    { href: '/portal/actividades', label: 'Actividades', icon: Calendar },
-    { href: '/portal/logros', label: 'Logros', icon: Award },
-    { href: '/portal/ranking', label: 'Ranking', icon: Trophy },
-    { href: '/portal/noticias', label: 'Noticias', icon: Newspaper },
-    { href: '/portal/cursos', label: 'Cursos', icon: BookOpen },
-    { href: '/portal/proyectos', label: 'Proyectos', icon: Users },
-    { href: '/portal/proyectos/mensajes', label: 'Mensajes', icon: MessageSquare },
-  ];
+  const profile = user as { name?: string; email?: string } | null;
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-muted/30 px-6 py-3">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <span className="text-lg font-bold">Mi Portal</span>
-          <div className="flex items-center gap-2">
-            <NotificationBell />
-            {links.map((l) => {
-              const Icon = l.icon;
-              const isActive = pathname === l.href;
-              return (
-                <Link key={l.href} href={l.href}>
-                  <Button variant={isActive ? 'default' : 'ghost'} size="sm">
-                    <Icon className="mr-1 size-4" /> {l.label}
-                  </Button>
-                </Link>
-              );
-            })}
-            <Button variant="ghost" size="sm" onClick={() => logout()}>
-              <LogOut className="mr-1 size-4" /> Salir
-            </Button>
+    <div className="flex min-h-screen bg-background">
+      <div className="hidden lg:flex">
+        <Sidebar
+          userName={profile?.name}
+          userEmail={profile?.email}
+          onLogout={() => logout()}
+        />
+      </div>
+      <div className="flex flex-1 flex-col">
+        <main className="flex-1 p-4 pb-20 lg:p-6 lg:pb-6">
+          <div className="mx-auto max-w-5xl">
+            {children}
           </div>
-        </div>
-      </header>
-      <main className="mx-auto max-w-5xl p-6">{children}</main>
+        </main>
+      </div>
+      <div className="lg:hidden">
+        <BottomNav
+          userName={profile?.name}
+          userEmail={profile?.email}
+          onLogout={() => logout()}
+        />
+      </div>
+      <div className="fixed right-4 top-4 z-50">
+        <NotificationBell />
+      </div>
     </div>
   );
 }

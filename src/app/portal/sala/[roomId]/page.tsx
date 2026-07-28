@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+// ATENCIÓN: Todo el texto de UI debe estar en español. No agregar texto en inglés.
+
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,14 +11,11 @@ import { VideoGrid } from '@/components/video/VideoGrid';
 import { VideoControls } from '@/components/video/VideoControls';
 import { ActiveSpeakerIndicator } from '@/components/video/ActiveSpeakerIndicator';
 import { useMediasoupRoom } from '@/hooks/useMediasoupRoom';
-import { useAttentionEstimation } from '@/hooks/useAttentionEstimation';
 import { Loader2 } from 'lucide-react';
 
 export default function VideoRoomPage({ params }: { params: { roomId: string } }) {
   const { data: session } = useSession();
   const router = useRouter();
-  const localVideoRef = useRef<HTMLVideoElement>(null);
-  const attentionCanvasRef = useRef<HTMLCanvasElement>(null);
   const [role, setRole] = useState<'host' | 'guest'>('guest');
   const [joining, setJoining] = useState(false);
   const [joinError, setJoinError] = useState<string | null>(null);
@@ -26,18 +25,9 @@ export default function VideoRoomPage({ params }: { params: { roomId: string } }
     role,
   );
 
-  const attention = useAttentionEstimation(localVideoRef, attentionCanvasRef, !!state.localStream && !joining);
-
   useEffect(() => {
     return () => cleanup();
   }, [cleanup]);
-
-  useEffect(() => {
-    if (state.localStream && localVideoRef.current) {
-      localVideoRef.current.srcObject = state.localStream;
-      localVideoRef.current.play().catch(() => {});
-    }
-  }, [state.localStream]);
 
   const handleJoin = async () => {
     if (!session?.authToken) return;
@@ -47,7 +37,7 @@ export default function VideoRoomPage({ params }: { params: { roomId: string } }
       await startLocalStream(true, true);
       await join(session?.authToken);
     } catch (err: any) {
-      setJoinError(err?.message || err?.toString() || 'Failed to join room');
+      setJoinError(err?.message || err?.toString() || 'Error al unirse a la sala');
       cleanup();
       setJoining(false);
     }
@@ -63,8 +53,8 @@ export default function VideoRoomPage({ params }: { params: { roomId: string } }
       <div className="mx-auto max-w-5xl space-y-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Room {params.roomId}</CardTitle>
-            <ActiveSpeakerIndicator attention={attention} />
+            <CardTitle>Sala {params.roomId}</CardTitle>
+            <ActiveSpeakerIndicator connected={state.connected} />
           </CardHeader>
           <CardContent className="space-y-4">
             <VideoGrid peers={state.peers} localStream={state.localStream} userId={state.userId} />
@@ -72,13 +62,12 @@ export default function VideoRoomPage({ params }: { params: { roomId: string } }
               isMicOn={state.isMicOn}
               isCameraOn={state.isCameraOn}
               isScreenSharing={state.isScreenSharing}
+              cameraRecoveryNeedsGesture={state.cameraRecoveryNeedsGesture}
               onToggleMic={toggleMic}
               onToggleCamera={toggleCamera}
               onToggleScreenShare={toggleScreenShare}
               onLeave={handleLeave}
             />
-            <canvas ref={attentionCanvasRef} className="hidden" />
-            <video ref={localVideoRef} className="hidden" playsInline muted />
           </CardContent>
         </Card>
       </div>
@@ -89,23 +78,23 @@ export default function VideoRoomPage({ params }: { params: { roomId: string } }
     <div className="mx-auto max-w-2xl space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Join video room</CardTitle>
+          <CardTitle>Unirse a sala de video</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">Room ID: {params.roomId}</p>
+          <p className="text-sm text-muted-foreground">Sala: {params.roomId}</p>
           <div className="flex items-center gap-2">
             <Button variant={role === 'guest' ? 'secondary' : 'outline'} onClick={() => setRole('guest')}>
-              Join as guest
+              Unirse como participante
             </Button>
             <Button variant={role === 'host' ? 'secondary' : 'outline'} onClick={() => setRole('host')}>
-              Join as host
+              Unirse como anfitrión
             </Button>
           </div>
           <Button className="w-full" onClick={handleJoin} disabled={!session?.authToken || joining}>
-            {joining ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Joining...</> : 'Join room'}
+            {joining ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uniéndose...</> : 'Unirse a la sala'}
           </Button>
           {joinError && <p className="text-sm text-destructive">{joinError}</p>}
-          {!session?.authToken && <p className="text-sm text-destructive">You must be logged in to join</p>}
+          {!session?.authToken && <p className="text-sm text-destructive">Debes iniciar sesión para unirte</p>}
         </CardContent>
       </Card>
     </div>

@@ -4,69 +4,32 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { BookOpen, Clock, BarChart3 } from 'lucide-react';
-
-import { getApiBaseUrl } from '@/lib/apiUrl';
-
-const API_URL = getApiBaseUrl();
+import PageHeader from '@/components/portal/PageHeader';
+import { LoadingSkeleton, ErrorState, EmptyState } from '@/components/portal/StateViews';
+import { apiClient, apiUrl } from '@/lib/apiClient';
+import { BookOpen, Clock } from 'lucide-react';
 
 export default function CursosPage() {
   const { data: session } = useSession();
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  const fetchHeaders = (): Record<string, string> => {
-    const token = (session as any)?.authToken;
-    const h: Record<string, string> = {};
-    if (token) h['Authorization'] = `Bearer ${token}`;
-    return h;
-  };
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/courses?status=published`, {
-      headers: fetchHeaders(),
-      credentials: 'include',
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error('Error al cargar cursos');
-        return res.json();
-      })
-      .then((data) => setCourses(data?.data ?? (data.success ? data.data : data)))
-      .catch((err) => setError(err.message))
+    apiClient<any>(apiUrl('/api/courses?status=published'))
+      .then((data) => setCourses(data?.data ?? data))
+      .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-48 w-full rounded-lg" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="space-y-4">
-        <p className="text-destructive">{error}</p>
-        <Button variant="outline" onClick={() => window.location.reload()}>Reintentar</Button>
-      </div>
-    );
-  }
+  if (loading) return <div><PageHeader title="Cursos" subtitle="Explora los cursos disponibles" /><LoadingSkeleton rows={4} /></div>;
+  if (error) return <div><PageHeader title="Cursos" /><ErrorState message={error} /></div>;
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Cursos</h1>
+      <PageHeader title="Cursos" subtitle="Explora los cursos disponibles" />
       {courses.length === 0 ? (
-        <p className="text-muted-foreground">No hay cursos disponibles por ahora.</p>
+        <EmptyState title="No hay cursos disponibles por ahora" description="Vuelve más tarde para ver nuevos cursos." />
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {courses.map((course: any) => (
@@ -76,19 +39,13 @@ export default function CursosPage() {
                   <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-lg">{course.title}</CardTitle>
                     <div className="flex shrink-0 gap-1">
-                      {course.level && (
-                        <Badge variant="secondary">{course.level}</Badge>
-                      )}
-                      {course.category && (
-                        <Badge variant="outline">{course.category}</Badge>
-                      )}
+                      {course.level && <Badge variant="secondary">{course.level}</Badge>}
+                      {course.category && <Badge variant="outline">{course.category}</Badge>}
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="mb-3 text-sm text-muted-foreground line-clamp-2">
-                    {course.description}
-                  </p>
+                  <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">{course.description}</p>
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <BookOpen className="size-3" />

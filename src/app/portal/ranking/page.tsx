@@ -1,43 +1,36 @@
 'use client';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-
-import { getApiBaseUrl } from '@/lib/apiUrl';
-
-const API_URL = getApiBaseUrl();
+import PageHeader from '@/components/portal/PageHeader';
+import { LoadingSkeleton, ErrorState, EmptyState } from '@/components/portal/StateViews';
+import { apiClient, apiUrl } from '@/lib/apiClient';
 
 export default function RankingPage() {
   const { data: session } = useSession();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const fetchIdRef = useRef(0);
-
-  const fetchHeaders = (): Record<string, string> => {
-    const token = (session as any)?.authToken;
-    const h: Record<string, string> = {}; if (token) h['Authorization'] = `Bearer ${token}`; return h;
-  };
 
   useEffect(() => {
     const thisFetchId = ++fetchIdRef.current;
-    fetch(`${API_URL}/api/gamification/ranking`, { headers: fetchHeaders(), credentials: 'include' })
-      .then((r) => r.json())
+    apiClient<any>(apiUrl('/api/gamification/ranking'))
       .then((d) => { if (thisFetchId === fetchIdRef.current) setData(d); })
+      .catch((e) => { if (thisFetchId === fetchIdRef.current) setError(e.message); })
       .finally(() => { if (thisFetchId === fetchIdRef.current) setLoading(false); });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
-  if (loading) return <div className="space-y-4"><Skeleton className="h-48 w-full rounded-lg" /></div>;
+  if (loading) return <div><PageHeader title="Ranking semanal" /><LoadingSkeleton rows={3} /></div>;
 
   const top3 = data?.top3 || [];
 
   return (
     <div>
-      <h2 className="mb-4 text-lg font-semibold">Ranking semanal</h2>
-      {top3.length === 0 ? (
-        <p className="text-muted-foreground">Aún no hay datos de ranking esta semana.</p>
+      <PageHeader title="Ranking semanal" subtitle="Los mejores voluntarios de la semana" />
+      {error ? <ErrorState message={error} /> : top3.length === 0 ? (
+        <EmptyState title="Aún no hay datos de ranking esta semana" description="Participa en actividades para aparecer en el ranking." />
       ) : (
         <div className="space-y-3">
           {top3.map((entry: any, idx: number) => (

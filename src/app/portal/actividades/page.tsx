@@ -4,87 +4,77 @@ import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-
-import { getApiBaseUrl } from '@/lib/apiUrl';
-
-const API_URL = getApiBaseUrl();
+import PageHeader from '@/components/portal/PageHeader';
+import { LoadingSkeleton, ErrorState, EmptyState } from '@/components/portal/StateViews';
+import { apiClient, apiUrl } from '@/lib/apiClient';
 
 export default function ActividadesPortalPage() {
   const { data: session } = useSession();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState('');
   const [bookingId, setBookingId] = useState<string | null>(null);
+  const [joinError, setJoinError] = useState<string | null>(null);
   const fetchIdRef = useRef(0);
-
-  const fetchHeaders = (): Record<string, string> => {
-    const token = (session as any)?.authToken;
-    const h: Record<string, string> = {}; if (token) h['Authorization'] = `Bearer ${token}`; return h;
-  };
 
   const showSuccess = (msg: string) => { setSuccessMsg(msg); setTimeout(() => setSuccessMsg(''), 3000); };
 
   const fetchSessions = useCallback(async () => {
     const thisFetchId = ++fetchIdRef.current;
-    setLoading(true); setError('');
+    setLoading(true); setError(null);
     try {
-      const res = await fetch(`${API_URL}/api/activities/upcoming`, { headers: fetchHeaders(), credentials: 'include' });
-      if (thisFetchId !== fetchIdRef.current) return;
-      if (!res.ok) throw new Error('Error al cargar sesiones');
-      const data = await res.json();
-      setSessions(data.success ? data.data : data);
-    } catch (err: any) { setError(err.message); }
-    finally { if (thisFetchId === fetchIdRef.current) setLoading(false); }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session]);
+      const data = await apiClient<any[]>(apiUrl('/api/activities/upcoming'));
+      if (thisFetchId === fetchIdRef.current) setSessions(data);
+    } catch (err: any) {
+      if (thisFetchId === fetchIdRef.current) setError(err.message);
+    } finally {
+      if (thisFetchId === fetchIdRef.current) setLoading(false);
+    }
+  }, []);
 
   useEffect(() => { fetchSessions(); }, [fetchSessions]);
 
   const handleJoinLive = async (sessionId: string) => {
-    const token = (session as any)?.authToken;
-    if (!token) return;
+    setJoinError(null);
     try {
-      const res = await fetch(`${API_URL}/api/video/rooms?activity_session_id=${sessionId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error('No active video room');
-      const data = await res.json();
+      const data = await apiClient<any>(apiUrl(`/api/video/rooms?activity_session_id=${sessionId}`));
       const rooms = data.data || [];
       const room = rooms[0];
       if (room?.roomId) {
         window.location.href = `/portal/sala/${room.roomId}`;
       } else {
-        throw new Error('No active video room');
+        setJoinError('No hay una sala activa para esta actividad');
       }
-    } catch (err: any) { setError(err.message); }
+    } catch {
+      setJoinError('No hay una sala activa para esta actividad');
+    }
   };
 
   const handleBook = async (sessionId: string) => {
     setBookingId(sessionId);
     try {
-      const res = await fetch(`${API_URL}/api/activities/sessions/${sessionId}/book`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', ...fetchHeaders() }, credentials: 'include',
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error');
+      await apiClient<any>(apiUrl(`/api/activities/sessions/${sessionId}/book`), { method: 'POST' });
       showSuccess('Reserva confirmada');
       fetchSessions();
     } catch (err: any) { setError(err.message); }
     finally { setBookingId(null); }
   };
 
-  if (loading) return <div className="space-y-4"><Skeleton className="h-48 w-full rounded-lg" /></div>;
+  if (loading) return <div><PageHeader title="Actividades" subtitle="Próximas sesiones disponibles" /><LoadingSkeleton rows={3} /></div>;
 
   return (
     <div>
-      <h2 className="mb-4 text-lg font-semibold">Próximas sesiones</h2>
-      {error && <div className="mb-4 rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
-      {successMsg && <div className="mb-4 rounded-md bg-green-100 p-3 text-sm text-green-800">{successMsg}</div>}
-      {sessions.length === 0 ? (
-        <p className="text-muted-foreground">No hay sesiones disponibles próximamente.</p>
+      <PageHeader title="Actividades" subtitle="Próximas sesiones disponibles" />
+      {error && <ErrorState message={error} onRetry={fetchSessions} />}
+      {joinError && (
+        <div className="mb-4 rounded-md border border-destructive/20 bg-destructive/5 p-3 text-sm text-destructive">{joinError}</div>
+      )}
+      {successMsg && (
+        <div className="mb-4 rounded-md bg-primary/10 p-3 text-sm text-primary">{successMsg}</div>
+      )}
+      {!error && sessions.length === 0 ? (
+        <EmptyState title="No hay sesiones próximas" description="Vuelve más tarde para ver nuevas actividades." />
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {sessions.map((s: any) => (

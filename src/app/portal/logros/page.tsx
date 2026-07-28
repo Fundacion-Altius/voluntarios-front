@@ -1,41 +1,34 @@
 'use client';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-
-import { getApiBaseUrl } from '@/lib/apiUrl';
-
-const API_URL = getApiBaseUrl();
+import PageHeader from '@/components/portal/PageHeader';
+import { LoadingSkeleton, ErrorState, EmptyState } from '@/components/portal/StateViews';
+import { apiClient, apiUrl } from '@/lib/apiClient';
 
 export default function LogrosPage() {
   const { data: session } = useSession();
   const [badges, setBadges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const fetchIdRef = useRef(0);
-
-  const fetchHeaders = (): Record<string, string> => {
-    const token = (session as any)?.authToken;
-    const h: Record<string, string> = {}; if (token) h['Authorization'] = `Bearer ${token}`; return h;
-  };
 
   useEffect(() => {
     const thisFetchId = ++fetchIdRef.current;
-    fetch(`${API_URL}/api/gamification/badges`, { headers: fetchHeaders(), credentials: 'include' })
-      .then((r) => r.json())
-      .then((data) => { if (thisFetchId === fetchIdRef.current) setBadges(data.success ? data.data : data); })
+    apiClient<any[]>(apiUrl('/api/gamification/badges'))
+      .then((data) => { if (thisFetchId === fetchIdRef.current) setBadges(data); })
+      .catch((e) => { if (thisFetchId === fetchIdRef.current) setError(e.message); })
       .finally(() => { if (thisFetchId === fetchIdRef.current) setLoading(false); });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
-  if (loading) return <div className="space-y-4"><Skeleton className="h-32 w-full rounded-lg" /></div>;
+  if (loading) return <div><PageHeader title="Mis insignias" /><LoadingSkeleton rows={2} /></div>;
 
   return (
     <div>
-      <h2 className="mb-4 text-lg font-semibold">Mis insignias</h2>
-      {badges.length === 0 ? (
-        <p className="text-muted-foreground">Todavía no has ganado ninguna insignia.</p>
+      <PageHeader title="Mis insignias" />
+      {error ? <ErrorState message={error} /> : badges.length === 0 ? (
+        <EmptyState title="Todavía no has ganado ninguna insignia" description="Completa actividades y cursos para ganar insignias." />
       ) : (
         <div className="flex flex-wrap gap-3">
           {badges.map((b: any) => (

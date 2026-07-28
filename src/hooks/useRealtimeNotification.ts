@@ -7,12 +7,19 @@ import { getApiBaseUrl } from '@/lib/apiUrl';
 const API_URL = getApiBaseUrl();
 
 function deriveWsUrl(): string {
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      return `${protocol}//${window.location.host}/ws`;
+    }
+  }
   try {
     const url = new URL(API_URL);
     const protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
-    return `${protocol}//${url.host}`;
+    return `${protocol}//${url.host}/ws`;
   } catch {
-    return 'ws://localhost:3001';
+    return 'ws://localhost:3001/ws';
   }
 }
 

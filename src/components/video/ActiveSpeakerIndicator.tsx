@@ -1,15 +1,16 @@
 'use client';
 
-export function ActiveSpeakerIndicator({ attention }: { attention: number | null }) {
-  if (attention === null) return null;
-
-  const label = attention > 0.7 ? 'High attention' : attention > 0.4 ? 'Attention' : 'Low attention';
-  const color = attention > 0.7 ? 'text-green-600' : attention > 0.4 ? 'text-yellow-600' : 'text-red-600';
+export function ActiveSpeakerIndicator({ connected, attention }: { connected?: boolean; attention?: number | null }) {
+  const isConnected = connected ?? true;
+  if (!isConnected) return null;
 
   return (
-    <div className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${color}`}>
-      <span className="h-2 w-2 rounded-full bg-current" />
-      {label}
+    <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
+      <span className="relative flex h-2 w-2">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+      </span>
+      En vivo
     </div>
   );
 }

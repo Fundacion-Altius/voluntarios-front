@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -7,7 +7,68 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle, ArrowLeft, ArrowRight } from 'lucide-react';
+import { CheckCircle, ArrowLeft, ArrowRight, Check, X } from 'lucide-react';
+
+function QuizComponent({ quiz, lessonTitle }: { quiz: any; lessonTitle: string }) {
+  const [selected, setSelected] = useState<number | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+  const correctIndex = quiz.correct ?? quiz.answer ?? 0;
+
+  const handleSubmit = () => {
+    if (selected === null) return;
+    setSubmitted(true);
+  };
+
+  const handleRetry = () => {
+    setSelected(null);
+    setSubmitted(false);
+  };
+
+  return (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold">{quiz.question || lessonTitle}</h3>
+      <div className="space-y-2">
+        {quiz.options?.map((opt: string, i: number) => {
+          let className = 'cursor-pointer rounded-md border p-3 text-sm transition-colors ';
+          if (!submitted) {
+            className += selected === i ? 'border-primary bg-primary/5' : 'hover:bg-muted/50';
+          } else {
+            if (i === correctIndex) className += 'border-green-500 bg-green-50 text-green-800';
+            else if (i === selected && i !== correctIndex) className += 'border-destructive bg-destructive/5 text-destructive';
+            else className += 'opacity-60';
+          }
+          return (
+            <div
+              key={i}
+              className={className}
+              onClick={() => { if (!submitted) setSelected(i); }}
+            >
+              <div className="flex items-center gap-2">
+                <span className="flex-1">{opt}</span>
+                {submitted && i === correctIndex && <Check className="size-4 text-green-600" />}
+                {submitted && i === selected && i !== correctIndex && <X className="size-4 text-destructive" />}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {!submitted ? (
+        <Button onClick={handleSubmit} disabled={selected === null} className="w-full">
+          Enviar
+        </Button>
+      ) : (
+        <div className="space-y-2">
+          <p className={`text-sm font-medium ${selected === correctIndex ? 'text-green-600' : 'text-destructive'}`}>
+            {selected === correctIndex ? '¡Correcto!' : 'Respuesta incorrecta'}
+          </p>
+          <Button variant="outline" onClick={handleRetry} className="w-full">
+            Intentar de nuevo
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 import { getApiBaseUrl } from '@/lib/apiUrl';
 
@@ -155,21 +216,7 @@ export default function LeccionPage() {
             } catch {
               return <p className="text-destructive">Error al cargar el cuestionario.</p>;
             }
-            return (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">{quiz.question || lesson.title}</h3>
-                <div className="space-y-2">
-                  {quiz.options?.map((opt: string, i: number) => (
-                    <div
-                      key={i}
-                      className="cursor-pointer rounded-md border p-3 text-sm transition-colors hover:bg-muted/50"
-                    >
-                      {opt}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
+            return <QuizComponent quiz={quiz} lessonTitle={lesson.title} />;
           })()}
         </CardContent>
       </Card>

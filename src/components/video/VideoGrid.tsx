@@ -27,23 +27,46 @@ export function VideoGrid({ peers, localStream, userId }: { peers: Map<string, {
 
 function VideoTile({ stream, label }: { stream: MediaStream | undefined; label: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const isLocal = label.startsWith('You');
 
   useEffect(() => {
     const el = videoRef.current;
-    if (el && stream) {
-      el.srcObject = stream;
+    if (!el || !stream) return;
+
+    el.srcObject = stream;
+
+    const playVideo = () => {
+      if (!el) return;
+      el.play().catch((err) => {
+        console.warn(`[VideoTile] play() failed for ${label}:`, err?.message || err);
+        if (!isLocal) {
+          el.muted = true;
+          el.play().catch((e) => console.error(`[VideoTile] muted fallback play() failed for ${label}:`, e?.message || e));
+        }
+      });
+    };
+
+    playVideo();
+
+    const track = stream.getVideoTracks()[0];
+    if (track) {
+      track.addEventListener('unmute', playVideo);
     }
+
     return () => {
+      if (track) {
+        track.removeEventListener('unmute', playVideo);
+      }
       if (el) {
         el.srcObject = null;
       }
     };
-  }, [stream]);
+  }, [stream, label, isLocal]);
 
   return (
     <div className="relative overflow-hidden rounded-lg bg-black">
       {stream ? (
-        <video ref={videoRef} autoPlay playsInline muted={label.startsWith('You')} className="h-48 w-full object-cover md:h-56" />
+        <video ref={videoRef} autoPlay playsInline muted={isLocal} className="h-48 w-full object-cover md:h-56" />
       ) : (
         <div className="flex h-48 w-full items-center justify-center bg-muted md:h-56">
           <span className="text-xs text-muted-foreground">No video</span>

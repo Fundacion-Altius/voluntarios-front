@@ -1,74 +1,40 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
-
-import { getApiBaseUrl } from '@/lib/apiUrl';
-
-const API_URL = getApiBaseUrl();
+import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import PageHeader from '@/components/portal/PageHeader';
+import { LoadingSkeleton, ErrorState, EmptyState } from '@/components/portal/StateViews';
+import { apiClient, apiUrl } from '@/lib/apiClient';
 
 interface BlogPost {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string | null;
-  body: string;
-  image_url: string | null;
-  category_id: string;
-  author_id: string;
-  published_at: string;
-  created_at: string;
-  updated_at: string;
+  id: string; title: string; slug: string; excerpt: string | null;
+  image_url: string | null; published_at: string;
 }
 
 export default function NoticiasPage() {
   const { data: session } = useSession();
-  const authToken = (session as any)?.authToken;
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const fetchPosts = async (p: number) => {
-    if (!authToken) return;
-    try {
-      const res = await fetch(`${API_URL}/api/blog/posts?page=${p}&pageSize=10`, {
-        headers: { Authorization: `Bearer ${authToken}` },
-        credentials: 'include',
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-      setPosts(data.data || []);
-      setTotalPages(data.totalPages || 1);
-    } catch {} finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchPosts(page);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, authToken]);
-
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-32 w-full rounded-lg" />
-        <Skeleton className="h-32 w-full rounded-lg" />
-      </div>
-    );
-  }
+    setLoading(true); setError(null);
+    apiClient<{ data: BlogPost[]; totalPages?: number }>(apiUrl(`/api/blog/posts?page=${page}&pageSize=10`))
+      .then((data) => { setPosts(data.data || []); setTotalPages(data.totalPages || 1); })
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, [page, session]);
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Noticias</h1>
-      {posts.length === 0 ? (
-        <p className="text-muted-foreground">No hay noticias publicadas aún.</p>
+      <PageHeader title="Noticias" subtitle="Últimas noticias y novedades" />
+      {loading ? <LoadingSkeleton rows={3} /> : error ? <ErrorState message={error} /> : posts.length === 0 ? (
+        <EmptyState title="No hay noticias publicadas aún" />
       ) : (
         <>
           <div className="space-y-4">
@@ -79,19 +45,13 @@ export default function NoticiasPage() {
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <CardTitle className="text-lg">{post.title}</CardTitle>
-                        {post.excerpt && (
-                          <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{post.excerpt}</p>
-                        )}
+                        {post.excerpt && <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{post.excerpt}</p>}
                       </div>
-                      {post.image_url && (
-                        <img src={post.image_url} alt="" className="h-20 w-20 rounded-md object-cover" />
-                      )}
+                      {post.image_url && <img src={post.image_url} alt="" className="h-20 w-20 shrink-0 rounded-md object-cover" />}
                     </div>
                     <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
                       <Calendar className="size-3" />
-                      {new Date(post.published_at).toLocaleDateString('es-ES', {
-                        year: 'numeric', month: 'long', day: 'numeric',
-                      })}
+                      {new Date(post.published_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
                     </div>
                   </CardHeader>
                 </Card>
