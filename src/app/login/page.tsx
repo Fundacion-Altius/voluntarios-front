@@ -155,6 +155,11 @@ function LoginContent() {
                 {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
               </button>
             </div>
+            <div className="text-right">
+              <a href="/recuperar-password" className="text-xs text-muted-foreground hover:text-primary">
+                ¿Olvidaste tu contraseña?
+              </a>
+            </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
             </Button>

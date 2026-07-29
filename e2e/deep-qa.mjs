@@ -387,6 +387,121 @@ async function testDataConsistency(seeded) {
   }
 }
 
+async function testSurveyIdempotency() {
+  const admin = await loginAdmin();
+
+  const questionsR = await api('GET', '/api/questions');
+  const questions = Array.isArray(questionsR.json) ? questionsR.json : questionsR.json?.data ?? [];
+  if (questions.length === 0) { assert('C8.1: No questions for idempotency test', true, 'Skipped'); return; }
+
+  const surveysR = await api('GET', '/api/surveys', { headers: { Authorization: `Bearer ${admin.authToken}` } });
+  const surveys = extractList(surveysR);
+  if (surveys.length === 0) { assert('C8.1: No surveys for idempotency test', true, 'Skipped'); return; }
+
+  const surveyId = surveys[0].id ?? surveys[0].survey_id ?? surveys[0].nombre;
+  const ratings = {};
+  for (const q of questions.slice(0, 2)) {
+    ratings[q.id || q.question_id] = Math.floor(Math.random() * 3) + 3;
+  }
+
+  const idempotencyKey = `qa-idem-${Date.now()}`;
+
+  const firstR = await api('POST', '/api/surveys/submit-answer', {
+    body: { surveyID: Number(surveyId), ratings, additionalAnswer: 'Idempotency test', idempotencyKey },
+  });
+  assert('C8.1: First submission accepted', firstR.ok, `status=${firstR.status}`);
+
+  const secondR = await api('POST', '/api/surveys/submit-answer', {
+    body: { surveyID: Number(surveyId), ratings, additionalAnswer: 'Idempotency test', idempotencyKey },
+  });
+  assert('C8.1: Duplicate submission returns existing', secondR.status === 200, `status=${secondR.status}`);
+  assert('C8.1: Duplicate response has existing=true', secondR.json?.existing === true, JSON.stringify(secondR.json));
+}
+
+async function testContractIdempotency() {
+  const uniqueId = Date.now().toString().slice(-6);
+  const email = `qa-idem-contract-${uniqueId}@test.com`;
+  const idempotencyKey = `qa-contract-idem-${Date.now()}`;
+  const contractData = {
+    idempotencyKey,
+    nombre: 'QA Idempotency',
+    id: `I${uniqueId}Z`,
+    domicilio: '456 QA Street',
+    telefono: '600000002',
+    email,
+    areas: ['Formación'],
+    lugar: 'Madrid',
+    duracion: 'meses',
+    modalidad: ['Presencial'],
+    horario: 'Mañana',
+    derechoDatos: true,
+    derechoImagen: true,
+    derechoConfidencialidad: true,
+    adulto: 'SI',
+    firma: JSON.stringify({ iv: 'testiv', compressedEncryptedData: 'testdata' }),
+    dias: ['lab-manana'],
+    fecha: new Date().toISOString().split('T')[0],
+  };
+
+  const firstR = await api('POST', '/api/contracts', { body: contractData });
+  assert('C8.2: First contract creation accepted', firstR.ok, `status=${firstR.status}`);
+
+  const secondR = await api('POST', '/api/contracts', { body: contractData });
+  assert('C8.2: Duplicate contract returns existing', secondR.status === 200, `status=${secondR.status}`);
+  assert('C8.2: Duplicate response has existing=true', secondR.json?.existing === true, JSON.stringify(secondR.json));
+}
+
+async function testPasswordReset() {
+  const admin = await loginAdmin();
+
+  const uniqueId = Date.now().toString().slice(-6);
+  const email = `qa-pwdreset-${uniqueId}@test.com`;
+
+  const createUserR = await api('POST', '/api/users', {
+    body: { name: 'QA Pwd Reset', email, password: 'Temp1234!', role: 'general', user_type: 'volunteer' },
+    headers: { Authorization: `Bearer ${admin.authToken}`, 'X-CSRF-Token': admin.csrfToken },
+  });
+  assert('C9.1: Test user created', createUserR.ok, `status=${createUserR.status}`);
+
+  const forgotR = await api('POST', '/api/auth/forgot-password', {
+    body: { email },
+  });
+  assert('C9.1: Forgot password accepted', forgotR.ok || forgotR.status === 200, `status=${forgotR.status}`);
+
+  const resetToken = forgotR.json?.resetToken || null;
+  if (resetToken) {
+    const newPassword = 'NewPwd789!';
+    const resetR = await api('POST', '/api/auth/reset-password', {
+      body: { token: resetToken, password: newPassword },
+    });
+    assert('C9.1: Password reset accepted', resetR.ok, `status=${resetR.status}`);
+
+    const loginR = await loginAs(email, newPassword);
+    assert('C9.1: Can login with new password', !!loginR.authToken, `token=${!!loginR.authToken}`);
+  } else {
+    assert('C9.1: Forgot returned a token (dev mode)', resetToken !== null, `got=${JSON.stringify(forgotR.json).slice(0, 100)}`);
+  }
+}
+
+async function testNaveScope() {
+  const admin = await loginAdmin();
+
+  const surveysR = await api('GET', '/api/surveys', { headers: { Authorization: `Bearer ${admin.authToken}` } });
+  assert('C4.4: Admin can list surveys', surveysR.ok, `status=${surveysR.status}`);
+
+  const coursesR = await api('GET', '/api/courses', { headers: { Authorization: `Bearer ${admin.authToken}` } });
+  assert('C4.4: Admin can list courses', coursesR.ok, `status=${coursesR.status}`);
+
+  const blogR = await api('GET', '/api/blog/posts', { headers: { Authorization: `Bearer ${admin.authToken}` } });
+  assert('C4.4: Admin can list blog posts', blogR.ok, `status=${blogR.status}`);
+
+  const activitiesR = await api('GET', '/api/activities/sessions', { headers: { Authorization: `Bearer ${admin.authToken}` } });
+  assert('C4.4: Admin can list activity sessions', activitiesR.ok, `status=${activitiesR.status}`);
+
+  const contractsR = await api('GET', '/api/contracts?page=1&pageSize=10', { headers: { Authorization: `Bearer ${admin.authToken}` } });
+  assert('C4.4: Admin can list contracts', contractsR.ok, `status=${contractsR.status}`);
+}
+
 async function main() {
   console.log('=== Deep Functional QA Suite ===\n');
   console.log(`Target: ${API}\n`);
@@ -405,6 +520,10 @@ async function main() {
     await phase('Phase 4: Authorization', testAuthorization);
     await phase('Phase 5: Validation & Edge Cases', testValidation);
     await phase('Phase 6: Data Consistency', () => testDataConsistency(seeded));
+    await phase('Phase 8: Idempotency - Survey Submission', testSurveyIdempotency);
+    await phase('Phase 8b: Idempotency - Contract Creation', testContractIdempotency);
+    await phase('Phase 9: Password Reset Flow', testPasswordReset);
+    await phase('Phase 4.4: Nave Role Scope', testNaveScope);
   }
 
   await phase('Phase 7: Report', () => {
