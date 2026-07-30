@@ -20,6 +20,11 @@ proxy.on('error', (err, req, res) => {
   if (res && typeof res.writeHead === 'function') {
     res.writeHead(502, { 'Content-Type': 'text/plain' });
     res.end('Bad Gateway');
+  } else if (res && typeof res.destroy === 'function') {
+    console.error('[proxy:ws] WebSocket proxy error:', err.message);
+    res.destroy(err);
+  } else {
+    console.error('[proxy:ws] WebSocket proxy error:', err.message);
   }
 });
 
