@@ -1,5 +1,12 @@
 "use client";
-import { Dispatch, SetStateAction, useState, useEffect, useCallback } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import { AreasT, DatosContrato, ModalidadT } from "../types";
 import { isUser, validateDNI } from "../utils";
 import { Input } from "@/components/ui/input";
@@ -47,30 +54,66 @@ const StepOne: React.FC<StepOneProps> = ({
     "Otra",
   ];
   const modalidadOptions: ModalidadT[] = ["Presencial", "Online", "Híbrido"];
+  const horarioOptions = [
+    { value: "días laborables mañana", label: "Días laborables mañana" },
+    { value: "días laborables tarde", label: "Días laborables tarde" },
+    { value: "fines de semana", label: "Fines de semana" },
+    { value: "indistinto", label: "Indistintamente" },
+  ];
+  const horarioOptionIds: Record<string, string> = {
+    "días laborables mañana": "dias-lab-ma",
+    "días laborables tarde": "dias-lab-ta",
+    "fines de semana": "fines",
+    indistinto: "ind",
+  };
 
-  const validateDni = useCallback(async (dni: string) => {
-    const dniIsValid = validateDNI(dni.toUpperCase());
-    setDniError(dniIsValid ? "" : "El DNI/NIE no es válido");
-    if (dniIsValid) {
-      const isDuplicate = await isUser(dni.toUpperCase());
-      setDniDuplicateError(
-        isDuplicate
-          ? "El DNI/NIE ya está registrado en el sistema. Contáctanos para más información"
-          : ""
+  const alertedDniRef = useRef<string | null>(null);
+
+  const clearDuplicateDni = useCallback(() => {
+    handleInputChange({
+      target: { name: "id", value: "", type: "text" },
+    } as unknown as React.ChangeEvent<HTMLInputElement>);
+    setDniError("");
+    setDniDuplicateError("");
+  }, [handleInputChange]);
+
+  const handleDuplicateDni = useCallback(
+    (dni: string) => {
+      if (alertedDniRef.current === dni) return;
+      alertedDniRef.current = dni;
+      alert(
+        "El DNI/NIE ya está registrado en el sistema. Contáctanos para más información"
       );
-      if (isDuplicate && contractData.id === dni.toUpperCase()) {
-        alert("No se puede generar dos veces el mismo contrato para el mismo DNI/NIE. Recarga para intentar con otro DNI/NIE");
-        handleInputChange({
-          target: { name: "id", value: "", type: "text" },
-        } as unknown as React.ChangeEvent<HTMLInputElement>);
-        setDniError("");
+      clearDuplicateDni();
+    },
+    [clearDuplicateDni]
+  );
+
+  const validateDni = useCallback(
+    async (dni: string) => {
+      const normalized = dni.toUpperCase();
+      if (alertedDniRef.current && alertedDniRef.current !== normalized) {
+        alertedDniRef.current = null;
+      }
+      const dniIsValid = validateDNI(normalized);
+      setDniError(dniIsValid ? "" : "El DNI/NIE no es válido");
+      if (dniIsValid) {
+        const isDuplicate = await isUser(normalized);
+        setDniDuplicateError(
+          isDuplicate
+            ? "El DNI/NIE ya está registrado en el sistema. Contáctanos para más información"
+            : ""
+        );
+        if (isDuplicate && contractData.id === normalized) {
+          handleDuplicateDni(normalized);
+        }
+      } else {
         setDniDuplicateError("");
       }
-    } else {
-      setDniDuplicateError("");
-    }
-    setIsValidating(false);
-  }, [contractData.id, handleInputChange]);
+      setIsValidating(false);
+    },
+    [contractData.id, handleDuplicateDni]
+  );
 
   useEffect(() => {
     const id = contractData.id;
@@ -127,14 +170,7 @@ const StepOne: React.FC<StepOneProps> = ({
             return;
           }
           if (await isUser(contractData.id)) {
-            alert(
-              "El DNI/NIE ya está registrado en el sistema. Contáctanos para más información"
-            );
-            handleInputChange({
-              target: { name: "id", value: "", type: "text" },
-            } as unknown as React.ChangeEvent<HTMLInputElement>);
-            setDniError("");
-            setDniDuplicateError("");
+            handleDuplicateDni(contractData.id);
           } else {
             nextStep();
           }
@@ -200,32 +236,20 @@ const StepOne: React.FC<StepOneProps> = ({
           <p>
             Mayor de edad <span style={{ color: "red" }}>*</span>{" "}
           </p>
-          <div className="flex gap-4">
-            <Checkbox
-              id="adulto-si"
-              checked={contractData.adulto === "SI"}
-              onCheckedChange={(checked) => {
-                if (checked) {
-                  handleInputChange({
-                    target: { name: "adulto", value: "SI", type: "radio", checked: true },
-                  } as unknown as React.ChangeEvent<HTMLInputElement>);
-                }
-              }}
-            />
-            <Label htmlFor="adulto-si">SI</Label>
-            <Checkbox
-              id="adulto-no"
-              checked={contractData.adulto === "NO"}
-              onCheckedChange={(checked) => {
-                if (checked) {
-                  handleInputChange({
-                    target: { name: "adulto", value: "NO", type: "radio", checked: true },
-                  } as unknown as React.ChangeEvent<HTMLInputElement>);
-                }
-              }}
-            />
-            <Label htmlFor="adulto-no">NO</Label>
-          </div>
+          <RadioGroup
+            value={contractData.adulto}
+            onValueChange={(value) => handleRadioChange("adulto", value)}
+            className="flex gap-4"
+          >
+            <div className="flex items-center gap-2">
+              <RadioGroupItem value="SI" id="adulto-si" />
+              <Label htmlFor="adulto-si">SI</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <RadioGroupItem value="NO" id="adulto-no" />
+              <Label htmlFor="adulto-no">NO</Label>
+            </div>
+          </RadioGroup>
         </section>
         <div className="form-group">
           <Label htmlFor="telefono">
@@ -408,62 +432,26 @@ const StepOne: React.FC<StepOneProps> = ({
             <span style={{ color: "red" }}>*</span>{" "}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="dias-lab-ma"
-                checked={contractData.horario === "días laborables mañana"}
-                onCheckedChange={(checked) => {
-                  if (checked) {
-                    handleInputChange({
-                      target: { name: "horario", value: "días laborables mañana", type: "radio" },
-                    } as unknown as React.ChangeEvent<HTMLInputElement>);
+            {horarioOptions.map((option) => (
+              <div key={option.value} className="flex items-center gap-2">
+                <Checkbox
+                  id={horarioOptionIds[option.value]}
+                  checked={
+                    contractData.horario
+                      .split(", ")
+                      .includes(option.value)
                   }
-                }}
-              />
-              <Label htmlFor="dias-lab-ma">Días laborables mañana</Label>
-            </div>
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="dias-lab-ta"
-                checked={contractData.horario === "días laborables tarde"}
-                onCheckedChange={(checked) => {
-                  if (checked) {
-                    handleInputChange({
-                      target: { name: "horario", value: "días laborables tarde", type: "radio" },
-                    } as unknown as React.ChangeEvent<HTMLInputElement>);
-                  }
-                }}
-              />
-              <Label htmlFor="dias-lab-ta">Días laborables tarde</Label>
-            </div>
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="fines"
-                checked={contractData.horario === "fines de semana"}
-                onCheckedChange={(checked) => {
-                  if (checked) {
-                    handleInputChange({
-                      target: { name: "horario", value: "fines de semana", type: "radio" },
-                    } as unknown as React.ChangeEvent<HTMLInputElement>);
-                  }
-                }}
-              />
-              <Label htmlFor="fines">Fines de semana</Label>
-            </div>
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="ind"
-                checked={contractData.horario === "indistinto"}
-                onCheckedChange={(checked) => {
-                  if (checked) {
-                    handleInputChange({
-                      target: { name: "horario", value: "indistinto", type: "radio" },
-                    } as unknown as React.ChangeEvent<HTMLInputElement>);
-                  }
-                }}
-              />
-              <Label htmlFor="ind">Indistintamente</Label>
-            </div>
+                  onCheckedChange={(checked) => {
+                    handleCheckboxChange("horario", option.value)(
+                      checked
+                    );
+                  }}
+                />
+                <Label htmlFor={horarioOptionIds[option.value]}>
+                  {option.label}
+                </Label>
+              </div>
+            ))}
           </div>
         </section>
         <div className="buttons md:col-span-2">

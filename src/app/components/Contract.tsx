@@ -18,6 +18,7 @@ const Contract: React.FC = () => {
     handleInputChange,
     handleSignature,
     handleSubmit,
+    setDatosContrato,
   } = useContractForm();
 
   const renderStep = () => {
@@ -26,7 +27,7 @@ const Contract: React.FC = () => {
         return (
           <StepOne
             contractData={datosContrato}
-            setDatosContrato={() => {}}
+            setDatosContrato={setDatosContrato}
             handleInputChange={handleInputChange}
             handleRadioChange={handleRadioChange}
             nextStep={nextStep}

@@ -62,6 +62,14 @@ export function useContractForm() {
               : (prev.modalidad.filter((mod) => mod !== value) as ModalidadT[]);
             return { ...prev, modalidad: newModalidad };
           });
+        } else if (name === 'horario') {
+          setDatosContrato((prev) => {
+            const current = prev.horario ? prev.horario.split(', ') : [];
+            const next = checked
+              ? Array.from(new Set([...current, value]))
+              : current.filter((h) => h !== value);
+            return { ...prev, horario: next.join(', ') };
+          });
         } else {
           setDatosContrato((prev) => ({ ...prev, [name]: checked }));
         }

@@ -1,7 +1,8 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import StepOne from "./StepOne";
-import { DatosContrato } from "../types";
+import { DatosContrato, ModalidadT } from "../types";
 
 // Mock the isUser function
 jest.mock("../utils", () => ({
@@ -47,6 +48,67 @@ function setup(contractData = defaultContractData) {
         setDatosContrato={mockSetDatosContrato}
       />
     ),
+  };
+}
+
+function setupStateful(initialData = defaultContractData) {
+  const Wrapper = () => {
+    const [data, setData] = useState<DatosContrato>(initialData);
+    const handleInputChange = (
+      e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    ) => {
+      const { name, value, type } = e.target;
+      if (type !== "checkbox") {
+        setData((prev) => ({ ...prev, [name]: value }));
+        return;
+      }
+      const { checked } = e.target;
+      if (name === "areas") {
+        setData((prev) => {
+          const newAreas = checked
+            ? [...prev.areas, value]
+            : prev.areas.filter((a) => a !== value);
+          return { ...prev, areas: newAreas };
+        });
+       } else if (name === "modalidad") {
+         setData((prev) => {
+           const newModalidad = checked
+             ? [...prev.modalidad, value as ModalidadT]
+             : prev.modalidad.filter((m) => m !== value);
+           return { ...prev, modalidad: newModalidad };
+         });
+      } else if (name === "horario") {
+        setData((prev) => {
+          const current = prev.horario ? prev.horario.split(", ") : [];
+          const next = checked
+            ? Array.from(new Set([...current, value]))
+            : current.filter((h) => h !== value);
+          return { ...prev, horario: next.join(", ") };
+        });
+      } else {
+        setData((prev) => ({ ...prev, [name]: checked }));
+      }
+    };
+    const handleRadioChange = (name: string, value: string) => {
+      if (name === "modalidad") {
+        setData((prev) => ({ ...prev, modalidad: [value as ModalidadT] }));
+      } else {
+        setData((prev) => ({ ...prev, [name]: value }));
+      }
+    };
+    return (
+      <StepOne
+        contractData={data}
+        handleInputChange={handleInputChange}
+        handleRadioChange={handleRadioChange}
+        nextStep={mockNextStep}
+        setDatosContrato={setData}
+      />
+    );
+  };
+  return {
+    user: userEvent.setup(),
+    ...render(<Wrapper />),
   };
 }
 
@@ -158,6 +220,30 @@ describe("StepOne Component", () => {
          );
        });
      });
+
+    it("shows only one duplicate alert when blur and submit race", async () => {
+      require("../utils").isUser.mockResolvedValue(true);
+      const alertSpy = jest.spyOn(window, "alert").mockImplementation(() => {});
+
+      const { user } = setupStateful({
+        ...defaultContractData,
+        nombre: "John Doe",
+        domicilio: "123 Main St",
+        telefono: "123456789",
+        email: "test@example.com",
+        lugar: "Madrid",
+      });
+
+      const dniInput = screen.getByTestId("id-input");
+      await user.type(dniInput, "12345678X");
+      await user.click(screen.getByText("Siguiente >"));
+
+      await waitFor(() => {
+        expect(alertSpy).toHaveBeenCalledTimes(1);
+      });
+
+      alertSpy.mockRestore();
+    });
   });
 
   describe("Input Changes", () => {
@@ -227,34 +313,36 @@ describe("StepOne Component", () => {
     });
   });
 
-  describe("Checkbox Changes", () => {
-    it("handles adulto checkbox changes", async () => {
-      const { user } = setup();
+   describe("Radio Changes", () => {
+     it("calls handleRadioChange when adulto changes", async () => {
+       const { user } = setup();
 
-      const noOption = screen.getByLabelText("NO");
-      await user.click(noOption);
+       const noOption = screen.getByLabelText("NO");
+       await user.click(noOption);
 
-      expect(mockHandleInputChange).toHaveBeenCalled();
-    });
+       expect(mockHandleRadioChange).toHaveBeenCalledWith("adulto", "NO");
+     });
+   });
 
-    it("handles areas checkbox changes", async () => {
-      const { user } = setup();
+   describe("Checkbox Changes", () => {
+     it("handles areas checkbox changes", async () => {
+       const { user } = setup();
 
-      const repartoOption = screen.getByLabelText("Reparto de Alimentos");
-      await user.click(repartoOption);
+       const repartoOption = screen.getByLabelText("Reparto de Alimentos");
+       await user.click(repartoOption);
 
-      expect(mockHandleInputChange).toHaveBeenCalled();
-    });
+       expect(mockHandleInputChange).toHaveBeenCalled();
+     });
 
-    it("handles horario checkbox changes", async () => {
-      const { user } = setup();
+     it("handles horario checkbox changes", async () => {
+       const { user } = setup();
 
-      const diasLabMananaOption = screen.getByLabelText("Días laborables mañana");
-      await user.click(diasLabMananaOption);
+       const diasLabMananaOption = screen.getByLabelText("Días laborables mañana");
+       await user.click(diasLabMananaOption);
 
-      expect(mockHandleInputChange).toHaveBeenCalled();
-    });
-  });
+       expect(mockHandleInputChange).toHaveBeenCalled();
+     });
+   });
 
   describe("Select Changes", () => {
     it("renders select component", () => {
@@ -320,10 +408,31 @@ describe("StepOne Component", () => {
     });
 
     it("renders Otra area option", () => {
-      setup();
-      expect(screen.getByLabelText("Otra")).toBeInTheDocument();
-    });
-  });
+       setup();
+       expect(screen.getByLabelText("Otra")).toBeInTheDocument();
+     });
+
+     it("opens Otra input when Otra checkbox is checked", async () => {
+       const { user } = setupStateful();
+
+       const otraCheckbox = screen.getByLabelText("Otra");
+       await user.click(otraCheckbox);
+
+       expect(screen.getByPlaceholderText("Especifique otra área")).toBeInTheDocument();
+     });
+
+     it("stores typed Otra area in contract data", async () => {
+       const { user } = setupStateful();
+
+       const otraCheckbox = screen.getByLabelText("Otra");
+       await user.click(otraCheckbox);
+
+       const otraInput = screen.getByPlaceholderText("Especifique otra área");
+       await user.type(otraInput, "Jardinería");
+
+       expect(otraInput).toHaveValue("Jardinería");
+     });
+   });
 
   describe("Modalidad Options", () => {
     it("renders all modalidad options", () => {
@@ -359,22 +468,34 @@ describe("StepOne Component", () => {
     });
   });
 
-  describe("Horario Options", () => {
-    it("renders all horario options", () => {
-      setup();
+   describe("Horario Options", () => {
+     it("renders all horario options", () => {
+       setup();
 
-      const expectedHorarios = [
-        "Días laborables mañana",
-        "Días laborables tarde",
-        "Fines de semana",
-        "Indistintamente"
-      ];
+       const expectedHorarios = [
+         "Días laborables mañana",
+         "Días laborables tarde",
+         "Fines de semana",
+         "Indistintamente"
+       ];
 
-      expectedHorarios.forEach(horario => {
-        expect(screen.getByLabelText(horario)).toBeInTheDocument();
-      });
-    });
-  });
+       expectedHorarios.forEach(horario => {
+         expect(screen.getByLabelText(horario)).toBeInTheDocument();
+       });
+     });
+
+     it("allows selecting multiple horario options", async () => {
+       const { user } = setupStateful();
+
+       const morning = screen.getByLabelText("Días laborables mañana");
+       const weekend = screen.getByLabelText("Fines de semana");
+       await user.click(morning);
+       await user.click(weekend);
+
+       expect(morning).toHaveAttribute("aria-checked", "true");
+       expect(weekend).toHaveAttribute("aria-checked", "true");
+     });
+   });
 
   describe("Form Validation Messages", () => {
     it("shows required field indicators", () => {
