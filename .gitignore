@@ -44,3 +44,16 @@ next-env.d.ts
 
 # generated API client
 /src/client
+
+# Stryker mutation testing
+.stryker-tmp/
+stryker.conf.json
+tsconfig.stryker.json
+reports/
+report.md
+
+# tooling artifacts
+eslintcc-report.json
+openapi-ts-error-*.log
+tasks.md
+test-ws-proxy.js
