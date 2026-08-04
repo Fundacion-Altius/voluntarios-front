@@ -21,7 +21,7 @@ proxy.on('error', (err, req, res) => {
     res.writeHead(502, { 'Content-Type': 'text/plain' });
     res.end('Bad Gateway');
   } else {
-    console.error('[proxy:ws] WebSocket proxy error:', err.message);
+    console.error('[proxy:ws] WebSocket proxy error:', req.url, err.code || err.message);
   }
 });
 
@@ -33,7 +33,12 @@ app.prepare().then(() => {
   server.on('upgrade', (req, socket, head) => {
     const parsed = parse(req.url, true);
     if (parsed.pathname && parsed.pathname.startsWith('/ws')) {
-      proxy.ws(req, socket, head);
+      try {
+        proxy.ws(req, socket, head);
+      } catch (err) {
+        console.error('[proxy:ws] WebSocket proxy error:', parsed.pathname, err.code || err.message);
+        socket.destroy();
+      }
     } else {
       try {
         app.getUpgradeHandler()(req, socket, head);

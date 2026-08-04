@@ -37,13 +37,12 @@ test.describe('Onboarding Flow', () => {
     await expect(page.locator('body')).toContainText(TASK_TITLE, { timeout: 10000 });
   });
 
-  test('volunteer portal shows onboarding widget', async ({ page }) => {
+  test('volunteer portal shows profile and badges', async ({ page }) => {
     await loginAsBrowser(page, 'general@fundacionaltius.org', 'general123');
     await page.goto('/portal', { waitUntil: 'load' });
-    // Wait for the profile card header to appear (confirms client-side data loaded)
-    await expect(page.locator('.card-title, .text-lg.font-bold, h2:has-text(\"Mi Perfil\")').first()).toBeVisible({ timeout: 30000 });
-    // Then check onboarding widget text
-    await expect(page.locator('body')).toContainText('Comienza tu voluntariado', { timeout: 15000 });
+    await expect(page.locator('div[data-slot="card-title"]').filter({ hasText: 'Mi Perfil' }).first()).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('body')).toContainText('Mi Panel', { timeout: 15000 });
+    await expect(page.locator('body')).toContainText('Puntos', { timeout: 10000 });
   });
 
   test('volunteer can mark onboarding task as complete', async ({ request }) => {

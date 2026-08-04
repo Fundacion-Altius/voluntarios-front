@@ -1,5 +1,5 @@
 "use client";
-import { Dispatch, SetStateAction, useState, useEffect } from "react";
+import { Dispatch, SetStateAction, useState, useEffect, useCallback } from "react";
 import { AreasT, DatosContrato, ModalidadT } from "../types";
 import { isUser, validateDNI } from "../utils";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,7 @@ const StepOne: React.FC<StepOneProps> = ({
 }) => {
   const [optional, setOptional] = useState<string>("");
   const [dniError, setDniError] = useState<string>("");
+  const [dniDuplicateError, setDniDuplicateError] = useState<string>("");
   const [isValidating, setIsValidating] = useState<boolean>(false);
 
   const areasOptions: AreasT[] = [
@@ -46,20 +47,51 @@ const StepOne: React.FC<StepOneProps> = ({
     "Otra",
   ];
   const modalidadOptions: ModalidadT[] = ["Presencial", "Online", "Híbrido"];
+
+  const validateDni = useCallback(async (dni: string) => {
+    const dniIsValid = validateDNI(dni.toUpperCase());
+    setDniError(dniIsValid ? "" : "El DNI/NIE no es válido");
+    if (dniIsValid) {
+      const isDuplicate = await isUser(dni.toUpperCase());
+      setDniDuplicateError(
+        isDuplicate
+          ? "El DNI/NIE ya está registrado en el sistema. Contáctanos para más información"
+          : ""
+      );
+      if (isDuplicate && contractData.id === dni.toUpperCase()) {
+        alert("No se puede generar dos veces el mismo contrato para el mismo DNI/NIE. Recarga para intentar con otro DNI/NIE");
+        handleInputChange({
+          target: { name: "id", value: "", type: "text" },
+        } as unknown as React.ChangeEvent<HTMLInputElement>);
+        setDniError("");
+        setDniDuplicateError("");
+      }
+    } else {
+      setDniDuplicateError("");
+    }
+    setIsValidating(false);
+  }, [contractData.id, handleInputChange]);
+
   useEffect(() => {
     const id = contractData.id;
     if (id.length >= 9) {
       setIsValidating(true);
       const timer = setTimeout(() => {
-        const dniIsValid = validateDNI(id.toUpperCase());
-        setDniError(dniIsValid ? "" : "El DNI/NIE no es válido");
-        setIsValidating(false);
+        validateDni(id);
       }, 500);
       return () => clearTimeout(timer);
     } else {
       setDniError("");
+      setDniDuplicateError("");
     }
-  }, [contractData.id]);
+  }, [contractData.id, validateDni]);
+
+  const handleDniBlur = async () => {
+    if (contractData.id.length >= 9) {
+      setIsValidating(true);
+      await validateDni(contractData.id);
+    }
+  };
 
   const shouldShowValidationText = contractData.id !== "" && isValidating;
   const shouldShowSuccessMessage =
@@ -86,28 +118,23 @@ const StepOne: React.FC<StepOneProps> = ({
         className="grid grid-cols-1 md:grid-cols-2 gap-4"
         onSubmit={async (e) => {
           e.preventDefault();
+          if (!contractData.lugar) {
+            alert("Por favor seleccione una ciudad");
+            return;
+          }
+          if (dniDuplicateError) {
+            alert(dniDuplicateError);
+            return;
+          }
           if (await isUser(contractData.id)) {
             alert(
               "El DNI/NIE ya está registrado en el sistema. Contáctanos para más información"
             );
-            setDatosContrato({
-              nombre: "",
-              id: "",
-              domicilio: "",
-              empresa: "",
-              adulto: "SI",
-              telefono: "",
-              email: "",
-              areas: ["CEPI"],
-              modalidad: ["Presencial"],
-              horario: "",
-              derechoConfidencialidad: false,
-              derechoDatos: false,
-              derechoImagen: false,
-              fecha: "",
-              lugar: "",
-              firma: "",
-            });
+            handleInputChange({
+              target: { name: "id", value: "", type: "text" },
+            } as unknown as React.ChangeEvent<HTMLInputElement>);
+            setDniError("");
+            setDniDuplicateError("");
           } else {
             nextStep();
           }
@@ -138,11 +165,13 @@ const StepOne: React.FC<StepOneProps> = ({
             name="id"
             value={contractData.id}
             onChange={handleInputChange}
+            onBlur={handleDniBlur}
             required
           />
           {shouldShowValidationText && <p>Validando...</p>}
           {shouldShowSuccessMessage && <p data-testid="id-ok">DNI/NIE con formato válido</p>}
           {shouldShowErrorMessage && <p style={{ color: "red" }} data-testid="id-error">{dniError}</p>}
+          {dniDuplicateError && <p style={{ color: "red" }} data-testid="id-duplicate-error">{dniDuplicateError}</p>}
         </div>
         <div className="form-group">
           <Label htmlFor="domicilio">

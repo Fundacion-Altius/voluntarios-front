@@ -8,12 +8,13 @@ export function todayToSQL() {
 }
 export async function isUser(id: string): Promise<boolean> {
   try {
-    const response = await fetch(`${HOST}/api/contracts/${id}`);
-    if (response.status === 200) {
-      return true;
+    const response = await fetch(`${HOST}/api/contracts/check/${id}`);
+    if (response.ok) {
+      const data = await response.json();
+      return data.exists === true;
     }
   } catch (error) {
-    console.error("Error submitting contract:", error);
+    console.error("Error checking duplicate:", error);
   }
   return false;
 }

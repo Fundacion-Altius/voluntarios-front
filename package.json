@@ -15,7 +15,8 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:email-flow": "playwright test e2e/06-contract-email-flow.spec.ts --workers=1",
-    "test:e2e:email-flow:prod": "playwright test e2e/07-contract-email-flow-prod.spec.ts --workers=1"
+    "test:e2e:email-flow:prod": "playwright test e2e/07-contract-email-flow-prod.spec.ts --workers=1",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@hey-api/client-fetch": "^0.10.0",
@@ -30,7 +31,7 @@
     "jest": "^29.7.0",
     "lucide-react": "^1.21.0",
     "mediasoup-client": "^3.21.0",
-    "next": "14.2.4",
+    "next": "14.2.35",
     "next-auth": "^4.24.14",
     "next-themes": "^0.4.6",
     "radix-ui": "^1.6.0",
@@ -45,6 +46,9 @@
   "devDependencies": {
     "@hey-api/openapi-ts": "^0.64.0",
     "@playwright/test": "^1.61.1",
+    "@stryker-mutator/core": "^9.6.1",
+    "@stryker-mutator/jest-runner": "^9.6.1",
+    "@stryker-mutator/typescript-checker": "^9.6.1",
     "@tailwindcss/postcss": "^4.3.1",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.5.0",
@@ -60,7 +64,8 @@
     "@types/uuid": "^10.0.0",
     "autoprefixer": "^10.5.0",
     "eslint": "^8",
-    "eslint-config-next": "14.2.4",
+    "eslint-config-next": "14.2.35",
+    "eslintcc": "^0.8.3",
     "http-proxy": "^1.18.1",
     "jest-environment-jsdom": "^29.7.0",
     "postcss": "^8.5.15",

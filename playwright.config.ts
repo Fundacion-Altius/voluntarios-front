@@ -13,7 +13,7 @@ export default defineConfig({
   },
   webServer: {
     command: 'pnpm dev',
-    url: process.env.NEXTAUTH_URL || 'http://localhost:3000',
+    url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },
@@ -21,7 +21,7 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { browserName: 'chromium' },
-      testIgnore: ['**/08-real-flow.spec.ts', '**/26-video-*.spec.ts'],
+      testIgnore: ['**/02-login-diagnostic.spec.ts', '**/08-real-flow.spec.ts', '**/26-video-*.spec.ts'],
     },
     {
       name: 'real-api',

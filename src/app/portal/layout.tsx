@@ -1,5 +1,5 @@
 'use client';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/app/auth/useAuth';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -10,16 +10,18 @@ import { NotificationBell } from '@/components/NotificationBell';
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, user, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const isSalaRoute = pathname?.startsWith('/portal/sala') ?? false;
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/login');
       return;
     }
-    if (!isLoading && isAuthenticated && (user as any)?.role !== 'general') {
+    if (!isLoading && isAuthenticated && (user as any)?.role !== 'general' && !isSalaRoute) {
       router.push('/admin/dashboard');
     }
-  }, [isLoading, isAuthenticated, user, router]);
+  }, [isLoading, isAuthenticated, user, router, isSalaRoute]);
 
   if (isLoading) {
     return (

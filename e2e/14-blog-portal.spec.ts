@@ -1,9 +1,34 @@
 import { test, expect } from '@playwright/test';
 import { loginAsBrowser, adminLogin, BACKEND_URL, authHeaders } from './helpers';
 
-test.describe('Portal Blog Feed', () => {
+test.describe.serial('Portal Blog Feed', () => {
+  let blogPostSlug: string;
 
-  test('portal home shows recent news section', async ({ page, request }) => {
+  test.beforeAll(async ({ request }) => {
+    // Ensure a published blog post exists for the "portal home" test
+    const { authToken, csrfToken } = await adminLogin(request);
+    const catRes = await request.fetch(`${BACKEND_URL}/api/blog/categories`, {
+      headers: authHeaders(authToken, csrfToken),
+    });
+    const categories = await catRes.json();
+    const categoryId = categories[0]?.id;
+    blogPostSlug = `e2e-portal-home-${Date.now()}`;
+    await request.fetch(`${BACKEND_URL}/api/blog/posts`, {
+      method: 'POST',
+      headers: { ...authHeaders(authToken, csrfToken), 'Content-Type': 'application/json' },
+      data: {
+        title: 'E2E Portal Home Post',
+        slug: blogPostSlug,
+        excerpt: 'Extracto para portal home',
+        body: 'Contenido completo.',
+        image_url: null,
+        category_id: categoryId,
+        published_at: new Date().toISOString(),
+      },
+    });
+  });
+
+  test('portal home shows recent news section', async ({ page }) => {
     await loginAsBrowser(page, 'general@fundacionaltius.org', 'general123');
     await page.goto('/portal', { waitUntil: 'load' });
     await expect(page.locator('body')).toContainText('Últimas noticias', { timeout: 15000 });

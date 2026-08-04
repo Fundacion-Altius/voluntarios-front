@@ -30,7 +30,7 @@ export default function NotificacionesPage() {
     } finally {
       if (mountedRef.current) setLoading(false);
     }
-  }, [page, session]);
+  }, [page]);
 
   useEffect(() => { mountedRef.current = true; fetchNotifications(); return () => { mountedRef.current = false; }; }, [fetchNotifications]);
 

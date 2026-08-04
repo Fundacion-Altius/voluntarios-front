@@ -19,6 +19,14 @@ const StepThree: React.FC<StepThreeProps> = ({
   handleSubmit,
   prevStep,
 }) => {
+  const handleClick = async () => {
+    try {
+      await handleSubmit();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Error al enviar el contrato");
+    }
+  };
+
   return (
     <Card className="step">
       <CardContent className="space-y-4">
@@ -99,7 +107,7 @@ const StepThree: React.FC<StepThreeProps> = ({
         </div>
         <div className="buttons">
           <Button variant="outline" onClick={prevStep}>{"<"} Volver</Button>
-          <Button onClick={handleSubmit} type="button">Enviar contrato</Button>
+          <Button onClick={handleClick} type="button">Enviar contrato</Button>
         </div>
       </CardContent>
     </Card>

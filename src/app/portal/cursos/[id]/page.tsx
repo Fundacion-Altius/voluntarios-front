@@ -22,7 +22,7 @@ export default function CursoDetailPage() {
 
   useEffect(() => {
     if (!id) return;
-    apiClient<any>(apiUrl(`/api/cursos/${id}`))
+    apiClient<any>(apiUrl(`/api/courses/${id}`))
       .then((data) => setCourse(data.success ? data.data : data))
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));

@@ -89,6 +89,12 @@ describe("StepTwo Component", () => {
     expect(canvas).toBeInTheDocument();
   });
 
+  it("renders the signature canvas with white background", () => {
+    setup();
+    const canvas = document.querySelector("canvas") as HTMLCanvasElement;
+    expect(canvas).toHaveStyle({ background: "#fff" });
+  });
+
   it("renders navigation shadcn Buttons", () => {
     setup();
     const buttons = document.querySelectorAll('[data-slot="button"]');

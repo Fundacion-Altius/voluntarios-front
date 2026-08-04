@@ -48,7 +48,7 @@ export default function VideoRoomPage({ params }: { params: { roomId: string } }
     router.push('/portal');
   };
 
-  if (joining || state.localStream) {
+  if (state.localStream) {
     return (
       <div className="mx-auto max-w-5xl space-y-4">
         <Card>

@@ -80,6 +80,7 @@ describe("StepThree Component", () => {
   });
 
   it("calls handleSubmit when Enviar contrato is clicked", async () => {
+    mockHandleSubmit.mockResolvedValue(undefined);
     const { user } = setup();
     await user.click(screen.getByText(/Enviar contrato/));
     expect(mockHandleSubmit).toHaveBeenCalledTimes(1);

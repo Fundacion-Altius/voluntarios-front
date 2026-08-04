@@ -48,48 +48,50 @@ const StepTwo: React.FC<StepTwoProps> = ({
           <p>
             POR UNA PARTE, FUNDACIÓN ALTIUS ESPAÑA, CON CIF G-83317610 Y SEDE
             SOCIAL EN RONDA DE SEGOVIA 34, 28005 MADRID, SE COMPROMETE A:
-            <ul>
-              <li>
-                Ofrecer al voluntario la información, formación, apoyo y en su
-                caso los medios materiales necesarios para el ejercicio de las
-                funciones que se le asignen.
-              </li>
-              <li>
-                Favorecer la participación activa del voluntario en la
-                organización, diseño, evaluación y programación de las actividades
-                que realiza.
-              </li>
-              <li>
-                Asegurar al voluntario contra los riesgos de accidente y
-                responsabilidad civil derivados del ejercicio de la actividad.
-              </li>
-              <li>
-                Compensar económicamente por los gastos derivados de su actividad
-                como voluntario (gastos de gestiones de la Fundación, logística
-                1KA, reuniones, viajes por proyectos, etc… no incluye el
-                desplazamiento de domicilio a Altius y regreso)
-              </li>
-            </ul>
-            <p>
-              POR LA OTRA PARTE, {contractData.nombre}, con número de
-              identificación {contractData.id}, se compromete a:
-            </p>
-            <ul>
-              <li>
-                Cumplir con los compromisos adquiridos con la organización,
-                respetando los fines y su normativa.
-              </li>
-              <li>
-                Guardar confidencialidad de la información recibida en el
-                desarrollo de su actividad (es necesario firmar documento adjunto
-                en cumplimento de la Ley LOPDGDD).
-              </li>
-              <li>Rechazar cualquier contraprestación material o económica</li>
-              <li>
-                Respetar los derechos de los beneficiarios y actuar de forma
-                diligente y solidaria.
-              </li>
-            </ul>
+          </p>
+          <ul>
+            <li>
+              Ofrecer al voluntario la información, formación, apoyo y en su
+              caso los medios materiales necesarios para el ejercicio de las
+              funciones que se le asignen.
+            </li>
+            <li>
+              Favorecer la participación activa del voluntario en la
+              organización, diseño, evaluación y programación de las actividades
+              que realiza.
+            </li>
+            <li>
+              Asegurar al voluntario contra los riesgos de accidente y
+              responsabilidad civil derivados del ejercicio de la actividad.
+            </li>
+            <li>
+              Compensar económicamente por los gastos derivados de su actividad
+              como voluntario (gastos de gestiones de la Fundación, logística
+              1KA, reuniones, viajes por proyectos, etc… no incluye el
+              desplazamiento de domicilio a Altius y regreso)
+            </li>
+          </ul>
+          <p>
+            POR LA OTRA PARTE, {contractData.nombre}, con número de
+            identificación {contractData.id}, se compromete a:
+          </p>
+          <ul>
+            <li>
+              Cumplir con los compromisos adquiridos con la organización,
+              respetando los fines y su normativa.
+            </li>
+            <li>
+              Guardar confidencialidad de la información recibida en el
+              desarrollo de su actividad (es necesario firmar documento adjunto
+              en cumplimento de la Ley LOPDGDD).
+            </li>
+            <li>Rechazar cualquier contraprestación material o económica</li>
+            <li>
+              Respetar los derechos de los beneficiarios y actuar de forma
+              diligente y solidaria.
+            </li>
+          </ul>
+          <p>
             En {contractData.lugar}, a {fecha}.
           </p>
         </div>
@@ -99,7 +101,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
             ref={signaturePad}
             canvasProps={{
               className: "signature-canvas",
-              style: { width: "100%", height: "200px", border: "1px solid #000" },
+              style: { width: "100%", height: "200px", border: "1px solid #000", background: "#fff" },
             }}
           />
         </div>

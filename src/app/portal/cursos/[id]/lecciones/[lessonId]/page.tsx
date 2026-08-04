@@ -96,7 +96,7 @@ export default function LeccionPage() {
   useEffect(() => {
     if (!courseId || !lessonId) return;
     const thisFetchId = ++fetchIdRef.current;
-    fetch(`${API_URL}/api/cursos/${courseId}`, {
+      fetch(`${API_URL}/api/courses/${courseId}`, {
       headers: fetchHeaders(),
       credentials: 'include',
     })

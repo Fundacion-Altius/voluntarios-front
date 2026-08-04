@@ -21,6 +21,9 @@ type MediasoupRoomState = {
 };
 
 function deriveWsUrl(): string {
+  if (process.env.NEXT_PUBLIC_WS_BASE_URL) {
+    return process.env.NEXT_PUBLIC_WS_BASE_URL;
+  }
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
@@ -230,7 +233,7 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
         }
       } catch {}
     },
-    [setStatePartial, removePeer, updatePeer, setPeerTrack, sendSignal],
+    [setStatePartial, removePeer, setPeerTrack, sendSignal],
   );
 
   const startLocalStream = useCallback(async (withVideo = true, withAudio = true): Promise<MediaStream> => {

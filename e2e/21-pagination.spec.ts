@@ -1,7 +1,7 @@
 import { test, expect, request as playwrightRequest } from '@playwright/test';
 import { randomId, CONTRACT_TEMPLATE, authHeaders, BACKEND_URL } from './helpers';
 
-test.describe('Pagination', () => {
+test.describe.serial('Pagination', () => {
   const createdIds: string[] = [];
 
   test.beforeAll(async () => {

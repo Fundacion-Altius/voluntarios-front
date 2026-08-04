@@ -18,6 +18,8 @@ const customJestConfig = {
   },
   testPathIgnorePatterns: ['<rootDir>/e2e/'],
   testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.tsx?$',
+  collectCoverage: true,
+  coverageReporters: ['json-summary', 'html', 'text'],
 }
 
 module.exports = createJestConfig(customJestConfig)

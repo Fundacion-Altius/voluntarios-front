@@ -1,0 +1,47 @@
+# CI for voluntarios-front — the safety net. Nothing builds or deploys unless
+# every step here is green: lint (next lint), unit tests (Jest), and a real
+# production build (typecheck + bundle, i.e. the exact artifact CD ships).
+# Playwright e2e tests need the full backend stack, so they are not part of
+# this gate (see docs/conventions/testing.md).
+
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      # Frozen lockfile: CI must never silently update dependencies.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Unit tests
+        run: pnpm test
+
+      # Verifies the production bundle that CD will ship. Build-time public
+      # config is stubbed to localhost; real values come from build args in CD.
+      - name: Production build
+        run: pnpm build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:3001
+          NEXTAUTH_URL: http://localhost:3000
+          NEXT_PUBLIC_AZURE_AD_ENABLED: 'false'

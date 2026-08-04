@@ -78,6 +78,10 @@ export function useContractForm() {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
+    const data = await response.json();
+    if (data.existing) {
+      throw new Error("No se puede generar dos veces el mismo contrato para el mismo DNI/NIE. Recarga para intentar con otro DNI/NIE");
+    }
     nextStep();
   };
 

@@ -7,6 +7,9 @@ import { getApiBaseUrl } from '@/lib/apiUrl';
 const API_URL = getApiBaseUrl();
 
 function deriveWsUrl(): string {
+  if (process.env.NEXT_PUBLIC_WS_BASE_URL) {
+    return `${process.env.NEXT_PUBLIC_WS_BASE_URL}/ws`;
+  }
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
