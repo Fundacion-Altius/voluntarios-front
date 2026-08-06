@@ -10,7 +10,7 @@ test.describe('Real API Flow @real-api', () => {
 
     try {
       // ───── Step 1: Fill personal data ─────
-      await page.goto('/', { waitUntil: 'load' });
+      await page.goto('/es/', { waitUntil: 'load' });
       await page.locator('input#nombre').fill(`Real E2E Test ${uniqueId}`);
       await page.locator('input#id').fill(`X6090907R-${uniqueId}`);
       await page.locator('input#domicilio').fill('123 Real St');

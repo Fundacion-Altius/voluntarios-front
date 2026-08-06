@@ -1,4 +1,5 @@
 'use client';
+import { useTranslations } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, Inbox } from 'lucide-react';
@@ -23,13 +24,14 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({ message, onRetry }: ErrorStateProps) {
+  const t = useTranslations('common');
   return (
     <div className="flex flex-col items-center justify-center rounded-lg border border-destructive/20 bg-destructive/5 p-8 text-center">
       <AlertCircle className="mb-3 size-8 text-destructive" />
-      <p className="text-sm font-medium text-foreground">{message || 'Error al cargar los datos'}</p>
+      <p className="text-sm font-medium text-foreground">{message || t('errorCargarDatos')}</p>
       {onRetry && (
         <Button variant="outline" size="sm" className="mt-4" onClick={onRetry}>
-          Reintentar
+          {t('reintentar')}
         </Button>
       )}
     </div>

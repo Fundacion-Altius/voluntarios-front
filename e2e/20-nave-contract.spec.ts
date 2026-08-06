@@ -12,7 +12,7 @@ test('contract form renders styled shadcn elements', async ({ page }) => {
     if (msg.type() === 'error') errors.push(msg.text());
   });
 
-  await page.goto(FRONTEND_URL, { waitUntil: 'load' });
+  await page.goto(`${FRONTEND_URL}/es/`, { waitUntil: 'load' });
 
   const nombre = page.locator('input[id="nombre"]');
   await expect(nombre).toBeVisible();

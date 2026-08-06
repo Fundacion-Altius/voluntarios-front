@@ -16,7 +16,7 @@ test.describe('Candidate Flow', () => {
   });
 
   test('hazte voluntario form submits and shows success', async ({ page }) => {
-    await page.goto('/hazte-voluntario');
+    await page.goto('/es/hazte-voluntario');
     await page.waitForLoadState('domcontentloaded');
 
     await page.getByPlaceholder('Tu nombre').fill('E2E Test Voluntario');

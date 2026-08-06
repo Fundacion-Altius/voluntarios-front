@@ -7,6 +7,7 @@ import {
   useCallback,
   useRef,
 } from "react";
+import { useTranslations } from "next-intl";
 import { AreasT, DatosContrato, ModalidadT } from "../types";
 import { isUser, validateDNI } from "../utils";
 import { Input } from "@/components/ui/input";
@@ -39,6 +40,8 @@ const StepOne: React.FC<StepOneProps> = ({
   nextStep,
   setDatosContrato,
 }) => {
+  const t = useTranslations("wizard.stepOne");
+  const tc = useTranslations("wizard.common");
   const [optional, setOptional] = useState<string>("");
   const [dniError, setDniError] = useState<string>("");
   const [dniDuplicateError, setDniDuplicateError] = useState<string>("");
@@ -55,10 +58,10 @@ const StepOne: React.FC<StepOneProps> = ({
   ];
   const modalidadOptions: ModalidadT[] = ["Presencial", "Online", "Híbrido"];
   const horarioOptions = [
-    { value: "días laborables mañana", label: "Días laborables mañana" },
-    { value: "días laborables tarde", label: "Días laborables tarde" },
-    { value: "fines de semana", label: "Fines de semana" },
-    { value: "indistinto", label: "Indistintamente" },
+    { value: "días laborables mañana", label: t("horarioDiasManana") },
+    { value: "días laborables tarde", label: t("horarioDiasTarde") },
+    { value: "fines de semana", label: t("horarioFines") },
+    { value: "indistinto", label: t("horarioIndistinto") },
   ];
   const horarioOptionIds: Record<string, string> = {
     "días laborables mañana": "dias-lab-ma",
@@ -81,12 +84,10 @@ const StepOne: React.FC<StepOneProps> = ({
     (dni: string) => {
       if (alertedDniRef.current === dni) return;
       alertedDniRef.current = dni;
-      alert(
-        "El DNI/NIE ya está registrado en el sistema. Contáctanos para más información"
-      );
+      alert(t("dniDuplicate"));
       clearDuplicateDni();
     },
-    [clearDuplicateDni]
+    [clearDuplicateDni, t]
   );
 
   const validateDni = useCallback(
@@ -96,13 +97,11 @@ const StepOne: React.FC<StepOneProps> = ({
         alertedDniRef.current = null;
       }
       const dniIsValid = validateDNI(normalized);
-      setDniError(dniIsValid ? "" : "El DNI/NIE no es válido");
+      setDniError(dniIsValid ? "" : t("dniInvalid"));
       if (dniIsValid) {
         const isDuplicate = await isUser(normalized);
         setDniDuplicateError(
-          isDuplicate
-            ? "El DNI/NIE ya está registrado en el sistema. Contáctanos para más información"
-            : ""
+          isDuplicate ? t("dniDuplicate") : ""
         );
         if (isDuplicate && contractData.id === normalized) {
           handleDuplicateDni(normalized);
@@ -112,7 +111,7 @@ const StepOne: React.FC<StepOneProps> = ({
       }
       setIsValidating(false);
     },
-    [contractData.id, handleDuplicateDni]
+    [contractData.id, handleDuplicateDni, t]
   );
 
   useEffect(() => {
@@ -155,14 +154,14 @@ const StepOne: React.FC<StepOneProps> = ({
   return (
     <div className="step">
       <p>
-        <span style={{ color: "red" }}>*</span> indica campo obligatorio
+        <span style={{ color: "red" }}>*</span> {tc("campoObligatorio")}
       </p>
       <form
         className="grid grid-cols-1 md:grid-cols-2 gap-4"
         onSubmit={async (e) => {
           e.preventDefault();
           if (!contractData.lugar) {
-            alert("Por favor seleccione una ciudad");
+            alert(t("seleccioneCiudad"));
             return;
           }
           if (dniDuplicateError) {
@@ -178,7 +177,7 @@ const StepOne: React.FC<StepOneProps> = ({
       >
         <div className="form-group md:col-span-2">
           <Label htmlFor="nombre">
-            NOMBRE Y APELLIDOS DEL VOLUNTARIO/A{" "}
+            {t("nombre")}{" "}
             <span style={{ color: "red" }}>*</span>{" "}
           </Label>
           <Input
@@ -204,14 +203,14 @@ const StepOne: React.FC<StepOneProps> = ({
             onBlur={handleDniBlur}
             required
           />
-          {shouldShowValidationText && <p>Validando...</p>}
-          {shouldShowSuccessMessage && <p data-testid="id-ok">DNI/NIE con formato válido</p>}
+          {shouldShowValidationText && <p>{t("validando")}</p>}
+          {shouldShowSuccessMessage && <p data-testid="id-ok">{t("dniValido")}</p>}
           {shouldShowErrorMessage && <p style={{ color: "red" }} data-testid="id-error">{dniError}</p>}
           {dniDuplicateError && <p style={{ color: "red" }} data-testid="id-duplicate-error">{dniDuplicateError}</p>}
         </div>
         <div className="form-group">
           <Label htmlFor="domicilio">
-            DOMICILIO <span style={{ color: "red" }}>*</span>{" "}
+            {t("domicilio")} <span style={{ color: "red" }}>*</span>{" "}
           </Label>
           <Input
             type="text"
@@ -223,7 +222,7 @@ const StepOne: React.FC<StepOneProps> = ({
           />
         </div>
         <div className="form-group md:col-span-2">
-          <Label htmlFor="empresa">EMPRESA / ORGANIZACIÓN</Label>
+          <Label htmlFor="empresa">{t("empresa")}</Label>
           <Input
             type="text"
             id="empresa"
@@ -234,7 +233,7 @@ const StepOne: React.FC<StepOneProps> = ({
         </div>
         <section className="form-group">
           <p>
-            Mayor de edad <span style={{ color: "red" }}>*</span>{" "}
+            {t("mayorEdad")} <span style={{ color: "red" }}>*</span>{" "}
           </p>
           <RadioGroup
             value={contractData.adulto}
@@ -253,7 +252,7 @@ const StepOne: React.FC<StepOneProps> = ({
         </section>
         <div className="form-group">
           <Label htmlFor="telefono">
-            TELÉFONO <span style={{ color: "red" }}>*</span>{" "}
+            {t("telefono")} <span style={{ color: "red" }}>*</span>{" "}
           </Label>
           <Input
             type="tel"
@@ -279,8 +278,8 @@ const StepOne: React.FC<StepOneProps> = ({
         </div>
         <section className="form-group md:col-span-2">
           <p>
-            LA ACTIVIDAD DE VOLUNTARIADO SE ENMARCA EN UNA DE LAS SIGUIENTES
-            ÁREAS <span style={{ color: "red" }}>*</span>{" "}
+            {t("areasTitulo")}{" "}
+            <span style={{ color: "red" }}>*</span>{" "}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {areasOptions.map((area) => (
@@ -335,7 +334,7 @@ const StepOne: React.FC<StepOneProps> = ({
                           ],
                         }));
                       }}
-                      placeholder="Especifique otra área"
+                      placeholder={t("placeholderOtraArea")}
                       required
                     />
                   )}
@@ -345,10 +344,8 @@ const StepOne: React.FC<StepOneProps> = ({
         </section>
         <section className="form-group md:col-span-2">
           <p>
-            DURACIÓN <br />
-            El presente acuerdo tiene una duración de (indicar lo que proceda).
-            Cualquiera de las partes puede dejar sin efecto este acuerdo
-            notificándolo con una antelación de 15 días naturales.
+            {t("duracionTitulo")} <br />
+            {t("duracionDescripcion")}
             <span style={{ color: "red" }}>*</span>{" "}
           </p>
           <RadioGroup
@@ -375,7 +372,7 @@ const StepOne: React.FC<StepOneProps> = ({
                         name="duracion"
                         value={contractData.duracion}
                         onChange={handleInputChange}
-                        placeholder="Especifique duración"
+                        placeholder={t("placeholderDuracion")}
                         required
                       />
                     )}
@@ -386,7 +383,7 @@ const StepOne: React.FC<StepOneProps> = ({
         </section>
         <section className="form-group">
           <p>
-            MODALIDAD <span style={{ color: "red" }}>*</span>{" "}
+            {t("modalidad")} <span style={{ color: "red" }}>*</span>{" "}
           </p>
           <RadioGroup
             value={contractData.modalidad[0] || ""}
@@ -403,7 +400,7 @@ const StepOne: React.FC<StepOneProps> = ({
         </section>
         <div className="form-group">
           <Label htmlFor="lugar">
-            LUGAR DE LA ACTIVIDAD DE VOLUNTARIADO{" "}
+            {t("lugar")}{" "}
             <span style={{ color: "red" }}>*</span>{" "}
           </Label>
           <Select
@@ -415,7 +412,7 @@ const StepOne: React.FC<StepOneProps> = ({
             }}
           >
             <SelectTrigger id="lugar" className="w-full">
-              <SelectValue placeholder="Seleccione una ciudad" />
+              <SelectValue placeholder={t("placeholderCiudad")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="Madrid">Madrid</SelectItem>
@@ -427,8 +424,8 @@ const StepOne: React.FC<StepOneProps> = ({
         </div>
         <section className="form-group md:col-span-2">
           <p>
-            HORARIO <br />
-            Las actividades se llevarán a cabo en el siguiente horario:
+            {t("horarioTitulo")} <br />
+            {t("horarioDescripcion")}
             <span style={{ color: "red" }}>*</span>{" "}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -455,7 +452,7 @@ const StepOne: React.FC<StepOneProps> = ({
           </div>
         </section>
         <div className="buttons md:col-span-2">
-          <Button type="submit">Siguiente {">"}</Button>
+          <Button type="submit">{tc("siguiente")} {">"}</Button>
         </div>
       </form>
     </div>

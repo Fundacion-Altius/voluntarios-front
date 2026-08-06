@@ -22,7 +22,7 @@ test.describe('Contract Generation Flow', () => {
         headers: CORS_HEADERS,
       });
     });
-    await page.goto('/', { waitUntil: 'load' });
+    await page.goto('/es/', { waitUntil: 'load' });
   });
 
   test('full contract generation flow', async ({ page }) => {

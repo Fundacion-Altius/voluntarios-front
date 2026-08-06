@@ -30,7 +30,7 @@ test.describe.serial('Portal Blog Feed', () => {
 
   test('portal home shows recent news section', async ({ page }) => {
     await loginAsBrowser(page, 'general@fundacionaltius.org', 'general123');
-    await page.goto('/portal', { waitUntil: 'load' });
+    await page.goto('/es/portal', { waitUntil: 'load' });
     await expect(page.locator('body')).toContainText('Últimas noticias', { timeout: 15000 });
   });
 
@@ -59,7 +59,7 @@ test.describe.serial('Portal Blog Feed', () => {
     expect(postRes.ok()).toBeTruthy();
 
     await loginAsBrowser(page, 'general@fundacionaltius.org', 'general123');
-    await page.goto('/portal/noticias', { waitUntil: 'load' });
+    await page.goto('/es/portal/noticias', { waitUntil: 'load' });
     await expect(page.locator('body')).toContainText('E2E Noticia de prueba', { timeout: 15000 });
   });
 
@@ -88,7 +88,7 @@ test.describe.serial('Portal Blog Feed', () => {
     expect(postRes.ok()).toBeTruthy();
 
     await loginAsBrowser(page, 'general@fundacionaltius.org', 'general123');
-    await page.goto(`/portal/noticias/${slug}`, { waitUntil: 'load' });
+    await page.goto(`/es/portal/noticias/${slug}`, { waitUntil: 'load' });
     await expect(page.locator('body')).toContainText('E2E Detalle noticia', { timeout: 15000 });
     await expect(page.locator('body')).toContainText('Contenido completo del detalle.', { timeout: 15000 });
   });
@@ -118,9 +118,9 @@ test.describe.serial('Portal Blog Feed', () => {
     expect(postRes.ok()).toBeTruthy();
 
     await loginAsBrowser(page, 'general@fundacionaltius.org', 'general123');
-    await page.goto('/portal/noticias', { waitUntil: 'load' });
+    await page.goto('/es/portal/noticias', { waitUntil: 'load' });
 
-    const postLink = page.locator(`a[href="/portal/noticias/${slug}"]`).first();
+    const postLink = page.locator(`a[href="/es/portal/noticias/${slug}"]`).first();
     await expect(postLink).toBeVisible({ timeout: 15000 });
     await postLink.click();
     await page.waitForURL(`**/portal/noticias/${slug}`, { timeout: 10000 });

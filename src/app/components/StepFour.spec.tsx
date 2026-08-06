@@ -2,6 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import StepFour from "./StepFour";
 import { DatosContrato } from "../types";
+import { TestProviders } from "../test-utils";
 
 jest.mock("../lib/csrf", () => ({
   apiPost: jest.fn(),
@@ -33,27 +34,43 @@ describe("StepFour Component", () => {
   });
 
   it("renders success message", () => {
-    render(<StepFour contractData={mockContractData} />);
+    render(
+      <TestProviders>
+        <StepFour contractData={mockContractData} />
+      </TestProviders>
+    );
     expect(
       screen.getByText(/Tu contrato se ha enviado y procesado correctamente/i)
     ).toBeInTheDocument();
   });
 
   it("renders styled shadcn Button component", () => {
-    render(<StepFour contractData={mockContractData} />);
+    render(
+      <TestProviders>
+        <StepFour contractData={mockContractData} />
+      </TestProviders>
+    );
     const buttons = document.querySelectorAll('[data-slot="button"]');
     expect(buttons.length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders download button", () => {
-    render(<StepFour contractData={mockContractData} />);
+    render(
+      <TestProviders>
+        <StepFour contractData={mockContractData} />
+      </TestProviders>
+    );
     expect(
       screen.getByText(/Descargar contrato/i)
     ).toBeInTheDocument();
   });
 
   it("renders wrapped in a styled Card", () => {
-    render(<StepFour contractData={mockContractData} />);
+    render(
+      <TestProviders>
+        <StepFour contractData={mockContractData} />
+      </TestProviders>
+    );
     const card = document.querySelector('[data-slot="card"]');
     expect(card).toBeInTheDocument();
   });

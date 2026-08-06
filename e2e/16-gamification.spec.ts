@@ -108,7 +108,7 @@ test.describe('Portal UI (authenticated)', () => {
 
   test('portal page shows profile with level and badges', async ({ page }) => {
     await loginAsBrowser(page, 'general@fundacionaltius.org', 'general123');
-    await page.goto('/portal', { waitUntil: 'load' });
+    await page.goto('/es/portal', { waitUntil: 'load' });
 
     await expect(page.locator('body')).toContainText('Mi Perfil', { timeout: 20000 });
     await expect(page.locator('body')).toContainText('Puntos', { timeout: 10000 });
@@ -117,7 +117,7 @@ test.describe('Portal UI (authenticated)', () => {
 
   test('portal ranking page shows top 3', async ({ page }) => {
     await loginAsBrowser(page, 'general@fundacionaltius.org', 'general123');
-    await page.goto('/portal/ranking', { waitUntil: 'networkidle' });
+    await page.goto('/es/portal/ranking', { waitUntil: 'networkidle' });
 
     await expect(page.locator('body')).toContainText('Ranking semanal', { timeout: 15000 });
     await expect(page.locator('body')).toContainText('#1', { timeout: 10000 });
@@ -125,14 +125,14 @@ test.describe('Portal UI (authenticated)', () => {
 
   test('portal logros page shows badges', async ({ page }) => {
     await loginAsBrowser(page, 'general@fundacionaltius.org', 'general123');
-    await page.goto('/portal/logros', { waitUntil: 'networkidle' });
+    await page.goto('/es/portal/logros', { waitUntil: 'networkidle' });
 
     await expect(page.locator('body')).toContainText('Mis insignias', { timeout: 15000 });
   });
 
   test('admin ranking page shows weekly history', async ({ page }) => {
     await loginAsBrowser(page, 'admin@fundacionaltius.org', 'admin123');
-    await page.goto('/admin/ranking');
+    await page.goto('/es/admin/ranking');
     await page.waitForSelector('h2, h3', { timeout: 10000 });
 
     const body = await page.textContent('body');

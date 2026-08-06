@@ -1,6 +1,7 @@
 'use client';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { Link } from '@/i18n/navigation';
+import { usePathname } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Home, Calendar, Award, Trophy, Newspaper, BookOpen, Users, MessageSquare, Bell, LogOut, type LucideIcon } from 'lucide-react';
 
@@ -10,18 +11,6 @@ interface NavLink {
   icon: LucideIcon;
 }
 
-const links: NavLink[] = [
-  { href: '/portal', label: 'Inicio', icon: Home },
-  { href: '/portal/cursos', label: 'Cursos', icon: BookOpen },
-  { href: '/portal/actividades', label: 'Actividades', icon: Calendar },
-  { href: '/portal/proyectos', label: 'Proyectos', icon: Users },
-  { href: '/portal/mensajes', label: 'Mensajes', icon: MessageSquare },
-  { href: '/portal/noticias', label: 'Noticias', icon: Newspaper },
-  { href: '/portal/logros', label: 'Logros', icon: Award },
-  { href: '/portal/ranking', label: 'Ranking', icon: Trophy },
-  { href: '/portal/notificaciones', label: 'Notificaciones', icon: Bell },
-];
-
 interface SidebarProps {
   userName?: string;
   userEmail?: string;
@@ -30,6 +19,19 @@ interface SidebarProps {
 
 export default function Sidebar({ userName, userEmail, onLogout }: SidebarProps) {
   const pathname = usePathname();
+  const t = useTranslations('portal.nav');
+
+  const links: NavLink[] = [
+    { href: '/portal', label: t('inicio'), icon: Home },
+    { href: '/portal/cursos', label: t('cursos'), icon: BookOpen },
+    { href: '/portal/actividades', label: t('actividades'), icon: Calendar },
+    { href: '/portal/proyectos', label: t('proyectos'), icon: Users },
+    { href: '/portal/mensajes', label: t('mensajes'), icon: MessageSquare },
+    { href: '/portal/noticias', label: t('noticias'), icon: Newspaper },
+    { href: '/portal/logros', label: t('logros'), icon: Award },
+    { href: '/portal/ranking', label: t('ranking'), icon: Trophy },
+    { href: '/portal/notificaciones', label: t('notificaciones'), icon: Bell },
+  ];
 
   return (
     <aside className="flex h-screen w-60 flex-col border-r bg-card">
@@ -37,7 +39,7 @@ export default function Sidebar({ userName, userEmail, onLogout }: SidebarProps)
         <div className="flex size-8 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
           V
         </div>
-        <span className="font-heading text-lg font-bold">Mi Portal</span>
+        <span className="font-heading text-lg font-bold">{t('miPortal')}</span>
       </div>
       <nav className="flex-1 space-y-1 overflow-y-auto p-3">
         {links.map((l) => {
@@ -65,7 +67,7 @@ export default function Sidebar({ userName, userEmail, onLogout }: SidebarProps)
         )}
         <Button variant="ghost" className="w-full justify-start gap-3 text-sm text-muted-foreground" onClick={onLogout}>
           <LogOut className="size-4" />
-          Salir
+          {t('salir')}
         </Button>
       </div>
     </aside>

@@ -2,9 +2,9 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Survey Flow (real API)', () => {
   test('loads questions from backend and displays star ratings', async ({ page }) => {
-    await page.goto('/encuesta');
+    await page.goto('/es/encuesta');
 
-    await expect(page).toHaveURL('/encuesta');
+    await expect(page).toHaveURL('/es/encuesta');
 
     const questionText = page.getByText('¿Cómo valoras la organización de la actividad?');
     await expect(questionText).toBeVisible({ timeout: 10000 });
@@ -14,7 +14,7 @@ test.describe('Survey Flow (real API)', () => {
   });
 
   test('star rating selection works', async ({ page }) => {
-    await page.goto('/encuesta');
+    await page.goto('/es/encuesta');
 
     await expect(page.getByRole('button', { name: /Rate \d out of 5/ }).first()).toBeVisible({ timeout: 10000 });
 
@@ -29,7 +29,7 @@ test.describe('Survey Flow (real API)', () => {
   });
 
   test('form requires at least one rating', async ({ page }) => {
-    await page.goto('/encuesta');
+    await page.goto('/es/encuesta');
 
     await expect(page.getByRole('button', { name: /Rate \d out of 5/ }).first()).toBeVisible({ timeout: 10000 });
 
@@ -48,7 +48,7 @@ test.describe('Survey Flow (real API)', () => {
   });
 
   test('submits survey without CSRF token and redirects to confirmation', async ({ page }) => {
-    await page.goto('/encuesta');
+    await page.goto('/es/encuesta');
 
     await expect(page.getByRole('button', { name: /Rate \d out of 5/ }).first()).toBeVisible({ timeout: 10000 });
 
@@ -70,12 +70,12 @@ test.describe('Survey Flow (real API)', () => {
 
     expect(response.status()).toBe(200);
 
-    await expect(page).toHaveURL('/encuesta/confirmacion');
+    await expect(page).toHaveURL('/es/encuesta/confirmacion');
     await expect(page.getByText('¡Gracias!')).toBeVisible();
   });
 
   test('confirmation page displays and navigation works', async ({ page }) => {
-    await page.goto('/encuesta/confirmacion');
+    await page.goto('/es/encuesta/confirmacion');
 
     await expect(page.getByText('Encuesta voluntariado de la Fundación Altius')).toBeVisible();
     await expect(page.getByText('¡Gracias!')).toBeVisible();
@@ -90,8 +90,8 @@ test.describe('Survey Flow (real API)', () => {
   test('anonymous access without authentication', async ({ page }) => {
     await page.context().clearCookies();
 
-    await page.goto('/encuesta');
-    await expect(page).toHaveURL('/encuesta');
+    await page.goto('/es/encuesta');
+    await expect(page).toHaveURL('/es/encuesta');
     await expect(page).not.toHaveURL('/login');
     await expect(page).not.toHaveURL('/auth/login');
 
@@ -99,7 +99,7 @@ test.describe('Survey Flow (real API)', () => {
   });
 
   test('responsive design on mobile and desktop', async ({ page }) => {
-    await page.goto('/encuesta');
+    await page.goto('/es/encuesta');
 
     await page.setViewportSize({ width: 375, height: 667 });
     await expect(page.locator('main')).toBeVisible();

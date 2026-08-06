@@ -1,19 +1,12 @@
 'use client';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { Link } from '@/i18n/navigation';
+import { usePathname } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { Home, BookOpen, Calendar, Users, MessageSquare, MoreHorizontal } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import Sidebar from './Sidebar';
-
-const primaryTabs = [
-  { href: '/portal', label: 'Inicio', icon: Home },
-  { href: '/portal/cursos', label: 'Cursos', icon: BookOpen },
-  { href: '/portal/actividades', label: 'Actividades', icon: Calendar },
-  { href: '/portal/proyectos', label: 'Proyectos', icon: Users },
-  { href: '/portal/mensajes', label: 'Mensajes', icon: MessageSquare },
-];
 
 interface BottomNavProps {
   userName?: string;
@@ -24,23 +17,32 @@ interface BottomNavProps {
 export default function BottomNav({ userName, userEmail, onLogout }: BottomNavProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const t = useTranslations('portal.nav');
+
+  const primaryTabs = [
+    { href: '/portal', label: t('inicio'), icon: Home },
+    { href: '/portal/cursos', label: t('cursos'), icon: BookOpen },
+    { href: '/portal/actividades', label: t('actividades'), icon: Calendar },
+    { href: '/portal/proyectos', label: t('proyectos'), icon: Users },
+    { href: '/portal/mensajes', label: t('mensajes'), icon: MessageSquare },
+  ];
 
   return (
     <>
       <nav className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-around border-t bg-card pb-safe">
-        {primaryTabs.map((t) => {
-          const Icon = t.icon;
-          const isActive = t.href === '/portal' ? pathname === '/portal' : pathname.startsWith(t.href);
+        {primaryTabs.map((tabs) => {
+          const Icon = tabs.icon;
+          const isActive = tabs.href === '/portal' ? pathname === '/portal' : pathname.startsWith(tabs.href);
           return (
             <Link
-              key={t.href}
-              href={t.href}
+              key={tabs.href}
+              href={tabs.href}
               className={`flex flex-col items-center gap-0.5 px-3 py-2 text-xs ${
                 isActive ? 'text-primary' : 'text-muted-foreground'
               }`}
             >
               <Icon className="size-5" />
-              {t.label}
+              {tabs.label}
             </Link>
           );
         })}
@@ -51,7 +53,7 @@ export default function BottomNav({ userName, userEmail, onLogout }: BottomNavPr
               onClick={() => setOpen(true)}
             >
               <MoreHorizontal className="size-5" />
-              Más
+              {t('mas')}
             </button>
           </SheetTrigger>
           <SheetContent side="bottom" className="p-0">

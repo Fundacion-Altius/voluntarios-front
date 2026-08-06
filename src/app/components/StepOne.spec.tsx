@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import StepOne from "./StepOne";
 import { DatosContrato, ModalidadT } from "../types";
+import { TestProviders } from "../test-utils";
 
 // Mock the isUser function
 jest.mock("../utils", () => ({
@@ -40,13 +41,15 @@ function setup(contractData = defaultContractData) {
   return {
     user: userEvent.setup(),
     ...render(
-      <StepOne
-        contractData={contractData}
-        handleInputChange={mockHandleInputChange}
-        handleRadioChange={mockHandleRadioChange}
-        nextStep={mockNextStep}
-        setDatosContrato={mockSetDatosContrato}
-      />
+      <TestProviders>
+        <StepOne
+          contractData={contractData}
+          handleInputChange={mockHandleInputChange}
+          handleRadioChange={mockHandleRadioChange}
+          nextStep={mockNextStep}
+          setDatosContrato={mockSetDatosContrato}
+        />
+      </TestProviders>
     ),
   };
 }
@@ -97,13 +100,15 @@ function setupStateful(initialData = defaultContractData) {
       }
     };
     return (
-      <StepOne
-        contractData={data}
-        handleInputChange={handleInputChange}
-        handleRadioChange={handleRadioChange}
-        nextStep={mockNextStep}
-        setDatosContrato={setData}
-      />
+      <TestProviders>
+        <StepOne
+          contractData={data}
+          handleInputChange={handleInputChange}
+          handleRadioChange={handleRadioChange}
+          nextStep={mockNextStep}
+          setDatosContrato={setData}
+        />
+      </TestProviders>
     );
   };
   return {

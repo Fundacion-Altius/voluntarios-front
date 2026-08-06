@@ -43,13 +43,13 @@ test.describe('Video: 1-to-1 tutoring flow', () => {
     const roomId = roomBody.data?.roomId;
 
     // Instructor joins room
-    await instructorPage.goto(`/portal/sala/${roomId}`);
+    await instructorPage.goto(`/es/portal/sala/${roomId}`);
     await expect(instructorPage.getByText('Unirse a sala de video')).toBeVisible({ timeout: 5000 });
     await instructorPage.getByRole('button', { name: 'Unirse a la sala' }).click();
     await expect(instructorPage.getByRole('button', { name: 'Leave call' })).toBeVisible({ timeout: 15000 });
 
     // Volunteer joins room
-    await volunteerPage.goto(`/portal/sala/${roomId}`);
+    await volunteerPage.goto(`/es/portal/sala/${roomId}`);
     await expect(volunteerPage.getByText('Unirse a sala de video')).toBeVisible({ timeout: 5000 });
     await volunteerPage.getByRole('button', { name: 'Unirse a la sala' }).click();
     await expect(volunteerPage.getByRole('button', { name: 'Leave call' })).toBeVisible({ timeout: 15000 });
@@ -94,13 +94,13 @@ test.describe('Video: 1-to-many live class flow', () => {
     const roomId = roomBody.data?.roomId;
 
     // Instructor joins
-    await instructorPage.goto(`/portal/sala/${roomId}`);
+    await instructorPage.goto(`/es/portal/sala/${roomId}`);
     await expect(instructorPage.getByText('Unirse a sala de video')).toBeVisible({ timeout: 5000 });
     await instructorPage.getByRole('button', { name: 'Unirse a la sala' }).click();
     await expect(instructorPage.getByRole('button', { name: 'Leave call' })).toBeVisible({ timeout: 15000 });
 
     // Volunteer joins
-    await volunteerPage.goto(`/portal/sala/${roomId}`);
+    await volunteerPage.goto(`/es/portal/sala/${roomId}`);
     await expect(volunteerPage.getByText('Unirse a sala de video')).toBeVisible({ timeout: 5000 });
     await volunteerPage.getByRole('button', { name: 'Unirse a la sala' }).click();
     await expect(volunteerPage.getByRole('button', { name: 'Leave call' })).toBeVisible({ timeout: 15000 });

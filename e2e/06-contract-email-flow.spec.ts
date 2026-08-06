@@ -5,7 +5,7 @@ test.describe('Contract → Email Flow (staging)', () => {
     const uniqueId = `X${Date.now().toString(36).toUpperCase()}`;
     const testEmail = `test-${uniqueId}@test.com`;
 
-    await page.goto('/', { waitUntil: 'load' });
+    await page.goto('/es/', { waitUntil: 'load' });
 
     await page.locator('input#nombre').fill('Test User');
     await page.locator('input#id').fill(uniqueId);

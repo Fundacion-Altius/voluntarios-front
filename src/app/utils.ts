@@ -1,6 +1,19 @@
 import { getApiBaseUrl } from '@/lib/apiUrl';
 
 const HOST = getApiBaseUrl();
+export function getCSRFTokenFromCookie(): string | null {
+  if (typeof document !== 'undefined') {
+    const cookies = document.cookie.split(';');
+    for (const cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === 'csrf_token') {
+        return value;
+      }
+    }
+  }
+  return null;
+}
+
 export function todayToSQL() {
   const date = new Date();
   const formattedDate = date.toISOString().slice(0, 19).replace("T", " ");

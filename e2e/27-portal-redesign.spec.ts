@@ -4,7 +4,7 @@ import { seedQuizCourse, BACKEND_URL } from './helpers';
 const PORTAL_USER = { email: 'general@fundacionaltius.org', password: 'general123' };
 
 async function loginAsVolunteer(page: any) {
-  await page.goto('/login', { waitUntil: 'load' });
+  await page.goto('/es/login', { waitUntil: 'load' });
   await page.waitForFunction(() => {
     const form = document.querySelector('form');
     if (!form) return false;
@@ -17,15 +17,15 @@ async function loginAsVolunteer(page: any) {
 }
 
 const PORTAL_ROUTES = [
-  { path: '/portal', heading: /Mi Panel|Panel/i },
-  { path: '/portal/actividades', heading: /Actividades/i },
-  { path: '/portal/cursos', heading: /Cursos/i },
-  { path: '/portal/proyectos', heading: /Proyectos/i },
-  { path: '/portal/mensajes', heading: /Mensajes/i },
-  { path: '/portal/noticias', heading: /Noticias/i },
-  { path: '/portal/logros', heading: /Logros/i },
-  { path: '/portal/ranking', heading: /Ranking|Clasificación/i },
-  { path: '/portal/notificaciones', heading: /Notificaciones/i },
+  { path: '/es/portal', heading: /Mi Panel|Panel/i },
+  { path: '/es/portal/actividades', heading: /Actividades/i },
+  { path: '/es/portal/cursos', heading: /Cursos/i },
+  { path: '/es/portal/proyectos', heading: /Proyectos/i },
+  { path: '/es/portal/mensajes', heading: /Mensajes/i },
+  { path: '/es/portal/noticias', heading: /Noticias/i },
+  { path: '/es/portal/logros', heading: /Logros/i },
+  { path: '/es/portal/ranking', heading: /Ranking|Clasificación/i },
+  { path: '/es/portal/notificaciones', heading: /Notificaciones/i },
 ];
 
 test.describe.serial('Portal Redesign', () => {
@@ -78,7 +78,7 @@ test.describe.serial('Portal Redesign', () => {
 
     test('video room page shows Spanish text', async ({ page }) => {
       await loginAsVolunteer(page);
-      await page.goto('/portal/sala/test-room-123', { waitUntil: 'networkidle' });
+      await page.goto('/es/portal/sala/test-room-123', { waitUntil: 'networkidle' });
       const body = page.locator('body');
       // Look for Spanish phrases
       await expect(body).toContainText(/sala|unirse|conexión|cámara|micrófono|compartir/i);
@@ -100,7 +100,7 @@ test.describe.serial('Portal Redesign', () => {
     test('quiz options are clickable and show feedback', async ({ page }) => {
       await loginAsVolunteer(page);
       await expect(page.locator('nav').or(page.locator('aside')).first()).toBeAttached({ timeout: 10000 });
-      await page.goto(`/portal/cursos/${courseId}/lecciones/${lessonId}`, { waitUntil: 'networkidle' });
+      await page.goto(`/es/portal/cursos/${courseId}/lecciones/${lessonId}`, { waitUntil: 'networkidle' });
 
       // Quiz options should be present
       const quizOptions = page.locator('.cursor-pointer.rounded-md.border.p-3');
@@ -124,12 +124,12 @@ test.describe.serial('Portal Redesign', () => {
   test.describe('8.7 Old mensajes redirect', () => {
     test.use({ viewport: { width: 1280, height: 900 } });
 
-    test('old /portal/proyectos/mensajes redirects to /portal/mensajes', async ({ page }) => {
+    test('old /portal/proyectos/mensajes redirects to /es/portal/mensajes', async ({ page }) => {
       await loginAsVolunteer(page);
       await page.goto('/portal/proyectos/mensajes', { waitUntil: 'load' });
-      // Should redirect (client-side or server-side) to /portal/mensajes
-      await page.waitForURL('**/portal/mensajes', { timeout: 10000 });
-      expect(page.url()).toContain('/portal/mensajes');
+      // Should redirect (client-side or server-side) to /es/portal/mensajes
+      await page.waitForURL('**/es/portal/mensajes', { timeout: 10000 });
+      expect(page.url()).toContain('/es/portal/mensajes');
     });
   });
 });

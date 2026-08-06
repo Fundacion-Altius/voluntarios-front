@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { useTranslations } from "next-intl";
 import StepOne from "./StepOne";
 import StepTwo from "./StepTwo";
 import StepThree from "./StepThree";
@@ -9,6 +10,7 @@ import { useContractForm } from "@/hooks/useContractForm";
 
 const imagePrefix = (process.env.NEXT_PUBLIC_IMAGE_PREFIX || '/').replace(/\/$/, '');
 const Contract: React.FC = () => {
+  const t = useTranslations("wizard.contract");
   const {
     step,
     datosContrato,
@@ -69,7 +71,7 @@ const Contract: React.FC = () => {
         priority
       />
       <div className="contract-wizard">
-        <h2>Acuerdo de voluntariado con la Fundación Altius</h2>
+        <h2>{t("titulo")}</h2>
         {renderStep()}
       </div>
     </main>

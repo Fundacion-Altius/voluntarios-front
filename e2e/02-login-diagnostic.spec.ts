@@ -29,7 +29,7 @@ test('login flow diagnostic', async ({ page, context }) => {
     console.log(`[pageerror] ${err.message}`);
   });
 
-  await page.goto('/login', { waitUntil: 'load' });
+  await page.goto('/es/login', { waitUntil: 'load' });
 
   // Wait for React hydration
   await page.waitForFunction(() => {

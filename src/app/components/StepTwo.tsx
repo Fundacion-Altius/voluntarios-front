@@ -1,10 +1,10 @@
 "use client";
 import React, { useRef } from "react";
+import { useTranslations } from "next-intl";
 import SignaturePad from "react-signature-canvas";
 import { DatosContrato } from "../types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
 interface StepTwoProps {
@@ -20,6 +20,8 @@ const StepTwo: React.FC<StepTwoProps> = ({
   nextStep,
   prevStep,
 }) => {
+  const t = useTranslations("wizard.stepTwo");
+  const tc = useTranslations("wizard.common");
   const signaturePad = useRef<SignaturePad>(null);
 
   const handleClear = () => {
@@ -96,7 +98,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
           </p>
         </div>
         <div>
-          <Label>Firma:</Label>
+          <Label>{t("firma")}</Label>
           <SignaturePad
             ref={signaturePad}
             canvasProps={{
@@ -106,11 +108,11 @@ const StepTwo: React.FC<StepTwoProps> = ({
           />
         </div>
         <div className="buttons">
-          <Button onClick={handleClear}>Reiniciar firma</Button>
+          <Button onClick={handleClear}>{t("reiniciarFirma")}</Button>
           <br />
           <br />
-          <Button variant="outline" onClick={prevStep}>{"<"} Volver</Button>
-          <Button onClick={handleNext}>Siguiente {">"}</Button>
+          <Button variant="outline" onClick={prevStep}>{"<"} {tc("volver")}</Button>
+          <Button onClick={handleNext}>{tc("siguiente")} {">"}</Button>
         </div>
       </CardContent>
     </Card>
