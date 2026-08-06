@@ -6,27 +6,11 @@ import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/app/auth/useAuth';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
-
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { getApiBaseUrl } from '@/lib/apiUrl';
+import { LessonForm } from './LessonForm';
 
 const API_URL = getApiBaseUrl();
 
@@ -146,98 +130,25 @@ export default function EditarLeccionPage() {
         </Button>
       </div>
 
-      {successMsg && (
-        <div className="mb-4 rounded-md bg-green-100 p-3 text-sm text-green-800 dark:bg-green-900/30 dark:text-green-300">
-          {successMsg}
-        </div>
-      )}
-
-      <Card className="mx-auto max-w-2xl">
-        <CardHeader>
-          <CardTitle>{t('editarLeccion')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="space-y-4">
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-48 w-full" />
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                  {error}
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <Label htmlFor="title">{tc('titulo')}</Label>
-                <Input
-                  id="title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="contentType">{t('tipoContenido')}</Label>
-                <Select value={contentType} onValueChange={setContentType}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="text">{t('texto')}</SelectItem>
-                    <SelectItem value="video">{t('video')}</SelectItem>
-                    <SelectItem value="quiz">{t('quiz')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {contentType === 'video' && (
-                <div className="space-y-2">
-                  <Label htmlFor="contentUrl">{t('urlVideo')}</Label>
-                  <Input
-                    id="contentUrl"
-                    value={contentUrl}
-                    onChange={(e) => setContentUrl(e.target.value)}
-                    required
-                  />
-                </div>
-              )}
-
-              {(contentType === 'text' || contentType === 'quiz') && (
-                <div className="space-y-2">
-                  <Label htmlFor="content">
-                    {contentType === 'quiz' ? t('configQuiz') : tc('contenido')}
-                  </Label>
-                  <Textarea
-                    id="content"
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    rows={10}
-                    required
-                  />
-                </div>
-              )}
-
-              <div className="flex gap-3">
-                <Button type="submit" disabled={submitting}>
-                  {submitting ? tc('guardando') : t('guardarCambios')}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => router.push(`/admin/cursos/${courseId}`)}
-                >
-                  {tc('cancelar')}
-                </Button>
-              </div>
-            </form>
-          )}
-        </CardContent>
-      </Card>
+      <LessonForm
+        title={title}
+        setTitle={setTitle}
+        contentType={contentType}
+        setContentType={setContentType}
+        content={content}
+        setContent={setContent}
+        contentUrl={contentUrl}
+        setContentUrl={setContentUrl}
+        submitting={submitting}
+        error={error}
+        setError={setError}
+        successMsg={successMsg}
+        setSuccessMsg={setSuccessMsg}
+        isLoading={isLoading}
+        onSubmit={handleSubmit}
+        t={t}
+        tc={tc}
+      />
     </div>
   );
 }
