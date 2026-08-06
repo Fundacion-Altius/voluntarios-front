@@ -11,7 +11,6 @@ import { useTranslations } from "next-intl";
 import { AreasT, DatosContrato, ModalidadT } from "../types";
 import { isUser, validateDNI } from "../utils";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -22,6 +21,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { StepOneAreas } from "./StepOneAreas";
+import { StepOneDuracion } from "./StepOneDuracion";
+import { StepOneHorario } from "./StepOneHorario";
+import { StepOneModalidad } from "./StepOneModalidad";
 
 interface StepOneProps {
   contractData: DatosContrato;
@@ -47,15 +50,6 @@ const StepOne: React.FC<StepOneProps> = ({
   const [dniDuplicateError, setDniDuplicateError] = useState<string>("");
   const [isValidating, setIsValidating] = useState<boolean>(false);
 
-  const areasOptions: AreasT[] = [
-    "Reparto de Alimentos",
-    "Acompañamiento en la búsqueda de empleo",
-    "Coaching",
-    "Formación",
-    "CEPI",
-    "Nave",
-    "Otra",
-  ];
   const modalidadOptions: ModalidadT[] = ["Presencial", "Online", "Híbrido"];
   const horarioOptions = [
     { value: "días laborables mañana", label: t("horarioDiasManana") },
@@ -151,30 +145,29 @@ const StepOne: React.FC<StepOneProps> = ({
     } as unknown as React.ChangeEvent<HTMLInputElement>);
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!contractData.lugar) {
+      alert(t("seleccioneCiudad"));
+      return;
+    }
+    if (dniDuplicateError) {
+      alert(dniDuplicateError);
+      return;
+    }
+    if (await isUser(contractData.id)) {
+      handleDuplicateDni(contractData.id);
+    } else {
+      nextStep();
+    }
+  };
+
   return (
     <div className="step">
       <p>
         <span style={{ color: "red" }}>*</span> {tc("campoObligatorio")}
       </p>
-      <form
-        className="grid grid-cols-1 md:grid-cols-2 gap-4"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          if (!contractData.lugar) {
-            alert(t("seleccioneCiudad"));
-            return;
-          }
-          if (dniDuplicateError) {
-            alert(dniDuplicateError);
-            return;
-          }
-          if (await isUser(contractData.id)) {
-            handleDuplicateDni(contractData.id);
-          } else {
-            nextStep();
-          }
-        }}
-      >
+      <form className="grid grid-cols-1 md:grid-cols-2 gap-4" onSubmit={handleSubmit}>
         <div className="form-group md:col-span-2">
           <Label htmlFor="nombre">
             {t("nombre")}{" "}
@@ -276,128 +269,26 @@ const StepOne: React.FC<StepOneProps> = ({
             required
           />
         </div>
-        <section className="form-group md:col-span-2">
-          <p>
-            {t("areasTitulo")}{" "}
-            <span style={{ color: "red" }}>*</span>{" "}
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {areasOptions.map((area) => (
-              <div key={area} className="flex items-center gap-2">
-                <Checkbox
-                  id={area}
-                  checked={
-                    area === "Otra"
-                      ? !!optional || contractData.areas.includes("Otra")
-                      : contractData.areas.includes(area)
-                  }
-                  onCheckedChange={(checked) => {
-                    if (area === "Otra") {
-                      if (checked) {
-                        setDatosContrato((prevData) => ({
-                          ...prevData,
-                          areas: [...prevData.areas, "Otra"],
-                        }));
-                      } else {
-                        setDatosContrato((prevData) => ({
-                          ...prevData,
-                          areas: prevData.areas.filter(
-                            (a) => a !== "Otra" && a !== optional
-                          ),
-                        }));
-                        setOptional("");
-                      }
-                    } else {
-                      handleCheckboxChange("areas", area)(checked);
-                    }
-                  }}
-                />
-                <Label htmlFor={area}>{area}</Label>
-                {area === "Otra" &&
-                  (contractData.areas.includes("Otra") || !!optional) && (
-                    <Input
-                      style={{ marginInlineStart: "1rem" }}
-                      type="text"
-                      id="otraArea"
-                      name="otraArea"
-                      value={optional}
-                      onChange={(e) => {
-                        const newValue = e.target.value;
-                        setOptional(newValue);
-                        setDatosContrato((prevData) => ({
-                          ...prevData,
-                          areas: [
-                            ...prevData.areas.filter(
-                              (a) => a !== optional && a !== "Otra"
-                            ),
-                            newValue || "Otra",
-                          ],
-                        }));
-                      }}
-                      placeholder={t("placeholderOtraArea")}
-                      required
-                    />
-                  )}
-              </div>
-            ))}
-          </div>
-        </section>
-        <section className="form-group md:col-span-2">
-          <p>
-            {t("duracionTitulo")} <br />
-            {t("duracionDescripcion")}
-            <span style={{ color: "red" }}>*</span>{" "}
-          </p>
-          <RadioGroup
-            value={["días", "semanas", "meses", "años", "indeterminado"].includes(contractData.duracion ?? "") ? contractData.duracion! : "otros"}
-            onValueChange={(value) => {
-              if (value === "otros") {
-                setDatosContrato((prev) => ({ ...prev, duracion: "" }));
-              } else {
-                handleRadioChange("duracion", value);
-              }
-            }}
-            className="grid grid-cols-2 sm:grid-cols-3 gap-2"
-          >
-            {["días", "semanas", "meses", "años", "indeterminado", "otros"].map(
-              (option) => (
-                <div key={option} className="flex items-center gap-2">
-                  <RadioGroupItem value={option} id={option} />
-                  <Label htmlFor={option}>{option}</Label>
-                  {option === "otros" &&
-                    !["días", "semanas", "meses", "años", "indeterminado"].includes(contractData.duracion ?? "") && (
-                      <Input
-                        style={{ marginLeft: "1rem" }}
-                        type="text"
-                        name="duracion"
-                        value={contractData.duracion}
-                        onChange={handleInputChange}
-                        placeholder={t("placeholderDuracion")}
-                        required
-                      />
-                    )}
-                </div>
-              )
-            )}
-          </RadioGroup>
-        </section>
-        <section className="form-group">
-          <p>
-            {t("modalidad")} <span style={{ color: "red" }}>*</span>{" "}
-          </p>
-          <RadioGroup
-            value={contractData.modalidad[0] || ""}
-            onValueChange={(value) => handleRadioChange("modalidad", value)}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-2"
-          >
-            {modalidadOptions.map((modalidad: ModalidadT) => (
-              <div key={modalidad} className="flex items-center gap-2">
-                <RadioGroupItem value={modalidad} id={modalidad} />
-                <Label htmlFor={modalidad}>{modalidad}</Label>
-              </div>
-            ))}
-          </RadioGroup>
-        </section>
+        <StepOneAreas
+          contractData={contractData}
+          setDatosContrato={setDatosContrato}
+          optional={optional}
+          setOptional={setOptional}
+          handleCheckboxChange={handleCheckboxChange}
+          t={t}
+        />
+        <StepOneDuracion
+          contractData={contractData}
+          setDatosContrato={setDatosContrato}
+          handleRadioChange={handleRadioChange}
+          t={t}
+        />
+        <StepOneModalidad
+          contractData={contractData}
+          handleRadioChange={handleRadioChange}
+          modalidadOptions={modalidadOptions}
+          t={t}
+        />
         <div className="form-group">
           <Label htmlFor="lugar">
             {t("lugar")}{" "}
@@ -422,35 +313,13 @@ const StepOne: React.FC<StepOneProps> = ({
             </SelectContent>
           </Select>
         </div>
-        <section className="form-group md:col-span-2">
-          <p>
-            {t("horarioTitulo")} <br />
-            {t("horarioDescripcion")}
-            <span style={{ color: "red" }}>*</span>{" "}
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {horarioOptions.map((option) => (
-              <div key={option.value} className="flex items-center gap-2">
-                <Checkbox
-                  id={horarioOptionIds[option.value]}
-                  checked={
-                    contractData.horario
-                      .split(", ")
-                      .includes(option.value)
-                  }
-                  onCheckedChange={(checked) => {
-                    handleCheckboxChange("horario", option.value)(
-                      checked
-                    );
-                  }}
-                />
-                <Label htmlFor={horarioOptionIds[option.value]}>
-                  {option.label}
-                </Label>
-              </div>
-            ))}
-          </div>
-        </section>
+        <StepOneHorario
+          contractData={contractData}
+          handleCheckboxChange={handleCheckboxChange}
+          horarioOptions={horarioOptions}
+          horarioOptionIds={horarioOptionIds}
+          t={t}
+        />
         <div className="buttons md:col-span-2">
           <Button type="submit">{tc("siguiente")} {">"}</Button>
         </div>
