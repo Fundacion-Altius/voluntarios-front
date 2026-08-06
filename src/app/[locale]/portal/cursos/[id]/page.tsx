@@ -12,6 +12,69 @@ import { LoadingSkeleton, ErrorState, EmptyState } from '@/components/portal/Sta
 import { apiClient, apiUrl } from '@/lib/apiClient';
 import { BookOpen, CheckCircle, Circle, ChevronRight } from 'lucide-react';
 
+function computeProgress(course: any): { total: number; completed: number; pct: number } {
+  const total = course.modules?.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0) || 0;
+  const completed = course.modules?.reduce((acc: number, m: any) => acc + (m.lessons?.filter((l: any) => l.completed).length || 0), 0) || 0;
+  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+  return { total, completed, pct };
+}
+
+function renderCourseState(loading: boolean, error: string | null, course: any, t: any, router: any, id: string) {
+  if (loading) return <div><LoadingSkeleton rows={4} /></div>;
+  if (error && !course) return <div><ErrorState message={error} /><Button variant="outline" className="mt-4" onClick={() => router.push('/portal/cursos')}>{t('volverCursos')}</Button></div>;
+  if (!course) return <div><EmptyState title={t('cursoNoEncontrado')} action={<Button variant="outline" onClick={() => router.push('/portal/cursos')}>{t('volverCursos')}</Button>} /></div>;
+  return null;
+}
+
+function renderEnrollSection(course: any, enrolling: boolean, error: string | null, id: string, t: any, handleEnroll: () => Promise<void>) {
+  return course.enrolled ? (
+    <Card>
+      <CardHeader><CardTitle>{t('tuProgreso')}</CardTitle></CardHeader>
+      <CardContent>
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <div className="h-2 w-full rounded-full bg-muted">
+              <div className="h-2 rounded-full bg-primary transition-all" style={{ width: `${computeProgress(course).pct}%` }} />
+            </div>
+          </div>
+          <span className="text-sm font-medium">{computeProgress(course).pct}%</span>
+        </div>
+        <p className="mt-1 text-xs text-muted-foreground">{computeProgress(course).completed} {t('de')} {computeProgress(course).total} {t('leccionesCompletadas')}</p>
+      </CardContent>
+    </Card>
+  ) : (
+    <Button onClick={handleEnroll} disabled={enrolling}>{enrolling ? t('inscribiendo') : t('inscribirse')}</Button>
+  );
+}
+
+function renderModules(course: any, id: string, t: any) {
+  if (!course.modules || course.modules.length === 0) return null;
+  return (
+    <div className="space-y-4">
+      <h2 className="font-heading text-lg font-semibold">{t('contenidoCurso')}</h2>
+      {course.modules.map((mod: any, modIdx: number) => (
+        <Card key={mod.id || modIdx}>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">{mod.title || `${t('modulo')} ${modIdx + 1}`}</CardTitle>
+            {mod.description && <p className="text-sm text-muted-foreground">{mod.description}</p>}
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-1">
+              {mod.lessons?.map((lesson: any, lesIdx: number) => (
+                <Link key={lesson.id} href={`/portal/cursos/${id}/lecciones/${lesson.id}`} className="flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted/50">
+                  {lesson.completed ? <CheckCircle className="size-4 shrink-0 text-green-600" /> : <Circle className="size-4 shrink-0 text-muted-foreground" />}
+                  <span className="flex-1">{lesson.title || `${t('leccion')} ${lesIdx + 1}`}</span>
+                  <ChevronRight className="size-4 text-muted-foreground" />
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
 export default function CursoDetailPage() {
   const { data: session } = useSession();
   const t = useTranslations('portal.cursos');
@@ -43,9 +106,10 @@ export default function CursoDetailPage() {
   if (error && !course) return <div><ErrorState message={error} /><Button variant="outline" className="mt-4" onClick={() => router.push('/portal/cursos')}>{t('volverCursos')}</Button></div>;
   if (!course) return <div><EmptyState title={t('cursoNoEncontrado')} action={<Button variant="outline" onClick={() => router.push('/portal/cursos')}>{t('volverCursos')}</Button>} /></div>;
 
-  const totalLessons = course.modules?.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0) || 0;
-  const completedLessons = course.modules?.reduce((acc: number, m: any) => acc + (m.lessons?.filter((l: any) => l.completed).length || 0), 0) || 0;
-  const progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+  const { total: totalLessons, completed: completedLessons, pct: progress } = computeProgress(course);
+
+  const courseState = renderCourseState(loading, error, course, t, router, id);
+  if (courseState) return courseState;
 
   return (
     <div className="space-y-6">
@@ -65,48 +129,8 @@ export default function CursoDetailPage() {
         <p className="mt-4 text-muted-foreground">{course.description}</p>
       </div>
       {error && <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
-      {course.enrolled ? (
-        <Card>
-          <CardHeader><CardTitle>{t('tuProgreso')}</CardTitle></CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <div className="h-2 w-full rounded-full bg-muted">
-                  <div className="h-2 rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} />
-                </div>
-              </div>
-              <span className="text-sm font-medium">{progress}%</span>
-            </div>
-            <p className="mt-1 text-xs text-muted-foreground">{completedLessons} {t('de')} {totalLessons} {t('leccionesCompletadas')}</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <Button onClick={handleEnroll} disabled={enrolling}>{enrolling ? t('inscribiendo') : t('inscribirse')}</Button>
-      )}
-      {course.modules && course.modules.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="font-heading text-lg font-semibold">{t('contenidoCurso')}</h2>
-          {course.modules.map((mod: any, modIdx: number) => (
-            <Card key={mod.id || modIdx}>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">{mod.title || `${t('modulo')} ${modIdx + 1}`}</CardTitle>
-                {mod.description && <p className="text-sm text-muted-foreground">{mod.description}</p>}
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1">
-                  {mod.lessons?.map((lesson: any, lesIdx: number) => (
-                    <Link key={lesson.id} href={`/portal/cursos/${id}/lecciones/${lesson.id}`} className="flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted/50">
-                      {lesson.completed ? <CheckCircle className="size-4 shrink-0 text-green-600" /> : <Circle className="size-4 shrink-0 text-muted-foreground" />}
-                      <span className="flex-1">{lesson.title || `${t('leccion')} ${lesIdx + 1}`}</span>
-                      <ChevronRight className="size-4 text-muted-foreground" />
-                    </Link>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      {renderEnrollSection(course, enrolling, error, id, t, handleEnroll)}
+      {renderModules(course, id, t)}
     </div>
   );
 }

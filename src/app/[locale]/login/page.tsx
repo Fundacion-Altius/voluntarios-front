@@ -26,16 +26,72 @@ function LoginContent() {
   const [msLoading, setMsLoading] = useState(false);
   const [credError, setCredError] = useState('');
 
+  const handleStatusError = (data: any, t: any, setCredError: (msg: string) => void): string | null => {
+    if (data.user?.status === 'candidate') {
+      setCredError(t('statusCandidate'));
+      return 'candidate';
+    }
+    if (data.user?.status === 'inactive') {
+      setCredError(t('statusInactive'));
+      return 'inactive';
+    }
+    if (data.user?.status === 'on-reserve') {
+      setCredError(t('statusOnReserve'));
+      return 'on-reserve';
+    }
+    return null;
+  };
+
+  const handleLoginResponse = async (res: Response, data: any): Promise<boolean> => {
+    const statusError = handleStatusError(data, t, setCredError);
+    if (statusError) { setLoading(false); return true; }
+
+    if (!res.ok) {
+      setCredError(data.error || t('errorCredenciales'));
+      setLoading(false);
+      return true;
+    }
+
+    if (data.user?.status === 'active' && !data.user?.has_password) {
+      const token = data.setupToken || '';
+      router.push(`/crear-password?token=${token}`);
+      setLoading(false);
+      return true;
+    }
+
+    const nextAuthResult = await signIn('credentials', {
+      email: data.user.email,
+      name: data.user.display_name || data.user.name,
+      role: data.user.role,
+      user_type: data.user.user_type,
+      authToken: data.authToken,
+      redirect: false,
+    });
+
+    if (nextAuthResult?.error) {
+      setCredError(nextAuthResult.error);
+      setLoading(false);
+      return true;
+    }
+
+    await updateSession();
+
+    const target = data.user?.role === 'general' ? '/portal' : '/admin/dashboard';
+    router.push(target);
+    setLoading(false);
+    return false;
+  };
+
   const handleCredentialsLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setCredError('');
     try {
       const csrfToken = getCSRFTokenFromCookie();
-      
+
       const res = await fetch('/api/auth/login', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'X-CSRF-Token': csrfToken || ''
         },
@@ -43,55 +99,7 @@ function LoginContent() {
       });
 
       const data = await res.json();
-
-      if (data.user?.status === 'candidate') {
-        setCredError(t('statusCandidate'));
-        setLoading(false);
-        return;
-      }
-      if (data.user?.status === 'inactive') {
-        setCredError(t('statusInactive'));
-        setLoading(false);
-        return;
-      }
-      if (data.user?.status === 'on-reserve') {
-        setCredError(t('statusOnReserve'));
-        setLoading(false);
-        return;
-      }
-
-      if (!res.ok) {
-        setCredError(data.error || t('errorCredenciales'));
-        setLoading(false);
-        return;
-      }
-
-      if (data.user?.status === 'active' && !data.user?.has_password) {
-        const token = data.setupToken || '';
-        router.push(`/crear-password?token=${token}`);
-        setLoading(false);
-        return;
-      }
-
-        const nextAuthResult = await signIn('credentials', {
-          email: data.user.email,
-          name: data.user.display_name || data.user.name,
-          role: data.user.role,
-          user_type: data.user.user_type,
-          authToken: data.authToken,
-          redirect: false,
-        });
-
-        if (nextAuthResult?.error) {
-          setCredError(nextAuthResult.error);
-          setLoading(false);
-          return;
-        }
-
-        await updateSession();
-
-        const target = data.user?.role === 'general' ? '/portal' : '/admin/dashboard';
-        router.push(target);
+      await handleLoginResponse(res, data);
     } catch {
       setCredError(t('errorConexion'));
       setLoading(false);

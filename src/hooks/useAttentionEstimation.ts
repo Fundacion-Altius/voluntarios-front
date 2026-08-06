@@ -2,6 +2,27 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+function sampleBrightness(data: Uint8ClampedArray, width: number, height: number, sampleStep: number): { avg: number; count: number } {
+  let brightness = 0;
+  let sampleCount = 0;
+  for (let y = 0; y < height; y += sampleStep) {
+    for (let x = 0; x < width; x += sampleStep) {
+      const i = (y * width + x) * 4;
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      brightness += (r + g + b) / 3;
+      sampleCount++;
+    }
+  }
+  return { avg: sampleCount > 0 ? brightness / sampleCount : 0, count: sampleCount };
+}
+
+function computeAttentionScore(avgBrightness: number): number {
+  const isLookingAtScreen = avgBrightness > 20 && avgBrightness < 220;
+  return isLookingAtScreen ? 0.8 + Math.random() * 0.2 : 0.1 + Math.random() * 0.3;
+}
+
 export function useAttentionEstimation(videoRef: React.RefObject<HTMLVideoElement | null>, canvasRef: React.RefObject<HTMLCanvasElement | null>, enabled: boolean) {
   const [attention, setAttention] = useState<number | null>(null);
   const frameRef = useRef<number>(0);
@@ -32,27 +53,8 @@ export function useAttentionEstimation(videoRef: React.RefObject<HTMLVideoElemen
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imageData.data;
-
-        let brightness = 0;
-        let motionScore = 0;
-        const sampleStep = 16;
-        let sampleCount = 0;
-
-        for (let y = 0; y < canvas.height; y += sampleStep) {
-          for (let x = 0; x < canvas.width; x += sampleStep) {
-            const i = (y * canvas.width + x) * 4;
-            const r = data[i];
-            const g = data[i + 1];
-            const b = data[i + 2];
-            brightness += (r + g + b) / 3;
-            sampleCount++;
-          }
-        }
-
-        const avgBrightness = sampleCount > 0 ? brightness / sampleCount : 0;
-        const isLookingAtScreen = avgBrightness > 20 && avgBrightness < 220;
-        const score = isLookingAtScreen ? 0.8 + Math.random() * 0.2 : 0.1 + Math.random() * 0.3;
+        const { avg } = sampleBrightness(imageData.data, canvas.width, canvas.height, 16);
+        const score = computeAttentionScore(avg);
 
         setAttention(score);
       } catch {}

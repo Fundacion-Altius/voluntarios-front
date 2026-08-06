@@ -27,33 +27,47 @@ function QuizComponent({ quiz, lessonTitle }: { quiz: any; lessonTitle: string }
     setSubmitted(false);
   };
 
+  const getOptionClassName = (i: number): string => {
+    let className = 'cursor-pointer rounded-md border p-3 text-sm transition-colors ';
+    if (!submitted) {
+      className += selected === i ? 'border-primary bg-primary/5' : 'hover:bg-muted/50';
+    } else {
+      if (i === correctIndex) className += 'border-green-500 bg-green-50 text-green-800';
+      else if (i === selected && i !== correctIndex) className += 'border-destructive bg-destructive/5 text-destructive';
+      else className += 'opacity-60';
+    }
+    return className;
+  };
+
+  const getResultIcon = (i: number) => {
+    if (!submitted) return null;
+    if (i === correctIndex) return <Check className="size-4 text-green-600" />;
+    if (i === selected && i !== correctIndex) return <X className="size-4 text-destructive" />;
+    return null;
+  };
+
+  const resultMessage = submitted
+    ? selected === correctIndex
+      ? t('correcto')
+      : t('respuestaIncorrecta')
+    : null;
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">{quiz.question || lessonTitle}</h3>
       <div className="space-y-2">
-        {quiz.options?.map((opt: string, i: number) => {
-          let className = 'cursor-pointer rounded-md border p-3 text-sm transition-colors ';
-          if (!submitted) {
-            className += selected === i ? 'border-primary bg-primary/5' : 'hover:bg-muted/50';
-          } else {
-            if (i === correctIndex) className += 'border-green-500 bg-green-50 text-green-800';
-            else if (i === selected && i !== correctIndex) className += 'border-destructive bg-destructive/5 text-destructive';
-            else className += 'opacity-60';
-          }
-          return (
-            <div
-              key={i}
-              className={className}
-              onClick={() => { if (!submitted) setSelected(i); }}
-            >
-              <div className="flex items-center gap-2">
-                <span className="flex-1">{opt}</span>
-                {submitted && i === correctIndex && <Check className="size-4 text-green-600" />}
-                {submitted && i === selected && i !== correctIndex && <X className="size-4 text-destructive" />}
-              </div>
+        {quiz.options?.map((opt: string, i: number) => (
+          <div
+            key={i}
+            className={getOptionClassName(i)}
+            onClick={() => { if (!submitted) setSelected(i); }}
+          >
+            <div className="flex items-center gap-2">
+              <span className="flex-1">{opt}</span>
+              {getResultIcon(i)}
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
       {!submitted ? (
         <Button onClick={handleSubmit} disabled={selected === null} className="w-full">
@@ -62,7 +76,7 @@ function QuizComponent({ quiz, lessonTitle }: { quiz: any; lessonTitle: string }
       ) : (
         <div className="space-y-2">
           <p className={`text-sm font-medium ${selected === correctIndex ? 'text-green-600' : 'text-destructive'}`}>
-            {selected === correctIndex ? t('correcto') : t('respuestaIncorrecta')}
+            {resultMessage}
           </p>
           <Button variant="outline" onClick={handleRetry} className="w-full">
             {t('intentarDeNuevo')}
@@ -76,6 +90,133 @@ function QuizComponent({ quiz, lessonTitle }: { quiz: any; lessonTitle: string }
 import { getApiBaseUrl } from '@/lib/apiUrl';
 
 const API_URL = getApiBaseUrl();
+
+async function fetchCourseData(
+  courseId: string,
+  lessonId: string,
+  fetchHeaders: Record<string, string>,
+  t: ReturnType<typeof useTranslations>,
+  fetchIdRef: React.MutableRefObject<number>,
+  setCourse: (data: any) => void,
+  setError: (msg: string) => void,
+  setLoading: (val: boolean) => void,
+): Promise<void> {
+  if (!courseId || !lessonId) return;
+  const thisFetchId = ++fetchIdRef.current;
+  fetch(`${API_URL}/api/courses/${courseId}`, {
+    headers: fetchHeaders,
+    credentials: 'include',
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error(t('errorCargar'));
+      return res.json();
+    })
+    .then((data) => {
+      if (thisFetchId === fetchIdRef.current) setCourse(data.success ? data.data : data);
+    })
+    .catch((err) => {
+      if (thisFetchId === fetchIdRef.current) setError(err.message);
+    })
+    .finally(() => {
+      if (thisFetchId === fetchIdRef.current) setLoading(false);
+    });
+}
+
+function renderErrorOrLoading(
+  loading: boolean,
+  error: string,
+  lesson: any,
+  courseId: string,
+  t: ReturnType<typeof useTranslations>,
+  router: any,
+) {
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-64 w-full rounded-lg" />
+      </div>
+    );
+  }
+
+  if (error || !lesson) {
+    return (
+      <div className="space-y-4">
+        <p className="text-destructive">{error || t('leccionNoEncontrada')}</p>
+        <Button variant="outline" onClick={() => router.push(`/portal/cursos/${courseId}`)}>{t('volverAlCurso')}</Button>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+function renderLessonContent(lesson: any, t: ReturnType<typeof useTranslations>) {
+  if (lesson.content_type === 'video' && lesson.content_url) {
+    return (
+      <div className="aspect-video w-full">
+        <iframe
+          src={lesson.content_url}
+          className="h-full w-full rounded-lg"
+          allowFullScreen
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        />
+      </div>
+    );
+  }
+
+  if (lesson.content_type === 'text' && lesson.content) {
+    return (
+      <div
+        className="prose max-w-none"
+        dangerouslySetInnerHTML={{ __html: lesson.content }}
+      />
+    );
+  }
+
+  if (lesson.content_type === 'quiz') {
+    let quiz;
+    try {
+      quiz = typeof lesson.content === 'string' ? JSON.parse(lesson.content) : lesson.content;
+    } catch {
+      return <p className="text-destructive">{t('errorCargarCuestionario')}</p>;
+    }
+    return <QuizComponent quiz={quiz} lessonTitle={lesson.title} />;
+  }
+
+  return null;
+}
+
+function renderNavigation(
+  prevLesson: any,
+  nextLesson: any,
+  courseId: string,
+  t: ReturnType<typeof useTranslations>,
+  router: any,
+) {
+  return (
+    <div className="flex items-center justify-between">
+      {prevLesson ? (
+        <Link href={`/portal/cursos/${courseId}/lecciones/${prevLesson.id}`}>
+          <Button variant="outline">
+            <ArrowLeft className="mr-1 size-4" /> {t('anterior')}
+          </Button>
+        </Link>
+      ) : (
+        <div />
+      )}
+      {nextLesson ? (
+        <Link href={`/portal/cursos/${courseId}/lecciones/${nextLesson.id}`}>
+          <Button variant="outline">
+            {t('siguiente')} <ArrowRight className="ml-1 size-4" />
+          </Button>
+        </Link>
+      ) : (
+        <div />
+      )}
+    </div>
+  );
+}
 
 export default function LeccionPage() {
   const { data: session } = useSession();
@@ -99,24 +240,7 @@ export default function LeccionPage() {
 
   useEffect(() => {
     if (!courseId || !lessonId) return;
-    const thisFetchId = ++fetchIdRef.current;
-      fetch(`${API_URL}/api/courses/${courseId}`, {
-      headers: fetchHeaders(),
-      credentials: 'include',
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error(t('errorCargar'));
-        return res.json();
-      })
-      .then((data) => {
-        if (thisFetchId === fetchIdRef.current) setCourse(data.success ? data.data : data);
-      })
-      .catch((err) => {
-        if (thisFetchId === fetchIdRef.current) setError(err.message);
-      })
-      .finally(() => {
-        if (thisFetchId === fetchIdRef.current) setLoading(false);
-      });
+    fetchCourseData(courseId, lessonId, fetchHeaders(), t, fetchIdRef, setCourse, setError, setLoading);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId, lessonId, session]);
 
@@ -153,23 +277,8 @@ export default function LeccionPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-64 w-full rounded-lg" />
-      </div>
-    );
-  }
-
-  if (error || !lesson) {
-    return (
-      <div className="space-y-4">
-        <p className="text-destructive">{error || t('leccionNoEncontrada')}</p>
-        <Button variant="outline" onClick={() => router.push(`/portal/cursos/${courseId}`)}>{t('volverAlCurso')}</Button>
-      </div>
-    );
-  }
+  const errorOrLoading = renderErrorOrLoading(loading, error, lesson, courseId, t, router);
+  if (errorOrLoading) return errorOrLoading;
 
   return (
     <div className="space-y-6">
@@ -191,37 +300,9 @@ export default function LeccionPage() {
         )}
       </div>
 
-      {error && <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
-
       <Card>
         <CardContent className="pt-6">
-          {lesson.content_type === 'video' && (
-            <div className="aspect-video w-full">
-              <iframe
-                src={lesson.content_url}
-                className="h-full w-full rounded-lg"
-                allowFullScreen
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              />
-            </div>
-          )}
-
-          {lesson.content_type === 'text' && lesson.content && (
-            <div
-              className="prose max-w-none"
-              dangerouslySetInnerHTML={{ __html: lesson.content }}
-            />
-          )}
-
-          {lesson.content_type === 'quiz' && (() => {
-            let quiz;
-            try {
-              quiz = typeof lesson.content === 'string' ? JSON.parse(lesson.content) : lesson.content;
-            } catch {
-              return <p className="text-destructive">{t('errorCargarCuestionario')}</p>;
-            }
-            return <QuizComponent quiz={quiz} lessonTitle={lesson.title} />;
-          })()}
+          {renderLessonContent(lesson, t)}
         </CardContent>
       </Card>
 
@@ -231,26 +312,7 @@ export default function LeccionPage() {
         </Button>
       )}
 
-      <div className="flex items-center justify-between">
-        {prevLesson ? (
-          <Link href={`/portal/cursos/${courseId}/lecciones/${prevLesson.id}`}>
-            <Button variant="outline">
-              <ArrowLeft className="mr-1 size-4" /> {t('anterior')}
-            </Button>
-          </Link>
-        ) : (
-          <div />
-        )}
-        {nextLesson ? (
-          <Link href={`/portal/cursos/${courseId}/lecciones/${nextLesson.id}`}>
-            <Button variant="outline">
-              {t('siguiente')} <ArrowRight className="ml-1 size-4" />
-            </Button>
-          </Link>
-        ) : (
-          <div />
-        )}
-      </div>
+      {renderNavigation(prevLesson, nextLesson, courseId, t, router)}
     </div>
   );
 }

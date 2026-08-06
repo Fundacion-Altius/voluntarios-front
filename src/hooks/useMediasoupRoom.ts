@@ -162,78 +162,88 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
     }
   }, [sendSignal]);
 
+  const handleNewRouterRtpCapabilities = useCallback((msg: { rtpCapabilities: RtpCapabilities }): void => {
+    const resolve = resolveRouterCaps.current;
+    if (resolve) {
+      resolveRouterCaps.current = null;
+      resolve(msg.rtpCapabilities as RtpCapabilities);
+    }
+  }, []);
+
+  const handleNewTransport = useCallback((msg: unknown): void => {
+    const resolveSend = resolveTransportSend.current;
+    const resolveRecv = resolveTransportRecv.current;
+    if (resolveSend && !sendTransportRef.current) {
+      resolveTransportSend.current = null;
+      resolveSend(msg);
+    } else if (resolveRecv) {
+      resolveTransportRecv.current = null;
+      resolveRecv(msg);
+    }
+  }, []);
+
+  const handleNewProducer = useCallback((msg: { peerId?: string; producerId?: string; kind?: string }): void => {
+    const isSelf = (msg.peerId && msg.peerId === userIdRef.current) || localProducerIdsRef.current.has(msg.producerId as string);
+    if (isSelf) return;
+    const dev = deviceRef.current;
+    const recv = recvTransportRef.current;
+    if (!dev || !recv) {
+      pendingProducersRef.current.push({ peerId: msg.peerId as string, producerId: msg.producerId as string, kind: msg.kind as string });
+      return;
+    }
+    sendSignal({ type: 'consume', transportId: recv.id, producerId: msg.producerId, peerId: msg.peerId, rtpCapabilities: (dev as any).rtpCapabilities });
+  }, [sendSignal]);
+
+  const handleNewConsumer = useCallback(async (msg: { consumerId: string; producerId?: string; peerId?: string; kind: string; rtpParameters: unknown }): Promise<void> => {
+    if (consumersRef.current.has(msg.consumerId)) return;
+    if (msg.peerId && msg.peerId === userIdRef.current) return;
+    const recv = recvTransportRef.current;
+    if (!recv) return;
+    const consumer = await (recv as any).consume({
+      id: msg.consumerId,
+      producerId: msg.producerId,
+      kind: msg.kind,
+      rtpParameters: msg.rtpParameters,
+    });
+    consumer.observer.on('trackchange', () => {
+      if (consumer.track) {
+        setPeerTrack(msg.peerId as string, consumer.track, msg.kind as 'video' | 'audio');
+      }
+    });
+    if (consumer.track) {
+      setPeerTrack(msg.peerId as string, consumer.track, msg.kind as 'video' | 'audio');
+    }
+    consumersRef.current.set(consumer.id, consumer);
+  }, [setPeerTrack]);
+
+  const handlePeerLeft = useCallback((from: string): void => {
+    removePeer(from);
+  }, [removePeer]);
+
+  const handleCallEnded = useCallback((): void => {
+    setStatePartial({ error: 'This call has ended' });
+  }, [setStatePartial]);
+
   const handleWsMessage = useCallback(
     async (event: MessageEvent) => {
       try {
         const rawMsg = JSON.parse(event.data);
         const msg = (rawMsg.type === 'signal' && rawMsg.data && typeof rawMsg.data === 'object') ? rawMsg.data : rawMsg;
-        switch (msg.type) {
-          case 'new-router-rtp-capabilities': {
-            const resolve = resolveRouterCaps.current;
-            if (resolve) {
-              resolveRouterCaps.current = null;
-              resolve(msg.rtpCapabilities as RtpCapabilities);
-            }
-            break;
-          }
-          case 'new-transport': {
-            const resolveSend = resolveTransportSend.current;
-            const resolveRecv = resolveTransportRecv.current;
-            if (resolveSend && !sendTransportRef.current) {
-              resolveTransportSend.current = null;
-              resolveSend(msg);
-            } else if (resolveRecv) {
-              resolveTransportRecv.current = null;
-              resolveRecv(msg);
-            }
-            break;
-          }
-          case 'new-producer': {
-            const isSelf = (msg.peerId && msg.peerId === userIdRef.current) || localProducerIdsRef.current.has(msg.producerId as string);
-            if (isSelf) break;
-            const dev = deviceRef.current;
-            const recv = recvTransportRef.current;
-            if (!dev || !recv) {
-              pendingProducersRef.current.push({ peerId: msg.peerId as string, producerId: msg.producerId as string, kind: msg.kind as string });
-              break;
-            }
-            sendSignal({ type: 'consume', transportId: recv.id, producerId: msg.producerId, peerId: msg.peerId, rtpCapabilities: (dev as any).rtpCapabilities });
-            break;
-          }
-          case 'new-consumer': {
-            if (consumersRef.current.has(msg.consumerId)) break;
-            if (msg.peerId && msg.peerId === userIdRef.current) break;
-            const recv = recvTransportRef.current;
-            if (!recv) break;
-            const consumer = await (recv as any).consume({
-              id: msg.consumerId,
-              producerId: msg.producerId,
-              kind: msg.kind,
-              rtpParameters: msg.rtpParameters,
-            });
-            consumer.observer.on('trackchange', () => {
-              if (consumer.track) {
-                setPeerTrack(msg.peerId as string, consumer.track, msg.kind as 'video' | 'audio');
-              }
-            });
-            if (consumer.track) {
-              setPeerTrack(msg.peerId as string, consumer.track, msg.kind as 'video' | 'audio');
-            }
-            consumersRef.current.set(consumer.id, consumer);
-            break;
-          }
-          case 'peer-left':
-            removePeer(msg.from);
-            break;
-          case 'call-ended':
-            setStatePartial({ error: 'This call has ended' });
-            break;
-          default:
-            break;
+        const handlers: Record<string, (msg: unknown) => void | Promise<void>> = {
+          'new-router-rtp-capabilities': handleNewRouterRtpCapabilities as (msg: unknown) => void,
+          'new-transport': handleNewTransport as (msg: unknown) => void,
+          'new-producer': handleNewProducer as (msg: unknown) => void,
+          'new-consumer': handleNewConsumer as (msg: unknown) => Promise<void>,
+          'peer-left': (m: unknown) => handlePeerLeft((m as { from: string }).from),
+          'call-ended': handleCallEnded as (msg: unknown) => void,
+        };
+        const handler = handlers[msg.type];
+        if (handler) {
+          await handler(msg);
         }
       } catch {}
     },
-    [setStatePartial, removePeer, setPeerTrack, sendSignal],
+    [handleNewRouterRtpCapabilities, handleNewTransport, handleNewProducer, handleNewConsumer, handlePeerLeft, handleCallEnded],
   );
 
   const startLocalStream = useCallback(async (withVideo = true, withAudio = true): Promise<MediaStream> => {
