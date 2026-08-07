@@ -51,6 +51,7 @@ stryker.conf.json
 tsconfig.stryker.json
 reports/
 report.md
+reports/mutation/
 
 # tooling artifacts
 eslintcc-report.json

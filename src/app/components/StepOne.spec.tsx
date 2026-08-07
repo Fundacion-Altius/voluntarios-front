@@ -445,9 +445,26 @@ describe("StepOne Component", () => {
 
       const expectedModalidades = ["Presencial", "Online", "Híbrido"];
 
-      expectedModalidades.forEach(modalidad => {
+      expectedModalidades.forEach((modalidad) => {
         expect(screen.getByLabelText(modalidad)).toBeInTheDocument();
       });
+    });
+
+    it("renders modalidad label with required indicator and red asterisk", () => {
+      setup();
+      const label = screen.getByText(/modalidad/i);
+      expect(label).toBeInTheDocument();
+      expect(label.textContent).toContain("*");
+      const asterisk = label.querySelector("span");
+      expect(asterisk).toHaveTextContent("*");
+      expect(asterisk).toHaveStyle("color: red");
+    });
+
+    it("sets radio group value from first modalidad option", () => {
+      setup();
+      const presencialRadio = screen.getByLabelText("Presencial");
+      expect(presencialRadio).toBeInTheDocument();
+      expect(presencialRadio).toHaveAttribute("data-state", "checked");
     });
   });
 
