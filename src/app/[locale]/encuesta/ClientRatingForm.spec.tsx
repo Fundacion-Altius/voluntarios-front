@@ -16,6 +16,12 @@ jest.mock("@/i18n/navigation", () => ({
 describe("ClientRatingForm", () => {
   beforeEach(() => {
     mockPush.mockReset();
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve([]),
+      })
+    ) as unknown as typeof fetch;
     Object.defineProperty(window, "navigator", {
       value: { onLine: true, serviceWorker: null },
     });
@@ -125,10 +131,10 @@ describe("ClientRatingForm", () => {
     await userEvent.click(button);
 
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(mockFetch).toHaveBeenCalledTimes(2);
     });
 
-    const callArgs = (mockFetch as any).mock.calls[0];
+    const callArgs = (mockFetch as any).mock.calls[1];
     expect(callArgs[0]).toContain("/api/surveys/submit-answer");
     expect(callArgs[1].method).toBe("POST");
     const body = JSON.parse(callArgs[1].body);

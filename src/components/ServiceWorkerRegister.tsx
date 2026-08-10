@@ -2,9 +2,13 @@
 
 import { useEffect } from 'react';
 
+export function isServiceWorkerEnabled(nodeEnv: string | undefined, enableFlag: string | undefined): boolean {
+  return nodeEnv === 'production' || enableFlag === 'true';
+}
+
 export function ServiceWorkerRegister() {
   useEffect(() => {
-    if (process.env.NODE_ENV !== 'production') {
+    if (!isServiceWorkerEnabled(process.env.NODE_ENV, process.env.NEXT_PUBLIC_ENABLE_SW)) {
       return;
     }
 

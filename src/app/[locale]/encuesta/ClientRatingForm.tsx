@@ -20,8 +20,8 @@ interface Ratings {
 }
 
 export default function ClientRatingForm({
-  questions,
-  error,
+  questions: serverQuestions,
+  error: serverError,
 }: ClientRatingFormProps) {
   const t = useTranslations('encuesta');
   const [ratings, setRatings] = useState<Ratings>({});
@@ -30,11 +30,39 @@ export default function ClientRatingForm({
   const [submitError, setSubmitError] = useState<string>("");
   const [isOffline, setIsOffline] = useState<boolean>(false);
   const [queued, setQueued] = useState<boolean>(false);
+  const [questions, setQuestions] = useState<Question[]>(serverQuestions);
+  const [error, setError] = useState<string>(serverError);
   const router = useRouter();
 
   useEffect(() => {
+    let cancelled = false;
+    const API_URL = getApiBaseUrl();
+    fetch(`${API_URL}/api/questions`)
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('Failed to fetch questions'))))
+      .then((data: Question[]) => {
+        if (cancelled) return;
+        if (data.length > 0 || serverQuestions.length === 0) {
+          setQuestions(data);
+          setError("");
+        }
+      })
+      .catch(() => {
+        if (cancelled) return;
+        if (serverQuestions.length === 0 && !serverError) {
+          setError(serverError);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [serverQuestions, serverError]);
+
+  useEffect(() => {
     setIsOffline(!navigator.onLine);
-    const handleOnline = () => setIsOffline(false);
+    const handleOnline = () => {
+      setIsOffline(false);
+      navigator.serviceWorker?.controller?.postMessage({ type: 'survey-replay' });
+    };
     const handleOffline = () => setIsOffline(true);
 
     window.addEventListener('online', handleOnline);

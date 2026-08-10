@@ -1,5 +1,14 @@
 import '@testing-library/jest-dom'
 
+const { TextDecoder, TextEncoder } = require('util')
+
+global.TextDecoder = TextDecoder
+global.TextEncoder = TextEncoder
+
+if (!globalThis.structuredClone) {
+  globalThis.structuredClone = (value) => JSON.parse(JSON.stringify(value))
+}
+
 global.ResizeObserver = class ResizeObserver {
   constructor(callback) {
     this.callback = callback;

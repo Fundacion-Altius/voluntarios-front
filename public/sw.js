@@ -1,13 +1,21 @@
 const CACHE_VERSION = 1;
 const QUESTIONS_CACHE = `voluntarios-questions-v${CACHE_VERSION}`;
-const CACHE_ALLOWLIST = [QUESTIONS_CACHE];
+const SHELL_CACHE = `voluntarios-survey-shell-v${CACHE_VERSION}`;
+const CACHE_ALLOWLIST = [QUESTIONS_CACHE, SHELL_CACHE];
 const DB_NAME = 'voluntarios-survey-queue';
 const DB_VERSION = 1;
 const STORE_NAME = 'submissions';
 
+const SURVEY_PATHS = ['/es/encuesta', '/ca/encuesta'];
+
 // ── Install ──────────────────────────────────────────────────────────────────
-self.addEventListener('install', () => {
+self.addEventListener('install', (event) => {
   self.skipWaiting();
+  event.waitUntil(
+    caches.open(SHELL_CACHE).then((cache) =>
+      Promise.allSettled(SURVEY_PATHS.map((path) => cache.add(path))),
+    ),
+  );
 });
 
 // ── Activate ─────────────────────────────────────────────────────────────────
@@ -106,15 +114,34 @@ function getQueueLength() {
   return getAllFromDB().then((items) => items.length);
 }
 
-// ── Fetch handler (questions cache-only, no auth) ────────────────────────────
+// ── Fetch handler (survey shell + questions cache-only, no auth) ─────────────
 self.addEventListener('fetch', (event) => {
   const { request } = event;
 
-  // Only intercept GET /api/questions; skip anything with Authorization
+  // Only intercept GET requests; skip anything with Authorization
   if (request.method !== 'GET') return;
   if (request.headers.has('Authorization')) return;
 
   const url = new URL(request.url);
+
+  // Offline-first for the survey document so a revisit renders the shell
+  if (request.mode === 'navigate' && SURVEY_PATHS.includes(url.pathname)) {
+    event.respondWith(
+      caches.open(SHELL_CACHE).then((cache) =>
+        cache.match(url.pathname).then((cached) => {
+          const networkFetch = fetch(request).then((response) => {
+            if (response.ok) {
+              cache.put(url.pathname, response.clone());
+            }
+            return response;
+          }).catch(() => cached);
+          return cached || networkFetch;
+        }),
+      ),
+    );
+    return;
+  }
+
   if (!url.pathname.endsWith('/api/questions')) return;
 
   event.respondWith(
@@ -177,6 +204,18 @@ self.addEventListener('message', (event) => {
     event.waitUntil(
       getQueueLength().then((len) => {
         event.source.postMessage({ type: 'survey-queue-update', queued: len });
+      }),
+    );
+  }
+
+  if (type === 'survey-replay') {
+    event.waitUntil(
+      replayQueue().then(async () => {
+        const queueLen = await getQueueLength();
+        const clientsList = await clients.matchAll({ type: 'window' });
+        for (const client of clientsList) {
+          client.postMessage({ type: 'survey-queue-update', queued: queueLen });
+        }
       }),
     );
   }
