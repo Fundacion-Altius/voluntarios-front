@@ -42,13 +42,11 @@ const StepThree: React.FC<StepThreeProps> = ({
         <div className="flex items-center gap-2">
           <Checkbox
             id="datos"
-            name="derechoDatos"
             checked={contractData.derechoDatos}
             onCheckedChange={(checked) =>
               handleInputChange({
                 target: {
                   id: "datos",
-                  name: "derechoDatos",
                   type: "checkbox",
                   checked: checked as boolean,
                 },
@@ -66,13 +64,11 @@ const StepThree: React.FC<StepThreeProps> = ({
         <div className="flex items-center gap-2">
           <Checkbox
             id="confidencialidad"
-            name="derechoConfidencialidad"
             checked={contractData.derechoConfidencialidad}
             onCheckedChange={(checked) =>
               handleInputChange({
                 target: {
                   id: "confidencialidad",
-                  name: "derechoConfidencialidad",
                   type: "checkbox",
                   checked: checked as boolean,
                 },
@@ -90,13 +86,11 @@ const StepThree: React.FC<StepThreeProps> = ({
         <div className="flex items-center gap-2">
           <Checkbox
             id="imagen"
-            name="derechoImagen"
             checked={contractData.derechoImagen}
             onCheckedChange={(checked) =>
               handleInputChange({
                 target: {
                   id: "imagen",
-                  name: "derechoImagen",
                   type: "checkbox",
                   checked: checked as boolean,
                 },

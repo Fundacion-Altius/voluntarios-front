@@ -197,10 +197,10 @@ export default function HazteVoluntarioPage() {
               <Label className="mb-2 block">{t('areasInteres')}</Label>
               <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
                 {INTERESES_OPTS.map((i) => (
-                  <label key={i} className="flex items-center gap-2 text-sm cursor-pointer">
-                    <Checkbox checked={intereses.includes(i)} onCheckedChange={() => toggleInteres(i)} />
-                    {i}
-                  </label>
+                  <div key={i} className="flex items-center gap-2 text-sm cursor-pointer">
+                    <Checkbox id={i} checked={intereses.includes(i)} onCheckedChange={() => toggleInteres(i)} />
+                    <Label htmlFor={i}>{i}</Label>
+                  </div>
                 ))}
               </div>
             </div>

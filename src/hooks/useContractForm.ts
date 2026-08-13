@@ -42,27 +42,30 @@ export function useContractForm() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     if (e.type !== 'select') {
-      const { name, value, type } = e.target;
+      const { name, value, type, id } = e.target;
+      // Use id as fallback when name is not present (custom Radix checkbox buttons
+      // don't carry a semantic name attribute on the button element)
+      const fieldName = name ?? id;
       if (type !== 'checkbox') {
-        return setDatosContrato((prev) => ({ ...prev, [name]: value }));
+        return setDatosContrato((prev) => ({ ...prev, [fieldName]: value }));
       }
       if (type === 'checkbox') {
         const { checked } = e.target;
-        if (name === 'areas') {
+        if (fieldName === 'areas') {
           setDatosContrato((prev) => {
             const newAreas = checked
               ? ([...prev.areas, value] as AreasT[])
               : (prev.areas.filter((area) => area !== value) as AreasT[]);
             return { ...prev, areas: newAreas };
           });
-        } else if (name === 'modalidad') {
+        } else if (fieldName === 'modalidad') {
           setDatosContrato((prev) => {
             const newModalidad = checked
               ? ([...prev.modalidad, value] as ModalidadT[])
               : (prev.modalidad.filter((mod) => mod !== value) as ModalidadT[]);
             return { ...prev, modalidad: newModalidad };
           });
-        } else if (name === 'horario') {
+        } else if (fieldName === 'horario') {
           setDatosContrato((prev) => {
             const current = prev.horario ? prev.horario.split(', ') : [];
             const next = checked
@@ -71,7 +74,7 @@ export function useContractForm() {
             return { ...prev, horario: next.join(', ') };
           });
         } else {
-          setDatosContrato((prev) => ({ ...prev, [name]: checked }));
+          setDatosContrato((prev) => ({ ...prev, [fieldName]: checked }));
         }
       }
     }
