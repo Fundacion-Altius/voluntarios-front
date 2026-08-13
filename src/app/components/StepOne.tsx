@@ -203,16 +203,16 @@ const StepOne: React.FC<StepOneProps> = ({
         </div>
         <div className="form-group">
           <Label htmlFor="domicilio">
-            {t("domicilio")} <span style={{ color: "red" }}>*</span>{" "}
-          </Label>
-          <Input
-            type="text"
-            id="domicilio"
-            name="domicilio"
-            value={contractData.domicilio}
-            onChange={handleInputChange}
-            required
-          />
+            {t("domicilio")} <span className="text-destructive">*</span>{" "}
+ </Label>
+ <Input
+ type="text"
+ id="domicilio"
+ name="domicilio"
+ value={contractData.domicilio}
+ onChange={handleInputChange}
+ required
+ />
         </div>
         <div className="form-group md:col-span-2">
           <Label htmlFor="empresa">{t("empresa")}</Label>
@@ -226,7 +226,7 @@ const StepOne: React.FC<StepOneProps> = ({
         </div>
         <section className="form-group">
           <p>
-            {t("mayorEdad")} <span style={{ color: "red" }}>*</span>{" "}
+            {t("mayorEdad")} <span className="text-destructive">*</span>{" "}
           </p>
           <RadioGroup
             value={contractData.adulto}
@@ -245,7 +245,7 @@ const StepOne: React.FC<StepOneProps> = ({
         </section>
         <div className="form-group">
           <Label htmlFor="telefono">
-            {t("telefono")} <span style={{ color: "red" }}>*</span>{" "}
+            {t("telefono")} <span className="text-destructive">*</span>{" "}
           </Label>
           <Input
             type="tel"
@@ -258,7 +258,7 @@ const StepOne: React.FC<StepOneProps> = ({
         </div>
         <div className="form-group md:col-span-2">
           <Label htmlFor="email">
-            EMAIL <span style={{ color: "red" }}>*</span>{" "}
+            EMAIL <span className="text-destructive">*</span>{" "}
           </Label>
           <Input
             type="email"
