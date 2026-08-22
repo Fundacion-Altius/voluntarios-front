@@ -24,7 +24,7 @@ export function StepOneHorario({
       <p>
         {t("horarioTitulo")} <br />
         {t("horarioDescripcion")}
-        <span style={{ color: "red" }}>*</span>{" "}
+        <span className="text-destructive">*</span>{" "}
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {horarioOptions.map((option) => (

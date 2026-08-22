@@ -11,7 +11,16 @@ export interface ActivityType {
   is_recurring: string;
   default_capacity: number;
   recurrence_config?: any;
+  localidad?: string | null;
+  fixed_date?: string | null;
   created_at: string;
+}
+
+export interface ActivityException {
+  id: string;
+  activity_type_id: string;
+  date: string;
+  reason?: string | null;
 }
 
 import { getApiBaseUrl } from '@/lib/apiUrl';
@@ -79,5 +88,27 @@ export function useActivities() {
     await fetchTypes();
   };
 
-  return { types, isLoading, error, createType, updateType, deleteType, refetch: fetchTypes };
+  const fetchExceptions = async (typeId: string): Promise<ActivityException[]> => {
+    const res = await fetch(`${API_URL}/api/activities/exceptions/${typeId}`, { headers: authHeaders(), credentials: 'include' });
+    if (!res.ok) throw new Error('Error al cargar excepciones');
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  };
+
+  const createException = async (typeId: string, data: { date: string; reason?: string }) => {
+    const res = await fetch(`${API_URL}/api/activities/exceptions/${typeId}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, credentials: 'include',
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Error'); }
+  };
+
+  const deleteException = async (id: string) => {
+    const res = await fetch(`${API_URL}/api/activities/exceptions/${id}`, {
+      method: 'DELETE', headers: authHeaders(), credentials: 'include',
+    });
+    if (!res.ok) throw new Error('Error al eliminar');
+  };
+
+  return { types, isLoading, error, createType, updateType, deleteType, fetchExceptions, createException, deleteException, refetch: fetchTypes };
 }

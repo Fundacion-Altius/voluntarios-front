@@ -23,7 +23,7 @@ export function StepOneDuracion({
       <p>
         {t("duracionTitulo")} <br />
         {t("duracionDescripcion")}
-        <span style={{ color: "red" }}>*</span>{" "}
+        <span className="text-destructive">*</span>{" "}
       </p>
       <RadioGroup
         value={["días", "semanas", "meses", "años", "indeterminado"].includes(contractData.duracion ?? "") ? contractData.duracion! : "otros"}

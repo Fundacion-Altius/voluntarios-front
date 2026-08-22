@@ -18,7 +18,8 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { useActivities, type ActivityType } from './useActivities';
+import { useActivities, type ActivityException, type ActivityType } from './useActivities';
+import HolidaysSection from './HolidaysSection';
 
 function formatDate(d?: string) { return d ? new Date(d).toLocaleDateString() : '-'; }
 
@@ -28,7 +29,7 @@ export default function ActividadesPage() {
   const t = useTranslations('admin.actividades');
   const tCommon = useTranslations('common');
   const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const { types, isLoading, error, createType, updateType, deleteType } = useActivities();
+  const { types, isLoading, error, createType, updateType, deleteType, fetchExceptions, createException, deleteException } = useActivities();
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<ActivityType | null>(null);
@@ -40,16 +41,55 @@ export default function ActividadesPage() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('general');
+  const [localidad, setLocalidad] = useState('');
   const [capacity, setCapacity] = useState('15');
   const [isRecurring, setIsRecurring] = useState('true');
+  const [fixedDate, setFixedDate] = useState('');
   const [daysOfWeek, setDaysOfWeek] = useState<number[]>([]);
   const [shifts, setShifts] = useState<string[]>(['']);
+
+  const [exceptionsOpenFor, setExceptionsOpenFor] = useState<ActivityType | null>(null);
+  const [exceptions, setExceptions] = useState<ActivityException[]>([]);
+  const [exceptionsLoading, setExceptionsLoading] = useState(false);
+  const [exceptionDate, setExceptionDate] = useState('');
+  const [exceptionReason, setExceptionReason] = useState('');
+  const [exceptionError, setExceptionError] = useState('');
 
   const showSuccess = (msg: string) => { setSuccessMsg(msg); setTimeout(() => setSuccessMsg(''), 3000); };
 
   const resetForm = () => {
-    setName(''); setDescription(''); setCategory('general'); setCapacity('15');
-    setIsRecurring('true'); setDaysOfWeek([]); setShifts(['']); setFormError('');
+    setName(''); setDescription(''); setCategory('general'); setLocalidad(''); setCapacity('15');
+    setIsRecurring('true'); setFixedDate(''); setDaysOfWeek([]); setShifts(['']); setFormError('');
+  };
+
+  const openExceptions = async (act: ActivityType) => {
+    setExceptionsOpenFor(act);
+    setExceptionError(''); setExceptionDate(''); setExceptionReason('');
+    setExceptionsLoading(true);
+    try { setExceptions(await fetchExceptions(act.id)); }
+    catch (err: any) { setExceptionError(err.message); }
+    finally { setExceptionsLoading(false); }
+  };
+
+  const handleAddException = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!exceptionsOpenFor) return;
+    setExceptionError('');
+    try {
+      await createException(exceptionsOpenFor.id, { date: exceptionDate, reason: exceptionReason || undefined });
+      showSuccess(t('excepcionCreada'));
+      setExceptionDate(''); setExceptionReason('');
+      setExceptions(await fetchExceptions(exceptionsOpenFor.id));
+    } catch (err: any) { setExceptionError(err.message); }
+  };
+
+  const handleDeleteException = async (id: string) => {
+    if (!exceptionsOpenFor) return;
+    setExceptionError('');
+    try {
+      await deleteException(id);
+      setExceptions(await fetchExceptions(exceptionsOpenFor.id));
+    } catch (err: any) { setExceptionError(err.message); }
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -57,16 +97,16 @@ export default function ActividadesPage() {
     setFormError(''); setSubmitting(true);
     try {
       const payload: any = {
-        name, description, category, default_capacity: Number(capacity), is_recurring: isRecurring,
+        name, description, category, localidad: localidad || undefined,
+        default_capacity: Number(capacity), is_recurring: isRecurring,
       };
       if (isRecurring === 'true') {
         payload.recurrence_config = {
           daysOfWeek, shifts: shifts.filter((s) => s.trim()).map((s) => ({ name: s, startTime: '09:00', endTime: '14:00' })),
         };
       } else {
-        payload.recurrence_config = {
-          shifts: shifts.filter((s) => s.trim()).map((s) => ({ name: s, startTime: '09:00', endTime: '14:00' })),
-        };
+        if (!fixedDate) { setFormError(t('fechaFijaRequerida')); setSubmitting(false); return; }
+        payload.fixed_date = fixedDate;
       }
       await createType(payload);
       setCreateOpen(false);
@@ -81,7 +121,11 @@ export default function ActividadesPage() {
     if (!editTarget) return;
     setFormError(''); setSubmitting(true);
     try {
-      await updateType(editTarget.id, { name, description, category, default_capacity: Number(capacity) });
+      await updateType(editTarget.id, {
+        name, description, category, localidad: localidad || undefined,
+        default_capacity: Number(capacity),
+        ...(editTarget.is_recurring !== 'true' ? { fixed_date: fixedDate || null } : {}),
+      });
       setEditTarget(null); resetForm();       showSuccess(t('actividadActualizada'));
     } catch (err: any) { setFormError(err.message); }
     finally { setSubmitting(false); }
@@ -94,7 +138,9 @@ export default function ActividadesPage() {
   };
 
   const openEdit = (t: ActivityType) => {
-    setEditTarget(t); setName(t.name); setDescription(t.description || ''); setCategory(t.category); setCapacity(String(t.default_capacity));
+    setEditTarget(t); setName(t.name); setDescription(t.description || ''); setCategory(t.category);
+    setCapacity(String(t.default_capacity)); setLocalidad(t.localidad || '');
+    setFixedDate(t.fixed_date ? new Date(t.fixed_date).toISOString().slice(0, 10) : '');
   };
 
   const DIA_LABELS = [t('domingo'), t('lunes'), t('martes'), t('miercoles'), t('jueves'), t('viernes'), t('sabado')];
@@ -122,6 +168,7 @@ export default function ActividadesPage() {
               {formError && <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{formError}</div>}
               <div><label className="mb-1 block text-sm font-medium">{tCommon('nombre')}</label><Input value={name} onChange={(e) => setName(e.target.value)} required /></div>
               <div><label className="mb-1 block text-sm font-medium">{t('descripcion')}</label><Input value={description} onChange={(e) => setDescription(e.target.value)} /></div>
+              <div><label className="mb-1 block text-sm font-medium">{t('localidad')}</label><Input value={localidad} onChange={(e) => setLocalidad(e.target.value)} /></div>
               <div><label className="mb-1 block text-sm font-medium">{t('categoria')}</label>
                 <Select value={category} onValueChange={setCategory}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
@@ -137,6 +184,12 @@ export default function ActividadesPage() {
                   </Select>
                 </div>
               </div>
+              {isRecurring === 'false' && (
+                <div>
+                  <label className="mb-1 block text-sm font-medium">{t('fechaFija')}</label>
+                  <Input type="date" value={fixedDate} onChange={(e) => setFixedDate(e.target.value)} required />
+                </div>
+              )}
               {isRecurring === 'true' && (
                 <div>
                   <label className="mb-1 block text-sm font-medium">{t('diasSemana')}</label>
@@ -181,14 +234,20 @@ export default function ActividadesPage() {
                   <CardContent>
                     <p className="text-xs text-muted-foreground mb-2">{act.description || act.category}</p>
                     <p className="text-xs text-muted-foreground">{t('categoria')}: {act.category} | {t('capacidad')}: {act.default_capacity}</p>
+                    {act.localidad && <p className="text-xs text-muted-foreground">{t('localidad')}: {act.localidad}</p>}
+                    {act.is_recurring !== 'true' && act.fixed_date && (
+                      <p className="text-xs text-muted-foreground">{t('fechaFija')}: {formatDate(act.fixed_date)}</p>
+                    )}
                     <div className="mt-3 flex gap-2">
+                      <Button size="sm" variant="secondary" onClick={() => openExceptions(act)}>{t('excepciones')}</Button>
                       <Dialog open={editTarget?.id === act.id} onOpenChange={(o) => { if (!o) setEditTarget(null); }}>
                         <DialogTrigger asChild><Button size="sm" variant="outline" onClick={() => openEdit(act)}>{tCommon('editar')}</Button></DialogTrigger>
                         <DialogContent>
                           <DialogHeader><DialogTitle>{t('editarActividad')}</DialogTitle></DialogHeader>
-                          <form onSubmit={handleEdit} className="space-y-4">
-                            <div><label className="mb-1 block text-sm font-medium">{tCommon('nombre')}</label><Input value={name} onChange={(e) => setName(e.target.value)} required /></div>
-                             <div><label className="mb-1 block text-sm font-medium">{t('descripcion')}</label><Input value={description} onChange={(e) => setDescription(e.target.value)} /></div>
+                           <form onSubmit={handleEdit} className="space-y-4">
+                             <div><label className="mb-1 block text-sm font-medium">{tCommon('nombre')}</label><Input value={name} onChange={(e) => setName(e.target.value)} required /></div>
+                              <div><label className="mb-1 block text-sm font-medium">{t('descripcion')}</label><Input value={description} onChange={(e) => setDescription(e.target.value)} /></div>
+                              <div><label className="mb-1 block text-sm font-medium">{t('localidad')}</label><Input value={localidad} onChange={(e) => setLocalidad(e.target.value)} /></div>
                              <div><label className="mb-1 block text-sm font-medium">{t('categoria')}</label>
                               <Select value={category} onValueChange={setCategory}>
                                 <SelectTrigger><SelectValue /></SelectTrigger>
@@ -196,6 +255,12 @@ export default function ActividadesPage() {
                               </Select>
                             </div>
                             <div><label className="mb-1 block text-sm font-medium">{t('capacidad')}</label><Input type="number" value={capacity} onChange={(e) => setCapacity(e.target.value)} min={1} /></div>
+                            {editTarget?.is_recurring !== 'true' && (
+                              <div>
+                                <label className="mb-1 block text-sm font-medium">{t('fechaFija')}</label>
+                                <Input type="date" value={fixedDate} onChange={(e) => setFixedDate(e.target.value)} />
+                              </div>
+                            )}
                              <Button type="submit" disabled={submitting}>{submitting ? t('guardarando') : tCommon('guardar')}</Button>
                           </form>
                         </DialogContent>
@@ -217,6 +282,40 @@ export default function ActividadesPage() {
                 </Card>
               ))}
       </div>
+
+      <Dialog open={exceptionsOpenFor !== null} onOpenChange={(o) => { if (!o) setExceptionsOpenFor(null); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{t('excepcionesTitulo', { nombre: exceptionsOpenFor?.name ?? '' })}</DialogTitle></DialogHeader>
+          {exceptionError && <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{exceptionError}</div>}
+          <p className="text-xs text-muted-foreground">{t('excepcionesDesc')}</p>
+          <div className="max-h-40 space-y-1 overflow-y-auto">
+            {exceptionsLoading ? (
+              <Skeleton className="h-8 w-full" />
+            ) : exceptions.length === 0 ? (
+              <p className="py-2 text-sm text-muted-foreground">{t('noExcepciones')}</p>
+            ) : (
+              exceptions.map((ex) => (
+                <div key={ex.id} className="flex items-center justify-between rounded-md border p-2 text-sm">
+                  <span>
+                    {new Date(ex.date).toLocaleDateString()}
+                    {ex.reason ? ` — ${ex.reason}` : ''}
+                  </span>
+                  <Button size="sm" variant="destructive" onClick={() => handleDeleteException(ex.id)}>{tCommon('eliminar')}</Button>
+                </div>
+              ))
+            )}
+          </div>
+          <form onSubmit={handleAddException} className="space-y-2 border-t pt-3">
+            <div className="grid grid-cols-2 gap-2">
+              <Input type="date" value={exceptionDate} onChange={(e) => setExceptionDate(e.target.value)} required />
+              <Input value={exceptionReason} onChange={(e) => setExceptionReason(e.target.value)} placeholder={t('motivo')} />
+            </div>
+            <Button type="submit" className="w-full">{t('anadirExcepcion')}</Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <HolidaysSection />
     </div>
   );
 }

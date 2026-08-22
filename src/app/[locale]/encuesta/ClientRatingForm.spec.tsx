@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ClientRatingForm from "./ClientRatingForm";
 import { TestProviders } from "../../test-utils";
@@ -12,6 +12,26 @@ let mockPush = jest.fn();
 jest.mock("@/i18n/navigation", () => ({
   useRouter: () => ({ push: mockPush }),
 }));
+
+const createServiceWorkerMock = () => {
+  const listeners: Record<string, ((event: unknown) => void)[]> = {};
+  return {
+    controller: { postMessage: jest.fn() },
+    addEventListener: jest.fn((evt: string, fn: (event: unknown) => void) => {
+      (listeners[evt] = listeners[evt] || []).push(fn);
+    }),
+    removeEventListener: jest.fn(),
+    __emit(evt: string, data: unknown) {
+      (listeners[evt] || []).forEach((fn) => fn(data));
+    },
+  };
+};
+
+const rateAllQuestions = async () => {
+  const starButtons = screen.getAllByLabelText(/Rate \d+ out of 5/i);
+  await userEvent.click(starButtons[0]);
+  await userEvent.click(starButtons[5]);
+};
 
 describe("ClientRatingForm", () => {
   beforeEach(() => {
@@ -141,5 +161,138 @@ describe("ClientRatingForm", () => {
     expect(body.surveyID).toBe(1);
     expect(body.ratings).toHaveProperty("1");
     expect(body.additionalAnswer).toBe("Test");
+  });
+
+  it("refreshes questions from the API when fetch succeeds", async () => {
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve([{ id: 9, text: "Pregunta nueva", surveyID: 1 }]),
+      })
+    ) as unknown as typeof fetch;
+
+    render(
+      <TestProviders>
+        <ClientRatingForm questions={mockQuestions} error="Error previo" />
+      </TestProviders>
+    );
+
+    expect(await screen.findByText("Pregunta nueva")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByText("Error previo")).not.toBeInTheDocument();
+    });
+  });
+
+  it("keeps loading state when fetching questions fails without server data", async () => {
+    global.fetch = jest.fn(() =>
+      Promise.reject(new Error("network down"))
+    ) as unknown as typeof fetch;
+
+    render(
+      <TestProviders>
+        <ClientRatingForm questions={[]} error="" />
+      </TestProviders>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/Cargando preguntas/i)).toBeInTheDocument();
+    });
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  });
+
+  it("queues submission via service worker when offline submit fails", async () => {
+    const sw = createServiceWorkerMock();
+    Object.defineProperty(window, "navigator", {
+      value: { onLine: false, serviceWorker: sw },
+    });
+    const mockFetch = jest.fn(() =>
+      Promise.reject(new TypeError("Failed to fetch"))
+    );
+    global.fetch = mockFetch as unknown as typeof fetch;
+
+    render(
+      <TestProviders>
+        <ClientRatingForm questions={mockQuestions} error="" />
+      </TestProviders>
+    );
+    await rateAllQuestions();
+    await userEvent.click(screen.getByRole("button", { name: /Enviar/i }));
+
+    await waitFor(() => {
+      expect(sw.controller.postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({ type: "survey-enqueue" })
+      );
+    });
+    expect(
+      await screen.findAllByText(/Tu respuesta ha sido guardada/i)
+    ).toHaveLength(2);
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("shows submit error when submission fails while online", async () => {
+    global.fetch = jest.fn(() =>
+      Promise.reject(new Error("boom"))
+    ) as unknown as typeof fetch;
+
+    render(
+      <TestProviders>
+        <ClientRatingForm questions={mockQuestions} error="" />
+      </TestProviders>
+    );
+    await rateAllQuestions();
+    await userEvent.click(screen.getByRole("button", { name: /Enviar/i }));
+
+    expect(
+      await screen.findByText(/Error al enviar la encuesta/i)
+    ).toBeInTheDocument();
+  });
+
+  it("clears queued banner when service worker reports empty queue", async () => {
+    const sw = createServiceWorkerMock();
+    Object.defineProperty(window, "navigator", {
+      value: { onLine: false, serviceWorker: sw },
+    });
+    global.fetch = jest.fn(() =>
+      Promise.reject(new TypeError("Failed to fetch"))
+    ) as unknown as typeof fetch;
+
+    render(
+      <TestProviders>
+        <ClientRatingForm questions={mockQuestions} error="" />
+      </TestProviders>
+    );
+    await rateAllQuestions();
+    await userEvent.click(screen.getByRole("button", { name: /Enviar/i }));
+    expect(await screen.findAllByText(/guardada/i)).toHaveLength(2);
+
+    act(() => {
+      sw.__emit("message", { data: { type: "survey-queue-update", queued: 0 } });
+    });
+
+    await waitFor(() => {
+      expect(screen.queryAllByText(/guardada/i)).toHaveLength(1);
+    });
+  });
+
+  it("toggles offline indicator on window online/offline events", async () => {
+    render(
+      <TestProviders>
+        <ClientRatingForm questions={mockQuestions} error="" />
+      </TestProviders>
+    );
+    expect(screen.queryByText(/No tienes conexión/i)).not.toBeInTheDocument();
+
+    act(() => {
+      window.dispatchEvent(new Event("offline"));
+    });
+    expect(screen.getByText(/No tienes conexión/i)).toBeInTheDocument();
+
+    act(() => {
+      window.dispatchEvent(new Event("online"));
+    });
+    await waitFor(() => {
+      expect(screen.queryByText(/No tienes conexión/i)).not.toBeInTheDocument();
+    });
   });
 });
