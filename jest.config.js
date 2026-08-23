@@ -16,7 +16,7 @@ const customJestConfig = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
-  testPathIgnorePatterns: ['<rootDir>/e2e/'],
+  testPathIgnorePatterns: ['<rootDir>/e2e/', '<rootDir>/coverage/', '<rootDir>/.stryker-tmp/', '<rootDir>/reports/'],
   testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.tsx?$',
   collectCoverage: true,
   coverageReporters: ['json-summary', 'html', 'text'],

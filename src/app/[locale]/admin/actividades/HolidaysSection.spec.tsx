@@ -3,11 +3,13 @@ import userEvent from '@testing-library/user-event';
 import HolidaysSection from './HolidaysSection';
 import { TestProviders } from '@/app/test-utils';
 
+const stableSession = {
+  data: { user: { name: 'Admin', email: 'admin@test.com' }, authToken: 'token123' },
+  status: 'authenticated',
+};
+
 jest.mock('next-auth/react', () => ({
-  useSession: () => ({
-    data: { user: { name: 'Admin', email: 'admin@test.com' }, authToken: 'token123' },
-    status: 'authenticated',
-  }),
+  useSession: () => stableSession,
 }));
 
 const holiday = (overrides: Record<string, unknown> = {}) => ({
@@ -72,7 +74,7 @@ describe('HolidaysSection', () => {
 
     render(<TestProviders><HolidaysSection /></TestProviders>);
 
-    await screen.findByText('Añadir festivo manual');
+    await screen.findAllByText('Añadir festivo manual');
     const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement;
     const nameInput = document.querySelector('form input:not([type="date"])') as HTMLInputElement;
     expect(dateInput).toBeTruthy();
@@ -80,7 +82,7 @@ describe('HolidaysSection', () => {
     await userEvent.type(dateInput, '2030-12-06');
     await userEvent.type(nameInput, 'Festivo local');
 
-    await userEvent.click(screen.getByRole('button', { name: /Añadir festivo/i }));
+    await userEvent.click(screen.getByRole('button', { name: 'Añadir festivo manual' }));
 
     await waitFor(() => {
       const post = fetchMock.mock.calls.find(([, init]) => (init as RequestInit)?.method === 'POST');
