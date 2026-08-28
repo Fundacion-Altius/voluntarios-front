@@ -93,15 +93,24 @@ export function useContracts(): UseContractsReturn {
       credentials: 'include',
       signal: abortController.signal,
     })
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to fetch contracts');
-        return res.json();
+      .then(async (res) => {
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          return { success: false as const, error: errorData.message || errorData.error || 'Failed to fetch contracts' };
+        }
+        const json = await res.json();
+        return { success: true as const, data: json };
       })
-      .then((json: PaginatedResponse) => {
+      .then((result) => {
         if (thisFetchId !== fetchIdRef.current) return;
-        setData(json.data);
-        setTotal(json.total);
-        setTotalPages(json.totalPages);
+        if (!result.success) {
+          setError(result.error);
+          setIsLoading(false);
+          return;
+        }
+        setData(result.data.data);
+        setTotal(result.data.total);
+        setTotalPages(result.data.totalPages);
         setIsLoading(false);
       })
       .catch((err) => {
@@ -157,9 +166,11 @@ export function useCreateContract() {
     const { apiPost } = await import('@/app/lib/csrf');
     const response = await apiPost('/api/contracts', contractData);
     if (!response.ok) {
-      throw new Error(`Failed to create contract: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      return { success: false as const, error: errorData.message || errorData.error || `Failed to create contract: ${response.status}` };
     }
-    return response.json();
+    const data = await response.json();
+    return { success: true as const, data };
   };
 }
 
@@ -168,7 +179,9 @@ export function useDeleteContract() {
     const { apiDelete } = await import('@/app/lib/csrf');
     const response = await apiDelete(`/api/contracts/${id}`);
     if (!response.ok) {
-      throw new Error(`Failed to delete contract: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      return { success: false as const, error: errorData.message || errorData.error || `Failed to delete contract: ${response.status}` };
     }
+    return { success: true as const };
   };
 }

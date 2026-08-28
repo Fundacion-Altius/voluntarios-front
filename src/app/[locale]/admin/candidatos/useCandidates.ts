@@ -42,7 +42,12 @@ export function useCandidates() {
         headers: fetchHeaders(),
         credentials: 'include',
       });
-      if (!res.ok) throw new Error('Error al cargar candidatos');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        setError(errorData.message || errorData.error || 'Error al cargar candidatos');
+        if (thisFetchId === fetchIdRef.current) { setIsLoading(false); }
+        return;
+      }
       const data = await res.json();
       if (thisFetchId === fetchIdRef.current) {
         setCandidates(data);
@@ -65,8 +70,12 @@ export function useCandidates() {
       headers: { 'Content-Type': 'application/json', ...fetchHeaders() },
       credentials: 'include',
     });
-    if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Error'); }
+    if (!res.ok) { 
+      const e = await res.json().catch(() => ({ error: 'Error' }));
+      return { success: false as const, error: e.error || 'Error' };
+    }
     await fetchCandidates();
+    return { success: true as const };
   };
 
   const reserveCandidate = async (id: string) => {
@@ -75,8 +84,12 @@ export function useCandidates() {
       headers: { 'Content-Type': 'application/json', ...fetchHeaders() },
       credentials: 'include',
     });
-    if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Error'); }
+    if (!res.ok) { 
+      const e = await res.json().catch(() => ({ error: 'Error' }));
+      return { success: false as const, error: e.error || 'Error' };
+    }
     await fetchCandidates();
+    return { success: true as const };
   };
 
   const deactivateUser = async (id: string) => {
@@ -85,8 +98,12 @@ export function useCandidates() {
       headers: { 'Content-Type': 'application/json', ...fetchHeaders() },
       credentials: 'include',
     });
-    if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Error'); }
+    if (!res.ok) { 
+      const e = await res.json().catch(() => ({ error: 'Error' }));
+      return { success: false as const, error: e.error || 'Error' };
+    }
     await fetchCandidates();
+    return { success: true as const };
   };
 
   const bulkImport = async (file: File) => {
@@ -98,9 +115,13 @@ export function useCandidates() {
       credentials: 'include',
       body: formData,
     });
-    if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Error'); }
+    if (!res.ok) { 
+      const e = await res.json().catch(() => ({ error: 'Error' }));
+      return { success: false as const, error: e.error || 'Error' };
+    }
     await fetchCandidates();
-    return res.json();
+    const data = await res.json();
+    return { success: true as const, data };
   };
 
   return { candidates, isLoading, error, approveCandidate, reserveCandidate, deactivateUser, bulkImport, refetch: fetchCandidates };

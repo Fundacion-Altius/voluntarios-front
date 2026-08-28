@@ -68,7 +68,12 @@ export function useAttendance() {
     setIsLoadingEntries(true);
     try {
       const res = await fetch(`${API_URL}/api/activities/sessions`, { headers: authHeaders(), credentials: 'include' });
-      if (!res.ok) throw new Error('Error al cargar calendario');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        setError(errorData.message || errorData.error || 'Error al cargar calendario');
+        if (thisFetchId === fetchIdRef.current) { setIsLoadingEntries(false); }
+        return;
+      }
       const list: CalendarEntry[] = (await jsonBody(res)) ?? [];
       if (thisFetchId === fetchIdRef.current) {
         setEntries(list.filter((e) => new Date(e.date) >= new Date(new Date().setHours(0, 0, 0, 0))));
@@ -100,7 +105,11 @@ export function useAttendance() {
     try {
       const url = `${API_URL}/api/activities/entries/${activityTypeId}/${encodeURIComponent(date)}/${encodeURIComponent(shift)}/attendance`;
       const res = await fetch(url, { headers: authHeaders(), credentials: 'include' });
-      if (!res.ok) throw new Error('Error al cargar asistencia');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        setError(errorData.message || errorData.error || 'Error al cargar asistencia');
+        return;
+      }
       const rows: AttendanceRow[] = (await jsonBody(res)) ?? [];
       setAttendance(rows);
     } catch (err: any) {
@@ -117,8 +126,12 @@ export function useAttendance() {
       method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, credentials: 'include',
       body: JSON.stringify({ volunteerId }),
     });
-    if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Error'); }
+    if (!res.ok) { 
+      const e = await res.json().catch(() => ({ error: 'Error' }));
+      return { success: false as const, error: e.error || 'Error' };
+    }
     await fetchAttendance(activityTypeId, date, shift);
+    return { success: true as const };
   };
 
   return { entries, attendance, volunteers, isLoadingEntries, isLoadingAttendance, error, fetchAttendance, addWalkIn };

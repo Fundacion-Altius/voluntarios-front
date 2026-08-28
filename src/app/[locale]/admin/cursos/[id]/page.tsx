@@ -100,7 +100,11 @@ export default function EditarCursoPage() {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         credentials: 'include',
       });
-      if (!res.ok) throw new Error(t('errorCargarCurso'));
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        setError(errorData.message || errorData.error || t('errorCargarCurso'));
+        return;
+      }
       const data: Course = await res.json();
       setCourse(data);
       setTitle(data.title);
@@ -134,7 +138,11 @@ export default function EditarCursoPage() {
         credentials: 'include',
         body: JSON.stringify({ title, description, level, category, image_url: imageUrl }),
       });
-      if (!res.ok) throw new Error(t('errorCargarCurso'));
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        setError(errorData.message || errorData.error || t('errorCargarCurso'));
+        return;
+      }
       showSuccess(t('cursoActualizado'));
       fetchCourse();
     } catch (err: any) {
@@ -162,7 +170,11 @@ export default function EditarCursoPage() {
           order: newModuleOrder ? Number(newModuleOrder) : undefined,
         }),
       });
-      if (!res.ok) throw new Error(t('errorCrearModulo'));
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        setError(errorData.message || errorData.error || t('errorCrearModulo'));
+        return;
+      }
       setNewModuleTitle('');
       setNewModuleDescription('');
       setNewModuleOrder('');
@@ -192,7 +204,11 @@ export default function EditarCursoPage() {
           order: editModuleOrder ? Number(editModuleOrder) : undefined,
         }),
       });
-      if (!res.ok) throw new Error(t('errorActualizarModulo'));
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        setError(errorData.message || errorData.error || t('errorActualizarModulo'));
+        return;
+      }
       setEditingModule(null);
       showSuccess(t('modulocActualizado'));
       fetchCourse();
@@ -210,7 +226,11 @@ export default function EditarCursoPage() {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         credentials: 'include',
       });
-      if (!res.ok) throw new Error(t('errorEliminarModulo'));
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        setError(errorData.message || errorData.error || t('errorEliminarModulo'));
+        return;
+      }
       setDeleteModuleTarget(null);
       showSuccess(t('modulocEliminado'));
       fetchCourse();
@@ -231,7 +251,11 @@ export default function EditarCursoPage() {
           credentials: 'include',
         }
       );
-      if (!res.ok) throw new Error(t('errorEliminarLeccion'));
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        setError(errorData.message || errorData.error || t('errorEliminarLeccion'));
+        return;
+      }
       setDeleteLessonTarget(null);
       showSuccess(t('leccionEliminada'));
       fetchCourse();

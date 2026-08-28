@@ -9,7 +9,9 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiClient<T>(url: string, options?: RequestInit): Promise<T> {
+export type Result<T> = { success: true; data: T } | { success: false; error: string };
+
+export async function apiClient<T>(url: string, options?: RequestInit): Promise<Result<T>> {
   const res = await fetch(url, {
     credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
@@ -17,9 +19,14 @@ export async function apiClient<T>(url: string, options?: RequestInit): Promise<
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new ApiError(res.status, body.message || body.error || `Request failed with status ${res.status}`);
+    return { success: false, error: body.message || body.error || `Request failed with status ${res.status}` };
   }
-  return res.json() as Promise<T>;
+  try {
+    const data = await res.json();
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, error: 'Failed to parse response' };
+  }
 }
 
 export function apiUrl(path: string): string {
@@ -27,7 +34,7 @@ export function apiUrl(path: string): string {
   return `${base}${path}`;
 }
 
-export function useApi<T>(fetcher: () => Promise<T>, deps: unknown[] = []) {
+export function useApi<T>(fetcher: () => Promise<Result<T>>, deps: unknown[] = []) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +43,13 @@ export function useApi<T>(fetcher: () => Promise<T>, deps: unknown[] = []) {
     setLoading(true);
     setError(null);
     fetcher()
-      .then(setData)
+      .then((result) => {
+        if (result.success) {
+          setData(result.data);
+        } else {
+          setError(result.error);
+        }
+      })
       .catch((e: unknown) => setError(e instanceof ApiError ? e.message : 'Error inesperado'))
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps

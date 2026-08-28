@@ -32,7 +32,12 @@ export default function RankingAdminPage() {
       const res = await fetch(`${API_URL}/api/gamification/ranking/admin`, {
         headers: fetchHeaders(), credentials: 'include',
       });
-      if (!res.ok) throw new Error('Error');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        setError(errorData.message || errorData.error || 'Error');
+        if (thisFetchId === fetchIdRef.current) { setIsLoading(false); }
+        return;
+      }
       const data = await res.json();
       if (thisFetchId === fetchIdRef.current) { setRankings(data.success ? data.data : data); setIsLoading(false); }
     } catch (err: any) {

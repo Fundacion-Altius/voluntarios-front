@@ -38,7 +38,14 @@ export function useUsers() {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         credentials: 'include',
       });
-      if (!res.ok) throw new Error('Failed to fetch users');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        setError(errorData.message || errorData.error || 'Failed to fetch users');
+        if (thisFetchId === fetchIdRef.current) {
+          setIsLoading(false);
+        }
+        return;
+      }
       const data = await res.json();
       if (thisFetchId === fetchIdRef.current) {
         setUsers(data);
@@ -76,9 +83,10 @@ export function useUsers() {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: 'Failed to create user' }));
-      throw new Error(err.error || 'Failed to create user');
+      return { success: false as const, error: err.error || 'Failed to create user' };
     }
     await fetchUsers();
+    return { success: true as const };
   };
 
   const updateUser = async (id: string, user: { display_name?: string; email?: string }) => {
@@ -88,8 +96,12 @@ export function useUsers() {
       credentials: 'include',
       body: JSON.stringify(user),
     });
-    if (!res.ok) throw new Error('Failed to update user');
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Failed to update user' }));
+      return { success: false as const, error: err.error || 'Failed to update user' };
+    }
     await fetchUsers();
+    return { success: true as const };
   };
 
   const updateUserRole = async (id: string, role: string) => {
@@ -99,8 +111,12 @@ export function useUsers() {
       credentials: 'include',
       body: JSON.stringify({ role }),
     });
-    if (!res.ok) throw new Error('Failed to update role');
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Failed to update role' }));
+      return { success: false as const, error: err.error || 'Failed to update role' };
+    }
     await fetchUsers();
+    return { success: true as const };
   };
 
   const deleteUser = async (id: string) => {
@@ -109,8 +125,12 @@ export function useUsers() {
       headers: authHeaders(),
       credentials: 'include',
     });
-    if (!res.ok) throw new Error('Failed to delete user');
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Failed to delete user' }));
+      return { success: false as const, error: err.error || 'Failed to delete user' };
+    }
     await fetchUsers();
+    return { success: true as const };
   };
 
   const filteredUsers = search

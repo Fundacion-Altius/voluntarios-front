@@ -73,7 +73,8 @@ export default function NuevaLeccionPage() {
       );
       if (!res.ok) {
         const errData = await res.json().catch(() => null);
-        throw new Error(errData?.message || t('errorCrear'));
+        setError(errData?.message || t('errorCrear'));
+        return;
       }
       router.push(`/admin/cursos/${courseId}`);
     } catch (err: any) {

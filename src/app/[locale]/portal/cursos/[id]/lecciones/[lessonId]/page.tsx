@@ -108,11 +108,16 @@ async function fetchCourseData(
     credentials: 'include',
   })
     .then((res) => {
-      if (!res.ok) throw new Error(t('errorCargar'));
+      if (!res.ok) {
+        setError(t('errorCargar'));
+        return null;
+      }
       return res.json();
     })
     .then((data) => {
-      if (thisFetchId === fetchIdRef.current) setCourse(data.success ? data.data : data);
+      if (thisFetchId === fetchIdRef.current && data !== null) {
+        setCourse(data.success ? data.data : data);
+      }
     })
     .catch((err) => {
       if (thisFetchId === fetchIdRef.current) setError(err.message);
@@ -259,7 +264,10 @@ export default function LeccionPage() {
         headers: { 'Content-Type': 'application/json', ...fetchHeaders() },
         credentials: 'include',
       });
-      if (!res.ok) throw new Error(t('errorCompletar'));
+      if (!res.ok) {
+        setError(t('errorCompletar'));
+        return;
+      }
       setCourse((prev: any) => {
         const updated = { ...prev };
         updated.modules = updated.modules.map((m: any) => ({

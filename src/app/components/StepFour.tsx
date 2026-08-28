@@ -19,10 +19,16 @@ const StepFour: React.FC<StepFourProps> = ({ contractData }) => {
     try {
       const response = await apiPost("/api/generate-pdf", contractData);
       if (response.status === 400) {
-        throw new Error(t("errorDuplicado"));
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Error downloading PDF:", errorData.message || errorData.error || t("errorDuplicado"));
+        alert(errorData.message || errorData.error || t("errorDuplicado"));
+        return;
       }
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Error downloading PDF:", errorData.message || errorData.error || `HTTP error! status: ${response.status}`);
+        alert(errorData.message || errorData.error || `HTTP error! status: ${response.status}`);
+        return;
       }
 
       const blob = await response.blob();
@@ -35,7 +41,7 @@ const StepFour: React.FC<StepFourProps> = ({ contractData }) => {
       document.body.removeChild(link);
     } catch (error) {
       console.error("Error downloading PDF:", error);
-      alert(error);
+      alert(error instanceof Error ? error.message : String(error));
     } finally {
       setIsLoading(false);
     }

@@ -108,7 +108,9 @@ export default function AdminImpactCommunicationPage() {
       const response = await fetch(`${apiUrl}/api/impact/communication/social-media-card?${params}`);
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        setError(errorData.message || errorData.error || `HTTP error! status: ${response.status}`);
+        return;
       }
       
       const data: CommunicationResponse<SocialMediaCardOutput> = await response.json();
@@ -116,10 +118,9 @@ export default function AdminImpactCommunicationPage() {
       if (data.success && data.data) {
         setSocialMediaResult(data.data);
       } else {
-        throw new Error(data.error || 'Failed to generate card');
+        setError(data.error || 'Failed to generate card');
+        return;
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to generate social media card');
     } finally {
       setLoading(false);
     }
@@ -142,7 +143,9 @@ export default function AdminImpactCommunicationPage() {
       const response = await fetch(`${apiUrl}/api/impact/communication/annual-report?${params}`);
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        setError(errorData.message || errorData.error || `HTTP error! status: ${response.status}`);
+        return;
       }
       
       const data: CommunicationResponse<AnnualReportOutput> = await response.json();
@@ -150,10 +153,9 @@ export default function AdminImpactCommunicationPage() {
       if (data.success && data.data) {
         setAnnualReportResult(data.data);
       } else {
-        throw new Error(data.error || 'Failed to generate annual report');
+        setError(data.error || 'Failed to generate annual report');
+        return;
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to generate annual report');
     } finally {
       setLoading(false);
     }
@@ -177,7 +179,9 @@ export default function AdminImpactCommunicationPage() {
       const response = await fetch(`${apiUrl}/api/impact/communication/press-release?${params}`);
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        setError(errorData.message || errorData.error || `HTTP error! status: ${response.status}`);
+        return;
       }
       
       const data: CommunicationResponse<PressReleaseOutput> = await response.json();
@@ -185,10 +189,9 @@ export default function AdminImpactCommunicationPage() {
       if (data.success && data.data) {
         setPressReleaseResult(data.data);
       } else {
-        throw new Error(data.error || 'Failed to generate press release');
+        setError(data.error || 'Failed to generate press release');
+        return;
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to generate press release');
     } finally {
       setLoading(false);
     }

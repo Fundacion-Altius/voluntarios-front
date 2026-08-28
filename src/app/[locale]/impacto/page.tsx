@@ -81,7 +81,9 @@ export default function PublicImpactDashboardPage() {
         const response = await fetch(`${apiUrl}/api/impact/kpis`);
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          const errorData = await response.json().catch(() => ({}));
+          setError(errorData.message || errorData.error || `HTTP error! status: ${response.status}`);
+          return;
         }
 
         const data: ImpactKpiResponse = await response.json();
@@ -89,10 +91,9 @@ export default function PublicImpactDashboardPage() {
         if (data.success && data.data) {
           setKpis(data.data);
         } else {
-          throw new Error(data.error || 'Failed to load impact data');
+          setError(data.error || 'Failed to load impact data');
+          return;
         }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load impact data');
       } finally {
         setLoading(false);
       }

@@ -36,7 +36,8 @@ function RecuperarPasswordContent() {
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || t('errorEnviar'));
+        setError(data.error || t('errorEnviar'));
+        return;
       }
       setSent(true);
     } catch (err: any) {

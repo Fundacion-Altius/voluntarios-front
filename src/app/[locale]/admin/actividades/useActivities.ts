@@ -51,7 +51,12 @@ export function useActivities() {
     setError(null);
     try {
       const res = await fetch(`${API_URL}/api/activities/types`, { headers: authHeaders(), credentials: 'include' });
-      if (!res.ok) throw new Error('Error al cargar tipos de actividad');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        setError(errorData.message || errorData.error || 'Error al cargar tipos de actividad');
+        if (thisFetchId === fetchIdRef.current) { setIsLoading(false); }
+        return;
+      }
       const data = await res.json();
       if (thisFetchId === fetchIdRef.current) { setTypes(data.success ? data.data : data); setIsLoading(false); }
     } catch (err: any) {
@@ -67,8 +72,12 @@ export function useActivities() {
       method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, credentials: 'include',
       body: JSON.stringify(data),
     });
-    if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Error'); }
+    if (!res.ok) { 
+      const e = await res.json().catch(() => ({ error: 'Error' }));
+      return { success: false as const, error: e.error || 'Error' };
+    }
     await fetchTypes();
+    return { success: true as const };
   };
 
   const updateType = async (id: string, data: any) => {
@@ -76,21 +85,33 @@ export function useActivities() {
       method: 'PUT', headers: { 'Content-Type': 'application/json', ...authHeaders() }, credentials: 'include',
       body: JSON.stringify(data),
     });
-    if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Error'); }
+    if (!res.ok) { 
+      const e = await res.json().catch(() => ({ error: 'Error' }));
+      return { success: false as const, error: e.error || 'Error' };
+    }
     await fetchTypes();
+    return { success: true as const };
   };
 
   const deleteType = async (id: string) => {
     const res = await fetch(`${API_URL}/api/activities/types/${id}`, {
       method: 'DELETE', headers: authHeaders(), credentials: 'include',
     });
-    if (!res.ok) throw new Error('Error al eliminar');
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({ error: 'Error al eliminar' }));
+      return { success: false as const, error: e.error || 'Error al eliminar' };
+    }
     await fetchTypes();
+    return { success: true as const };
   };
 
   const fetchExceptions = async (typeId: string): Promise<ActivityException[]> => {
     const res = await fetch(`${API_URL}/api/activities/exceptions/${typeId}`, { headers: authHeaders(), credentials: 'include' });
-    if (!res.ok) throw new Error('Error al cargar excepciones');
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      console.error('Error al cargar excepciones:', errorData.error || errorData.message);
+      return [];
+    }
     const data = await res.json();
     return Array.isArray(data) ? data : [];
   };
@@ -100,14 +121,22 @@ export function useActivities() {
       method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, credentials: 'include',
       body: JSON.stringify(data),
     });
-    if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Error'); }
+    if (!res.ok) { 
+      const e = await res.json().catch(() => ({ error: 'Error' }));
+      return { success: false as const, error: e.error || 'Error' };
+    }
+    return { success: true as const };
   };
 
   const deleteException = async (id: string) => {
     const res = await fetch(`${API_URL}/api/activities/exceptions/${id}`, {
       method: 'DELETE', headers: authHeaders(), credentials: 'include',
     });
-    if (!res.ok) throw new Error('Error al eliminar');
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({ error: 'Error al eliminar' }));
+      return { success: false as const, error: e.error || 'Error al eliminar' };
+    }
+    return { success: true as const };
   };
 
   return { types, isLoading, error, createType, updateType, deleteType, fetchExceptions, createException, deleteException, refetch: fetchTypes };

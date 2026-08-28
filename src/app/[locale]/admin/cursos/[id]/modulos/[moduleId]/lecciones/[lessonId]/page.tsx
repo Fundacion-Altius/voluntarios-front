@@ -60,7 +60,11 @@ export default function EditarLeccionPage() {
             credentials: 'include',
           }
         );
-        if (!res.ok) throw new Error(t('errorCargar'));
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          setError(errorData.message || errorData.error || t('errorCargar'));
+          return;
+        }
         const data: Lesson = await res.json();
         setTitle(data.title);
         setContentType(data.content_type);
@@ -99,7 +103,8 @@ export default function EditarLeccionPage() {
       );
       if (!res.ok) {
         const errData = await res.json().catch(() => null);
-        throw new Error(errData?.message || t('errorActualizar'));
+        setError(errData?.message || t('errorActualizar'));
+        return;
       }
       setSuccessMsg(t('leccionActualizada'));
       setTimeout(() => setSuccessMsg(''), 3000);

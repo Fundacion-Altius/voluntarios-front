@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LoadingSkeleton, ErrorState, EmptyState } from '@/components/portal/StateViews';
 import { apiClient, apiUrl } from '@/lib/apiClient';
-import { BookOpen, CheckCircle, Circle, ChevronRight } from 'lucide-react';
+import { BookOpen, CheckCircle, Circle, ChevronRight, Download } from 'lucide-react';
 
 function computeProgress(course: any): { total: number; completed: number; pct: number } {
   const total = course.modules?.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0) || 0;
@@ -27,6 +27,7 @@ function renderCourseState(loading: boolean, error: string | null, course: any, 
 }
 
 function renderEnrollSection(course: any, enrolling: boolean, error: string | null, id: string, t: any, handleEnroll: () => Promise<void>) {
+  const progressPct = computeProgress(course).pct;
   return course.enrolled ? (
     <Card>
       <CardHeader><CardTitle>{t('tuProgreso')}</CardTitle></CardHeader>
@@ -34,12 +35,17 @@ function renderEnrollSection(course: any, enrolling: boolean, error: string | nu
         <div className="flex items-center gap-4">
           <div className="flex-1">
             <div className="h-2 w-full rounded-full bg-muted">
-              <div className="h-2 rounded-full bg-primary transition-all" style={{ width: `${computeProgress(course).pct}%` }} />
+              <div className="h-2 rounded-full bg-primary transition-all" style={{ width: `${progressPct}%` }} />
             </div>
           </div>
-          <span className="text-sm font-medium">{computeProgress(course).pct}%</span>
+          <span className="text-sm font-medium">{progressPct}%</span>
         </div>
         <p className="mt-1 text-xs text-muted-foreground">{computeProgress(course).completed} {t('de')} {computeProgress(course).total} {t('leccionesCompletadas')}</p>
+        {progressPct === 100 && (
+          <a href={`/api/courses/${id}/certificate`} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block">
+            <Button variant="outline" size="sm"><Download className="mr-2 size-4" /> {t('descargarCertificado')}</Button>
+          </a>
+        )}
       </CardContent>
     </Card>
   ) : (

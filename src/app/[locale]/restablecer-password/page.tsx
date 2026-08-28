@@ -48,7 +48,8 @@ function RestablecerPasswordContent() {
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || t('errorRestablecer'));
+        setError(data.error || t('errorRestablecer'));
+        return;
       }
       setSuccess(true);
     } catch (err: any) {

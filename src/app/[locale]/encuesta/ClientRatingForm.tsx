@@ -38,7 +38,14 @@ export default function ClientRatingForm({
     let cancelled = false;
     const API_URL = getApiBaseUrl();
     fetch(`${API_URL}/api/questions`)
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('Failed to fetch questions'))))
+      .then(async (res) => {
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          console.error('Failed to fetch questions:', errorData.message || errorData.error);
+          return [];
+        }
+        return res.json();
+      })
       .then((data: Question[]) => {
         if (cancelled) return;
         if (data.length > 0 || serverQuestions.length === 0) {
@@ -123,7 +130,11 @@ export default function ClientRatingForm({
       });
 
       if (!res.ok) {
-        throw new Error("Error submitting survey");
+        const errorData = await res.json().catch(() => ({}));
+        console.error("Submit error:", errorData.message || errorData.error || "Error submitting survey");
+        setLoading(false);
+        setSubmitError(t('errorEnvioEncuesta'));
+        return;
       }
 
       router.push("/encuesta/confirmacion");

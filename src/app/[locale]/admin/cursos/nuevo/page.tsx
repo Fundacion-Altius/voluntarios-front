@@ -62,7 +62,8 @@ export default function NuevoCursoPage() {
       });
       if (!res.ok) {
         const errData = await res.json().catch(() => null);
-        throw new Error(errData?.message || t('errorCrearCurso'));
+        setError(errData?.message || t('errorCrearCurso'));
+        return;
       }
       router.push('/admin/cursos');
     } catch (err: any) {

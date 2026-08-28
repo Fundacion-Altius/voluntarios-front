@@ -10,12 +10,15 @@ import { ContractsByMonthChart } from './components/ContractsByMonthChart';
 import { ContractsByLugarChart } from './components/ContractsByLugarChart';
 import { CorporateVsIndependentChart } from './components/CorporateVsIndependentChart';
 import { RecentContracts } from './components/RecentContracts';
+import { ImpactTrendsChart } from './components/ImpactTrendsChart';
 import { useDashboardStats } from './useDashboardStats';
+import { useImpactTrends } from './useImpactTrends';
 
 export default function AdminDashboardPage() {
   const t = useTranslations('admin.dashboard');
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
-  const { stats, isLoading, error } = useDashboardStats();
+  const { stats, isLoading: statsLoading, error: statsError } = useDashboardStats();
+  const { data: trends, isLoading: trendsLoading } = useImpactTrends('12months');
   const router = useRouter();
 
   useEffect(() => {
@@ -24,7 +27,7 @@ export default function AdminDashboardPage() {
     }
   }, [authLoading, isAuthenticated, user, router]);
 
-  if (authLoading || isLoading) {
+  if (authLoading || statsLoading) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-8 w-48" />
@@ -47,12 +50,12 @@ export default function AdminDashboardPage() {
 
   if (!isAuthenticated) return null;
 
-  if (error) {
+  if (statsError) {
     return (
       <div>
         <h2 className="mb-4 text-xl font-semibold">{t('titulo')}</h2>
         <div className="rounded-md bg-destructive/10 p-4 text-sm text-destructive">
-          {error}
+          {statsError}
         </div>
       </div>
     );
@@ -74,6 +77,9 @@ export default function AdminDashboardPage() {
         <ContractsByMonthChart data={stats.contractsByMonth} />
         <ContractsByLugarChart data={stats.contractsByLugar} />
       </div>
+
+      {/* Impact Trends Chart */}
+      <ImpactTrendsChart data={trends || []} isLoading={trendsLoading} />
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <CorporateVsIndependentChart

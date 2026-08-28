@@ -19,7 +19,7 @@ import {
   SidebarProvider,
 } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/ui/topbar';
-import { LayoutDashboard, Users, FileText, ClipboardList, BarChart3, UserCheck, CalendarCheck, Trophy, Scan, Newspaper, BookOpen, ClipboardCheck } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, ClipboardList, BarChart3, UserCheck, CalendarCheck, Trophy, Scan, Newspaper, BookOpen, ClipboardCheck, Coins } from 'lucide-react';
 
 export default function AdminLayout({
   children,
@@ -83,6 +83,7 @@ export default function AdminLayout({
     { href: '/admin/blog', label: t('blog'), icon: Newspaper },
     { href: '/admin/cursos', label: t('cursos'), icon: BookOpen },
     { href: '/admin/onboarding', label: t('onboarding'), icon: ClipboardList },
+    { href: '/admin/fondos', label: t('fondos'), icon: Coins },
     { href: '/admin/scanner', label: t('scanner'), icon: Scan },
     { href: '/admin/ranking', label: t('ranking'), icon: Trophy },
   ];

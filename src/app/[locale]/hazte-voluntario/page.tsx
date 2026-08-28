@@ -83,7 +83,8 @@ export default function HazteVoluntarioPage() {
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || t('errorEnvio'));
+        setError(data.error || t('errorEnvio'));
+        return;
       }
       setSuccess(true);
     } catch (err: any) {

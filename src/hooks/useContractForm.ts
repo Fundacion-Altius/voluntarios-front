@@ -5,6 +5,8 @@ import { AreasT, DatosContrato, ModalidadT } from '@/app/types';
 import { todayToSQL } from '@/app/utils';
 import { apiPost } from '@/app/lib/csrf';
 
+type Result<T> = { success: true; data?: T } | { success: false; error: string };
+
 export function useContractForm() {
   const [step, setStep] = useState(1);
   const [datosContrato, setDatosContrato] = useState<DatosContrato>({
@@ -87,13 +89,15 @@ export function useContractForm() {
   const handleSubmit = async () => {
     const response = await apiPost('/api/contracts', datosContrato);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      return { success: false as const, error: errorData.message || errorData.error || `HTTP error! status: ${response.status}` };
     }
     const data = await response.json();
     if (data.existing) {
-      throw new Error("No se puede generar dos veces el mismo contrato para el mismo DNI/NIE. Recarga para intentar con otro DNI/NIE");
+      return { success: false as const, error: "No se puede generar dos veces el mismo contrato para el mismo DNI/NIE. Recarga para intentar con otro DNI/NIE" };
     }
     nextStep();
+    return { success: true as const };
   };
 
   return {
@@ -108,3 +112,5 @@ export function useContractForm() {
     handleSubmit,
   };
 }
+
+export type UseContractFormReturn = ReturnType<typeof useContractForm>;

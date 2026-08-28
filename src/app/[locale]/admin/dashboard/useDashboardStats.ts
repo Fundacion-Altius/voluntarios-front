@@ -32,12 +32,19 @@ export function useDashboardStats() {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       credentials: 'include',
     })
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to fetch dashboard stats');
+      .then(async (res) => {
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          setError(errorData.message || errorData.error || 'Failed to fetch dashboard stats');
+          setIsLoading(false);
+          return null;
+        }
         return res.json();
       })
       .then((data) => {
-        setStats(data);
+        if (data !== null) {
+          setStats(data);
+        }
         setIsLoading(false);
       })
       .catch((err) => {

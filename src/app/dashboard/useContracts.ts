@@ -99,8 +99,11 @@ export function useContracts(): UseContractsReturn {
       credentials: "include",
       signal: abortController.signal,
     })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch contracts")
+      .then(async (res) => {
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          return Promise.reject(new Error(errorData.message || errorData.error || "Failed to fetch contracts"))
+        }
         return res.json()
       })
       .then((json: PaginatedResponse) => {

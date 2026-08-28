@@ -48,7 +48,8 @@ function CrearPasswordContent() {
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || t('errorEstablecer'));
+        setError(data.error || t('errorEstablecer'));
+        return;
       }
       setSuccess(true);
     } catch (err: any) {

@@ -50,7 +50,12 @@ export function useSurveys() {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         credentials: 'include',
       });
-      if (!res.ok) throw new Error('Failed to fetch surveys');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        setError(errorData.message || errorData.error || 'Failed to fetch surveys');
+        if (thisFetchId === fetchIdRef.current) { setIsLoading(false); }
+        return;
+      }
       const data = await res.json();
       if (thisFetchId === fetchIdRef.current) {
         setSurveys(data);
@@ -79,8 +84,12 @@ export function useSurveys() {
       credentials: 'include',
       body: JSON.stringify(survey),
     });
-    if (!res.ok) throw new Error('Failed to create survey');
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      return { success: false as const, error: errorData.message || errorData.error || 'Failed to create survey' };
+    }
     await fetchSurveys();
+    return { success: true as const };
   };
 
   const deleteSurvey = async (id: number) => {
@@ -90,8 +99,12 @@ export function useSurveys() {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       credentials: 'include',
     });
-    if (!res.ok) throw new Error('Failed to delete survey');
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      return { success: false as const, error: errorData.message || errorData.error || 'Failed to delete survey' };
+    }
     await fetchSurveys();
+    return { success: true as const };
   };
 
   const fetchReport = useCallback(async () => {
@@ -102,7 +115,11 @@ export function useSurveys() {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         credentials: 'include',
       });
-      if (!res.ok) throw new Error('Failed to fetch report');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        setError(errorData.message || errorData.error || 'Failed to fetch report');
+        return;
+      }
       const json = await res.json();
       if (json.success && json.data?.reportJson) {
         setReport(json.data.reportJson);

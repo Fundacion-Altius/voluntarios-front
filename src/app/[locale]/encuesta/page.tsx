@@ -18,8 +18,12 @@ export default async function RatingPage({}: PageProps) {
       credentials: 'include',
       cache: 'no-store',
     });
-    if (!res.ok) throw new Error('Failed to fetch questions');
-    questions = await res.json();
+    if (!res.ok) {
+      const t = await getTranslations('encuesta');
+      error = t('errorCargarPreguntas');
+    } else {
+      questions = await res.json();
+    }
   } catch (err) {
     console.error('Fetch error:', err);
     const t = await getTranslations('encuesta');

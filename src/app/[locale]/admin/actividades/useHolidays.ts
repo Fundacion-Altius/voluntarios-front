@@ -40,7 +40,12 @@ export function useHolidays() {
     setError(null);
     try {
       const res = await fetch(`${API_URL}/api/activities/holidays`, { headers: authHeaders(), credentials: 'include' });
-      if (!res.ok) throw new Error('Error al cargar festivos');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        setError(errorData.message || errorData.error || 'Error al cargar festivos');
+        if (thisFetchId === fetchIdRef.current) { setIsLoading(false); }
+        return;
+      }
       const data = await res.json();
       if (thisFetchId === fetchIdRef.current) {
         const list: Holiday[] = Array.isArray(data) ? data : [];
@@ -60,24 +65,36 @@ export function useHolidays() {
       method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, credentials: 'include',
       body: JSON.stringify(data),
     });
-    if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Error'); }
+    if (!res.ok) { 
+      const e = await res.json().catch(() => ({ error: 'Error' }));
+      return { success: false as const, error: e.error || 'Error' };
+    }
     await fetchHolidays();
+    return { success: true as const };
   };
 
   const setHolidayActive = async (id: string, active: boolean) => {
     const res = await fetch(`${API_URL}/api/activities/holidays/${id}/${active ? 'activate' : 'deactivate'}`, {
       method: 'PUT', headers: authHeaders(), credentials: 'include',
     });
-    if (!res.ok) throw new Error('Error al actualizar festivo');
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({ error: 'Error al actualizar festivo' }));
+      return { success: false as const, error: e.error || 'Error al actualizar festivo' };
+    }
     await fetchHolidays();
+    return { success: true as const };
   };
 
   const deleteHoliday = async (id: string) => {
     const res = await fetch(`${API_URL}/api/activities/holidays/${id}`, {
       method: 'DELETE', headers: authHeaders(), credentials: 'include',
     });
-    if (!res.ok) throw new Error('Error al eliminar festivo');
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({ error: 'Error al eliminar festivo' }));
+      return { success: false as const, error: e.error || 'Error al eliminar festivo' };
+    }
     await fetchHolidays();
+    return { success: true as const };
   };
 
   return { holidays, isLoading, error, addHoliday, setHolidayActive, deleteHoliday, refetch: fetchHolidays };

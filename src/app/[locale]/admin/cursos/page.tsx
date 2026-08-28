@@ -83,7 +83,11 @@ export default function CursosPage() {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         credentials: 'include',
       });
-      if (!res.ok) throw new Error(t('errorCargar'));
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        setError(errorData.message || errorData.error || t('errorCargar'));
+        return;
+      }
       const data = await res.json();
       setCourses(Array.isArray(data) ? data : []);
     } catch (err: any) {
@@ -106,7 +110,11 @@ export default function CursosPage() {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         credentials: 'include',
       });
-      if (!res.ok) throw new Error(t('errorEliminar'));
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        setError(errorData.message || errorData.error || t('errorEliminar'));
+        return;
+      }
       setDeleteTarget(null);
       setSuccessMsg(t('cursoEliminado'));
       setTimeout(() => setSuccessMsg(''), 3000);

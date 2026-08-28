@@ -37,7 +37,10 @@ export default function ScannerPage() {
         body: JSON.stringify({ qrData: code }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error');
+      if (!res.ok) {
+        setError(data.error || 'Error');
+        return;
+      }
       setResult(data);
     } catch (err: any) { setError(err.message); }
   };
