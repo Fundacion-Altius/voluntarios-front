@@ -71,6 +71,11 @@ export default function AdminDashboardPage() {
         totalContracts={stats.totalContracts}
         activeVolunteers={stats.activeVolunteers}
         surveyCompletionRate={stats.surveyCompletionRate}
+        totalMembers={stats.totalMembers}
+        activeMembers={stats.activeMembers}
+        churnRate={stats.churnRate}
+        retentionRate={stats.retentionRate}
+        grantMetrics={stats.grantMetrics}
       />
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

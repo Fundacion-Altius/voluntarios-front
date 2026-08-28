@@ -11,6 +11,29 @@ export interface DashboardStats {
   contractsByLugar: { lugar: string; count: number }[];
   corporateVsIndependent: { corporate: number; independent: number };
   recentContracts: { id: string; nombre: string; empresa: string | null; fecha: string }[];
+  
+  // Member/Donor metrics
+  totalMembers?: number;
+  activeMembers?: number;
+  lapsedMembers?: number;
+  churnedMembers?: number;
+  atRiskMembers?: number;
+  totalContributions?: number;
+  averageContributionAmount?: string;
+  churnRate?: number;
+  retentionRate?: number;
+  averageLifetimeValue?: string;
+  
+  // Grant metrics
+  grantMetrics?: {
+    totalGrants: number;
+    byStatus: Record<string, number>;
+    byType: Record<string, number>;
+    totalPipelineValue: number;
+    approvalRate: number;
+  };
+  fundingDiversification?: Record<string, number>;
+  upcomingGrantDeadlines?: { id: string; name: string; deadline: string; amount: number; type: string }[];
 }
 
 import { getApiBaseUrl } from '@/lib/apiUrl';
