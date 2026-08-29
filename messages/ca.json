@@ -238,6 +238,7 @@
       "asistencia": "Assistència",
       "fondos": "Fons",
       "automatizacion": "Automatització",
+      "mensajeria": "Missatgeria",
       "exportaciones": "Exportacions"
     },
     "contracts": {
@@ -275,6 +276,25 @@
         "grantDeadlineReminder": "Recordatori de termini de subvenció",
         "grantOverdueEscalation": "Escalat de subvenció vençuda"
       }
+    },
+    "messaging": {
+      "title": "Canals de missatgeria",
+      "config": "Configuració",
+      "templates": "Plantilles",
+      "composer": "Enviar",
+      "logs": "Registre",
+      "channel": "Canal",
+      "configJson": "JSON de configuració",
+      "save": "Desar",
+      "send": "Enviar",
+      "templateName": "Nom",
+      "content": "Contingut",
+      "recipient": "Destinatari",
+      "emailFallback": "Email de reserva",
+      "direction": "Direcció",
+      "fromDate": "Des de",
+      "all": "Tots",
+      "invalidJson": "JSON invàlid"
     },
     "export": {
       "title": "Exportació de dades",

@@ -257,6 +257,7 @@
       "asistencia": "Attendance",
       "fondos": "Funds",
       "automatizacion": "Automation",
+      "mensajeria": "Messaging",
       "exportaciones": "Exports"
     },
     "contracts": {
@@ -297,6 +298,25 @@
         "grantDeadlineReminder": "Grant deadline reminder",
         "grantOverdueEscalation": "Overdue grant escalation"
       }
+    },
+    "messaging": {
+      "title": "Messaging channels",
+      "config": "Configuration",
+      "templates": "Templates",
+      "composer": "Send",
+      "logs": "Log",
+      "channel": "Channel",
+      "configJson": "Configuration JSON",
+      "save": "Save",
+      "send": "Send",
+      "templateName": "Name",
+      "content": "Content",
+      "recipient": "Recipient",
+      "emailFallback": "Fallback email",
+      "direction": "Direction",
+      "fromDate": "From",
+      "all": "All",
+      "invalidJson": "Invalid JSON"
     },
     "export": {
       "title": "Data export",
