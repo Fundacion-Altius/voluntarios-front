@@ -517,7 +517,9 @@
       "disponible": "Disponible",
       "reservando": "Reservant...",
       "reservar": "Reservar",
-      "unirseClase": "Unir-se a classe en directe"
+      "unirseClase": "Unir-se a classe en directe",
+      "uniendose": "Unint-se...",
+      "bookJoinHint": "Reserva per apuntar-t'hi; Uneix-te per entrar a la classe en directe"
     },
     "cursos": {
       "titulo": "Cursos",
@@ -626,7 +628,12 @@
       "uniendose": "Unint-se...",
       "unirseSalaBtn": "Unir-se a la sala",
       "errorUnirse": "Error en unir-se a la sala",
-      "debesIniciarSesion": "Has d'iniciar sessió per unir-te"
+      "debesIniciarSesion": "Has d'iniciar sessió per unir-te",
+      "iniciarSesion": "Iniciar sessió",
+      "contextoLms": "Sessió",
+      "contextoComunidad": "Comunitat",
+      "contextoGenerico": "Context",
+      "participantesCount": "{count} participants"
     }
   }
 }

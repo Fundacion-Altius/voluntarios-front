@@ -520,7 +520,9 @@
       "disponible": "Disponible",
       "reservando": "Reservando...",
       "reservar": "Reservar",
-      "unirseClase": "Unirse a clase en vivo"
+      "unirseClase": "Unirse a clase en vivo",
+      "uniendose": "Uniéndose...",
+      "bookJoinHint": "Reservar para apuntarte; Unirse para entrar a la clase en vivo"
     },
     "cursos": {
       "titulo": "Cursos",
@@ -629,7 +631,12 @@
       "uniendose": "Uniéndose...",
       "unirseSalaBtn": "Unirse a la sala",
       "errorUnirse": "Error al unirse a la sala",
-      "debesIniciarSesion": "Debes iniciar sesión para unirte"
+      "debesIniciarSesion": "Debes iniciar sesión para unirte",
+      "iniciarSesion": "Iniciar sesión",
+      "contextoLms": "Sesión",
+      "contextoComunidad": "Comunidad",
+      "contextoGenerico": "Contexto",
+      "participantesCount": "{count} participantes"
     }
   }
 }

@@ -517,7 +517,9 @@
       "disponible": "Available",
       "reservando": "Booking...",
       "reservar": "Book",
-      "unirseClase": "Join live class"
+      "unirseClase": "Join live class",
+      "uniendose": "Joining...",
+      "bookJoinHint": "Book to sign up; Join to enter the live class"
     },
     "cursos": {
       "titulo": "Courses",
@@ -626,7 +628,12 @@
       "uniendose": "Joining...",
       "unirseSalaBtn": "Join the room",
       "errorUnirse": "Error joining the room",
-      "debesIniciarSesion": "You must sign in to join"
+      "debesIniciarSesion": "You must sign in to join",
+      "iniciarSesion": "Sign in",
+      "contextoLms": "Session",
+      "contextoComunidad": "Community",
+      "contextoGenerico": "Context",
+      "participantesCount": "{count} participants"
     }
   }
 }
