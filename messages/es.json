@@ -257,6 +257,7 @@
       "asistencia": "Asistencia",
       "fondos": "Fondos",
       "automatizacion": "Automatización",
+      "mensajeria": "Mensajería",
       "exportaciones": "Exportaciones"
     },
     "contracts": {
@@ -297,6 +298,25 @@
         "grantDeadlineReminder": "Recordatorio de plazo de subvención",
         "grantOverdueEscalation": "Escalado de subvención vencida"
       }
+    },
+    "messaging": {
+      "title": "Canales de mensajería",
+      "config": "Configuración",
+      "templates": "Plantillas",
+      "composer": "Enviar",
+      "logs": "Registro",
+      "channel": "Canal",
+      "configJson": "JSON de configuración",
+      "save": "Guardar",
+      "send": "Enviar",
+      "templateName": "Nombre",
+      "content": "Contenido",
+      "recipient": "Destinatario",
+      "emailFallback": "Email de respaldo",
+      "direction": "Dirección",
+      "fromDate": "Desde",
+      "all": "Todos",
+      "invalidJson": "JSON inválido"
     },
     "export": {
       "title": "Exportación de datos",
