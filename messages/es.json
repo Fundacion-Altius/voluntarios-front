@@ -256,7 +256,8 @@
       "ranking": "Ranking",
       "asistencia": "Asistencia",
       "fondos": "Fondos",
-      "automatizacion": "Automatización"
+      "automatizacion": "Automatización",
+      "exportaciones": "Exportaciones"
     },
     "contracts": {
       "noDisponibles": "No hay contratos disponibles.",
@@ -296,6 +297,34 @@
         "grantDeadlineReminder": "Recordatorio de plazo de subvención",
         "grantOverdueEscalation": "Escalado de subvención vencida"
       }
+    },
+    "export": {
+      "title": "Exportación de datos",
+      "builderTitle": "Informes personalizados",
+      "schedulesTitle": "Exportaciones programadas",
+      "historyTitle": "Historial",
+      "fieldsAndFilters": "Campos y filtros",
+      "domain": "Dominio",
+      "format": "Formato",
+      "generate": "Generar",
+      "savedName": "Nombre del informe",
+      "saveReport": "Guardar informe",
+      "newSchedule": "Nueva programación",
+      "name": "Nombre",
+      "email": "Email",
+      "cadence": "Frecuencia",
+      "createSchedule": "Crear",
+      "paused": "Pausada",
+      "active": "Activa",
+      "pause": "Pausar",
+      "resume": "Reanudar",
+      "delete": "Eliminar",
+      "filename": "Archivo",
+      "generatedAt": "Generado",
+      "size": "Tamaño",
+      "download": "Descargar",
+      "expired": "Este informe ha caducado. Vuelve a generarlo.",
+      "error": "No se pudo completar la operación"
     },
     "contratosPage": {
       "titulo": "Contratos"

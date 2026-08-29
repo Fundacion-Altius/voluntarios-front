@@ -56,6 +56,14 @@ export async function apiPut(
   }));
 }
 
+export async function apiPatch(path: string, body: unknown = {}): Promise<Response> {
+  return fetch(`${HOST}${path}`, withAuth({
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  }));
+}
+
 export async function apiDelete(path: string): Promise<Response> {
   return fetch(`${HOST}${path}`, withAuth({
     method: 'DELETE',

@@ -256,7 +256,8 @@
       "ranking": "Ranking",
       "asistencia": "Attendance",
       "fondos": "Funds",
-      "automatizacion": "Automation"
+      "automatizacion": "Automation",
+      "exportaciones": "Exports"
     },
     "contracts": {
       "noDisponibles": "No contracts available.",
@@ -296,6 +297,34 @@
         "grantDeadlineReminder": "Grant deadline reminder",
         "grantOverdueEscalation": "Overdue grant escalation"
       }
+    },
+    "export": {
+      "title": "Data export",
+      "builderTitle": "Custom reports",
+      "schedulesTitle": "Scheduled exports",
+      "historyTitle": "History",
+      "fieldsAndFilters": "Fields and filters",
+      "domain": "Domain",
+      "format": "Format",
+      "generate": "Generate",
+      "savedName": "Report name",
+      "saveReport": "Save report",
+      "newSchedule": "New schedule",
+      "name": "Name",
+      "email": "Email",
+      "cadence": "Cadence",
+      "createSchedule": "Create",
+      "paused": "Paused",
+      "active": "Active",
+      "pause": "Pause",
+      "resume": "Resume",
+      "delete": "Delete",
+      "filename": "File",
+      "generatedAt": "Generated",
+      "size": "Size",
+      "download": "Download",
+      "expired": "This export has expired. Generate it again.",
+      "error": "The operation could not be completed"
     },
     "contratosPage": {
       "titulo": "Contracts"

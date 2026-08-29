@@ -237,7 +237,8 @@
       "ranking": "Ranking",
       "asistencia": "Assistència",
       "fondos": "Fons",
-      "automatizacion": "Automatització"
+      "automatizacion": "Automatització",
+      "exportaciones": "Exportacions"
     },
     "contracts": {
       "noDisponibles": "No hi ha contractes disponibles.",
@@ -274,6 +275,34 @@
         "grantDeadlineReminder": "Recordatori de termini de subvenció",
         "grantOverdueEscalation": "Escalat de subvenció vençuda"
       }
+    },
+    "export": {
+      "title": "Exportació de dades",
+      "builderTitle": "Informes personalitzats",
+      "schedulesTitle": "Exportacions programades",
+      "historyTitle": "Historial",
+      "fieldsAndFilters": "Camps i filtres",
+      "domain": "Domini",
+      "format": "Format",
+      "generate": "Generar",
+      "savedName": "Nom de l'informe",
+      "saveReport": "Desar informe",
+      "newSchedule": "Nova programació",
+      "name": "Nom",
+      "email": "Email",
+      "cadence": "Freqüència",
+      "createSchedule": "Crear",
+      "paused": "Pausada",
+      "active": "Activa",
+      "pause": "Pausar",
+      "resume": "Reprendre",
+      "delete": "Eliminar",
+      "filename": "Fitxer",
+      "generatedAt": "Generat",
+      "size": "Mida",
+      "download": "Descarregar",
+      "expired": "Aquest informe ha caducat. Torna a generar-lo.",
+      "error": "No s'ha pogut completar l'operació"
     },
     "contratosPage": {
       "titulo": "Contractes"
