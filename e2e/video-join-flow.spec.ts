@@ -16,6 +16,17 @@ test.describe('Video join flow UX', () => {
   });
 
   test('activities page disables join when no live room exists', async ({ page }) => {
+    await page.route('**/api/auth/session', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          user: { name: 'Vol', email: 'vol@example.com', role: 'general' },
+          expires: '2099-01-01T00:00:00.000Z',
+          authToken: 'e2e-token',
+        }),
+      });
+    });
     await page.route('**/api/activities/upcoming**', async (route) => {
       await route.fulfill({
         status: 200,

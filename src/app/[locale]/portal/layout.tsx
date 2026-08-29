@@ -14,7 +14,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   const isSalaRoute = pathname?.includes('/portal/sala') ?? false;
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isLoading && !isAuthenticated && !isSalaRoute) {
       router.push('/login');
       return;
     }
@@ -32,7 +32,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     );
   }
 
-  if (!isAuthenticated) return null;
+  if (!isAuthenticated && !isSalaRoute) return null;
 
   const profile = user as { name?: string; email?: string } | null;
 
