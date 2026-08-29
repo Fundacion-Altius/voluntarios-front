@@ -254,7 +254,9 @@
       "onboarding": "Onboarding",
       "scanner": "Scanner",
       "ranking": "Ranking",
-      "asistencia": "Attendance"
+      "asistencia": "Attendance",
+      "fondos": "Funds",
+      "automatizacion": "Automation"
     },
     "contracts": {
       "noDisponibles": "No contracts available.",
@@ -277,6 +279,23 @@
       "totalGrants": "Total Grants",
       "pipelineValue": "Pipeline Value",
       "approvalRate": "Approval Rate"
+    },
+    "automation": {
+      "workloadTitle": "Automated workload",
+      "metricsSummary": "{tasks} tasks automated | ~{hours} hours saved | Breakdown: {memberComms} member comms, {churnAlerts} churn alerts, {grantReminders} grant reminders",
+      "manualPending": "{count} manual tasks pending",
+      "justificationLink": "Go to grant justification page",
+      "settingsTitle": "Communication workflows",
+      "enabled": "Enabled",
+      "subject": "Email subject",
+      "save": "Save",
+      "workflow": {
+        "memberWelcome": "Member welcome",
+        "memberLapsed": "Lapsed member warning",
+        "memberAnniversary": "Member anniversary",
+        "grantDeadlineReminder": "Grant deadline reminder",
+        "grantOverdueEscalation": "Overdue grant escalation"
+      }
     },
     "contratosPage": {
       "titulo": "Contracts"
@@ -734,6 +753,24 @@
     }
   },
   "admin": {
+    "automation": {
+      "navLabel": "Automation",
+      "workloadTitle": "Automated workload",
+      "metricsSummary": "{tasks} tasks automated | ~{hours} hours saved | Breakdown: {memberComms} member comms, {churnAlerts} churn alerts, {grantReminders} grant reminders",
+      "manualPending": "{count} manual tasks pending",
+      "justificationLink": "Go to grant justification page",
+      "settingsTitle": "Communication workflows",
+      "enabled": "Enabled",
+      "subject": "Email subject",
+      "save": "Save",
+      "workflow": {
+        "memberWelcome": "Member welcome",
+        "memberLapsed": "Lapsed member warning",
+        "memberAnniversary": "Member anniversary",
+        "grantDeadlineReminder": "Grant deadline reminder",
+        "grantOverdueEscalation": "Overdue grant escalation"
+      }
+    },
     "impact": {
       "title": "Impact Dashboard Configuration",
       "subtitle": "Configure which KPIs are displayed and the branding of the public dashboard",

@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MetricCards } from './components/MetricCards';
+import { AutomationWorkloadWidget } from './components/AutomationWorkloadWidget';
 import { ContractsByMonthChart } from './components/ContractsByMonthChart';
 import { ContractsByLugarChart } from './components/ContractsByLugarChart';
 import { CorporateVsIndependentChart } from './components/CorporateVsIndependentChart';
@@ -13,12 +14,14 @@ import { RecentContracts } from './components/RecentContracts';
 import { ImpactTrendsChart } from './components/ImpactTrendsChart';
 import { useDashboardStats } from './useDashboardStats';
 import { useImpactTrends } from './useImpactTrends';
+import { useAutomationWorkload } from './useAutomationWorkload';
 
 export default function AdminDashboardPage() {
   const t = useTranslations('admin.dashboard');
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { stats, isLoading: statsLoading, error: statsError } = useDashboardStats();
   const { data: trends, isLoading: trendsLoading } = useImpactTrends('12months');
+  const { metrics: automationMetrics, manualTasks, isLoading: automationLoading } = useAutomationWorkload();
   const router = useRouter();
 
   useEffect(() => {
@@ -77,6 +80,13 @@ export default function AdminDashboardPage() {
         retentionRate={stats.retentionRate}
         grantMetrics={stats.grantMetrics}
       />
+
+      {!automationLoading && automationMetrics ? (
+        <AutomationWorkloadWidget
+          metrics={automationMetrics}
+          manualCount={manualTasks.length}
+        />
+      ) : null}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <ContractsByMonthChart data={stats.contractsByMonth} />

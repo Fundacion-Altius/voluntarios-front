@@ -254,7 +254,9 @@
       "onboarding": "Onboarding",
       "scanner": "Escáner",
       "ranking": "Ranking",
-      "asistencia": "Asistencia"
+      "asistencia": "Asistencia",
+      "fondos": "Fondos",
+      "automatizacion": "Automatización"
     },
     "contracts": {
       "noDisponibles": "No hay contratos disponibles.",
@@ -277,6 +279,23 @@
       "totalGrants": "Subvenciones Totales",
       "pipelineValue": "Valor del Pipeline",
       "approvalRate": "Tasa de Aprobación"
+    },
+    "automation": {
+      "workloadTitle": "Carga de trabajo automatizada",
+      "metricsSummary": "{tasks} tareas automatizadas | ~{hours} horas ahorradas | Desglose: {memberComms} member comms, {churnAlerts} churn alerts, {grantReminders} grant reminders",
+      "manualPending": "{count} tareas manuales pendientes",
+      "justificationLink": "Ir a justificaciones de subvenciones",
+      "settingsTitle": "Flujos de comunicación",
+      "enabled": "Activado",
+      "subject": "Asunto del email",
+      "save": "Guardar",
+      "workflow": {
+        "memberWelcome": "Bienvenida a socios",
+        "memberLapsed": "Aviso de socio inactivo",
+        "memberAnniversary": "Aniversario de socio",
+        "grantDeadlineReminder": "Recordatorio de plazo de subvención",
+        "grantOverdueEscalation": "Escalado de subvención vencida"
+      }
     },
     "contratosPage": {
       "titulo": "Contratos"
@@ -734,6 +753,24 @@
     }
   },
   "admin": {
+    "automation": {
+      "navLabel": "Automatización",
+      "workloadTitle": "Carga de trabajo automatizada",
+      "metricsSummary": "{tasks} tareas automatizadas | ~{hours} horas ahorradas | Desglose: {memberComms} member comms, {churnAlerts} churn alerts, {grantReminders} grant reminders",
+      "manualPending": "{count} tareas manuales pendientes",
+      "justificationLink": "Ir a justificaciones de subvenciones",
+      "settingsTitle": "Flujos de comunicación",
+      "enabled": "Activado",
+      "subject": "Asunto del email",
+      "save": "Guardar",
+      "workflow": {
+        "memberWelcome": "Bienvenida a socios",
+        "memberLapsed": "Aviso de socio inactivo",
+        "memberAnniversary": "Aniversario de socio",
+        "grantDeadlineReminder": "Recordatorio de plazo de subvención",
+        "grantOverdueEscalation": "Escalado de subvención vencida"
+      }
+    },
     "impact": {
       "title": "Configuración del Dashboard de Impacto",
       "subtitle": "Configura qué KPIs se muestran y el branding del dashboard público",

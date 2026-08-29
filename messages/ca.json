@@ -235,7 +235,9 @@
       "onboarding": "Onboarding",
       "scanner": "Escàner",
       "ranking": "Ranking",
-      "asistencia": "Assistència"
+      "asistencia": "Assistència",
+      "fondos": "Fons",
+      "automatizacion": "Automatització"
     },
     "contracts": {
       "noDisponibles": "No hi ha contractes disponibles.",
@@ -255,6 +257,23 @@
       "activeMembers": "Membres Actius",
       "churnRate": "Taxa de Baixa",
       "retentionRate": "Taxa de Retenció"
+    },
+    "automation": {
+      "workloadTitle": "Càrrega de treball automatitzada",
+      "metricsSummary": "{tasks} tasques automatitzades | ~{hours} hores estalviades | Desglossament: {memberComms} member comms, {churnAlerts} churn alerts, {grantReminders} grant reminders",
+      "manualPending": "{count} tasques manuals pendents",
+      "justificationLink": "Anar a justificacions de subvencions",
+      "settingsTitle": "Fluxos de comunicació",
+      "enabled": "Activat",
+      "subject": "Assumpte del correu",
+      "save": "Desar",
+      "workflow": {
+        "memberWelcome": "Benvinguda a socis",
+        "memberLapsed": "Avís de soci inactiu",
+        "memberAnniversary": "Aniversari de soci",
+        "grantDeadlineReminder": "Recordatori de termini de subvenció",
+        "grantOverdueEscalation": "Escalat de subvenció vençuda"
+      }
     },
     "contratosPage": {
       "titulo": "Contractes"
@@ -712,6 +731,24 @@
     }
   },
   "admin": {
+    "automation": {
+      "navLabel": "Automatització",
+      "workloadTitle": "Càrrega de treball automatitzada",
+      "metricsSummary": "{tasks} tasques automatitzades | ~{hours} hores estalviades | Desglossament: {memberComms} member comms, {churnAlerts} churn alerts, {grantReminders} grant reminders",
+      "manualPending": "{count} tasques manuals pendents",
+      "justificationLink": "Anar a justificacions de subvencions",
+      "settingsTitle": "Fluxos de comunicació",
+      "enabled": "Activat",
+      "subject": "Assumpte del correu",
+      "save": "Desar",
+      "workflow": {
+        "memberWelcome": "Benvinguda a socis",
+        "memberLapsed": "Avís de soci inactiu",
+        "memberAnniversary": "Aniversari de soci",
+        "grantDeadlineReminder": "Recordatori de termini de subvenció",
+        "grantOverdueEscalation": "Escalat de subvenció vençuda"
+      }
+    },
     "impact": {
       "title": "Configuració del Tauler d'Impacte",
       "subtitle": "Configura quins KPIs es mostren i la imatge de marca del tauler públic",
