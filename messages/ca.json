@@ -598,13 +598,19 @@
       "directo": "Directe",
       "grupal": "Grupal",
       "crear": "Crear",
-      "participante": "Participant"
+      "participante": "Participant",
+      "tema": "Tema (opcional)",
+      "eligeCanal": "Tria un canal o crea'n un de nou"
     },
     "chat": {
       "conversacionNoEncontrada": "Conversa no trobada",
       "conversacion": "Conversa",
       "sinMensajes": "Sense missatges. Comença la conversa!",
-      "escribeMensaje": "Escriu un missatge..."
+      "escribeMensaje": "Escriu un missatge...",
+      "directo": "Directe",
+      "grupal": "Grupal",
+      "escribiendo": "Algú està escrivint…",
+      "miembros": "Membres"
     },
     "actividades": {
       "titulo": "Activitats",

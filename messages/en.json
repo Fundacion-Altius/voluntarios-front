@@ -620,13 +620,19 @@
       "directo": "Direct",
       "grupal": "Group",
       "crear": "Create",
-      "participante": "Participant"
+      "participante": "Participant",
+      "tema": "Topic (optional)",
+      "eligeCanal": "Pick a channel or create a new one"
     },
     "chat": {
       "conversacionNoEncontrada": "Conversation not found",
       "conversacion": "Conversation",
       "sinMensajes": "No messages. Start the conversation!",
-      "escribeMensaje": "Type a message..."
+      "escribeMensaje": "Type a message...",
+      "directo": "Direct",
+      "grupal": "Group",
+      "escribiendo": "Someone is typing…",
+      "miembros": "Members"
     },
     "actividades": {
       "titulo": "Activities",

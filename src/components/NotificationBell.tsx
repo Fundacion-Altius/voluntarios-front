@@ -114,6 +114,17 @@ export function NotificationBell() {
   const handleNotificationClick = (n: NotificationItem) => {
     handleMarkRead(n.id);
 
+    if (n.type === 'channel_mention' || n.type === 'new_message') {
+      try {
+        const metadata = typeof n.metadata === 'string' ? JSON.parse(n.metadata) : n.metadata;
+        const channelId = metadata?.channelId;
+        if (channelId) {
+          router.push(`/portal/mensajes/${channelId}`);
+          return;
+        }
+      } catch {}
+    }
+
     if (n.type === 'video_call_started' || n.type === 'video_call_ended') {
       try {
         const metadata = typeof n.metadata === 'string' ? JSON.parse(n.metadata) : n.metadata;

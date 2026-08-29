@@ -1,110 +1,159 @@
 'use client';
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useRouter } from '@/i18n/navigation';
+
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ArrowLeft, Send } from 'lucide-react';
-import { LoadingSkeleton, EmptyState } from '@/components/portal/StateViews';
+import { ChatWorkspace } from '@/components/chat/ChatWorkspace';
+import { ComposeBox } from '@/components/chat/ComposeBox';
+import { MemberList } from '@/components/chat/MemberList';
+import { MessageThread } from '@/components/chat/MessageThread';
+import { useStaffChat, type StaffChatEvent } from '@/hooks/useStaffChat';
 import { apiClient, apiUrl } from '@/lib/apiClient';
-import { useRealtimeChat } from '@/hooks/useRealtimeChat';
+import { LoadingSkeleton, EmptyState } from '@/components/portal/StateViews';
 
-export default function ConversationDetailPage() {
+interface Channel {
+  id: string;
+  name: string;
+  type: 'direct' | 'group';
+}
+
+interface ChatMessage {
+  id: string;
+  sender_id: string;
+  content: string;
+  created_at: string;
+  reply_to_id?: string | null;
+  reads?: Array<{ user_id: string }>;
+}
+
+export default function ChannelPage() {
   const { id } = useParams<{ id: string }>();
-  const router = useRouter();
   const t = useTranslations('portal.chat');
   const { data: session } = useSession();
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  const [conversation, setConversation] = useState<any>(null);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [channel, setChannel] = useState<Channel | null>(null);
+  const [members, setMembers] = useState<Array<{ user_id: string; role: string }>>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
-  const [newMessage, setNewMessage] = useState('');
+  const [draft, setDraft] = useState('');
+  const [replyToId, setReplyToId] = useState<string | null>(null);
+  const [typingUser, setTypingUser] = useState<string | null>(null);
+  const [onlineIds, setOnlineIds] = useState<Set<string>>(new Set());
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const currentUserId = (session?.user as { id?: string } | undefined)?.id;
+  const authToken = (session as { authToken?: string } | null)?.authToken;
+
+  const reloadMessages = useCallback(async () => {
+    const page = await apiClient<{ data: ChatMessage[] }>(apiUrl(`/api/chat/channels/${id}/messages?limit=50`));
+    setMessages(page.data || []);
+  }, [id]);
 
   useEffect(() => {
     if (!id) return;
     Promise.all([
-      apiClient<any>(apiUrl(`/api/community/conversations/${id}`)),
-      apiClient<{ data: any[] }>(apiUrl(`/api/community/conversations/${id}/messages`)),
+      apiClient<Channel>(apiUrl(`/api/chat/channels/${id}`)),
+      apiClient<{ data: Array<{ user_id: string; role: string }> }>(apiUrl(`/api/chat/channels/${id}/members`)),
+      apiClient<{ data: ChatMessage[] }>(apiUrl(`/api/chat/channels/${id}/messages?limit=50`)),
     ])
-      .then(([c, m]) => { setConversation(c); setMessages(m.data || []); })
-      .catch(() => {})
+      .then(([c, m, msgs]) => {
+        setChannel(c);
+        setMembers(m.data || []);
+        setMessages(msgs.data || []);
+      })
+      .catch(() => setChannel(null))
       .finally(() => setLoading(false));
   }, [id]);
 
-  const messagesRef = useRef(messages);
-  messagesRef.current = messages;
+  const onEvent = useCallback((event: StaffChatEvent) => {
+    if (event.type === 'message:new' && event.id) {
+      setMessages((prev) => prev.some((m) => m.id === event.id) ? prev : [...prev, event as unknown as ChatMessage]);
+    }
+    if (event.type === 'typing:start' && event.userId !== currentUserId) setTypingUser(event.userId ?? null);
+    if (event.type === 'typing:stop') setTypingUser(null);
+    if (event.type === 'message:read' && event.messageId && event.userId) {
+      setMessages((prev) => prev.map((m) => (
+        m.id === event.messageId
+          ? { ...m, reads: [...(m.reads ?? []), { user_id: event.userId as string }] }
+          : m
+      )));
+    }
+    if (event.type === 'presence:update' && event.userId) {
+      setOnlineIds((prev) => {
+        const next = new Set(prev);
+        if (event.online) next.add(event.userId as string);
+        else next.delete(event.userId as string);
+        return next;
+      });
+    }
+  }, [currentUserId]);
 
-  const handleIncomingMessage = useCallback((msg: any) => {
-    setMessages((prev) => prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]);
-  }, []);
-
-  const authToken = (session as any)?.authToken;
-  useRealtimeChat({ conversationId: id, authToken, onMessage: handleIncomingMessage });
+  const { sendTyping, sendRead } = useStaffChat({
+    channelId: id,
+    authToken,
+    onEvent,
+    onPoll: reloadMessages,
+  });
 
   useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [messages]);
 
-  const sendMessage = async () => {
-    if (!newMessage.trim()) return;
-    try {
-      await apiClient<any>(apiUrl(`/api/community/conversations/${id}/messages`), {
-        method: 'POST',
-        body: JSON.stringify({ body: newMessage.trim() }),
-      });
-      setNewMessage('');
-    } catch { /* silent */ }
-  };
+  useEffect(() => {
+    const last = messages[messages.length - 1];
+    if (last && last.sender_id !== currentUserId) {
+      void apiClient(apiUrl(`/api/chat/messages/${last.id}/read`), { method: 'POST', body: '{}' });
+      sendRead(last.id);
+    }
+  }, [messages, currentUserId, sendRead]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-  };
+  async function send() {
+    if (!draft.trim()) return;
+    await apiClient(apiUrl(`/api/chat/channels/${id}/messages`), {
+      method: 'POST',
+      body: JSON.stringify({ content: draft.trim(), replyToId }),
+    });
+    setDraft('');
+    setReplyToId(null);
+    sendTyping(false);
+  }
 
-  if (loading) return <div className="p-4"><LoadingSkeleton rows={2} /></div>;
-  if (!conversation) return <div className="p-4"><EmptyState title={t('conversacionNoEncontrada')} /></div>;
-
-  const currentUserId = (session?.user as any)?.id;
-
-  return (
-    <div className="flex flex-col space-y-4">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.push('/portal/mensajes')}>
-          <ArrowLeft className="size-5" />
-        </Button>
-        <h1 className="font-heading text-xl font-bold">{conversation.title || t('conversacion')}</h1>
+  const thread = loading ? (
+    <LoadingSkeleton rows={3} />
+  ) : !channel ? (
+    <EmptyState title={t('conversacionNoEncontrada')} />
+  ) : (
+    <div className="flex min-h-0 flex-1">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="border-b px-4 py-3">
+          <h2 className="font-heading font-semibold">{channel.name}</h2>
+          <p className="text-xs text-muted-foreground">{channel.type === 'direct' ? t('directo') : t('grupal')}</p>
+        </div>
+        <div ref={scrollRef} className="flex flex-1 flex-col gap-3 overflow-y-auto p-4">
+          <MessageThread
+            messages={messages}
+            currentUserId={currentUserId}
+            emptyLabel={t('sinMensajes')}
+            onReply={setReplyToId}
+          />
+        </div>
+        {typingUser && <p className="px-4 text-xs text-muted-foreground">{t('escribiendo')}</p>}
+        <div className="border-t p-3">
+          <ComposeBox
+            value={draft}
+            placeholder={t('escribeMensaje')}
+            replyToId={replyToId}
+            onChange={setDraft}
+            onSend={() => void send()}
+            onTyping={sendTyping}
+            onCancelReply={() => setReplyToId(null)}
+          />
+        </div>
       </div>
-      <Card className="flex-1">
-        <CardContent className="p-0">
-          <div ref={scrollRef} className="flex h-[60vh] flex-col gap-3 overflow-y-auto p-4">
-            {messages.map((msg: any) => {
-              const isOwn = msg.sender_id === currentUserId;
-              return (
-                <div key={msg.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[75%] rounded-2xl px-4 py-2 text-sm ${isOwn ? 'rounded-br-md bg-primary text-primary-foreground' : 'rounded-bl-md bg-muted'}`}>
-                    <p>{msg.body}</p>
-                    <p className={`mt-1 text-[10px] ${isOwn ? 'text-primary-foreground/60' : 'text-muted-foreground'}`}>
-                      {new Date(msg.created_at).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-            {messages.length === 0 && (
-              <div className="flex flex-1 items-center justify-center">
-                <p className="text-sm text-muted-foreground">{t('sinMensajes')}</p>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-      <div className="flex gap-2">
-        <Input value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyDown={handleKeyDown} placeholder={t('escribeMensaje')} className="flex-1" />
-        <Button onClick={sendMessage} disabled={!newMessage.trim()}><Send className="size-4" /></Button>
-      </div>
+      {channel.type === 'group' && (
+        <MemberList members={members} onlineIds={onlineIds} title={t('miembros')} />
+      )}
     </div>
   );
+
+  return <ChatWorkspace selectedId={id}>{thread}</ChatWorkspace>;
 }

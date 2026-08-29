@@ -620,13 +620,19 @@
       "directo": "Directo",
       "grupal": "Grupal",
       "crear": "Crear",
-      "participante": "Participante"
+      "participante": "Participante",
+      "tema": "Tema (opcional)",
+      "eligeCanal": "Elige un canal o crea uno nuevo"
     },
     "chat": {
       "conversacionNoEncontrada": "Conversación no encontrada",
       "conversacion": "Conversación",
       "sinMensajes": "Sin mensajes. ¡Empieza la conversación!",
-      "escribeMensaje": "Escribe un mensaje..."
+      "escribeMensaje": "Escribe un mensaje...",
+      "directo": "Directo",
+      "grupal": "Grupal",
+      "escribiendo": "Alguien está escribiendo…",
+      "miembros": "Miembros"
     },
     "actividades": {
       "titulo": "Actividades",
