@@ -257,7 +257,25 @@
       "asistencia": "Attendance",
       "fondos": "Funds",
       "automatizacion": "Automation",
+      "agentIdentities": "Agent identities",
       "exportaciones": "Exports"
+    },
+    "agentIdentities": {
+      "title": "Agent identities",
+      "subtitle": "Principal, scopes, and own credential. No send actions.",
+      "name": "Name",
+      "id": "ID",
+      "scopes": "Scopes",
+      "credential": "Credential",
+      "viewCard": "View card",
+      "empty": "No agent identities in this tenant.",
+      "back": "Back to identities",
+      "noScopes": "No scopes (deny-by-default).",
+      "recentAudit": "Recent audit",
+      "when": "When",
+      "tool": "Tool",
+      "result": "Result",
+      "noAudit": "No audit events."
     },
     "contracts": {
       "noDisponibles": "No contracts available.",

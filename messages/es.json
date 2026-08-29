@@ -257,7 +257,25 @@
       "asistencia": "Asistencia",
       "fondos": "Fondos",
       "automatizacion": "Automatización",
+      "agentIdentities": "Identidades de agente",
       "exportaciones": "Exportaciones"
+    },
+    "agentIdentities": {
+      "title": "Identidades de agente",
+      "subtitle": "Principal, alcances y credencial propia. Sin envío.",
+      "name": "Nombre",
+      "id": "ID",
+      "scopes": "Alcances",
+      "credential": "Credencial",
+      "viewCard": "Ver ficha",
+      "empty": "No hay identidades de agente en este tenant.",
+      "back": "Volver a identidades",
+      "noScopes": "Sin alcances (deny-by-default).",
+      "recentAudit": "Auditoría reciente",
+      "when": "Fecha",
+      "tool": "Herramienta",
+      "result": "Resultado",
+      "noAudit": "Sin eventos de auditoría."
     },
     "contracts": {
       "noDisponibles": "No hay contratos disponibles.",

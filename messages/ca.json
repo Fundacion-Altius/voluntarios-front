@@ -238,7 +238,25 @@
       "asistencia": "Assistència",
       "fondos": "Fons",
       "automatizacion": "Automatització",
+      "agentIdentities": "Identitats d'agent",
       "exportaciones": "Exportacions"
+    },
+    "agentIdentities": {
+      "title": "Identitats d'agent",
+      "subtitle": "Principal, abasts i credencial pròpia. Sense enviament.",
+      "name": "Nom",
+      "id": "ID",
+      "scopes": "Abasts",
+      "credential": "Credencial",
+      "viewCard": "Veure fitxa",
+      "empty": "No hi ha identitats d'agent en aquest tenant.",
+      "back": "Tornar a identitats",
+      "noScopes": "Sense abasts (deny-by-default).",
+      "recentAudit": "Auditoria recent",
+      "when": "Data",
+      "tool": "Eina",
+      "result": "Resultat",
+      "noAudit": "Sense esdeveniments d'auditoria."
     },
     "contracts": {
       "noDisponibles": "No hi ha contractes disponibles.",
