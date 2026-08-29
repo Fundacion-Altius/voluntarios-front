@@ -239,7 +239,27 @@
       "fondos": "Fons",
       "automatizacion": "Automatització",
       "agentIdentities": "Identitats d'agent",
+      "hitl": "Cua HITL",
       "exportaciones": "Exportacions"
+    },
+    "hitl": {
+      "title": "Cua HITL",
+      "subtitle": "Sense allow no hi ha efecte de costat. Allow, deny o edit.",
+      "action": "Acció",
+      "diff": "Diff",
+      "scopes": "Abasts",
+      "plane": "Pla",
+      "allow": "Allow",
+      "deny": "Deny",
+      "edit": "Edit",
+      "empty": "No hi ha propostes pendents en aquest tenant.",
+      "kpiSubmitted": "Sortides enviades",
+      "kpiUnsigned": "Sense signatura humana",
+      "kpiPending": "Pendents",
+      "editTitle": "Editar proposta",
+      "saveEdit": "Desar (continua pendent)",
+      "cancel": "Cancel·lar",
+      "actionFailed": "No s'ha pogut aplicar l'acció HITL."
     },
     "agentIdentities": {
       "title": "Identitats d'agent",

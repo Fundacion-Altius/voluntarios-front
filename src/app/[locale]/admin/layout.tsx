@@ -19,7 +19,7 @@ import {
   SidebarProvider,
 } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/ui/topbar';
-import { LayoutDashboard, Users, FileText, ClipboardList, BarChart3, UserCheck, CalendarCheck, Trophy, Scan, Newspaper, BookOpen, ClipboardCheck, Coins, Bot, Download, Fingerprint } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, ClipboardList, BarChart3, UserCheck, CalendarCheck, Trophy, Scan, Newspaper, BookOpen, ClipboardCheck, Coins, Bot, Download, Fingerprint, ShieldCheck } from 'lucide-react';
 
 export default function AdminLayout({
   children,
@@ -87,6 +87,7 @@ export default function AdminLayout({
     { href: '/admin/fondos', label: t('fondos'), icon: Coins },
     { href: '/admin/automatizacion', label: tAutomation('navLabel'), icon: Bot },
     { href: '/admin/agent-identities', label: t('agentIdentities'), icon: Fingerprint },
+    { href: '/admin/hitl', label: t('hitl'), icon: ShieldCheck },
     { href: '/admin/exportaciones', label: t('exportaciones'), icon: Download },
     { href: '/admin/scanner', label: t('scanner'), icon: Scan },
     { href: '/admin/ranking', label: t('ranking'), icon: Trophy },

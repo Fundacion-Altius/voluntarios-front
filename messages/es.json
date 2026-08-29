@@ -258,7 +258,27 @@
       "fondos": "Fondos",
       "automatizacion": "Automatización",
       "agentIdentities": "Identidades de agente",
+      "hitl": "Cola HITL",
       "exportaciones": "Exportaciones"
+    },
+    "hitl": {
+      "title": "Cola HITL",
+      "subtitle": "Sin allow no hay efecto de lado. Allow, deny o edit.",
+      "action": "Acción",
+      "diff": "Diff",
+      "scopes": "Alcances",
+      "plane": "Plano",
+      "allow": "Allow",
+      "deny": "Deny",
+      "edit": "Edit",
+      "empty": "No hay propuestas pendientes en este tenant.",
+      "kpiSubmitted": "Salidas enviadas",
+      "kpiUnsigned": "Sin firma humana",
+      "kpiPending": "Pendientes",
+      "editTitle": "Editar propuesta",
+      "saveEdit": "Guardar (sigue pendiente)",
+      "cancel": "Cancelar",
+      "actionFailed": "No se pudo aplicar la acción HITL."
     },
     "agentIdentities": {
       "title": "Identidades de agente",

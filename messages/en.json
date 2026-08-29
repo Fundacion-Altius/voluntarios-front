@@ -258,7 +258,27 @@
       "fondos": "Funds",
       "automatizacion": "Automation",
       "agentIdentities": "Agent identities",
+      "hitl": "HITL queue",
       "exportaciones": "Exports"
+    },
+    "hitl": {
+      "title": "HITL queue",
+      "subtitle": "No side-effect without allow. Allow, deny, or edit.",
+      "action": "Action",
+      "diff": "Diff",
+      "scopes": "Scopes",
+      "plane": "Plane",
+      "allow": "Allow",
+      "deny": "Deny",
+      "edit": "Edit",
+      "empty": "No pending proposals in this tenant.",
+      "kpiSubmitted": "Submitted outputs",
+      "kpiUnsigned": "Without human sign-off",
+      "kpiPending": "Pending",
+      "editTitle": "Edit proposal",
+      "saveEdit": "Save (still pending)",
+      "cancel": "Cancel",
+      "actionFailed": "Could not apply the HITL action."
     },
     "agentIdentities": {
       "title": "Agent identities",
