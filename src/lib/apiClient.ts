@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { getApiBaseUrl } from '@/lib/apiUrl';
 
 export class ApiError extends Error {
   status: number;
@@ -30,8 +31,7 @@ export async function apiClient<T>(url: string, options?: RequestInit): Promise<
 }
 
 export function apiUrl(path: string): string {
-  const base = process.env.NEXT_PUBLIC_API_URL || '';
-  return `${base}${path}`;
+  return `${getApiBaseUrl()}${path}`;
 }
 
 export function useApi<T>(fetcher: () => Promise<Result<T>>, deps: unknown[] = []) {
