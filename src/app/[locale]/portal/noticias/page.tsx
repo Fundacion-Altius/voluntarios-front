@@ -27,7 +27,14 @@ export default function NoticiasPage() {
   useEffect(() => {
     setLoading(true); setError(null);
     apiClient<{ data: BlogPost[]; totalPages?: number }>(apiUrl(`/api/blog/posts?page=${page}&pageSize=10`))
-      .then((data) => { setPosts(data.data || []); setTotalPages(data.totalPages || 1); })
+      .then((result) => {
+        if (result.success) {
+          setPosts(result.data.data || []);
+          setTotalPages(result.data.totalPages || 1);
+        } else {
+          setError(result.error);
+        }
+      })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, [page, session]);

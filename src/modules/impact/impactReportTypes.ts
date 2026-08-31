@@ -3,6 +3,8 @@
  * Frontend types that mirror the backend impact report domain
  */
 
+import type { ImpactKpi } from './types';
+
 // ============================================================================
 // Report Types and Status
 // ============================================================================

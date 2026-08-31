@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import PageHeader from '@/components/portal/PageHeader';
 import { LoadingSkeleton, ErrorState, EmptyState } from '@/components/portal/StateViews';
-import { apiClient, apiUrl } from '@/lib/apiClient';
+import { apiClient, apiUrl, type Result } from '@/lib/apiClient';
 
 type CalendarEntry = {
   activityTypeId: string;
@@ -58,19 +58,23 @@ export default function ActividadesPortalPage() {
 
   const showSuccess = (msg: string) => { setSuccessMsg(msg); setTimeout(() => setSuccessMsg(''), 3000); };
 
+  const unwrap = <T,>(result: Result<T>, fallback: T): T =>
+    result.success ? result.data : fallback;
+
   const fetchAll = useCallback(async () => {
     const thisFetchId = ++fetchIdRef.current;
     setLoading(true); setError(null);
     try {
-      const [calendar, myBookings, myWaitlist] = await Promise.all([
+      const [calendarResult, bookingsResult, waitlistResult] = await Promise.all([
         apiClient<CalendarEntry[]>(apiUrl('/api/activities/upcoming')),
-        apiClient<MyBooking[]>(apiUrl('/api/activities/my-bookings')).catch(() => [] as MyBooking[]),
-        apiClient<MyWaitlistEntry[]>(apiUrl('/api/activities/my-waitlist')).catch(() => [] as MyWaitlistEntry[]),
+        apiClient<MyBooking[]>(apiUrl('/api/activities/my-bookings')),
+        apiClient<MyWaitlistEntry[]>(apiUrl('/api/activities/my-waitlist')),
       ]);
       if (thisFetchId === fetchIdRef.current) {
-        setSessions(calendar);
-        setBookings(myBookings);
-        setWaitlist(myWaitlist);
+        if (!calendarResult.success) throw new Error(calendarResult.error);
+        setSessions(calendarResult.data);
+        setBookings(unwrap(bookingsResult, []));
+        setWaitlist(unwrap(waitlistResult, []));
       }
     } catch (err: any) {
       if (thisFetchId === fetchIdRef.current) setError(err.message);
@@ -94,10 +98,11 @@ export default function ActividadesPortalPage() {
     setPendingAction(triple(entry));
     setError(null);
     try {
-      await apiClient(apiUrl(`/api/activities/${entry.activityTypeId}/book`), {
+      const result = await apiClient(apiUrl(`/api/activities/${entry.activityTypeId}/book`), {
         method: 'POST',
         body: JSON.stringify({ date: entry.date, shift: entry.shift }),
       });
+      if (!result.success) throw new Error(result.error);
       showSuccess(t('reservaConfirmada'));
       await fetchAll();
     } catch (err: any) { setError(err.message); }
@@ -108,10 +113,11 @@ export default function ActividadesPortalPage() {
     setPendingAction(triple(entry));
     setError(null);
     try {
-      await apiClient(apiUrl(`/api/activities/${entry.activityTypeId}/waitlist`), {
+      const result = await apiClient(apiUrl(`/api/activities/${entry.activityTypeId}/waitlist`), {
         method: 'POST',
         body: JSON.stringify({ date: entry.date, shift: entry.shift }),
       });
+      if (!result.success) throw new Error(result.error);
       showSuccess(t('waitlistJoined'));
       await fetchAll();
     } catch (err: any) { setError(err.message); }
@@ -123,7 +129,8 @@ export default function ActividadesPortalPage() {
     setPendingAction(booking.id);
     setError(null);
     try {
-      await apiClient(apiUrl(`/api/activities/bookings/${booking.id}/cancel`), { method: 'POST' });
+      const result = await apiClient(apiUrl(`/api/activities/bookings/${booking.id}/cancel`), { method: 'POST' });
+      if (!result.success) throw new Error(result.error);
       showSuccess(t('reservaCancelada'));
       await fetchAll();
     } catch (err: any) { setError(err.message); }
@@ -134,7 +141,8 @@ export default function ActividadesPortalPage() {
     setPendingAction(entry.id);
     setError(null);
     try {
-      await apiClient(apiUrl(`/api/activities/offers/${entry.id}/${action}`), { method: 'POST' });
+      const result = await apiClient(apiUrl(`/api/activities/offers/${entry.id}/${action}`), { method: 'POST' });
+      if (!result.success) throw new Error(result.error);
       showSuccess(action === 'accept' ? t('reservaConfirmada') : t('ofertaRechazada'));
       await fetchAll();
     } catch (err: any) { setError(err.message); }

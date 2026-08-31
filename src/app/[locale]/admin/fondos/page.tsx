@@ -63,7 +63,10 @@ export default function FondosPage() {
     if (sectorFilter) params.set('sector', sectorFilter);
 
     apiClient<FundOpportunity[]>(apiUrl(`/api/fund-opportunities?${params.toString()}`))
-      .then(setOpportunities)
+      .then((result) => {
+        if (result.success) setOpportunities(result.data);
+        else setError(result.error);
+      })
       .catch((e: any) => setError(e.message))
       .finally(() => setIsLoading(false));
   }, [isAuthenticated, search, typeFilter, sectorFilter]);

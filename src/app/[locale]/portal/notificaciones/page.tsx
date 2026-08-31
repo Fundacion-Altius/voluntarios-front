@@ -25,8 +25,11 @@ export default function NotificacionesPage() {
   const fetchNotifications = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const data = await apiClient<{ data: NotificationItem[]; total: number; page: number; limit: number }>(apiUrl(`/api/notifications?page=${page}&limit=20`));
-      if (mountedRef.current) setPageData(data);
+      const result = await apiClient<{ data: NotificationItem[]; total: number; page: number; limit: number }>(apiUrl(`/api/notifications?page=${page}&limit=20`));
+      if (mountedRef.current) {
+        if (result.success) setPageData(result.data);
+        else setError(result.error);
+      }
     } catch (e: unknown) {
       if (mountedRef.current) setError(e instanceof Error ? e.message : t('errorCargar'));
     } finally {

@@ -26,10 +26,10 @@ export function CreateChannelModal({ onCreated }: Props) {
     setQuery(q);
     if (q.length < 2) { setResults([]); return; }
     try {
-      const data = await apiClient<{ data: Array<{ id: string; name?: string; email?: string }> }>(
+      const result = await apiClient<{ data: Array<{ id: string; name?: string; email?: string }> }>(
         apiUrl(`/api/users/search?q=${encodeURIComponent(q)}`),
       );
-      setResults(data.data || []);
+      setResults(result.success ? (result.data.data || []) : []);
     } catch { setResults([]); }
   }
 
@@ -38,12 +38,13 @@ export function CreateChannelModal({ onCreated }: Props) {
       mode === 'direct'
         ? { type: 'direct', otherUserId: selected[0]?.id }
         : { type: 'group', name: name.trim(), topic: topic.trim() || null, memberIds: selected.map((u) => u.id) };
-    const channel = await apiClient<{ id: string }>(apiUrl('/api/chat/channels'), {
+    const channelResult = await apiClient<{ id: string }>(apiUrl('/api/chat/channels'), {
       method: 'POST',
       body: JSON.stringify(body),
     });
+    if (!channelResult.success) return;
     setOpen(false);
-    onCreated(channel.id);
+    onCreated(channelResult.data.id);
   }
 
   return (

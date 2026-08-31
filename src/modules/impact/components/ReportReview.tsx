@@ -394,7 +394,7 @@ export function ReportReview({
           )}
           
           {success && (
-            <Alert variant="success" className="mb-4">
+            <Alert className="mb-4">
               <AlertTitle>{t('success')}</AlertTitle>
               <AlertDescription>{success}</AlertDescription>
             </Alert>

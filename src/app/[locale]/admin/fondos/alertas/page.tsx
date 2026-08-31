@@ -49,7 +49,9 @@ export default function FondosAlertasPage() {
       apiClient<AlertConfig | null>(apiUrl('/api/fund-opportunities/alerts/config')),
       apiClient<any[]>(apiUrl('/api/fund-opportunities/alerts/pending')),
     ])
-      .then(([cfg, pending]) => {
+      .then(([cfgResult, pendingResult]) => {
+        const cfg = cfgResult.success ? cfgResult.data : null;
+        const pending = pendingResult.success ? pendingResult.data : [];
         setConfig(cfg);
         setPendingAlerts(pending);
         if (cfg) {

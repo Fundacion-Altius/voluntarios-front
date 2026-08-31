@@ -58,7 +58,10 @@ export default function FondoDetallePage() {
     setIsLoading(true);
     setError(null);
     apiClient<FundOpportunity>(apiUrl(`/api/fund-opportunities/${id}`))
-      .then(setOpportunity)
+      .then((result) => {
+        if (result.success) setOpportunity(result.data);
+        else setError(result.error);
+      })
       .catch((e: any) => setError(e.message))
       .finally(() => setIsLoading(false));
   }, [isAuthenticated, id]);

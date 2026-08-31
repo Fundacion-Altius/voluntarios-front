@@ -57,7 +57,7 @@ export function GrantStatsWidget({
   const upcomingDeadlines = grants
     .filter(g => g.deadline)
     .filter(g => {
-      const deadline = new Date(g.deadline);
+      const deadline = new Date(g.deadline!);
       const now = new Date();
       const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
       return deadline >= now && deadline <= thirtyDaysFromNow;
@@ -79,7 +79,7 @@ export function GrantStatsWidget({
           <div className="text-2xl font-bold">{totalGrants}</div>
           <p className="text-xs text-muted-foreground">
             {totalGrants > 0 
-              ? `${grants.filter(g => g.status === 'active' || g.status === 'applied').length} en proceso`
+              ? `${grants.filter((g) => g.status === 'applied' || g.status === 'approved').length} en proceso`
               : 'No hay subvenciones'}
           </p>
         </CardContent>

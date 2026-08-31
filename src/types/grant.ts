@@ -163,13 +163,3 @@ export const TYPE_LABELS: Record<GrantType, string> = {
   private: "Privada",
   EU: "UE",
 };
-
-// Valid status transitions
-export const VALID_STATUS_TRANSITIONS: Record<GrantStatus, GrantStatus[]> = {
-  identified: ["applied"],
-  applied: ["approved", "rejected"],
-  approved: ["received"],
-  rejected: [],
-  received: ["justified"],
-  justified: [],
-};

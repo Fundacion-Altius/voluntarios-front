@@ -24,7 +24,10 @@ export function ChatWorkspace({ selectedId, children }: Props) {
 
   const load = useCallback(() => {
     apiClient<{ data: ChannelListItem[] }>(apiUrl('/api/chat/channels'))
-      .then((d) => setChannels(d.data || []))
+      .then((result) => {
+        if (result.success) setChannels(result.data.data || []);
+        else setError(result.error);
+      })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);

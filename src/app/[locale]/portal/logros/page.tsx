@@ -19,7 +19,11 @@ export default function LogrosPage() {
   useEffect(() => {
     const thisFetchId = ++fetchIdRef.current;
     apiClient<any[]>(apiUrl('/api/gamification/badges'))
-      .then((data) => { if (thisFetchId === fetchIdRef.current) setBadges(data); })
+      .then((result) => {
+        if (thisFetchId !== fetchIdRef.current) return;
+        if (result.success) setBadges(result.data);
+        else setError(result.error);
+      })
       .catch((e) => { if (thisFetchId === fetchIdRef.current) setError(e.message); })
       .finally(() => { if (thisFetchId === fetchIdRef.current) setLoading(false); });
   }, [session]);

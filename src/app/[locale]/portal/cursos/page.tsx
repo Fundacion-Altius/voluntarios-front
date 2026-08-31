@@ -19,7 +19,14 @@ export default function CursosPage() {
 
   useEffect(() => {
     apiClient<any>(apiUrl('/api/courses?status=published'))
-      .then((data) => setCourses(data?.data ?? data))
+      .then((result) => {
+        if (result.success) {
+          const payload = result.data as { data?: any[] } | any[];
+          setCourses(Array.isArray(payload) ? payload : (payload.data ?? []));
+        } else {
+          setError(result.error);
+        }
+      })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, [session]);

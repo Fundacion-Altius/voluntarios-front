@@ -66,8 +66,12 @@ export default function CandidatosPage() {
     setBulkResult(null);
     try {
       const result = await bulkImport(file);
-      setBulkResult(result);
-      showSuccess(`${t('importacionCompletada')}: ${result.successCount} ${t('candidatosImportados')}`);
+      if (result.success && result.data) {
+        setBulkResult(result.data);
+        showSuccess(`${t('importacionCompletada')}: ${result.data.successCount} ${t('candidatosImportados')}`);
+      } else if (!result.success) {
+        showSuccess(result.error);
+      }
     } catch (err: any) {
       showSuccess(err.message);
     }

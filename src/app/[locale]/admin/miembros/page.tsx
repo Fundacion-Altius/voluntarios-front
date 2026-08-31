@@ -246,7 +246,7 @@ export default function MiembrosPage() {
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium">{t('nivel')}</label>
-                  <Select value={newTier} onValueChange={setNewTier}>
+                  <Select value={newTier} onValueChange={(value) => setNewTier(value as 'basic' | 'premium' | 'founder')}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -259,7 +259,7 @@ export default function MiembrosPage() {
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium">{t('estado')}</label>
-                  <Select value={newStatus} onValueChange={setNewStatus}>
+                  <Select value={newStatus} onValueChange={(value) => setNewStatus(value as 'active' | 'lapsed' | 'churned')}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -374,10 +374,9 @@ export default function MiembrosPage() {
           <Select
             value={filterOptions.status || ''}
             onValueChange={handleStatusFilterChange}
-            placeholder={t('filtrarEstado')}
           >
             <SelectTrigger className="w-full">
-              <SelectValue />
+              <SelectValue placeholder={t('filtrarEstado')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="active">{t('activo')}</SelectItem>
@@ -390,10 +389,9 @@ export default function MiembrosPage() {
           <Select
             value={filterOptions.tier || ''}
             onValueChange={handleTierFilterChange}
-            placeholder={t('filtrarNivel')}
           >
             <SelectTrigger className="w-full">
-              <SelectValue />
+              <SelectValue placeholder={t('filtrarNivel')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="basic">{t('basico')}</SelectItem>

@@ -9,7 +9,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { Search, Paperclip, X, CheckCircle, FileText, Image, Certificate, ChartBar, Users } from 'lucide-react';
+import { Search, Paperclip, X, CheckCircle, FileText, Image, Award, ChartBar, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,7 +26,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 const EVIDENCE_TYPE_CONFIG: Record<EvidenceType, { icon: React.ReactNode; color: string; label: string }> = {
   document: { icon: <FileText className="h-4 w-4" />, color: 'bg-blue-100 text-blue-800', label: 'Document' },
   image: { icon: <Image className="h-4 w-4" />, color: 'bg-purple-100 text-purple-800', label: 'Image' },
-  certificate: { icon: <Certificate className="h-4 w-4" />, color: 'bg-green-100 text-green-800', label: 'Certificate' },
+  certificate: { icon: <Award className="h-4 w-4" />, color: 'bg-green-100 text-green-800', label: 'Certificate' },
   survey_result: { icon: <ChartBar className="h-4 w-4" />, color: 'bg-orange-100 text-orange-800', label: 'Survey Result' },
   contract_summary: { icon: <FileText className="h-4 w-4" />, color: 'bg-red-100 text-red-800', label: 'Contract Summary' },
   member_statistics: { icon: <Users className="h-4 w-4" />, color: 'bg-pink-100 text-pink-800', label: 'Member Statistics' },

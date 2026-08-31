@@ -51,7 +51,10 @@ export default function FondosCalendarioPage() {
     const to = `${toDate.getFullYear()}-${String(toDate.getMonth() + 1).padStart(2, '0')}-${String(toDate.getDate()).padStart(2, '0')}`;
 
     apiClient<CalendarEvent[]>(apiUrl(`/api/fund-opportunities/calendar?from=${from}&to=${to}`))
-      .then(setEvents)
+      .then((result) => {
+        if (result.success) setEvents(result.data);
+        else setError(result.error);
+      })
       .catch((e: any) => setError(e.message))
       .finally(() => setIsLoading(false));
   }, [isAuthenticated]);

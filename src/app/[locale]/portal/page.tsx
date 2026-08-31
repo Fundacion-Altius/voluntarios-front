@@ -47,28 +47,38 @@ export default function PortalPage() {
 
   useEffect(() => {
     apiClient<Profile>(apiUrl('/api/gamification/profile'))
-      .then(setProfile)
+      .then((result) => {
+        if (result.success) setProfile(result.data);
+        else setProfileError(result.error);
+      })
       .catch((e) => setProfileError(e.message))
       .finally(() => setProfileLoading(false));
   }, []);
 
   useEffect(() => {
-    apiClient<Booking[]>(apiUrl('/api/activities/upcoming'))
-      .then(setBookings)
+    apiClient<Booking[]>(apiUrl('/api/activities/my-bookings'))
+      .then((result) => {
+        if (result.success) setBookings(result.data);
+        else setBookingsError(result.error);
+      })
       .catch((e) => setBookingsError(e.message))
       .finally(() => setBookingsLoading(false));
   }, []);
 
   useEffect(() => {
     apiClient<{ data: any[] }>(apiUrl('/api/blog/posts?page=1&pageSize=5'))
-      .then((d) => setRecentPosts(d.data || []))
+      .then((result) => {
+        if (result.success) setRecentPosts(result.data.data || []);
+      })
       .catch(() => {})
       .finally(() => setPostsLoading(false));
   }, []);
 
   useEffect(() => {
     apiClient<any[]>(apiUrl('/api/courses/my-enrollments'))
-      .then(setMyCourses)
+      .then((result) => {
+        if (result.success) setMyCourses(result.data);
+      })
       .catch(() => {})
       .finally(() => setCoursesLoading(false));
   }, []);

@@ -24,7 +24,10 @@ export default function ProyectosPage() {
 
   useEffect(() => {
     apiClient<{ data: any[] }>(apiUrl('/api/community/projects'))
-      .then((d) => setProjects(d.data || []))
+      .then((result) => {
+        if (result.success) setProjects(result.data.data || []);
+        else setError(result.error);
+      })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, [session]);

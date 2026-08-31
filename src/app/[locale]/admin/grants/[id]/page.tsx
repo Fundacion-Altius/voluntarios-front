@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, use } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/app/auth/useAuth';
@@ -21,6 +21,7 @@ export default function GrantDetailPage({ params }: { params: Promise<{ id: stri
   const tCommon = useTranslations('common');
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const userId = (user as { id?: string } | null)?.id;
   
   const [grant, setGrant] = useState<Grant | null>(null);
   const [documents, setDocuments] = useState<GrantDocument[]>([]);
@@ -38,8 +39,7 @@ export default function GrantDetailPage({ params }: { params: Promise<{ id: stri
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const resolvedParams = useState(params).value;
-  const grantId = resolvedParams?.id || '';
+  const { id: grantId } = use(params);
 
   // Fetch grant details
   const fetchGrant = useCallback(async () => {
@@ -123,7 +123,7 @@ export default function GrantDetailPage({ params }: { params: Promise<{ id: stri
       setUploadError(null);
       setUploadSuccess(null);
       
-      const response = await grantDocumentApi.upload(grantId, file, documentType, user?.id);
+      const response = await grantDocumentApi.upload(grantId, file, documentType, userId);
       
       if (response.success && response.data) {
         setUploadSuccess(t('uploadSuccess'));
@@ -139,7 +139,7 @@ export default function GrantDetailPage({ params }: { params: Promise<{ id: stri
     } finally {
       setUploading(false);
     }
-  }, [file, grantId, documentType, user?.id, t, tCommon, fetchDocuments, fetchJustificationStatus]);
+  }, [file, grantId, documentType, userId, t, tCommon, fetchDocuments, fetchJustificationStatus]);
 
   // Handle status update
   const handleStatusUpdate = useCallback(async (newStatus: GrantStatus) => {
@@ -391,7 +391,7 @@ export default function GrantDetailPage({ params }: { params: Promise<{ id: stri
 
       {/* Success message */}
       {uploadSuccess && (
-        <Alert variant="success">
+        <Alert>
           <AlertDescription>{uploadSuccess}</AlertDescription>
         </Alert>
       )}

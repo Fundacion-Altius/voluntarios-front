@@ -45,7 +45,7 @@ export default function ChannelPage() {
 
   const reloadMessages = useCallback(async () => {
     const page = await apiClient<{ data: ChatMessage[] }>(apiUrl(`/api/chat/channels/${id}/messages?limit=50`));
-    setMessages(page.data || []);
+    if (page.success) setMessages(page.data.data || []);
   }, [id]);
 
   useEffect(() => {
@@ -55,10 +55,10 @@ export default function ChannelPage() {
       apiClient<{ data: Array<{ user_id: string; role: string }> }>(apiUrl(`/api/chat/channels/${id}/members`)),
       apiClient<{ data: ChatMessage[] }>(apiUrl(`/api/chat/channels/${id}/messages?limit=50`)),
     ])
-      .then(([c, m, msgs]) => {
-        setChannel(c);
-        setMembers(m.data || []);
-        setMessages(msgs.data || []);
+      .then(([channelResult, membersResult, msgsResult]) => {
+        if (channelResult.success) setChannel(channelResult.data);
+        if (membersResult.success) setMembers(membersResult.data.data || []);
+        if (msgsResult.success) setMessages(msgsResult.data.data || []);
       })
       .catch(() => setChannel(null))
       .finally(() => setLoading(false));
