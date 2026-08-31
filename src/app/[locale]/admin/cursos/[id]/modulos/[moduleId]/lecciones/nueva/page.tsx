@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import { useParams } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/app/auth/useAuth';
 import { Button } from '@/components/ui/button';
@@ -25,22 +24,16 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
-
-import { getApiBaseUrl } from '@/lib/apiUrl';
-
-const API_URL = getApiBaseUrl();
+import { apiClient, apiUrl } from '@/lib/apiClient';
 
 export default function NuevaLeccionPage() {
   const t = useTranslations('admin.leccion');
   const tc = useTranslations('common');
   const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const { data: session } = useSession();
   const router = useRouter();
   const params = useParams();
   const courseId = params.id as string;
   const moduleId = params.moduleId as string;
-
-  const token = (session as any)?.authToken;
 
   const [title, setTitle] = useState('');
   const [contentType, setContentType] = useState('text');
@@ -54,26 +47,17 @@ export default function NuevaLeccionPage() {
     setError('');
     setSubmitting(true);
     try {
-      const res = await fetch(
-        `${API_URL}/api/courses/${courseId}/modules/${moduleId}/lessons`,
+      const result = await apiClient.post(
+        apiUrl(`/api/courses/${courseId}/modules/${moduleId}/lessons`),
         {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            title,
-            content_type: contentType,
-            content,
-            content_url: contentUrl,
-          }),
-        }
+          title,
+          content_type: contentType,
+          content,
+          content_url: contentUrl || undefined,
+        },
       );
-      if (!res.ok) {
-        const errData = await res.json().catch(() => null);
-        setError(errData?.message || t('errorCrear'));
+      if (!result.success) {
+        setError(result.error || t('errorCrear'));
         return;
       }
       router.push(`/admin/cursos/${courseId}`);

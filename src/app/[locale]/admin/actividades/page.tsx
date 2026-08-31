@@ -46,7 +46,7 @@ export default function ActividadesPage() {
   const [isRecurring, setIsRecurring] = useState('true');
   const [fixedDate, setFixedDate] = useState('');
   const [daysOfWeek, setDaysOfWeek] = useState<number[]>([]);
-  const [shifts, setShifts] = useState<string[]>(['']);
+  const [shifts, setShifts] = useState<string[]>(['Mañana']);
 
   const [exceptionsOpenFor, setExceptionsOpenFor] = useState<ActivityType | null>(null);
   const [exceptions, setExceptions] = useState<ActivityException[]>([]);
@@ -59,7 +59,7 @@ export default function ActividadesPage() {
 
   const resetForm = () => {
     setName(''); setDescription(''); setCategory('general'); setLocalidad(''); setCapacity('15');
-    setIsRecurring('true'); setFixedDate(''); setDaysOfWeek([]); setShifts(['']); setFormError('');
+    setIsRecurring('true'); setFixedDate(''); setDaysOfWeek([]); setShifts(['Mañana']); setFormError('');
   };
 
   const openExceptions = async (act: ActivityType) => {
@@ -101,14 +101,25 @@ export default function ActividadesPage() {
         default_capacity: Number(capacity), is_recurring: isRecurring,
       };
       if (isRecurring === 'true') {
+        const shiftNames = shifts.filter((s) => s.trim());
+        if (daysOfWeek.length === 0 || shiftNames.length === 0) {
+          setFormError(t('recurrenciaRequerida'));
+          setSubmitting(false);
+          return;
+        }
         payload.recurrence_config = {
-          daysOfWeek, shifts: shifts.filter((s) => s.trim()).map((s) => ({ name: s, startTime: '09:00', endTime: '14:00' })),
+          daysOfWeek, shifts: shiftNames.map((s) => ({ name: s, startTime: '09:00', endTime: '14:00' })),
         };
       } else {
         if (!fixedDate) { setFormError(t('fechaFijaRequerida')); setSubmitting(false); return; }
         payload.fixed_date = fixedDate;
       }
-      await createType(payload);
+      const created = await createType(payload);
+      if (!created.success) {
+        setFormError(created.error || tCommon('error'));
+        setSubmitting(false);
+        return;
+      }
       setCreateOpen(false);
       resetForm();
       showSuccess(t('tipoCreado'));

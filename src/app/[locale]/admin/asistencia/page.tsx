@@ -19,6 +19,7 @@ export default function AsistenciaPage() {
   const {
     entries, attendance, volunteers, isLoadingEntries, isLoadingAttendance, error,
     fetchAttendance, addWalkIn,
+    checkIn, checkOut,
   } = useAttendance();
 
   const [selected, setSelected] = useState<CalendarEntry | null>(null);
@@ -35,7 +36,11 @@ export default function AsistenciaPage() {
     if (!selected || !volunteerId) return;
     setWalkInError(''); setSubmitting(true);
     try {
-      await addWalkIn(selected.activityTypeId, selected.date, selected.shift, volunteerId);
+      const result = await addWalkIn(selected.activityTypeId, selected.date, selected.shift, volunteerId);
+      if (!result.success) {
+        setWalkInError(result.error);
+        return;
+      }
       setVolunteerId('');
     } catch (err: any) { setWalkInError(err.message); }
     finally { setSubmitting(false); }
@@ -115,11 +120,14 @@ export default function AsistenciaPage() {
                         <th className="py-2">{t('estado')}</th>
                         <th className="py-2">{t('checkIn')}</th>
                         <th className="py-2">{t('checkOut')}</th>
+                        <th className="py-2" />
                       </tr>
                     </thead>
                     <tbody>
                       {attendance.map((row) => {
                         const name = volunteers.find((v) => v.user_id === row.user_id)?.display_name || row.user_id.slice(0, 8);
+                        const checkedIn = Boolean(row.checkIn?.check_in_at);
+                        const checkedOut = Boolean(row.checkIn?.check_out_at);
                         return (
                           <tr key={row.id} className="border-t">
                             <td className="py-2">{name}</td>
@@ -136,6 +144,40 @@ export default function AsistenciaPage() {
                             </td>
                             <td className="py-2 text-xs text-muted-foreground">
                               {row.checkIn?.check_out_at ? new Date(row.checkIn.check_out_at).toLocaleTimeString() : '—'}
+                            </td>
+                            <td className="py-2">
+                              {row.status === 'confirmed' && selected && !checkedIn && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={submitting}
+                                  onClick={async () => {
+                                    setSubmitting(true); setWalkInError('');
+                                    try {
+                                      await checkIn(row.id, selected.activityTypeId, selected.date, selected.shift);
+                                    } catch (err: any) { setWalkInError(err.message); }
+                                    finally { setSubmitting(false); }
+                                  }}
+                                >
+                                  {t('hacerCheckIn')}
+                                </Button>
+                              )}
+                              {row.status === 'confirmed' && selected && checkedIn && !checkedOut && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={submitting}
+                                  onClick={async () => {
+                                    setSubmitting(true); setWalkInError('');
+                                    try {
+                                      await checkOut(row.id, selected.activityTypeId, selected.date, selected.shift);
+                                    } catch (err: any) { setWalkInError(err.message); }
+                                    finally { setSubmitting(false); }
+                                  }}
+                                >
+                                  {t('hacerCheckOut')}
+                                </Button>
+                              )}
                             </td>
                           </tr>
                         );

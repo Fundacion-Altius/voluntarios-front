@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CheckCircle, ArrowLeft, ArrowRight, Check, X } from 'lucide-react';
+import { apiClient, apiUrl } from '@/lib/apiClient';
+import { LessonRichText } from '@/components/portal/LessonRichText';
 
 function QuizComponent({ quiz, lessonTitle }: { quiz: any; lessonTitle: string }) {
   const t = useTranslations('portal.leccion');
@@ -87,14 +89,9 @@ function QuizComponent({ quiz, lessonTitle }: { quiz: any; lessonTitle: string }
   );
 }
 
-import { getApiBaseUrl } from '@/lib/apiUrl';
-
-const API_URL = getApiBaseUrl();
-
 async function fetchCourseData(
   courseId: string,
   lessonId: string,
-  fetchHeaders: Record<string, string>,
   t: ReturnType<typeof useTranslations>,
   fetchIdRef: React.MutableRefObject<number>,
   setCourse: (data: any) => void,
@@ -103,28 +100,21 @@ async function fetchCourseData(
 ): Promise<void> {
   if (!courseId || !lessonId) return;
   const thisFetchId = ++fetchIdRef.current;
-  fetch(`${API_URL}/api/courses/${courseId}`, {
-    headers: fetchHeaders,
-    credentials: 'include',
-  })
-    .then((res) => {
-      if (!res.ok) {
-        setError(t('errorCargar'));
-        return null;
-      }
-      return res.json();
-    })
-    .then((data) => {
-      if (thisFetchId === fetchIdRef.current && data !== null) {
-        setCourse(data.success ? data.data : data);
-      }
-    })
-    .catch((err) => {
-      if (thisFetchId === fetchIdRef.current) setError(err.message);
-    })
-    .finally(() => {
-      if (thisFetchId === fetchIdRef.current) setLoading(false);
-    });
+  try {
+    const result = await apiClient<any>(apiUrl(`/api/courses/${courseId}`));
+    if (thisFetchId !== fetchIdRef.current) return;
+    if (!result.success) {
+      setError(result.error || t('errorCargar'));
+      setLoading(false);
+      return;
+    }
+    const data = result.data;
+    setCourse(data?.success ? data.data : data);
+  } catch (err: any) {
+    if (thisFetchId === fetchIdRef.current) setError(err.message);
+  } finally {
+    if (thisFetchId === fetchIdRef.current) setLoading(false);
+  }
 }
 
 function renderErrorOrLoading(
@@ -171,12 +161,7 @@ function renderLessonContent(lesson: any, t: ReturnType<typeof useTranslations>)
   }
 
   if (lesson.content_type === 'text' && lesson.content) {
-    return (
-      <div
-        className="prose max-w-none"
-        dangerouslySetInnerHTML={{ __html: lesson.content }}
-      />
-    );
+    return <LessonRichText content={lesson.content} />;
   }
 
   if (lesson.content_type === 'quiz') {
@@ -236,16 +221,9 @@ export default function LeccionPage() {
   const [completing, setCompleting] = useState(false);
   const fetchIdRef = useRef(0);
 
-  const fetchHeaders = (): Record<string, string> => {
-    const token = (session as any)?.authToken;
-    const h: Record<string, string> = {};
-    if (token) h['Authorization'] = `Bearer ${token}`;
-    return h;
-  };
-
   useEffect(() => {
     if (!courseId || !lessonId) return;
-    fetchCourseData(courseId, lessonId, fetchHeaders(), t, fetchIdRef, setCourse, setError, setLoading);
+    fetchCourseData(courseId, lessonId, t, fetchIdRef, setCourse, setError, setLoading);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId, lessonId, session]);
 
@@ -259,13 +237,11 @@ export default function LeccionPage() {
     setCompleting(true);
     setError('');
     try {
-      const res = await fetch(`${API_URL}/api/courses/${courseId}/lessons/${lessonId}/complete`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...fetchHeaders() },
-        credentials: 'include',
-      });
-      if (!res.ok) {
-        setError(t('errorCompletar'));
+      const result = await apiClient.post(
+        apiUrl(`/api/courses/${courseId}/lessons/${lessonId}/complete`),
+      );
+      if (!result.success) {
+        setError(result.error || t('errorCompletar'));
         return;
       }
       setCourse((prev: any) => {

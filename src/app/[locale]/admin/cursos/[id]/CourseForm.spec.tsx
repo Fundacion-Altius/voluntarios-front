@@ -31,6 +31,8 @@ describe("CourseForm", () => {
     onLevelChange: jest.fn(),
     onCategoryChange: jest.fn(),
     onImageUrlChange: jest.fn(),
+    status: 'draft',
+    onStatusChange: jest.fn(),
     onSubmit: jest.fn(),
     t: mockT,
     tc: mockTC,

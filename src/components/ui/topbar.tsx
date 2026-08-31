@@ -18,7 +18,9 @@ export function TopBar({ hamburger }: TopBarProps) {
     <nav className="flex items-center justify-between border-b bg-muted/50 px-6 py-3">
       <div className="flex items-center gap-3">
         {hamburger}
-        <span className="font-semibold">Fundación Altius - Panel de Administración</span>
+        <span className="max-w-[40vw] truncate font-semibold sm:max-w-none">
+          Fundación Altius - Panel de Administración
+        </span>
       </div>
       <div className="flex items-center gap-4">
         <NotificationBell />

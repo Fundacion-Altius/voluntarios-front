@@ -30,6 +30,8 @@ const booking = (overrides: Record<string, unknown> = {}) => ({
   date: '2030-06-10T09:00:00.000Z',
   shift: 'mañana',
   status: 'confirmed',
+  qrPayload: 'klaruk-booking-booking-1',
+  qrDataUrl: 'data:image/png;base64,aaa',
   ...overrides,
 });
 
@@ -48,6 +50,9 @@ const waitlistEntry = (overrides: Record<string, unknown> = {}) => ({
 
 function setupFetch(responses: Array<{ match: (url: string, init?: RequestInit) => boolean; body: unknown }>) {
   const fetchMock = jest.fn((url: string, init?: RequestInit) => {
+    if (String(url).includes('/api/csrf-token')) {
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ csrfToken: 'test-csrf' }) } as Response);
+    }
     const r = responses.find((x) => x.match(String(url), init));
     if (!r) return Promise.reject(new Error(`unmatched fetch: ${url} ${init?.method ?? 'GET'}`));
     return Promise.resolve({
@@ -60,6 +65,9 @@ function setupFetch(responses: Array<{ match: (url: string, init?: RequestInit) 
 }
 
 describe('portal actividades page', () => {
+  beforeEach(() => {
+    document.cookie = 'csrf_token=test-csrf';
+  });
   afterEach(() => { jest.resetAllMocks(); });
 
   it('renders the derived calendar with name, date, shift, locality and capacity', async () => {
@@ -123,6 +131,7 @@ describe('portal actividades page', () => {
     render(<TestProviders><ActividadesPortalPage /></TestProviders>);
 
     expect(await screen.findByText('Mis reservas')).toBeInTheDocument();
+    expect(screen.getByAltText('Código QR de asistencia')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
 
     expect(await screen.findByText('¿Cancelar reserva?')).toBeInTheDocument();

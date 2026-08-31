@@ -13,7 +13,7 @@ function AuthTokenSetter({ children }: { children: ReactNode }) {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   return (
-    <SessionProvider>
+    <SessionProvider refetchOnWindowFocus={false}>
       <AuthTokenSetter>{children}</AuthTokenSetter>
     </SessionProvider>
   );

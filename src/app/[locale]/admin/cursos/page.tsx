@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from '@/i18n/navigation';
-import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/app/auth/useAuth';
 import { Button } from '@/components/ui/button';
@@ -29,9 +28,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Plus, Edit2, Trash2, BookOpen } from 'lucide-react';
 
-import { getApiBaseUrl } from '@/lib/apiUrl';
-
-const API_URL = getApiBaseUrl();
+import { apiClient, apiUrl } from '@/lib/apiClient';
 
 interface Course {
   id: number;
@@ -64,7 +61,6 @@ export default function CursosPage() {
   const t = useTranslations('admin.cursos');
   const tc = useTranslations('common');
   const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const { data: session } = useSession();
   const router = useRouter();
 
   const [courses, setCourses] = useState<Course[]>([]);
@@ -73,23 +69,17 @@ export default function CursosPage() {
   const [deleteTarget, setDeleteTarget] = useState<Course | null>(null);
   const [successMsg, setSuccessMsg] = useState('');
 
-  const token = (session as any)?.authToken;
-
   const fetchCourses = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_URL}/api/courses?status=all`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        credentials: 'include',
-      });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        setError(errorData.message || errorData.error || t('errorCargar'));
+      const result = await apiClient<{ data?: Course[] } | Course[]>(apiUrl('/api/courses?status=all'));
+      if (!result.success) {
+        setError(result.error || t('errorCargar'));
         return;
       }
-      const data = await res.json();
-      setCourses(Array.isArray(data) ? data : []);
+      const payload = result.data;
+      setCourses(Array.isArray(payload) ? payload : (payload.data ?? []));
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -100,19 +90,14 @@ export default function CursosPage() {
   useEffect(() => {
     if (isAuthenticated) fetchCourses();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, token]);
+  }, [isAuthenticated]);
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
     try {
-      const res = await fetch(`${API_URL}/api/courses/${deleteTarget.id}`, {
-        method: 'DELETE',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        credentials: 'include',
-      });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        setError(errorData.message || errorData.error || t('errorEliminar'));
+      const result = await apiClient.delete(apiUrl(`/api/courses/${deleteTarget.id}`));
+      if (!result.success) {
+        setError(result.error || t('errorEliminar'));
         return;
       }
       setDeleteTarget(null);
@@ -201,7 +186,11 @@ export default function CursosPage() {
                   <TableCell className="text-muted-foreground">{course.category}</TableCell>
                   <TableCell>
                     <Badge variant={statusBadge[course.status] || 'outline'}>
-                      {course.status}
+                      {course.status === 'published'
+                        ? t('publicado')
+                        : course.status === 'archived'
+                          ? t('archivado')
+                          : t('borrador')}
                     </Badge>
                   </TableCell>
                   <TableCell>{course.lesson_count}</TableCell>

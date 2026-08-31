@@ -4,8 +4,6 @@ import { useSession } from 'next-auth/react';
 import { getCSRFToken } from '@/app/lib/csrf';
 import { getApiBaseUrl } from '@/lib/apiUrl';
 
-const API_URL = getApiBaseUrl();
-
 export interface CalendarEntry {
   activityTypeId: string;
   name: string;
@@ -67,7 +65,7 @@ export function useAttendance() {
     const thisFetchId = ++fetchIdRef.current;
     setIsLoadingEntries(true);
     try {
-      const res = await fetch(`${API_URL}/api/activities/sessions`, { headers: authHeaders(), credentials: 'include' });
+      const res = await fetch(`${getApiBaseUrl()}/api/activities/sessions`, { headers: authHeaders(), credentials: 'include' });
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         setError(errorData.message || errorData.error || 'Error al cargar calendario');
@@ -89,7 +87,7 @@ export function useAttendance() {
 
   const fetchVolunteers = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/api/users`, { headers: authHeaders(), credentials: 'include' });
+      const res = await fetch(`${getApiBaseUrl()}/api/users`, { headers: authHeaders(), credentials: 'include' });
       if (!res.ok) return;
       const users = (await jsonBody(res)) ?? [];
       if (Array.isArray(users)) setVolunteers(users);
@@ -103,7 +101,7 @@ export function useAttendance() {
     setIsLoadingAttendance(true);
     setError(null);
     try {
-      const url = `${API_URL}/api/activities/entries/${activityTypeId}/${encodeURIComponent(date)}/${encodeURIComponent(shift)}/attendance`;
+      const url = `${getApiBaseUrl()}/api/activities/entries/${activityTypeId}/${encodeURIComponent(date)}/${encodeURIComponent(shift)}/attendance`;
       const res = await fetch(url, { headers: authHeaders(), credentials: 'include' });
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
@@ -121,7 +119,7 @@ export function useAttendance() {
   }, [session]);
 
   const addWalkIn = async (activityTypeId: string, date: string, shift: string, volunteerId: string) => {
-    const url = `${API_URL}/api/activities/entries/${activityTypeId}/${encodeURIComponent(date)}/${encodeURIComponent(shift)}/add-volunteer`;
+    const url = `${getApiBaseUrl()}/api/activities/entries/${activityTypeId}/${encodeURIComponent(date)}/${encodeURIComponent(shift)}/add-volunteer`;
     const res = await fetch(url, {
       method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, credentials: 'include',
       body: JSON.stringify({ volunteerId }),
@@ -134,5 +132,27 @@ export function useAttendance() {
     return { success: true as const };
   };
 
-  return { entries, attendance, volunteers, isLoadingEntries, isLoadingAttendance, error, fetchAttendance, addWalkIn };
+  const postBookingAction = async (path: string) => {
+    const res = await fetch(`${getApiBaseUrl()}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({ error: 'Error' }));
+      throw new Error(e.error || 'Error');
+    }
+  };
+
+  const checkIn = async (bookingId: string, activityTypeId: string, date: string, shift: string) => {
+    await postBookingAction(`/api/activities/sessions/${activityTypeId}/check-in/${bookingId}`);
+    await fetchAttendance(activityTypeId, date, shift);
+  };
+
+  const checkOut = async (bookingId: string, activityTypeId: string, date: string, shift: string) => {
+    await postBookingAction(`/api/activities/sessions/${activityTypeId}/check-out/${bookingId}`);
+    await fetchAttendance(activityTypeId, date, shift);
+  };
+
+  return { entries, attendance, volunteers, isLoadingEntries, isLoadingAttendance, error, fetchAttendance, addWalkIn, checkIn, checkOut };
 }

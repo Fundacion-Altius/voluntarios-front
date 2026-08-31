@@ -17,6 +17,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
+  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/ui/topbar';
 import { LayoutDashboard, Users, FileText, ClipboardList, BarChart3, UserCheck, CalendarCheck, Trophy, Scan, Newspaper, BookOpen, ClipboardCheck, Coins, Bot, Download, MessageCircle } from 'lucide-react';
@@ -125,7 +126,7 @@ export default function AdminLayout({
               </SidebarContent>
             </Sidebar>
             <div className="flex flex-1 flex-col overflow-hidden">
-              <TopBar />
+              <TopBar hamburger={<SidebarTrigger className="md:hidden" />} />
               <main className="flex-1 overflow-y-auto p-6">{children}</main>
             </div>
           </div>

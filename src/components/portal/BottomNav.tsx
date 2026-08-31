@@ -4,8 +4,7 @@ import { usePathname } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { Home, BookOpen, Calendar, Users, MessageSquare, MoreHorizontal } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from '@/components/ui/sheet';
 import Sidebar from './Sidebar';
 
 interface BottomNavProps {
@@ -56,8 +55,16 @@ export default function BottomNav({ userName, userEmail, onLogout }: BottomNavPr
               {t('mas')}
             </button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="p-0">
-            <Sidebar userName={userName} userEmail={userEmail} onLogout={onLogout} />
+          <SheetContent side="left" className="w-60 p-0 sm:max-w-sm">
+            <SheetHeader className="sr-only">
+              <SheetTitle>{t('miPortal')}</SheetTitle>
+            </SheetHeader>
+            <Sidebar
+              userName={userName}
+              userEmail={userEmail}
+              onLogout={onLogout}
+              onNavigate={() => setOpen(false)}
+            />
           </SheetContent>
         </Sheet>
       </nav>

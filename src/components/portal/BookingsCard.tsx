@@ -3,12 +3,16 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTranslations } from 'next-intl';
+import { BookingQr } from '@/components/portal/BookingQr';
 
 export interface Booking {
   id: string;
   date: string;
   shift: string;
   status: string;
+  name?: string;
+  qrPayload?: string;
+  qrDataUrl?: string;
 }
 
 interface BookingsCardProps {
@@ -27,12 +31,18 @@ export function BookingsCard({ bookings }: BookingsCardProps) {
         ) : (
           <div className="space-y-2">
             {bookings.map((b) => (
-              <div key={b.id} className="flex items-center justify-between rounded-md border p-3 text-sm">
+              <div key={b.id} className="flex items-start justify-between gap-3 rounded-md border p-3 text-sm">
                 <div>
-                  <p className="font-medium">{b.shift || t('turno')}</p>
-                  <p className="text-xs text-muted-foreground">{new Date(b.date).toLocaleDateString()}</p>
+                  <p className="font-medium">{b.name || b.shift || t('turno')}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(b.date).toLocaleDateString()}
+                    {b.shift ? ` · ${b.shift}` : ''}
+                  </p>
                 </div>
-                <Badge variant="outline">{b.status}</Badge>
+                <div className="flex flex-col items-end gap-2">
+                  <Badge variant="outline">{b.status}</Badge>
+                  <BookingQr dataUrl={b.qrDataUrl} payload={b.qrPayload} label={t('codigoQr')} hint={t('mostrarQr')} />
+                </div>
               </div>
             ))}
           </div>

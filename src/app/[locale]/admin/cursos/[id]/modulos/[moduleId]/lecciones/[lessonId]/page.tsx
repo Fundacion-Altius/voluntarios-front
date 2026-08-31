@@ -3,16 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import { useParams } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/app/auth/useAuth';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getApiBaseUrl } from '@/lib/apiUrl';
 import { LessonForm } from './LessonForm';
-
-const API_URL = getApiBaseUrl();
+import { apiClient, apiUrl } from '@/lib/apiClient';
 
 interface Lesson {
   id: number;
@@ -29,14 +26,11 @@ export default function EditarLeccionPage() {
   const t = useTranslations('admin.leccion');
   const tc = useTranslations('common');
   const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const { data: session } = useSession();
   const router = useRouter();
   const params = useParams();
   const courseId = params.id as string;
   const moduleId = params.moduleId as string;
   const lessonId = params.lessonId as string;
-
-  const token = (session as any)?.authToken;
 
   const [title, setTitle] = useState('');
   const [contentType, setContentType] = useState('text');
@@ -53,19 +47,14 @@ export default function EditarLeccionPage() {
       setIsLoading(true);
       setError('');
       try {
-        const res = await fetch(
-          `${API_URL}/api/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}`,
-          {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-            credentials: 'include',
-          }
+        const result = await apiClient<Lesson>(
+          apiUrl(`/api/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}`),
         );
-        if (!res.ok) {
-          const errorData = await res.json().catch(() => ({}));
-          setError(errorData.message || errorData.error || t('errorCargar'));
+        if (!result.success) {
+          setError(result.error || t('errorCargar'));
           return;
         }
-        const data: Lesson = await res.json();
+        const data = result.data;
         setTitle(data.title);
         setContentType(data.content_type);
         setContent(data.content || '');
@@ -77,33 +66,24 @@ export default function EditarLeccionPage() {
       }
     };
     fetchLesson();
-  }, [isAuthenticated, token, courseId, moduleId, lessonId]);
+  }, [isAuthenticated, courseId, moduleId, lessonId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSubmitting(true);
     try {
-      const res = await fetch(
-        `${API_URL}/api/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}`,
+      const result = await apiClient.put(
+        apiUrl(`/api/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}`),
         {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            title,
-            content_type: contentType,
-            content,
-            content_url: contentUrl,
-          }),
-        }
+          title,
+          content_type: contentType,
+          content,
+          content_url: contentUrl || undefined,
+        },
       );
-      if (!res.ok) {
-        const errData = await res.json().catch(() => null);
-        setError(errData?.message || t('errorActualizar'));
+      if (!result.success) {
+        setError(result.error || t('errorActualizar'));
         return;
       }
       setSuccessMsg(t('leccionActualizada'));

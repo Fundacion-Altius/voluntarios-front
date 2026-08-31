@@ -441,6 +441,7 @@
       "localidad": "Localitat",
       "fechaFija": "Data fixa",
       "fechaFijaRequerida": "Una activitat puntual requereix una data fixa",
+      "recurrenciaRequerida": "Tria almenys un dia de la setmana i un torn",
       "excepciones": "Excepcions",
       "excepcionesTitulo": "Excepcions de «{nombre}»",
       "excepcionesDesc": "Les dates d'excepció tanquen l'activitat aquell dia concret (per exemple, festius locals).",
@@ -523,7 +524,11 @@
       "descripcionPlaceholder": "Descripció del curs",
       "ejemploCategoria": "Ex: educació, logística, acompanyament",
       "crearCurso": "Crear Curs",
-      "errorCrearCurso": "Error en crear curs"
+      "errorCrearCurso": "Error en crear curs",
+      "estado": "Estat",
+      "borrador": "Esborrany",
+      "publicado": "Publicat",
+      "archivado": "Arxivat"
     },
     "leccion": {
       "editarLeccion": "Editar Lliçó",
@@ -563,6 +568,7 @@
       "pegarCodigo": "Enganxa el codi QR aquí",
       "verificar": "Verificar",
       "checkinRealizado": "Check-in realitzat",
+      "checkoutRealizado": "Check-out realitzat",
       "errorCamara": "No s'ha pogut accedir a la càmera"
     },
     "asistencia": {
@@ -584,7 +590,9 @@
       "eligeVoluntario": "Tria voluntari...",
       "anadir": "Afegir",
       "anadiendo": "Afegint...",
-      "sinReservaDesc": "Els voluntaris afegits sense reserva queden registrats com a walk-in i podran fer check-in."
+      "sinReservaDesc": "Els voluntaris afegits sense reserva queden registrats com a walk-in (amb check-in) i veuran un QR al portal per al check-out.",
+      "hacerCheckIn": "Check-in",
+      "hacerCheckOut": "Check-out"
     },
     "impact": {
       "title": "Configuració del Tauler d'Impacte",
@@ -886,6 +894,8 @@
       "misReservas": "Les meves reserves",
       "sinReservas": "No tens reserves pròximes.",
       "turno": "Torn",
+      "codigoQr": "Codi QR d'assistència",
+      "mostrarQr": "Mostra'l a l'escàner en arribar",
       "bronce": "Bronze",
       "plata": "Plata",
       "oro": "Or",
@@ -943,6 +953,8 @@
       "cancelarAviso24h": "Si cancel·les amb menys de 24 hores d'antelació, es registrarà com a inassistència. Dues inassistències consecutives impliquen una prohibició de reservar durant 7 dies.",
       "cancelarNo": "No, mantenir",
       "cancelarSi": "Sí, cancel·lar reserva",
+      "codigoQr": "Codi QR d'assistència",
+      "mostrarQr": "Mostra'l a l'escàner en arribar",
       "ofertasTitulo": "Ofertes rebudes",
       "ofertaBadge": "Oferta",
       "ofertaCaduca": "Caduca: {fecha}",
@@ -966,6 +978,8 @@
       "leccionesCompletadas": "lliçons completades",
       "inscribiendo": "Inscrivint...",
       "inscribirse": "Inscriure's",
+      "cursoCompletado": "Curs completat",
+      "descargarCertificado": "Descarregar certificat",
       "contenidoCurso": "Contingut del curs",
       "modulo": "Mòdul",
       "leccion": "Lliçó"

@@ -441,6 +441,7 @@
       "localidad": "Locality",
       "fechaFija": "Fixed date",
       "fechaFijaRequerida": "A one-off activity requires a fixed date",
+      "recurrenciaRequerida": "Pick at least one weekday and one shift",
       "excepciones": "Exceptions",
       "excepcionesTitulo": "Exceptions for “{nombre}”",
       "excepcionesDesc": "Exception dates close the activity on that specific day (e.g. local holidays).",
@@ -523,7 +524,11 @@
       "descripcionPlaceholder": "Course description",
       "ejemploCategoria": "E.g. education, logistics, companionship",
       "crearCurso": "Create Course",
-      "errorCrearCurso": "Error creating course"
+      "errorCrearCurso": "Error creating course",
+      "estado": "Status",
+      "borrador": "Draft",
+      "publicado": "Published",
+      "archivado": "Archived"
     },
     "leccion": {
       "editarLeccion": "Edit Lesson",
@@ -563,6 +568,7 @@
       "pegarCodigo": "Paste the QR code here",
       "verificar": "Verify",
       "checkinRealizado": "Check-in completed",
+      "checkoutRealizado": "Check-out completed",
       "errorCamara": "Could not access the camera"
     },
     "asistencia": {
@@ -584,7 +590,9 @@
       "eligeVoluntario": "Choose volunteer...",
       "anadir": "Add",
       "anadiendo": "Adding...",
-      "sinReservaDesc": "Volunteers added without a booking are recorded as walk-ins and can check in."
+      "sinReservaDesc": "Volunteers added without a booking are recorded as walk-ins (already checked in) and will see a QR in their portal for check-out.",
+      "hacerCheckIn": "Check-in",
+      "hacerCheckOut": "Check-out"
     },
 
       "impact": {
@@ -888,6 +896,8 @@
       "misReservas": "My bookings",
       "sinReservas": "You have no upcoming bookings.",
       "turno": "Shift",
+      "codigoQr": "Attendance QR code",
+      "mostrarQr": "Show this at the scanner when you arrive",
       "bronce": "Bronze",
       "plata": "Silver",
       "oro": "Gold",
@@ -945,6 +955,8 @@
       "cancelarAviso24h": "Cancelling less than 24 hours in advance is recorded as a no-show. Two consecutive no-shows imply a 7-day booking ban.",
       "cancelarNo": "No, keep it",
       "cancelarSi": "Yes, cancel booking",
+      "codigoQr": "Attendance QR code",
+      "mostrarQr": "Show this at the scanner when you arrive",
       "ofertasTitulo": "Offers received",
       "ofertaBadge": "Offer",
       "ofertaCaduca": "Expires: {fecha}",
@@ -968,6 +980,8 @@
       "leccionesCompletadas": "lessons completed",
       "inscribiendo": "Enrolling...",
       "inscribirse": "Enroll",
+      "cursoCompletado": "Course completed",
+      "descargarCertificado": "Download certificate",
       "contenidoCurso": "Course content",
       "modulo": "Module",
       "leccion": "Lesson"

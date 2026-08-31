@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from '@/i18n/navigation';
-import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/app/auth/useAuth';
 import { Button } from '@/components/ui/button';
@@ -24,45 +23,38 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
-
-import { getApiBaseUrl } from '@/lib/apiUrl';
-
-const API_URL = getApiBaseUrl();
+import { apiClient, apiUrl } from '@/lib/apiClient';
 
 export default function NuevoCursoPage() {
   const t = useTranslations('admin.cursos');
   const tc = useTranslations('common');
   const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const { data: session } = useSession();
   const router = useRouter();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [level, setLevel] = useState('beginner');
   const [category, setCategory] = useState('');
+  const [status, setStatus] = useState('draft');
   const [imageUrl, setImageUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-
-  const token = (session as any)?.authToken;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSubmitting(true);
     try {
-      const res = await fetch(`${API_URL}/api/courses`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        credentials: 'include',
-        body: JSON.stringify({ title, description, level, category, image_url: imageUrl }),
+      const result = await apiClient.post(apiUrl('/api/courses'), {
+        title,
+        description,
+        level,
+        category,
+        status,
+        image_url: imageUrl || undefined,
       });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => null);
-        setError(errData?.message || t('errorCrearCurso'));
+      if (!result.success) {
+        setError(result.error || t('errorCrearCurso'));
         return;
       }
       router.push('/admin/cursos');
@@ -150,6 +142,20 @@ export default function NuevoCursoPage() {
                 placeholder={t('ejemploCategoria')}
                 required
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status">{t('estado')}</Label>
+              <Select value={status} onValueChange={setStatus}>
+                <SelectTrigger className="w-full" id="status">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">{t('borrador')}</SelectItem>
+                  <SelectItem value="published">{t('publicado')}</SelectItem>
+                  <SelectItem value="archived">{t('archivado')}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

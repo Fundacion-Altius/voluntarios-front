@@ -60,6 +60,8 @@ interface CourseFormProps {
   onLevelChange: (v: string) => void;
   onCategoryChange: (v: string) => void;
   onImageUrlChange: (v: string) => void;
+  status: string;
+  onStatusChange: (v: string) => void;
   onSubmit: (e: React.FormEvent) => void;
   t: any;
   tc: any;
@@ -78,6 +80,8 @@ export function CourseForm({
   onLevelChange,
   onCategoryChange,
   onImageUrlChange,
+  status,
+  onStatusChange,
   onSubmit,
   t,
   tc,
@@ -129,6 +133,19 @@ export function CourseForm({
                 onChange={(e) => onCategoryChange(e.target.value)}
               />
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="status">{t('estado')}</Label>
+            <Select value={status} onValueChange={onStatusChange}>
+              <SelectTrigger className="w-full" id="status">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="draft">{t('borrador')}</SelectItem>
+                <SelectItem value="published">{t('publicado')}</SelectItem>
+                <SelectItem value="archived">{t('archivado')}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="imageUrl">{t('urlImagen', { ns: 'admin.blog' })}</Label>

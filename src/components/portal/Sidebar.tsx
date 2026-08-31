@@ -15,9 +15,10 @@ interface SidebarProps {
   userName?: string;
   userEmail?: string;
   onLogout: () => void;
+  onNavigate?: () => void;
 }
 
-export default function Sidebar({ userName, userEmail, onLogout }: SidebarProps) {
+export default function Sidebar({ userName, userEmail, onLogout, onNavigate }: SidebarProps) {
   const pathname = usePathname();
   const t = useTranslations('portal.nav');
 
@@ -34,7 +35,7 @@ export default function Sidebar({ userName, userEmail, onLogout }: SidebarProps)
   ];
 
   return (
-    <aside className="flex h-screen w-60 flex-col border-r bg-card">
+    <aside className="flex h-full min-h-0 w-60 flex-col border-r bg-card lg:h-screen">
       <div className="flex items-center gap-2 border-b px-5 py-4">
         <div className="flex size-8 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
           V
@@ -46,7 +47,7 @@ export default function Sidebar({ userName, userEmail, onLogout }: SidebarProps)
           const Icon = l.icon;
           const isActive = pathname === l.href || (l.href !== '/portal' && pathname.startsWith(l.href));
           return (
-            <Link key={l.href} href={l.href}>
+            <Link key={l.href} href={l.href} onClick={onNavigate}>
               <Button
                 variant={isActive ? 'secondary' : 'ghost'}
                 className="w-full justify-start gap-3 text-sm"

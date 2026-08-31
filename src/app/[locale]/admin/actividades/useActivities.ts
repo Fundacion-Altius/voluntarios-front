@@ -25,8 +25,6 @@ export interface ActivityException {
 
 import { getApiBaseUrl } from '@/lib/apiUrl';
 
-const API_URL = getApiBaseUrl();
-
 export function useActivities() {
   const { data: session } = useSession();
   const [types, setTypes] = useState<ActivityType[]>([]);
@@ -50,7 +48,7 @@ export function useActivities() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_URL}/api/activities/types`, { headers: authHeaders(), credentials: 'include' });
+      const res = await fetch(`${getApiBaseUrl()}/api/activities/types`, { headers: authHeaders(), credentials: 'include' });
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         setError(errorData.message || errorData.error || 'Error al cargar tipos de actividad');
@@ -58,7 +56,8 @@ export function useActivities() {
         return;
       }
       const data = await res.json();
-      if (thisFetchId === fetchIdRef.current) { setTypes(data.success ? data.data : data); setIsLoading(false); }
+      const list = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
+      if (thisFetchId === fetchIdRef.current) { setTypes(list); setIsLoading(false); }
     } catch (err: any) {
       if (thisFetchId === fetchIdRef.current) { setError(err.message); setIsLoading(false); }
     }
@@ -68,7 +67,7 @@ export function useActivities() {
   useEffect(() => { fetchTypes(); }, [fetchTypes]);
 
   const createType = async (data: any) => {
-    const res = await fetch(`${API_URL}/api/activities/types`, {
+    const res = await fetch(`${getApiBaseUrl()}/api/activities/types`, {
       method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, credentials: 'include',
       body: JSON.stringify(data),
     });
@@ -81,7 +80,7 @@ export function useActivities() {
   };
 
   const updateType = async (id: string, data: any) => {
-    const res = await fetch(`${API_URL}/api/activities/types/${id}`, {
+    const res = await fetch(`${getApiBaseUrl()}/api/activities/types/${id}`, {
       method: 'PUT', headers: { 'Content-Type': 'application/json', ...authHeaders() }, credentials: 'include',
       body: JSON.stringify(data),
     });
@@ -94,7 +93,7 @@ export function useActivities() {
   };
 
   const deleteType = async (id: string) => {
-    const res = await fetch(`${API_URL}/api/activities/types/${id}`, {
+    const res = await fetch(`${getApiBaseUrl()}/api/activities/types/${id}`, {
       method: 'DELETE', headers: authHeaders(), credentials: 'include',
     });
     if (!res.ok) {
@@ -106,7 +105,7 @@ export function useActivities() {
   };
 
   const fetchExceptions = async (typeId: string): Promise<ActivityException[]> => {
-    const res = await fetch(`${API_URL}/api/activities/exceptions/${typeId}`, { headers: authHeaders(), credentials: 'include' });
+    const res = await fetch(`${getApiBaseUrl()}/api/activities/exceptions/${typeId}`, { headers: authHeaders(), credentials: 'include' });
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
       console.error('Error al cargar excepciones:', errorData.error || errorData.message);
@@ -117,7 +116,7 @@ export function useActivities() {
   };
 
   const createException = async (typeId: string, data: { date: string; reason?: string }) => {
-    const res = await fetch(`${API_URL}/api/activities/exceptions/${typeId}`, {
+    const res = await fetch(`${getApiBaseUrl()}/api/activities/exceptions/${typeId}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, credentials: 'include',
       body: JSON.stringify(data),
     });
@@ -129,7 +128,7 @@ export function useActivities() {
   };
 
   const deleteException = async (id: string) => {
-    const res = await fetch(`${API_URL}/api/activities/exceptions/${id}`, {
+    const res = await fetch(`${getApiBaseUrl()}/api/activities/exceptions/${id}`, {
       method: 'DELETE', headers: authHeaders(), credentials: 'include',
     });
     if (!res.ok) {

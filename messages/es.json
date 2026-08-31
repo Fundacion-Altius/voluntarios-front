@@ -441,6 +441,7 @@
       "localidad": "Localidad",
       "fechaFija": "Fecha fija",
       "fechaFijaRequerida": "Una actividad puntual requiere una fecha fija",
+      "recurrenciaRequerida": "Elige al menos un día de la semana y un turno",
       "excepciones": "Excepciones",
       "excepcionesTitulo": "Excepciones de «{nombre}»",
       "excepcionesDesc": "Las fechas de excepción cierran la actividad ese día concreto (por ejemplo, festivos locales).",
@@ -523,7 +524,11 @@
       "descripcionPlaceholder": "Descripción del curso",
       "ejemploCategoria": "Ej: educación, logística, acompañamiento",
       "crearCurso": "Crear Curso",
-      "errorCrearCurso": "Error al crear curso"
+      "errorCrearCurso": "Error al crear curso",
+      "estado": "Estado",
+      "borrador": "Borrador",
+      "publicado": "Publicado",
+      "archivado": "Archivado"
     },
     "leccion": {
       "editarLeccion": "Editar Lección",
@@ -558,11 +563,12 @@
       "camara": "Cámara",
       "iniciarCamara": "Iniciar cámara",
       "detenerCamara": "Detener cámara",
-      "instruccion": "Escanea el código QR del voluntario con el lector de tu dispositivo.",
+      "instruccion": "Apunta la cámara al QR del portal. El código se lee solo; no hace falta pegarlo.",
       "codigoManual": "Código manual",
       "pegarCodigo": "Pega el código QR aquí",
       "verificar": "Verificar",
       "checkinRealizado": "Check-in realizado",
+      "checkoutRealizado": "Check-out realizado",
       "errorCamara": "No se pudo acceder a la cámara"
     },
     "asistencia": {
@@ -584,7 +590,9 @@
       "eligeVoluntario": "Elige voluntario...",
       "anadir": "Añadir",
       "anadiendo": "Añadiendo...",
-      "sinReservaDesc": "Los voluntarios añadidos sin reserva quedan registrados como walk-in y podrán hacer check-in."
+      "sinReservaDesc": "Los voluntarios añadidos sin reserva quedan registrados como walk-in (con check-in) y verán un QR en su portal para el check-out.",
+      "hacerCheckIn": "Check-in",
+      "hacerCheckOut": "Check-out"
     },
 
       "impact": {
@@ -888,6 +896,8 @@
       "misReservas": "Mis reservas",
       "sinReservas": "No tienes reservas próximas.",
       "turno": "Turno",
+      "codigoQr": "Código QR de asistencia",
+      "mostrarQr": "Muéstralo en el escáner al llegar",
       "bronce": "Bronce",
       "plata": "Plata",
       "oro": "Oro",
@@ -945,6 +955,8 @@
       "cancelarAviso24h": "Si cancelas con menos de 24 horas de antelación, se registrará como incomparecencia. Dos incomparecencias consecutivas implican una prohibición de reservar durante 7 días.",
       "cancelarNo": "No, mantener",
       "cancelarSi": "Sí, cancelar reserva",
+      "codigoQr": "Código QR de asistencia",
+      "mostrarQr": "Muéstralo en el escáner al llegar",
       "ofertasTitulo": "Ofertas recibidas",
       "ofertaBadge": "Oferta",
       "ofertaCaduca": "Caduca: {fecha}",
@@ -968,6 +980,8 @@
       "leccionesCompletadas": "lecciones completadas",
       "inscribiendo": "Inscribiendo...",
       "inscribirse": "Inscribirse",
+      "cursoCompletado": "Curso completado",
+      "descargarCertificado": "Descargar certificado",
       "contenidoCurso": "Contenido del curso",
       "modulo": "Módulo",
       "leccion": "Lección"

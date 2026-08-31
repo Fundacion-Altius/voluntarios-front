@@ -28,10 +28,20 @@ function renderCourseState(loading: boolean, error: string | null, course: any, 
 
 function renderEnrollSection(course: any, enrolling: boolean, error: string | null, id: string, t: any, handleEnroll: () => Promise<void>) {
   const progressPct = computeProgress(course).pct;
-  return course.enrolled ? (
+  if (!course.enrolled) {
+    return (
+      <Button onClick={handleEnroll} disabled={enrolling}>
+        {enrolling ? t('inscribiendo') : t('inscribirse')}
+      </Button>
+    );
+  }
+  return (
     <Card>
       <CardHeader><CardTitle>{t('tuProgreso')}</CardTitle></CardHeader>
       <CardContent>
+        {course.enrollment_status === 'completed' && (
+          <Badge className="mb-3 bg-green-600 text-white">{t('cursoCompletado')}</Badge>
+        )}
         <div className="flex items-center gap-4">
           <div className="flex-1">
             <div className="h-2 w-full rounded-full bg-muted">
@@ -48,8 +58,6 @@ function renderEnrollSection(course: any, enrolling: boolean, error: string | nu
         )}
       </CardContent>
     </Card>
-  ) : (
-    <Button onClick={handleEnroll} disabled={enrolling}>{enrolling ? t('inscribiendo') : t('inscribirse')}</Button>
   );
 }
 
@@ -95,7 +103,10 @@ export default function CursoDetailPage() {
   useEffect(() => {
     if (!id) return;
     apiClient<any>(apiUrl(`/api/courses/${id}`))
-      .then((data) => setCourse(data.success ? data.data : data))
+      .then((result) => {
+        if (result.success) setCourse(result.data);
+        else setError(result.error);
+      })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, [id, session]);
@@ -103,8 +114,12 @@ export default function CursoDetailPage() {
   const handleEnroll = async () => {
     setEnrolling(true); setError(null);
     try {
-      await apiClient<any>(apiUrl(`/api/courses/${id}/enroll`), { method: 'POST' });
-      setCourse((prev: any) => ({ ...prev, enrolled: true }));
+      const result = await apiClient.post(apiUrl(`/api/courses/${id}/enroll`));
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+      setCourse((prev: any) => ({ ...prev, enrolled: true, enrollment_status: 'enrolled' }));
     } catch (e: any) { setError(e.message); } finally { setEnrolling(false); }
   };
 

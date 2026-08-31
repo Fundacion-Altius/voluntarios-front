@@ -6,10 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Mail } from 'lucide-react';
-
-import { getApiBaseUrl } from '@/lib/apiUrl';
-
-const API_URL = getApiBaseUrl();
+import { apiClient, apiUrl } from '@/lib/apiClient';
 
 function RecuperarPasswordContent() {
   const t = useTranslations('recuperarPassword');
@@ -29,14 +26,12 @@ function RecuperarPasswordContent() {
 
     setSubmitting(true);
     try {
-      const res = await fetch(`${API_URL}/api/password/forgot`, {
+      const result = await apiClient(apiUrl('/api/password/forgot'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || t('errorEnviar'));
+      if (!result.success) {
+        setError(result.error || t('errorEnviar'));
         return;
       }
       setSent(true);

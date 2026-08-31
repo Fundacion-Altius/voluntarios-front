@@ -43,7 +43,7 @@ providers.push(CredentialsProvider({
         csrfToken: { label: 'CSRF Token' },
         authToken: { label: 'Auth Token' },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email) return null;
 
         if (credentials?.name && credentials?.role && credentials?.authToken) {
@@ -60,9 +60,17 @@ providers.push(CredentialsProvider({
 
         if (!credentials?.password) return null;
 
+        const forwardedHost =
+          typeof req?.headers?.host === 'string'
+            ? req.headers.host
+            : req?.headers?.['x-forwarded-host'];
+
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(forwardedHost ? { 'X-Forwarded-Host': String(forwardedHost) } : {}),
+          },
           body: JSON.stringify({ email: credentials.email, password: credentials.password }),
           credentials: 'include',
         });
@@ -133,6 +141,7 @@ const handler = NextAuth({
   session: {
     strategy: 'jwt',
   },
+  trustHost: true,
 });
 
 export { handler as GET, handler as POST };

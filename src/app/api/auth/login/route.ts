@@ -11,6 +11,7 @@ export async function POST(request: NextRequest) {
     headers: {
       'Content-Type': 'application/json',
       'X-CSRF-Token': csrfToken,
+      'X-Forwarded-Host': request.headers.get('host') || '',
     },
     body: JSON.stringify(body),
     credentials: 'include',

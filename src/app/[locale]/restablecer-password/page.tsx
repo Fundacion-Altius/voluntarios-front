@@ -8,10 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Eye, EyeOff } from 'lucide-react';
-
-import { getApiBaseUrl } from '@/lib/apiUrl';
-
-const API_URL = getApiBaseUrl();
+import { apiClient, apiUrl } from '@/lib/apiClient';
 
 function RestablecerPasswordContent() {
   const router = useRouter();
@@ -41,14 +38,12 @@ function RestablecerPasswordContent() {
 
     setSubmitting(true);
     try {
-      const res = await fetch(`${API_URL}/api/password/reset`, {
+      const result = await apiClient(apiUrl('/api/password/reset'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, password }),
       });
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || t('errorRestablecer'));
+      if (!result.success) {
+        setError(result.error || t('errorRestablecer'));
         return;
       }
       setSuccess(true);

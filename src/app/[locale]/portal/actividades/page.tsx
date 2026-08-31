@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import PageHeader from '@/components/portal/PageHeader';
 import { LoadingSkeleton, ErrorState, EmptyState } from '@/components/portal/StateViews';
 import { apiClient, apiUrl, type Result } from '@/lib/apiClient';
+import { BookingQr } from '@/components/portal/BookingQr';
 
 type CalendarEntry = {
   activityTypeId: string;
@@ -30,6 +31,8 @@ type MyBooking = {
   date: string;
   shift: string;
   status: string;
+  qrPayload?: string;
+  qrDataUrl?: string;
 };
 
 type MyWaitlistEntry = {
@@ -72,7 +75,7 @@ export default function ActividadesPortalPage() {
       ]);
       if (thisFetchId === fetchIdRef.current) {
         if (!calendarResult.success) throw new Error(calendarResult.error);
-        setSessions(calendarResult.data);
+        setSessions(calendarResult.data.filter((s) => new Date(s.date).getTime() >= Date.now()));
         setBookings(unwrap(bookingsResult, []));
         setWaitlist(unwrap(waitlistResult, []));
       }
@@ -210,21 +213,24 @@ export default function ActividadesPortalPage() {
             {bookings.map((b) => (
               <Card key={b.id}>
                 <CardContent className="pt-4">
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-sm font-medium">{b.name}</p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(b.date).toLocaleDateString()} · {b.shift}{b.localidad ? ` · ${b.localidad}` : ''}
                       </p>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setCancelTarget(b)}
-                      disabled={pendingAction === b.id}
-                    >
-                      {t('cancelar')}
-                    </Button>
+                    <div className="flex flex-col items-end gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setCancelTarget(b)}
+                        disabled={pendingAction === b.id}
+                      >
+                        {t('cancelar')}
+                      </Button>
+                      <BookingQr dataUrl={b.qrDataUrl} payload={b.qrPayload} label={t('codigoQr')} hint={t('mostrarQr')} />
+                    </div>
                   </div>
                 </CardContent>
               </Card>

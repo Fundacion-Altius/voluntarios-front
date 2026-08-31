@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getApiBaseUrl } from '@/lib/apiUrl';
+import { getAuthToken, getCSRFToken } from '@/app/lib/csrf';
 
 export class ApiError extends Error {
   status: number;
@@ -12,14 +13,42 @@ export class ApiError extends Error {
 
 export type Result<T> = { success: true; data: T } | { success: false; error: string };
 
-async function request<T>(url: string, options?: RequestInit): Promise<Result<T>> {
+function isSafeMethod(method?: string): boolean {
+  const m = (method || 'GET').toUpperCase();
+  return m === 'GET' || m === 'HEAD' || m === 'OPTIONS';
+}
+
+async function ensureCsrfCookie(): Promise<void> {
+  if (typeof window === 'undefined' || getCSRFToken()) return;
+  await fetch(`${getApiBaseUrl()}/api/csrf-token`, { credentials: 'include' });
+}
+
+function mergeHeaders(options?: RequestInit): Headers {
   const isFormData = typeof FormData !== 'undefined' && options?.body instanceof FormData;
+  const headers = new Headers(options?.headers);
+  if (!isFormData && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
+  const csrf = getCSRFToken();
+  if (csrf && !headers.has('X-CSRF-Token')) {
+    headers.set('X-CSRF-Token', csrf);
+  }
+  const auth = getAuthToken();
+  if (auth && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${auth}`);
+  }
+  return headers;
+}
+
+async function request<T>(url: string, options?: RequestInit): Promise<Result<T>> {
+  if (!isSafeMethod(options?.method)) {
+    await ensureCsrfCookie();
+  }
+  const { headers: _ignored, ...rest } = options ?? {};
   const res = await fetch(url, {
     credentials: 'include',
-    headers: isFormData
-      ? { ...options?.headers }
-      : { 'Content-Type': 'application/json', ...options?.headers },
-    ...options,
+    ...rest,
+    headers: mergeHeaders(options),
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));

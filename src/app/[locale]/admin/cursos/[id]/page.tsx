@@ -9,12 +9,10 @@ import { useAuth } from '@/app/auth/useAuth';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft } from 'lucide-react';
-import { getApiBaseUrl } from '@/lib/apiUrl';
+import { apiClient, apiUrl } from '@/lib/apiClient';
 import { CourseForm } from './CourseForm';
 import { AddModuleDialog } from './AddModuleDialog';
 import { ModuleManagement } from './ModuleManagement';
-
-const API_URL = getApiBaseUrl();
 
 interface Lesson {
   id: number;
@@ -69,6 +67,7 @@ export default function EditarCursoPage() {
   const [level, setLevel] = useState('beginner');
   const [category, setCategory] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [status, setStatus] = useState('draft');
   const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
 
@@ -96,22 +95,19 @@ export default function EditarCursoPage() {
     setIsLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API_URL}/api/courses/${courseId}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        credentials: 'include',
-      });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        setError(errorData.message || errorData.error || t('errorCargarCurso'));
+      const result = await apiClient<Course>(apiUrl(`/api/courses/${courseId}`));
+      if (!result.success) {
+        setError(result.error || t('errorCargarCurso'));
         return;
       }
-      const data: Course = await res.json();
+      const data = result.data;
       setCourse(data);
       setTitle(data.title);
       setDescription(data.description || '');
       setLevel(data.level || 'beginner');
       setCategory(data.category || '');
       setImageUrl(data.image_url || '');
+      setStatus(data.status || 'draft');
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -129,18 +125,16 @@ export default function EditarCursoPage() {
     setError('');
     setSubmitting(true);
     try {
-      const res = await fetch(`${API_URL}/api/courses/${courseId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        credentials: 'include',
-        body: JSON.stringify({ title, description, level, category, image_url: imageUrl }),
+      const result = await apiClient.put(apiUrl(`/api/courses/${courseId}`), {
+        title,
+        description,
+        level,
+        category,
+        image_url: imageUrl || undefined,
+        status,
       });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        setError(errorData.message || errorData.error || t('errorCargarCurso'));
+      if (!result.success) {
+        setError(result.error || t('errorCargarCurso'));
         return;
       }
       showSuccess(t('cursoActualizado'));
@@ -157,22 +151,13 @@ export default function EditarCursoPage() {
     setError('');
     setModuleSubmitting(true);
     try {
-      const res = await fetch(`${API_URL}/api/courses/${courseId}/modules`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          title: newModuleTitle,
-          description: newModuleDescription,
-          order: newModuleOrder ? Number(newModuleOrder) : undefined,
-        }),
+      const result = await apiClient.post(apiUrl(`/api/courses/${courseId}/modules`), {
+        title: newModuleTitle,
+        description: newModuleDescription,
+        order: newModuleOrder ? Number(newModuleOrder) : undefined,
       });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        setError(errorData.message || errorData.error || t('errorCrearModulo'));
+      if (!result.success) {
+        setError(result.error || t('errorCrearModulo'));
         return;
       }
       setNewModuleTitle('');
@@ -191,22 +176,13 @@ export default function EditarCursoPage() {
   const handleUpdateModule = async (moduleId: number) => {
     setError('');
     try {
-      const res = await fetch(`${API_URL}/api/courses/${courseId}/modules/${moduleId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          title: editModuleTitle,
-          description: editModuleDescription,
-          order: editModuleOrder ? Number(editModuleOrder) : undefined,
-        }),
+      const result = await apiClient.put(apiUrl(`/api/courses/${courseId}/modules/${moduleId}`), {
+        title: editModuleTitle,
+        description: editModuleDescription,
+        order: editModuleOrder ? Number(editModuleOrder) : undefined,
       });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        setError(errorData.message || errorData.error || t('errorActualizarModulo'));
+      if (!result.success) {
+        setError(result.error || t('errorActualizarModulo'));
         return;
       }
       setEditingModule(null);
@@ -221,14 +197,11 @@ export default function EditarCursoPage() {
     if (!deleteModuleTarget) return;
     setError('');
     try {
-      const res = await fetch(`${API_URL}/api/courses/${courseId}/modules/${deleteModuleTarget.id}`, {
-        method: 'DELETE',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        credentials: 'include',
-      });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        setError(errorData.message || errorData.error || t('errorEliminarModulo'));
+      const result = await apiClient.delete(
+        apiUrl(`/api/courses/${courseId}/modules/${deleteModuleTarget.id}`),
+      );
+      if (!result.success) {
+        setError(result.error || t('errorEliminarModulo'));
         return;
       }
       setDeleteModuleTarget(null);
@@ -243,17 +216,13 @@ export default function EditarCursoPage() {
     if (!deleteLessonTarget) return;
     setError('');
     try {
-      const res = await fetch(
-        `${API_URL}/api/courses/${courseId}/modules/${deleteLessonTarget.moduleId}/lessons/${deleteLessonTarget.lessonId}`,
-        {
-          method: 'DELETE',
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-          credentials: 'include',
-        }
+      const result = await apiClient.delete(
+        apiUrl(
+          `/api/courses/${courseId}/modules/${deleteLessonTarget.moduleId}/lessons/${deleteLessonTarget.lessonId}`,
+        ),
       );
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        setError(errorData.message || errorData.error || t('errorEliminarLeccion'));
+      if (!result.success) {
+        setError(result.error || t('errorEliminarLeccion'));
         return;
       }
       setDeleteLessonTarget(null);
@@ -319,6 +288,8 @@ export default function EditarCursoPage() {
             onLevelChange={setLevel}
             onCategoryChange={setCategory}
             onImageUrlChange={setImageUrl}
+            status={status}
+            onStatusChange={setStatus}
             onSubmit={handleUpdateCourse}
             t={t}
             tc={tc}

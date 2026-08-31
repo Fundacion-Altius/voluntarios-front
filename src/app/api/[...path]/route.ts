@@ -8,7 +8,11 @@ async function proxy(request: NextRequest) {
   const url = `${API_URL}${path}${search}`;
 
   const headers = new Headers(request.headers);
+  const incomingHost = headers.get('host');
   headers.delete('host');
+  if (incomingHost) {
+    headers.set('x-forwarded-host', incomingHost);
+  }
 
   const body = request.method !== 'GET' && request.method !== 'HEAD'
     ? await request.text()

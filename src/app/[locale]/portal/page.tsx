@@ -24,6 +24,9 @@ interface Booking {
   date: string;
   shift: string;
   status: string;
+  name?: string;
+  qrPayload?: string;
+  qrDataUrl?: string;
 }
 
 export default function PortalPage() {

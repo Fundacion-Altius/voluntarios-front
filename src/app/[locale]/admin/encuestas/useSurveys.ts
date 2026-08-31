@@ -27,8 +27,6 @@ export interface SurveyReport {
 
 import { getApiBaseUrl } from '@/lib/apiUrl';
 
-const API_URL = getApiBaseUrl();
-
 export function useSurveys() {
   const { data: session } = useSession();
   const [surveys, setSurveys] = useState<Survey[]>([]);
@@ -46,7 +44,7 @@ export function useSurveys() {
     setError(null);
 
     try {
-      const res = await fetch(`${API_URL}/api/surveys`, {
+      const res = await fetch(`${getApiBaseUrl()}/api/surveys`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         credentials: 'include',
       });
@@ -75,7 +73,7 @@ export function useSurveys() {
 
   const createSurvey = async (survey: { nombre: string; departamento: string; minutos: number }) => {
     const token = (session as any)?.authToken;
-    const res = await fetch(`${API_URL}/api/surveys`, {
+    const res = await fetch(`${getApiBaseUrl()}/api/surveys`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -94,7 +92,7 @@ export function useSurveys() {
 
   const deleteSurvey = async (id: number) => {
     const token = (session as any)?.authToken;
-    const res = await fetch(`${API_URL}/api/surveys/${id}`, {
+    const res = await fetch(`${getApiBaseUrl()}/api/surveys/${id}`, {
       method: 'DELETE',
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       credentials: 'include',
@@ -111,7 +109,7 @@ export function useSurveys() {
     const token = (session as any)?.authToken;
     setReportLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/surveys/get-report`, {
+      const res = await fetch(`${getApiBaseUrl()}/api/surveys/get-report`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         credentials: 'include',
       });
@@ -121,8 +119,9 @@ export function useSurveys() {
         return;
       }
       const json = await res.json();
-      if (json.success && json.data?.reportJson) {
-        setReport(json.data.reportJson);
+      const reportJson = json?.data?.reportJson ?? json?.reportJson;
+      if (reportJson) {
+        setReport(reportJson);
       }
     } catch (err: any) {
       setError(err.message);

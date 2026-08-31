@@ -2,7 +2,6 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
 import { ContractProvider } from '../context';
-import { AuthProvider } from '../auth/AuthProvider';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
 import { PushNotificationSetup } from '@/components/PushNotificationSetup';
 import { ThemeProvider } from '@/lib/theme-provider';
@@ -29,11 +28,9 @@ export default async function LocaleLayout({
       <SetLang />
       <QueryProvider>
         <ThemeProvider>
-          <AuthProvider>
             <ServiceWorkerRegister />
             <PushNotificationSetup />
             <ContractProvider>{children}</ContractProvider>
-          </AuthProvider>
         </ThemeProvider>
       </QueryProvider>
     </NextIntlClientProvider>
