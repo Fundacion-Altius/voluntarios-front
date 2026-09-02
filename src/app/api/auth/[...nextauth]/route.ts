@@ -3,6 +3,8 @@ import AzureADProvider from 'next-auth/providers/azure-ad';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { oauthFromEnv } from '@/lib/oauthFromEnv';
+import { createSignedState, verifySignedState, isAuthHost, getAuthHost } from '@/lib/authState';
+import { parseTenantSlugFromHost } from '@/lib/tenantHost';
 
 declare module 'next-auth' {
   interface Session {
@@ -112,6 +114,35 @@ function getAuthOptions(): NextAuthOptions {
       async signIn() {
         return true;
       },
+      async redirect({ url, baseUrl }) {
+        const urlObj = new URL(url);
+        
+        // If this is an OAuth callback on an auth host with state parameter
+        const host = urlObj.host;
+        if (isAuthHost(host) && urlObj.pathname.includes('/api/auth/callback')) {
+          const state = urlObj.searchParams.get('state');
+          if (state) {
+            // Verify the state parameter
+            const verifiedState = verifySignedState(state);
+            if (verifiedState) {
+              // Redirect to tenant handoff endpoint
+              const handoffUrl = new URL(
+                '/api/auth/tenant-handoff',
+                baseUrl
+              );
+              handoffUrl.searchParams.set('state', state);
+              // Preserve any error parameters
+              if (urlObj.searchParams.get('error')) {
+                handoffUrl.searchParams.set('error', urlObj.searchParams.get('error') || '');
+                handoffUrl.searchParams.set('error_description', urlObj.searchParams.get('error_description') || '');
+              }
+              return handoffUrl.toString();
+            }
+          }
+        }
+        
+        return url;
+      },
       async session({ session, token }) {
         if (session.user) {
           session.user.email = token.email || '';
@@ -167,6 +198,8 @@ function getAuthOptions(): NextAuthOptions {
     jwt: {
       maxAge: 30 * 24 * 60 * 60,
     },
+    // Trust the auth host for OAuth callbacks
+    trustHost: true,
   };
 }
 

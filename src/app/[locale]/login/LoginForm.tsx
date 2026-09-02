@@ -2,7 +2,7 @@
 import { useRouter } from '@/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { Eye, EyeOff } from 'lucide-react';
@@ -11,11 +11,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Link } from '@/i18n/navigation';
 import { getCSRFTokenFromCookie } from '@/app/utils';
+import { parseTenantSlugFromHost, isAuthHost } from '@/lib/tenantHost';
+import { createSignedState, getAuthHost } from '@/lib/authState';
 
 export function LoginForm({ hasGoogle, hasAzure }: { hasGoogle: boolean; hasAzure: boolean }) {
   const [googleLoading, setGoogleLoading] = useState(false);
   const searchParams = useSearchParams();
   const error = searchParams.get('error');
+  const errorDescription = searchParams.get('error_description');
+  const tenantParam = searchParams.get('tenant');
+  const stateParam = searchParams.get('state');
   const router = useRouter();
   const { update: updateSession } = useSession();
   const t = useTranslations('login');
@@ -25,6 +30,26 @@ export function LoginForm({ hasGoogle, hasAzure }: { hasGoogle: boolean; hasAzur
   const [loading, setLoading] = useState(false);
   const [msLoading, setMsLoading] = useState(false);
   const [credError, setCredError] = useState('');
+  
+  // Detect current host and tenant
+  const [currentHost, setCurrentHost] = useState('');
+  const [tenantSlug, setTenantSlug] = useState<string | null>(null);
+  const [isOnAuthHost, setIsOnAuthHost] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const host = window.location.host;
+      setCurrentHost(host);
+      const { slug } = parseTenantSlugFromHost(host);
+      setTenantSlug(slug);
+      setIsOnAuthHost(isAuthHost(host));
+    }
+  }, []);
+
+  // If we received tenant and state params (from auth host redirect),
+  // use them for OAuth flows
+  const effectiveTenant = tenantParam || tenantSlug || null;
+  const returnTo = searchParams.get('return_to') || '/admin/dashboard';
 
   const handleStatusError = (data: any, t: any, setCredError: (msg: string) => void): string | null => {
     if (data.user?.status === 'candidate') {
@@ -171,7 +196,24 @@ export function LoginForm({ hasGoogle, hasAzure }: { hasGoogle: boolean; hasAzur
             <Button
               onClick={() => {
                 setGoogleLoading(true);
-                signIn('google', { callbackUrl: '/portal' });
+                
+                // If we have tenant context and we're not on auth host,
+                // redirect to auth host with tenant context
+                if (effectiveTenant && !isOnAuthHost) {
+                  try {
+                    const authHost = getAuthHost();
+                    const state = createSignedState(effectiveTenant, returnTo);
+                    // Redirect to auth host login with tenant context
+                    window.location.href = `${authHost}/login?tenant=${encodeURIComponent(effectiveTenant)}&return_to=${encodeURIComponent('/portal')}&state=${encodeURIComponent(state)}`;
+                  } catch (error) {
+                    console.error('Failed to create signed state:', error);
+                    // Fallback to direct signIn
+                    signIn('google', { callbackUrl: '/portal' });
+                  }
+                } else {
+                  // On auth host or no tenant context - use normal OAuth flow
+                  signIn('google', { callbackUrl: '/portal' });
+                }
               }}
               className="w-full"
               variant="outline"
@@ -198,7 +240,24 @@ export function LoginForm({ hasGoogle, hasAzure }: { hasGoogle: boolean; hasAzur
             <Button
               onClick={() => {
                 setMsLoading(true);
-                signIn('azure-ad', { callbackUrl: '/admin/dashboard' });
+                
+                // If we have tenant context and we're not on auth host,
+                // redirect to auth host with tenant context
+                if (effectiveTenant && !isOnAuthHost) {
+                  try {
+                    const authHost = getAuthHost();
+                    const state = createSignedState(effectiveTenant, returnTo);
+                    // Redirect to auth host login with tenant context
+                    window.location.href = `${authHost}/login?tenant=${encodeURIComponent(effectiveTenant)}&return_to=${encodeURIComponent(returnTo)}&state=${encodeURIComponent(state)}`;
+                  } catch (error) {
+                    console.error('Failed to create signed state:', error);
+                    // Fallback to direct signIn
+                    signIn('azure-ad', { callbackUrl: returnTo });
+                  }
+                } else {
+                  // On auth host or no tenant context - use normal OAuth flow
+                  signIn('azure-ad', { callbackUrl: returnTo });
+                }
               }}
               className="w-full"
               variant="outline"
