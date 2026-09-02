@@ -165,6 +165,32 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
     }
   }, [sendSignal]);
 
+  const attachIceLogging = useCallback((transport: Transport, label: string): void => {
+    const ice = (transport as any).iceTransport as RTCIceTransport | undefined;
+    if (!ice) {
+      console.warn(`[ICE] ${label} transport has no iceTransport to observe`);
+      return;
+    }
+    ice.addEventListener('statechange', () => {
+      console.log(`[ICE] connectionState: ${label}=${ice.state}`);
+    });
+    ice.addEventListener('gatheringstatechange', () => {
+      console.log(`[ICE] gatheringState: ${label}=${ice.gatheringState}`);
+    });
+    const handler = (transport as any)._handler as { _pc?: RTCPeerConnection } | undefined;
+    const pc = handler?._pc;
+    if (pc) {
+      pc.addEventListener('icecandidate', (event: RTCPeerConnectionIceEvent) => {
+        const candidate = event.candidate;
+        if (!candidate) return;
+        const protocol = candidate.protocol ?? 'unknown';
+        const candidateType = candidate.type ?? 'unknown';
+        const lastOctet = candidate.address?.split('.').slice(-1)[0] ?? 'x';
+        console.log(`[ICE] candidate type: ${label}=${candidateType} ${protocol} *.${lastOctet}:${candidate.port}`);
+      });
+    }
+  }, []);
+
   const handleProduced = useCallback((msg: { id?: string }): void => {
     const next = pendingProduceRef.current.shift();
     if (next && msg.id) next(msg.id);
@@ -498,6 +524,7 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
           const recvTransport = device.createRecvTransport({ id: rd.transportId as string, iceParameters: rd.iceParameters as any, iceCandidates: rd.iceCandidates as any[], dtlsParameters: rd.dtlsParameters as any, iceServers: buildIceServers(), iceTransportPolicy: 'all' as RTCIceTransportPolicy });
           connectTransport(recvTransport, 'recv');
           recvTransportRef.current = recvTransport;
+          attachIceLogging(recvTransport, 'recv');
 
           if (localStreamRef.current) {
             const audioTrack = localStreamRef.current.getAudioTracks()[0];
