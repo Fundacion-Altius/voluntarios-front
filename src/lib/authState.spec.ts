@@ -82,7 +82,8 @@ describe('authState', () => {
 
     it('should return null for tampered state', () => {
       const state = createSignedState('fundacionaltius', '/admin/dashboard', TEST_CONFIG);
-      const tamperedState = state.replace('fundacionaltius', 'homelessentrepreneur');
+      // Tamper with the state by changing the first character of the base64 payload
+      const tamperedState = 'x' + state.slice(1);
       const verified = verifySignedState(tamperedState, TEST_CONFIG);
       
       expect(verified).toBeNull();
@@ -193,7 +194,8 @@ describe('authState', () => {
 
     it('should return null for tampered token', () => {
       const token = createHandoffToken(testPayload, TEST_CONFIG);
-      const tamperedToken = token.replace('user-123', 'user-456');
+      // Tamper with the token by changing the first character of the base64 payload
+      const tamperedToken = 'x' + token.slice(1);
       const verified = verifyHandoffToken(tamperedToken, TEST_CONFIG);
       
       expect(verified).toBeNull();

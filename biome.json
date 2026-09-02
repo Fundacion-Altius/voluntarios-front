@@ -49,6 +49,9 @@
             "maxAllowedComplexity": 15
           }
         }
+      },
+      "suspicious": {
+        "noExplicitAny": "off"
       }
     }
   },

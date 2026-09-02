@@ -6,7 +6,7 @@
  * passed through the OAuth flow and cannot be tampered with.
  */
 
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import { KNOWN_TENANT_SLUGS } from './tenantHost';
 
 /**
@@ -63,7 +63,7 @@ export function createSignedState(
   }
 
   // Validate returnTo is a safe path (no protocol, no absolute URL)
-  if (!returnTo || !returnTo.startsWith('/')) {
+  if (!returnTo?.startsWith('/')) {
     throw new Error('returnTo must be a relative path starting with /');
   }
 
@@ -98,14 +98,14 @@ export function verifySignedState(
   state: string,
   config: AuthStateConfig = DEFAULT_CONFIG,
 ): VerifiedAuthState | null {
-  if (!config.secret || !state) {
+  if (!(config.secret && state)) {
     return null;
   }
 
   try {
     // Split payload and signature
     const [payloadBase64, signature] = state.split('.');
-    if (!payloadBase64 || !signature) {
+    if (!(payloadBase64 && signature)) {
       return null;
     }
 
@@ -135,7 +135,7 @@ export function verifySignedState(
     }
 
     // Verify returnTo is a safe path
-    if (!payload.returnTo || !payload.returnTo.startsWith('/')) {
+    if (!payload.returnTo?.startsWith('/')) {
       return null; // Invalid returnTo
     }
 
@@ -203,14 +203,14 @@ export function verifyHandoffToken(
   token: string,
   config: AuthStateConfig = DEFAULT_CONFIG,
 ): HandoffTokenPayload | null {
-  if (!config.secret || !token) {
+  if (!(config.secret && token)) {
     return null;
   }
 
   try {
     // Split payload and signature
     const [payloadBase64, signature] = token.split('.');
-    if (!payloadBase64 || !signature) {
+    if (!(payloadBase64 && signature)) {
       return null;
     }
 
