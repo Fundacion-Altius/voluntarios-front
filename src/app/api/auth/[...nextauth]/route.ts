@@ -198,8 +198,6 @@ function getAuthOptions(): NextAuthOptions {
     jwt: {
       maxAge: 30 * 24 * 60 * 60,
     },
-    // Trust the auth host for OAuth callbacks
-    trustHost: true,
   };
 }
 

@@ -1,8 +1,7 @@
 import createMiddleware from 'next-intl/middleware';
 import { NextRequest, NextResponse } from 'next/server';
 import { routing } from '@/i18n/routing';
-import { should404UnknownTenantHost } from '@/lib/tenantHost';
-import { isAuthHost } from '@/lib/authState';
+import { should404UnknownTenantHost, isAuthHost } from '@/lib/tenantHost';
 
 const intlMiddleware = createMiddleware(routing);
 

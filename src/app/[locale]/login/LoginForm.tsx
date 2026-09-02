@@ -11,8 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Link } from '@/i18n/navigation';
 import { getCSRFTokenFromCookie } from '@/app/utils';
-import { parseTenantSlugFromHost, isAuthHost } from '@/lib/tenantHost';
-import { createSignedState, getAuthHost } from '@/lib/authState';
+import { parseTenantSlugFromHost, isAuthHost, getAuthHost } from '@/lib/tenantHost';
 
 export function LoginForm({ hasGoogle, hasAzure }: { hasGoogle: boolean; hasAzure: boolean }) {
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -198,18 +197,10 @@ export function LoginForm({ hasGoogle, hasAzure }: { hasGoogle: boolean; hasAzur
                 setGoogleLoading(true);
                 
                 // If we have tenant context and we're not on auth host,
-                // redirect to auth host with tenant context
+                // redirect to auth host login with tenant context
                 if (effectiveTenant && !isOnAuthHost) {
-                  try {
-                    const authHost = getAuthHost();
-                    const state = createSignedState(effectiveTenant, returnTo);
-                    // Redirect to auth host login with tenant context
-                    window.location.href = `${authHost}/login?tenant=${encodeURIComponent(effectiveTenant)}&return_to=${encodeURIComponent('/portal')}&state=${encodeURIComponent(state)}`;
-                  } catch (error) {
-                    console.error('Failed to create signed state:', error);
-                    // Fallback to direct signIn
-                    signIn('google', { callbackUrl: '/portal' });
-                  }
+                  const authHost = getAuthHost();
+                  window.location.href = `${authHost}/login?tenant=${encodeURIComponent(effectiveTenant)}&return_to=${encodeURIComponent('/portal')}`;
                 } else {
                   // On auth host or no tenant context - use normal OAuth flow
                   signIn('google', { callbackUrl: '/portal' });
@@ -242,18 +233,10 @@ export function LoginForm({ hasGoogle, hasAzure }: { hasGoogle: boolean; hasAzur
                 setMsLoading(true);
                 
                 // If we have tenant context and we're not on auth host,
-                // redirect to auth host with tenant context
+                // redirect to auth host login with tenant context
                 if (effectiveTenant && !isOnAuthHost) {
-                  try {
-                    const authHost = getAuthHost();
-                    const state = createSignedState(effectiveTenant, returnTo);
-                    // Redirect to auth host login with tenant context
-                    window.location.href = `${authHost}/login?tenant=${encodeURIComponent(effectiveTenant)}&return_to=${encodeURIComponent(returnTo)}&state=${encodeURIComponent(state)}`;
-                  } catch (error) {
-                    console.error('Failed to create signed state:', error);
-                    // Fallback to direct signIn
-                    signIn('azure-ad', { callbackUrl: returnTo });
-                  }
+                  const authHost = getAuthHost();
+                  window.location.href = `${authHost}/login?tenant=${encodeURIComponent(effectiveTenant)}&return_to=${encodeURIComponent(returnTo)}`;
                 } else {
                   // On auth host or no tenant context - use normal OAuth flow
                   signIn('azure-ad', { callbackUrl: returnTo });

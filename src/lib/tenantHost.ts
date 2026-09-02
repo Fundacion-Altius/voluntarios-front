@@ -35,3 +35,15 @@ export function should404UnknownTenantHost(hostHeader: string | undefined | null
   const parsed = parseTenantSlugFromHost(hostHeader);
   return parsed.reason === 'ok' && !!parsed.slug && !KNOWN_TENANT_SLUGS.includes(parsed.slug as (typeof KNOWN_TENANT_SLUGS)[number]);
 }
+
+const AUTH_HOSTS = ['localhost', '127.0.0.1', 'auth.klaruk.com'];
+
+export function isAuthHost(host: string | null | undefined): boolean {
+  if (!host) return false;
+  const normalizedHost = host.toLowerCase().replace(/:\d+$/, '');
+  return AUTH_HOSTS.includes(normalizedHost);
+}
+
+export function getAuthHost(): string {
+  return process.env.NEXTAUTH_URL || 'http://localhost:3000';
+}
