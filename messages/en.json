@@ -62,6 +62,11 @@
   "home": {
     "acuerdoVoluntariado": "Volunteering agreement with Fundación Altius"
   },
+  "notFound": {
+    "titulo": "Page not found",
+    "descripcion": "Sorry, the page you are looking for does not exist.",
+    "volverInicio": "Back to home"
+  },
   "wizard": {
     "contract": {
       "titulo": "Volunteering agreement with Fundación Altius"
