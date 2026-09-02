@@ -2,6 +2,7 @@ import '@testing-library/jest-dom';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import LoginPage from './page';
+import { LoginForm } from './LoginForm';
 import { TestProviders } from '../../test-utils';
 
 // Mock next-auth/react
@@ -43,7 +44,7 @@ Object.defineProperty(document, 'cookie', {
   value: '',
 });
 
-const origEnv = process.env.NEXT_PUBLIC_AZURE_AD_ENABLED;
+const origAzure = process.env.AZURE_AD_CLIENT_ID;
 
 describe('LoginPage', () => {
   beforeEach(() => {
@@ -54,28 +55,29 @@ describe('LoginPage', () => {
     (require('next-auth/react') as any).signIn = jest.fn();
     mockSearchParams.delete('error');
     document.cookie = '';
-    process.env.NEXT_PUBLIC_AZURE_AD_ENABLED = origEnv;
+    process.env.AZURE_AD_CLIENT_ID = origAzure;
   });
 
   afterAll(() => {
-    process.env.NEXT_PUBLIC_AZURE_AD_ENABLED = origEnv;
+    process.env.AZURE_AD_CLIENT_ID = origAzure;
   });
 
   describe('Rendering', () => {
     it('renders sign in button when Azure AD is enabled', () => {
-      process.env.NEXT_PUBLIC_AZURE_AD_ENABLED = 'true';
+      process.env.AZURE_AD_CLIENT_ID = 'test-azure-id';
+      process.env.AZURE_AD_CLIENT_SECRET = 'test-azure-secret';
       render(<TestProviders><LoginPage /></TestProviders>);
       expect(screen.getByText('Sign in with Microsoft')).toBeInTheDocument();
     });
 
     it('does not render MS button when Azure AD is disabled', () => {
-      delete process.env.NEXT_PUBLIC_AZURE_AD_ENABLED;
-      render(<TestProviders><LoginPage /></TestProviders>);
+      render(<TestProviders><LoginForm hasGoogle={false} hasAzure={false} /></TestProviders>);
       expect(screen.queryByText('Sign in with Microsoft')).not.toBeInTheDocument();
     });
 
     it('renders the heading', () => {
-      process.env.NEXT_PUBLIC_AZURE_AD_ENABLED = 'true';
+      process.env.AZURE_AD_CLIENT_ID = 'test-azure-id';
+      process.env.AZURE_AD_CLIENT_SECRET = 'test-azure-secret';
       render(<TestProviders><LoginPage /></TestProviders>);
       const elements = screen.getAllByText('Iniciar sesión');
       expect(elements.length).toBeGreaterThanOrEqual(1);
@@ -657,7 +659,8 @@ describe('LoginPage', () => {
   describe('Microsoft Sign In', () => {
     it('calls signIn with azure-ad provider when Microsoft button is clicked', async () => {
       const user = userEvent.setup();
-      process.env.NEXT_PUBLIC_AZURE_AD_ENABLED = 'true';
+      process.env.AZURE_AD_CLIENT_ID = 'test-azure-id';
+      process.env.AZURE_AD_CLIENT_SECRET = 'test-azure-secret';
       const mockSignIn = jest.fn();
       (require('next-auth/react') as any).signIn = mockSignIn;
 
@@ -673,7 +676,8 @@ describe('LoginPage', () => {
 
     it('sets msLoading state when Microsoft button is clicked', async () => {
       const user = userEvent.setup();
-      process.env.NEXT_PUBLIC_AZURE_AD_ENABLED = 'true';
+      process.env.AZURE_AD_CLIENT_ID = 'test-azure-id';
+      process.env.AZURE_AD_CLIENT_SECRET = 'test-azure-secret';
       const mockSignIn = jest.fn().mockImplementation(() => new Promise(resolve => 
         setTimeout(() => resolve({}), 100)
       ));

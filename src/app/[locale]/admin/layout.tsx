@@ -1,68 +1,34 @@
 'use client';
 
-import { Link } from '@/i18n/navigation';
 import { useRouter } from '@/i18n/navigation';
-import { usePathname } from '@/i18n/navigation';
-import { useTranslations } from 'next-intl';
-import { useAuth } from '@/app/auth/useAuth';
+import { useAuthGate } from '@/app/auth/useAuthGate';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
-} from '@/components/ui/sidebar';
-import { TopBar } from '@/components/ui/topbar';
-import { LayoutDashboard, Users, FileText, ClipboardList, BarChart3, UserCheck, CalendarCheck, Trophy, Scan, Newspaper, BookOpen, ClipboardCheck, Coins, Bot, Download, MessageCircle } from 'lucide-react';
+import AdminSidebar from '@/components/admin/AdminSidebar';
+import AdminBottomNav from '@/components/admin/AdminBottomNav';
+import { NotificationBell } from '@/components/NotificationBell';
+import { RoutePendingProvider } from '@/components/navigation/RoutePending';
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading, user, logout, status } = useAuthGate();
   const router = useRouter();
-  const pathname = usePathname();
-  const t = useTranslations('admin.nav');
-  const tAutomation = useTranslations('admin.automation');
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push('/login');
-      return;
-    }
-    if (!isLoading && isAuthenticated && (user as any)?.role === 'general') {
+    if (status === 'loading' || status === 'unauthenticated') return;
+    if (isAuthenticated && (user as { role?: string } | null)?.role === 'general') {
       router.push('/portal');
     }
-  }, [isLoading, isAuthenticated, user, router]);
+  }, [status, isAuthenticated, user, router]);
 
-  if (isLoading) {
+  if (isLoading || status === 'unauthenticated') {
     return (
-      <main className="min-h-screen bg-background">
-        <div className="flex items-center justify-between border-b bg-muted/50 px-6 py-3">
-          <Skeleton className="h-6 w-64" />
-          <div className="flex items-center gap-4">
-            <Skeleton className="size-6 rounded-md" />
-            <Skeleton className="h-4 w-48" />
-            <Skeleton className="h-8 w-28" />
-          </div>
-        </div>
-        <div className="space-y-4 p-6">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-10 w-full" />
-          <div className="space-y-2">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
-            ))}
-          </div>
-        </div>
+      <main className="min-h-screen bg-background p-6">
+        <Skeleton className="mb-6 h-8 w-48" />
+        <Skeleton className="h-64 w-full rounded-lg" />
       </main>
     );
   }
@@ -71,72 +37,46 @@ export default function AdminLayout({
     return null;
   }
 
-  const isAdmin = (user as any)?.role === 'admin';
+  const profile = user as { name?: string; email?: string; role?: string } | null;
+  const isAdmin = profile?.role === 'admin';
 
-  const navItems = [
-    { href: '/admin/dashboard', label: t('dashboard'), icon: LayoutDashboard },
-    { href: '/admin/contratos', label: t('contratos'), icon: FileText },
-    { href: '/admin/usuarios', label: t('usuarios'), icon: Users },
-    { href: '/admin/encuestas', label: t('encuestas'), icon: ClipboardList },
-    { href: '/admin/analytics', label: t('analytics'), icon: BarChart3 },
-    { href: '/admin/candidatos', label: t('candidatos'), icon: UserCheck },
-    { href: '/admin/actividades', label: t('actividades'), icon: CalendarCheck },
-    { href: '/admin/asistencia', label: t('asistencia'), icon: ClipboardCheck },
-    { href: '/admin/blog', label: t('blog'), icon: Newspaper },
-    { href: '/admin/cursos', label: t('cursos'), icon: BookOpen },
-    { href: '/admin/onboarding', label: t('onboarding'), icon: ClipboardList },
-    { href: '/admin/fondos', label: t('fondos'), icon: Coins },
-    { href: '/admin/automatizacion', label: tAutomation('navLabel'), icon: Bot },
-    { href: '/admin/mensajeria', label: t('mensajeria'), icon: MessageCircle },
-    { href: '/admin/exportaciones', label: t('exportaciones'), icon: Download },
-    { href: '/admin/scanner', label: t('scanner'), icon: Scan },
-    { href: '/admin/ranking', label: t('ranking'), icon: Trophy },
-  ];
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-background">
+        <main className="mx-auto max-w-5xl p-4 lg:p-6">{children}</main>
+        <div className="fixed right-4 top-4 z-50">
+          <NotificationBell />
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-background">
-      {isAdmin ? (
-        <SidebarProvider>
-          <div className="flex h-screen w-full overflow-hidden">
-            <Sidebar>
-              <SidebarHeader className="p-4">
-                <span className="text-lg font-bold">{t('panelAdmin')}</span>
-              </SidebarHeader>
-              <SidebarContent>
-                <SidebarGroup>
-                  <SidebarGroupContent>
-                    <SidebarMenu>
-                      {navItems.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-                        return (
-                          <SidebarMenuItem key={item.href}>
-                            <SidebarMenuButton asChild isActive={isActive}>
-                              <Link href={item.href}>
-                                <Icon className="size-4" />
-                                <span>{item.label}</span>
-                              </Link>
-                            </SidebarMenuButton>
-                          </SidebarMenuItem>
-                        );
-                      })}
-                    </SidebarMenu>
-                  </SidebarGroupContent>
-                </SidebarGroup>
-              </SidebarContent>
-            </Sidebar>
-            <div className="flex flex-1 flex-col overflow-hidden">
-              <TopBar hamburger={<SidebarTrigger className="md:hidden" />} />
-              <main className="flex-1 overflow-y-auto p-6">{children}</main>
-            </div>
-          </div>
-        </SidebarProvider>
-      ) : (
-        <div className="flex min-h-screen flex-col">
-          <TopBar />
-          <main className="flex-1 p-6">{children}</main>
-        </div>
-      )}
+    <RoutePendingProvider>
+    <div className="flex min-h-screen bg-background">
+      <div className="hidden lg:flex">
+        <AdminSidebar
+          userName={profile?.name}
+          userEmail={profile?.email}
+          onLogout={() => logout()}
+        />
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <main className="min-w-0 flex-1 overflow-x-hidden p-4 pb-20 lg:p-6 lg:pb-6">
+          <div className="mx-auto min-w-0 max-w-[90rem]">{children}</div>
+        </main>
+      </div>
+      <div className="lg:hidden">
+        <AdminBottomNav
+          userName={profile?.name}
+          userEmail={profile?.email}
+          onLogout={() => logout()}
+        />
+      </div>
+      <div className="fixed right-4 top-4 z-50">
+        <NotificationBell />
+      </div>
     </div>
+    </RoutePendingProvider>
   );
 }

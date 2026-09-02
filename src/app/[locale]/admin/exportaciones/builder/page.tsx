@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
@@ -92,19 +93,29 @@ export default function CustomReportBuilderPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1">
               <Label htmlFor="domain">{t('domain')}</Label>
-              <select id="domain" className="border-input h-9 w-full rounded-md border bg-transparent px-3 text-sm" value={domain} onChange={(event) => setDomain(event.target.value as typeof domain)}>
-                {DOMAINS.map((item) => (
-                  <option key={item} value={item}>{item}</option>
-                ))}
-              </select>
+              <Select value={domain} onValueChange={(value) => setDomain(value as typeof domain)}>
+                <SelectTrigger id="domain" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {DOMAINS.map((item) => (
+                    <SelectItem key={item} value={item}>{item}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1">
               <Label htmlFor="format">{t('format')}</Label>
-              <select id="format" className="border-input h-9 w-full rounded-md border bg-transparent px-3 text-sm" value={format} onChange={(event) => setFormat(event.target.value as typeof format)}>
-                {FORMATS.map((item) => (
-                  <option key={item} value={item}>{item}</option>
-                ))}
-              </select>
+              <Select value={format} onValueChange={(value) => setFormat(value as typeof format)}>
+                <SelectTrigger id="format" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {FORMATS.map((item) => (
+                    <SelectItem key={item} value={item}>{item}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <FieldSelector fields={available} selected={selected} onChange={setSelected} />

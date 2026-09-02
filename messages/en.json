@@ -255,10 +255,15 @@
       "scanner": "Scanner",
       "ranking": "Ranking",
       "asistencia": "Attendance",
-      "fondos": "Funds",
+      "impacto": "Impact",
+      "fondos": "Funding",
+      "grants": "Grants",
       "automatizacion": "Automation",
-      "mensajeria": "Messaging",
-      "exportaciones": "Exports"
+      "mensajeria": "WhatsApp / Telegram",
+      "mensajes": "Team chat",
+      "exportaciones": "Exports",
+      "salir": "Sign out",
+      "mas": "More"
     },
     "contracts": {
       "noDisponibles": "No contracts available.",
@@ -282,6 +287,39 @@
       "pipelineValue": "Pipeline Value",
       "approvalRate": "Approval Rate"
     },
+    "fondos": {
+      "titulo": "Funding opportunities",
+      "calendario": "Calendar",
+      "alertas": "Alerts",
+      "buscarPlaceholder": "Search by name, funder or sector",
+      "sectorPlaceholder": "Filter by sector",
+      "sinResultados": "No calls match this filter.",
+      "desactualizada": "Data may be outdated",
+      "verDetalle": "View details",
+      "cantidad": "Amount",
+      "fechaLimite": "Deadline",
+      "sectores": "Sectors",
+      "enlaceAplicacion": "Open call",
+      "volverLista": "Back to list",
+      "calendarioTitulo": "Deadline calendar",
+      "sinEventos": "No deadlines in the coming months.",
+      "alertasTitulo": "Call alerts",
+      "configurarAlertas": "Configure alerts",
+      "sectoresInteres": "Sectors of interest",
+      "puntuacionMinima": "Minimum score",
+      "frecuencia": "Frequency",
+      "guardarConfig": "Save settings",
+      "alertasPendientes": "Pending alerts",
+      "sinAlertas": "No pending alerts. Alert config is in-memory and resets when the API restarts.",
+      "configGuardada": "Settings saved",
+      "errorGuardar": "Could not save settings",
+      "errorAplicar": "Could not start the application",
+      "solicitudCreada": "Application created. Check Grants for the pipeline.",
+      "iniciarSolicitud": "Start application",
+      "descripcion": "Description",
+      "ultimaActualizacion": "Last updated",
+      "criteriosElegibilidad": "Eligibility criteria"
+    },
     "automation": {
       "navLabel": "Automation",
       "workloadTitle": "Automated workload",
@@ -301,7 +339,7 @@
       }
     },
     "messaging": {
-      "title": "Messaging channels",
+      "title": "WhatsApp and Telegram",
       "config": "Configuration",
       "templates": "Templates",
       "composer": "Send",
@@ -475,7 +513,9 @@
       "urlImagen": "Image URL",
       "contenido": "Content",
       "extracto": "Excerpt",
-      "seleccionarCategoria": "Select category"
+      "seleccionarCategoria": "Select category",
+      "errorGuardar": "Could not save the post",
+      "errorCategoria": "A category is required"
     },
     "cursos": {
       "titulo": "LMS Courses",
@@ -868,7 +908,7 @@
       "cursos": "Courses",
       "actividades": "Activities",
       "proyectos": "Projects",
-      "mensajes": "Messages",
+      "mensajes": "Team chat",
       "noticias": "News",
       "logros": "Achievements",
       "ranking": "Ranking",
@@ -904,7 +944,7 @@
       "diamante": "Diamond"
     },
     "mensajes": {
-      "titulo": "Messages",
+      "titulo": "Team chat",
       "nuevaConversacion": "New conversation",
       "tituloLabel": "Title",
       "nombreGrupo": "Group name",
@@ -1044,6 +1084,9 @@
       "sinTareas": "No tasks",
       "sinComentarios": "No comments",
       "anadirComentario": "Add comment...",
+      "anadirMiembro": "Add member",
+      "buscarVoluntario": "Search by name or email",
+      "sinResultados": "No matching volunteers",
       "porHacer": "To do",
       "enProgreso": "In progress",
       "revision": "Review"

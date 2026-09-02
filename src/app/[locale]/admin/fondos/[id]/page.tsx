@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { apiClient, apiUrl } from '@/lib/apiClient';
 import { useParams } from 'next/navigation';
-import { Link } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { ArrowLeft, AlertTriangle, ExternalLink, FileText } from 'lucide-react';
 
 interface FundOpportunity {
@@ -46,6 +46,7 @@ const TYPE_COLORS: Record<string, string> = {
 export default function FondoDetallePage() {
   const t = useTranslations('admin.fondos');
   const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const router = useRouter();
   const params = useParams();
   const id = params.id as string;
   const [opportunity, setOpportunity] = useState<FundOpportunity | null>(null);
@@ -54,6 +55,10 @@ export default function FondoDetallePage() {
   const [applySuccess, setApplySuccess] = useState(false);
 
   useEffect(() => {
+    if (id === 'grants') {
+      router.replace('/admin/grants');
+      return;
+    }
     if (!isAuthenticated || !id) return;
     setIsLoading(true);
     setError(null);
@@ -64,7 +69,11 @@ export default function FondoDetallePage() {
       })
       .catch((e: any) => setError(e.message))
       .finally(() => setIsLoading(false));
-  }, [isAuthenticated, id]);
+  }, [isAuthenticated, id, router]);
+
+  if (id === 'grants') {
+    return null;
+  }
 
   const handleApply = async () => {
     if (!id) return;

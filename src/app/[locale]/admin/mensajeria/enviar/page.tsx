@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { apiClient, apiUrl } from '@/lib/apiClient';
 import { useTranslations } from 'next-intl';
@@ -63,18 +64,28 @@ export default function MessagingComposerPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           <Label>{t('templates')}</Label>
-          <select className="border-input h-9 rounded-md border px-3" value={templateId} onChange={(e) => setTemplateId(e.target.value)}>
-            {templates.map((tpl) => (
-              <option key={tpl.id} value={tpl.id}>
-                {tpl.name}
-              </option>
-            ))}
-          </select>
+          <Select value={templateId || undefined} onValueChange={setTemplateId} disabled={!templates.length}>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {templates.map((tpl) => (
+                <SelectItem key={tpl.id} value={tpl.id}>
+                  {tpl.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Label>{t('channel')}</Label>
-          <select className="border-input h-9 rounded-md border px-3" value={channel} onChange={(e) => setChannel(e.target.value as 'whatsapp' | 'telegram')}>
-            <option value="whatsapp">whatsapp</option>
-            <option value="telegram">telegram</option>
-          </select>
+          <Select value={channel} onValueChange={(value) => setChannel(value as 'whatsapp' | 'telegram')}>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="whatsapp">whatsapp</SelectItem>
+              <SelectItem value="telegram">telegram</SelectItem>
+            </SelectContent>
+          </Select>
           <Label>{t('recipient')}</Label>
           <Input value={to} onChange={(e) => setTo(e.target.value)} />
           <Label>{t('emailFallback')}</Label>

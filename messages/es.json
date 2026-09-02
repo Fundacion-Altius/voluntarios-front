@@ -255,10 +255,15 @@
       "scanner": "Escáner",
       "ranking": "Ranking",
       "asistencia": "Asistencia",
+      "impacto": "Impacto",
       "fondos": "Fondos",
+      "grants": "Subvenciones",
       "automatizacion": "Automatización",
-      "mensajeria": "Mensajería",
-      "exportaciones": "Exportaciones"
+      "mensajeria": "WhatsApp / Telegram",
+      "mensajes": "Chat interno",
+      "exportaciones": "Exportaciones",
+      "salir": "Salir",
+      "mas": "Más"
     },
     "contracts": {
       "noDisponibles": "No hay contratos disponibles.",
@@ -282,6 +287,39 @@
       "pipelineValue": "Valor del Pipeline",
       "approvalRate": "Tasa de Aprobación"
     },
+    "fondos": {
+      "titulo": "Oportunidades de financiación",
+      "calendario": "Calendario",
+      "alertas": "Alertas",
+      "buscarPlaceholder": "Buscar por nombre, entidad o sector",
+      "sectorPlaceholder": "Filtrar por sector",
+      "sinResultados": "No hay convocatorias que coincidan con el filtro.",
+      "desactualizada": "Datos posiblemente desactualizados",
+      "verDetalle": "Ver detalle",
+      "cantidad": "Importe",
+      "fechaLimite": "Fecha límite",
+      "sectores": "Sectores",
+      "enlaceAplicacion": "Abrir convocatoria",
+      "volverLista": "Volver al listado",
+      "calendarioTitulo": "Calendario de plazos",
+      "sinEventos": "No hay plazos en los próximos meses.",
+      "alertasTitulo": "Alertas de convocatorias",
+      "configurarAlertas": "Configurar alertas",
+      "sectoresInteres": "Sectores de interés",
+      "puntuacionMinima": "Puntuación mínima",
+      "frecuencia": "Frecuencia",
+      "guardarConfig": "Guardar configuración",
+      "alertasPendientes": "Alertas pendientes",
+      "sinAlertas": "No hay alertas pendientes. Las alertas viven en memoria del servidor: se pierden al reiniciar.",
+      "configGuardada": "Configuración guardada",
+      "errorGuardar": "No se pudo guardar la configuración",
+      "errorAplicar": "No se pudo iniciar la solicitud",
+      "solicitudCreada": "Solicitud creada. Revisa Subvenciones para el pipeline.",
+      "iniciarSolicitud": "Iniciar solicitud",
+      "descripcion": "Descripción",
+      "ultimaActualizacion": "Última actualización",
+      "criteriosElegibilidad": "Criterios de elegibilidad"
+    },
     "automation": {
       "navLabel": "Automatización",
       "workloadTitle": "Carga de trabajo automatizada",
@@ -301,7 +339,7 @@
       }
     },
     "messaging": {
-      "title": "Canales de mensajería",
+      "title": "WhatsApp y Telegram",
       "config": "Configuración",
       "templates": "Plantillas",
       "composer": "Enviar",
@@ -475,7 +513,9 @@
       "urlImagen": "URL de imagen",
       "contenido": "Contenido",
       "extracto": "Extracto",
-      "seleccionarCategoria": "Seleccionar categoría"
+      "seleccionarCategoria": "Seleccionar categoría",
+      "errorGuardar": "No se pudo guardar la publicación",
+      "errorCategoria": "Hace falta una categoría"
     },
     "cursos": {
       "titulo": "Cursos LMS",
@@ -868,7 +908,7 @@
       "cursos": "Cursos",
       "actividades": "Actividades",
       "proyectos": "Proyectos",
-      "mensajes": "Mensajes",
+      "mensajes": "Chat interno",
       "noticias": "Noticias",
       "logros": "Logros",
       "ranking": "Ranking",
@@ -904,7 +944,7 @@
       "diamante": "Diamante"
     },
     "mensajes": {
-      "titulo": "Mensajes",
+      "titulo": "Chat interno",
       "nuevaConversacion": "Nueva conversación",
       "tituloLabel": "Título",
       "nombreGrupo": "Nombre del grupo",
@@ -1044,6 +1084,9 @@
       "sinTareas": "Sin tareas",
       "sinComentarios": "Sin comentarios",
       "anadirComentario": "Añadir comentario...",
+      "anadirMiembro": "Añadir miembro",
+      "buscarVoluntario": "Buscar por nombre o email",
+      "sinResultados": "No hay voluntarios que coincidan",
       "porHacer": "Por hacer",
       "enProgreso": "En progreso",
       "revision": "Revisión"

@@ -255,10 +255,15 @@
       "scanner": "Escàner",
       "ranking": "Ranking",
       "asistencia": "Assistència",
+      "impacto": "Impacte",
       "fondos": "Fons",
+      "grants": "Subvencions",
       "automatizacion": "Automatització",
-      "mensajeria": "Missatgeria",
-      "exportaciones": "Exportacions"
+      "mensajeria": "WhatsApp / Telegram",
+      "mensajes": "Xat intern",
+      "exportaciones": "Exportacions",
+      "salir": "Sortir",
+      "mas": "Més"
     },
     "contracts": {
       "noDisponibles": "No hi ha contractes disponibles.",
@@ -282,6 +287,39 @@
       "pipelineValue": "Valor del Pipeline",
       "approvalRate": "Taxa d'Aprovació"
     },
+    "fondos": {
+      "titulo": "Oportunitats de finançament",
+      "calendario": "Calendari",
+      "alertas": "Alertes",
+      "buscarPlaceholder": "Cerca per nom, entitat o sector",
+      "sectorPlaceholder": "Filtra per sector",
+      "sinResultados": "No hi ha convocatòries que coincideixin amb el filtre.",
+      "desactualizada": "Dades possiblement desactualitzades",
+      "verDetalle": "Veure detall",
+      "cantidad": "Import",
+      "fechaLimite": "Data límit",
+      "sectores": "Sectors",
+      "enlaceAplicacion": "Obrir convocatòria",
+      "volverLista": "Tornar al llistat",
+      "calendarioTitulo": "Calendari de terminis",
+      "sinEventos": "No hi ha terminis els pròxims mesos.",
+      "alertasTitulo": "Alertes de convocatòries",
+      "configurarAlertas": "Configurar alertes",
+      "sectoresInteres": "Sectors d'interès",
+      "puntuacionMinima": "Puntuació mínima",
+      "frecuencia": "Freqüència",
+      "guardarConfig": "Desar configuració",
+      "alertasPendientes": "Alertes pendents",
+      "sinAlertas": "No hi ha alertes pendents. La configuració és en memòria i es perd en reiniciar l'API.",
+      "configGuardada": "Configuració desada",
+      "errorGuardar": "No s'ha pogut desar la configuració",
+      "errorAplicar": "No s'ha pogut iniciar la sol·licitud",
+      "solicitudCreada": "Sol·licitud creada. Revisa Subvencions per al pipeline.",
+      "iniciarSolicitud": "Iniciar sol·licitud",
+      "descripcion": "Descripció",
+      "ultimaActualizacion": "Última actualització",
+      "criteriosElegibilidad": "Criteris d'elegibilitat"
+    },
     "automation": {
       "navLabel": "Automatització",
       "workloadTitle": "Càrrega de treball automatitzada",
@@ -301,7 +339,7 @@
       }
     },
     "messaging": {
-      "title": "Canals de missatgeria",
+      "title": "WhatsApp i Telegram",
       "config": "Configuració",
       "templates": "Plantilles",
       "composer": "Enviar",
@@ -475,7 +513,9 @@
       "urlImagen": "URL d'imatge",
       "contenido": "Contingut",
       "extracto": "Extracte",
-      "seleccionarCategoria": "Seleccionar categoria"
+      "seleccionarCategoria": "Seleccionar categoria",
+      "errorGuardar": "No s'ha pogut desar la publicació",
+      "errorCategoria": "Cal una categoria"
     },
     "cursos": {
       "titulo": "Cursos LMS",
@@ -866,7 +906,7 @@
       "cursos": "Cursos",
       "actividades": "Activitats",
       "proyectos": "Projectes",
-      "mensajes": "Missatges",
+      "mensajes": "Xat intern",
       "noticias": "Notícies",
       "logros": "Assoliments",
       "ranking": "Ranking",
@@ -902,7 +942,7 @@
       "diamante": "Diamant"
     },
     "mensajes": {
-      "titulo": "Missatges",
+      "titulo": "Xat intern",
       "nuevaConversacion": "Nova conversa",
       "tituloLabel": "Títol",
       "nombreGrupo": "Nom del grup",
@@ -1042,6 +1082,9 @@
       "sinTareas": "Sense tasques",
       "sinComentarios": "Sense comentaris",
       "anadirComentario": "Afegir comentari...",
+      "anadirMiembro": "Afegir membre",
+      "buscarVoluntario": "Cerca per nom o email",
+      "sinResultados": "No hi ha voluntaris que coincideixin",
       "porHacer": "Per fer",
       "enProgreso": "En progrés",
       "revision": "Revisió"

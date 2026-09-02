@@ -77,9 +77,10 @@ export function GrantPipelineView({ grants, isLoading, error, onRefresh }: Grant
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="-mx-4 overflow-x-auto overscroll-x-contain pb-2 lg:-mx-0">
+        <div className="flex w-max min-w-full gap-3 px-4 lg:px-0">
         {STATUS_ORDER.map(status => (
-          <Card key={status.key} className="flex flex-col">
+          <Card key={status.key} className="flex w-72 shrink-0 flex-col">
             <CardHeader>
               <Skeleton className="h-6 w-24" />
               <Skeleton className="h-4 w-16" />
@@ -92,6 +93,7 @@ export function GrantPipelineView({ grants, isLoading, error, onRefresh }: Grant
             </CardContent>
           </Card>
         ))}
+        </div>
       </div>
     );
   }
@@ -117,14 +119,15 @@ export function GrantPipelineView({ grants, isLoading, error, onRefresh }: Grant
       </div>
 
       {/* Pipeline Columns */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="-mx-4 overflow-x-auto overscroll-x-contain pb-2 lg:-mx-0">
+        <div className="flex w-max min-w-full snap-x snap-mandatory gap-3 px-4 lg:px-0">
         {STATUS_ORDER.map(status => {
           const columnGrants = grantsByStatus[status.key];
           const count = statusCounts[status.key];
           const totalAmount = columnGrants.reduce((sum, g) => sum + g.amount, 0);
 
           return (
-            <Card key={status.key} className="flex flex-col h-full">
+            <Card key={status.key} className="flex h-full w-72 shrink-0 snap-start flex-col">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span className="flex items-center gap-2">
@@ -205,6 +208,7 @@ export function GrantPipelineView({ grants, isLoading, error, onRefresh }: Grant
             </Card>
           );
         })}
+        </div>
       </div>
 
       {/* Empty state */}

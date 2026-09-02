@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
@@ -16,12 +15,15 @@ import {
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  ArrowLeft, Plus, MessageSquare, UserCheck, Calendar,
+  ArrowLeft, Plus, UserCheck, Search,
 } from 'lucide-react';
 
-import { getApiBaseUrl } from '@/lib/apiUrl';
+import { apiClient, apiUrl } from '@/lib/apiClient';
+import { ProjectKanban } from '@/components/community/ProjectKanban';
 
-const API_URL = getApiBaseUrl();
+function memberLabel(member: { display_name?: string | null; email?: string | null; user_id: string }): string {
+  return member.display_name || member.email || member.user_id.slice(0, 8);
+}
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -29,7 +31,6 @@ export default function ProjectDetailPage() {
   const { data: session } = useSession();
   const t = useTranslations('portal.proyectos');
   const tCommon = useTranslations('common');
-  const authRef = useRef<string | undefined>(undefined);
 
   const STATUS_LABELS: Record<string, string> = {
     planning: t('planificacion'), active: t('activo'), on_hold: t('enPausa'), completed: t('completado'),
@@ -37,20 +38,6 @@ export default function ProjectDetailPage() {
   const TASK_STATUS_LABELS: Record<string, string> = {
     todo: t('porHacer'), in_progress: t('enProgreso'), review: t('revision'), done: t('completado'),
   };
-  const TASK_STATUS_COLORS: Record<string, string> = {
-    todo: 'bg-gray-100 text-gray-800',
-    in_progress: 'bg-blue-100 text-blue-800',
-    review: 'bg-yellow-100 text-yellow-800',
-    done: 'bg-green-100 text-green-800',
-  };
-
-  const KANBAN_COLUMNS = ['todo', 'in_progress', 'review', 'done'] as const;
-
-  function authHeaders(authToken?: string): Record<string, string> {
-    const h: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (authToken) h['Authorization'] = `Bearer ${authToken}`;
-    return h;
-  }
 
   const [project, setProject] = useState<any>(null);
   const [members, setMembers] = useState<any[]>([]);
@@ -60,33 +47,22 @@ export default function ProjectDetailPage() {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskAssignee, setNewTaskAssignee] = useState('');
   const [newTaskDueDate, setNewTaskDueDate] = useState('');
-
-  useEffect(() => {
-    if (session) authRef.current = (session as any)?.authToken;
-  }, [session]);
+  const [memberOpen, setMemberOpen] = useState(false);
+  const [memberQuery, setMemberQuery] = useState('');
+  const [memberResults, setMemberResults] = useState<Array<{ id: string; name?: string; email?: string }>>([]);
+  const [memberError, setMemberError] = useState('');
 
   useEffect(() => {
     if (!id) return;
-    const token = authRef.current;
-    const headers: Record<string, string> = {};
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-
     Promise.all([
-      fetch(`${API_URL}/api/community/projects/${id}`, { headers, credentials: 'include' }),
-      fetch(`${API_URL}/api/community/projects/${id}/members`, { headers, credentials: 'include' }),
-      fetch(`${API_URL}/api/community/projects/${id}/tasks`, { headers, credentials: 'include' }),
+      apiClient<any>(apiUrl(`/api/community/projects/${id}`)),
+      apiClient<{ data: any[] }>(apiUrl(`/api/community/projects/${id}/members`)),
+      apiClient<{ data: any[] }>(apiUrl(`/api/community/projects/${id}/tasks`)),
     ])
-      .then(([pRes, mRes, tRes]) =>
-        Promise.all([
-          pRes.ok ? pRes.json() : null,
-          mRes.ok ? mRes.json() : { data: [] },
-          tRes.ok ? tRes.json() : { data: [] },
-        ])
-      )
       .then(([p, m, t]) => {
-        setProject(p);
-        setMembers(m.data || []);
-        setTasks(t.data || []);
+        setProject(p.success ? p.data : null);
+        setMembers(m.success ? m.data.data || [] : []);
+        setTasks(t.success ? t.data.data || [] : []);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -94,20 +70,16 @@ export default function ProjectDetailPage() {
 
   const createTask = async () => {
     if (!newTaskTitle.trim()) return;
-    const token = authRef.current;
-    const res = await fetch(`${API_URL}/api/community/projects/${id}/tasks`, {
+    const result = await apiClient<{ id: string }>(apiUrl(`/api/community/projects/${id}/tasks`), {
       method: 'POST',
-      headers: authHeaders(token),
-      credentials: 'include',
       body: JSON.stringify({
         title: newTaskTitle.trim(),
         assignee_id: newTaskAssignee || null,
         due_date: newTaskDueDate ? new Date(newTaskDueDate).toISOString() : null,
       }),
     });
-    if (res.ok) {
-      const data = await res.json();
-      setTasks((prev) => [...prev, { id: data.id, title: newTaskTitle, status: 'todo', assignee_id: newTaskAssignee || null, due_date: newTaskDueDate || null, created_by: null }]);
+    if (result.success) {
+      setTasks((prev) => [...prev, { id: result.data.id, title: newTaskTitle, status: 'todo', assignee_id: newTaskAssignee || null, due_date: newTaskDueDate || null, created_by: null }]);
       setNewTaskTitle('');
       setNewTaskAssignee('');
       setNewTaskDueDate('');
@@ -116,25 +88,57 @@ export default function ProjectDetailPage() {
   };
 
   const updateTaskStatus = async (taskId: string, status: string) => {
-    const token = authRef.current;
-    const res = await fetch(`${API_URL}/api/community/projects/${id}/tasks/${taskId}`, {
+    const result = await apiClient(apiUrl(`/api/community/projects/${id}/tasks/${taskId}`), {
       method: 'PUT',
-      headers: authHeaders(token),
-      credentials: 'include',
       body: JSON.stringify({ status }),
     });
-    if (res.ok) {
+    if (result.success) {
       setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status } : t)));
     }
+  };
+
+  const searchMembers = async (q: string) => {
+    setMemberQuery(q);
+    if (q.trim().length < 2) {
+      setMemberResults([]);
+      return;
+    }
+    const result = await apiClient<{ data: Array<{ id: string; name?: string; email?: string }> }>(
+      apiUrl(`/api/users/search?q=${encodeURIComponent(q.trim())}`),
+    );
+    const existing = new Set(members.map((m: any) => m.user_id));
+    setMemberResults(result.success ? (result.data.data || []).filter((u) => !existing.has(u.id)) : []);
+  };
+
+  const addMember = async (userId: string) => {
+    setMemberError('');
+    const result = await apiClient(apiUrl(`/api/community/projects/${id}/members`), {
+      method: 'POST',
+      body: JSON.stringify({ userId, role: 'member' }),
+    });
+    if (!result.success) {
+      setMemberError(result.error);
+      return;
+    }
+    const refreshed = await apiClient<{ data: any[] }>(apiUrl(`/api/community/projects/${id}/members`));
+    if (refreshed.success) setMembers(refreshed.data.data || []);
+    setMemberQuery('');
+    setMemberResults([]);
+    setMemberOpen(false);
   };
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-48 w-full rounded-lg" /><Skeleton className="h-64 w-full rounded-lg" /></div>;
   if (!project) return <p className="text-muted-foreground">{t('proyectoNoEncontrado')}</p>;
 
-  const isCoordinator = members.some((m: any) => m.user_id === (session?.user as any)?.id && m.role === 'coordinator');
+  const currentUserId = (session?.user as { id?: string } | undefined)?.id;
+  const isMember = members.some((m: any) => m.user_id === currentUserId);
+  const isCoordinator =
+    members.some((m: any) => m.user_id === currentUserId && m.role === 'coordinator')
+    || project.created_by === currentUserId;
+  const canEditTasks = isCoordinator || isMember || Boolean(currentUserId);
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => router.push('/portal/proyectos')}>
@@ -154,7 +158,46 @@ export default function ProjectDetailPage() {
       {/* Members */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">{t('miembrosSeccion')} ({members.length})</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base">{t('miembrosSeccion')} ({members.length})</CardTitle>
+            {canEditTasks && (
+              <Dialog open={memberOpen} onOpenChange={setMemberOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline"><Plus className="mr-1 size-4" /> {t('anadirMiembro')}</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>{t('anadirMiembro')}</DialogTitle>
+                  </DialogHeader>
+                  <div className="relative pt-2">
+                    <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      value={memberQuery}
+                      onChange={(e) => void searchMembers(e.target.value)}
+                      placeholder={t('buscarVoluntario')}
+                      className="pl-9"
+                    />
+                  </div>
+                  <div className="max-h-56 space-y-1 overflow-y-auto">
+                    {memberResults.map((u) => (
+                      <button
+                        key={u.id}
+                        type="button"
+                        className="w-full rounded-md px-3 py-2 text-left text-sm hover:bg-muted"
+                        onClick={() => void addMember(u.id)}
+                      >
+                        {u.name || u.email}
+                      </button>
+                    ))}
+                    {memberQuery.trim().length >= 2 && memberResults.length === 0 && (
+                      <p className="px-1 text-sm text-muted-foreground">{t('sinResultados')}</p>
+                    )}
+                  </div>
+                  {memberError && <p className="text-sm text-destructive">{memberError}</p>}
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
@@ -164,7 +207,7 @@ export default function ProjectDetailPage() {
                 variant={m.role === 'coordinator' ? 'default' : 'secondary'}
                 className="gap-1"
               >
-                {m.display_name || m.user_id.slice(0, 8)}
+                {memberLabel(m)}
                 {m.role === 'coordinator' && <UserCheck className="ml-1 size-3" />}
               </Badge>
             ))}
@@ -175,7 +218,7 @@ export default function ProjectDetailPage() {
       {/* Kanban Board */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">{t('tareas')}</h2>
-        {isCoordinator && (
+        {canEditTasks && (
           <Dialog open={taskOpen} onOpenChange={setTaskOpen}>
             <DialogTrigger asChild>
               <Button size="sm"><Plus className="mr-1 size-4" /> {t('nuevaTarea')}</Button>
@@ -196,7 +239,7 @@ export default function ProjectDetailPage() {
                     <SelectContent>
                       {members.map((m: any) => (
                         <SelectItem key={m.user_id} value={m.user_id}>
-                          {m.display_name || m.user_id.slice(0, 8)}
+                          {memberLabel(m)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -213,155 +256,14 @@ export default function ProjectDetailPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-        {KANBAN_COLUMNS.map((col) => {
-          const colTasks = tasks.filter((t: any) => t.status === col);
-          return (
-            <div key={col} className="space-y-3">
-              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                {TASK_STATUS_LABELS[col]} ({colTasks.length})
-              </h3>
-              <div className="space-y-2">
-                {colTasks.map((task: any) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    members={members}
-                    isCoordinator={isCoordinator}
-                    onStatusChange={(status) => updateTaskStatus(task.id, status)}
-                    projectId={id}
-                  />
-                ))}
-                {colTasks.length === 0 && (
-                  <p className="py-4 text-center text-xs text-muted-foreground">{t('sinTareas')}</p>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <ProjectKanban
+        projectId={id}
+        tasks={tasks}
+        members={members}
+        canEdit={canEditTasks}
+        labels={TASK_STATUS_LABELS}
+        onStatusChange={(taskId, status) => void updateTaskStatus(taskId, status)}
+      />
     </div>
-  );
-}
-
-function TaskCard({ task, members, isCoordinator, onStatusChange, projectId }: {
-  task: any;
-  members: any[];
-  isCoordinator: boolean;
-  onStatusChange: (status: string) => void;
-  projectId: string;
-}) {
-  const [expanded, setExpanded] = useState(false);
-  const [comments, setComments] = useState<any[]>([]);
-  const [newComment, setNewComment] = useState('');
-  const { data: session } = useSession();
-  const authRef = useRef<string | undefined>(undefined);
-  const t = useTranslations('portal.proyectos');
-
-  const TASK_STATUS_LABELS: Record<string, string> = {
-    todo: t('porHacer'), in_progress: t('enProgreso'), review: t('revision'), done: t('completado'),
-  };
-
-  useEffect(() => {
-    if (session) authRef.current = (session as any)?.authToken;
-  }, [session]);
-
-  const loadComments = async () => {
-    const headers: Record<string, string> = {};
-    if (authRef.current) headers['Authorization'] = `Bearer ${authRef.current}`;
-    const res = await fetch(`${API_URL}/api/community/projects/${projectId}/tasks/${task.id}/comments`, { headers, credentials: 'include' });
-    if (res.ok) {
-      const d = await res.json();
-      setComments(d.data || []);
-    }
-  };
-
-  const addComment = async () => {
-    if (!newComment.trim()) return;
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (authRef.current) headers['Authorization'] = `Bearer ${authRef.current}`;
-    const res = await fetch(`${API_URL}/api/community/projects/${projectId}/tasks/${task.id}/comments`, {
-      method: 'POST',
-      headers,
-      credentials: 'include',
-      body: JSON.stringify({ body: newComment }),
-    });
-    if (res.ok) {
-      setComments((prev) => [...prev, { id: Date.now().toString(), body: newComment, created_at: new Date().toISOString() }]);
-      setNewComment('');
-    }
-  };
-
-  const assignee = members.find((m: any) => m.user_id === task.assignee_id);
-
-  return (
-    <Card className="cursor-pointer transition-shadow hover:shadow-sm" onClick={() => { setExpanded(!expanded); if (!expanded) loadComments(); }}>
-      <CardContent className="p-3">
-        <p className="text-sm font-medium">{task.title}</p>
-        {task.description && <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{task.description}</p>}
-        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          {assignee && (
-            <span className="flex items-center gap-1">
-              <UserCheck className="size-3" />
-              {assignee.display_name || assignee.user_id.slice(0, 8)}
-            </span>
-          )}
-          {task.due_date && (
-            <span className="flex items-center gap-1">
-              <Calendar className="size-3" />
-              {new Date(task.due_date).toLocaleDateString()}
-            </span>
-          )}
-        </div>
-
-        {/* Status change */}
-        {isCoordinator && (
-          <div className="mt-2" onClick={(e) => e.stopPropagation()}>
-            <Select value={task.status} onValueChange={onStatusChange}>
-              <SelectTrigger className="h-7 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {['todo', 'in_progress', 'review', 'done'].map((s) => (
-                  <SelectItem key={s} value={s}>{TASK_STATUS_LABELS[s]}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-
-        {/* Comments */}
-        {expanded && (
-          <div className="mt-3 border-t pt-3">
-            <div className="mb-2 space-y-2">
-              {comments.map((c: any) => (
-                <div key={c.id} className="rounded-md bg-muted/50 p-2 text-xs">
-                  <p>{c.body}</p>
-                  <p className="mt-1 text-muted-foreground">
-                    {new Date(c.created_at).toLocaleString()}
-                  </p>
-                </div>
-              ))}
-              {comments.length === 0 && (
-                <p className="text-xs text-muted-foreground">{t('sinComentarios')}</p>
-              )}
-            </div>
-            <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-              <Input
-                size={1}
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder={t('anadirComentario')}
-                className="h-8 text-xs"
-                onKeyDown={(e) => { if (e.key === 'Enter') addComment(); }}
-              />
-              <Button size="sm" variant="ghost" className="h-8 px-2" onClick={addComment}>
-                <MessageSquare className="size-4" />
-              </Button>
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
   );
 }

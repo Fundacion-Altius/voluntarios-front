@@ -15,12 +15,14 @@ export function MessagingNav() {
   const pathname = usePathname();
   const t = useTranslations('admin.messaging');
   return (
-    <nav className="flex flex-wrap gap-2">
+    <nav className="grid grid-cols-2 gap-2 sm:grid-cols-4">
       {LINKS.map((link) => (
         <Link
           key={link.href}
           href={link.href}
-          className={`rounded-md px-3 py-1 text-sm ${pathname === link.href ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
+          className={`flex h-10 items-center justify-center rounded-md px-3 text-center text-sm font-medium ${
+            pathname === link.href ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
+          }`}
         >
           {t(link.key)}
         </Link>

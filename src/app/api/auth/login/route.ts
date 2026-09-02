@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
+import { copyUpstreamCookies } from '@/lib/copyUpstreamCookies';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -18,13 +19,7 @@ export async function POST(request: NextRequest) {
   });
 
   const data = await res.json();
-
   const response = NextResponse.json(data, { status: res.status });
-
-  const setCookie = res.headers.get('set-cookie');
-  if (setCookie) {
-    response.headers.set('set-cookie', setCookie);
-  }
-
+  copyUpstreamCookies(res, response);
   return response;
 }

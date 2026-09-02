@@ -19,7 +19,7 @@ export function ComposeBox({ value, placeholder, replyToId, onChange, onSend, on
     <div className="space-y-2">
       {replyToId && (
         <button type="button" className="text-xs text-muted-foreground" onClick={onCancelReply}>
-          ↩ {replyToId.slice(0, 8)} ×
+          Respondiendo · cancelar
         </button>
       )}
       <div className="flex gap-2">

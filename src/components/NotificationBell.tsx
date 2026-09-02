@@ -119,7 +119,9 @@ export function NotificationBell() {
         const metadata = typeof n.metadata === 'string' ? JSON.parse(n.metadata) : n.metadata;
         const channelId = metadata?.channelId;
         if (channelId) {
-          router.push(`/portal/mensajes/${channelId}`);
+          const role = (session?.user as { role?: string } | undefined)?.role;
+          const chatBase = role === 'general' ? '/portal/mensajes' : '/admin/mensajes';
+          router.push(`${chatBase}/${channelId}`);
           return;
         }
       } catch {}

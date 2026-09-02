@@ -1,29 +1,30 @@
 'use client';
 import { useRouter, usePathname } from '@/i18n/navigation';
-import { useAuth } from '@/app/auth/useAuth';
+import { useAuthGate } from '@/app/auth/useAuthGate';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import Sidebar from '@/components/portal/Sidebar';
 import BottomNav from '@/components/portal/BottomNav';
 import { NotificationBell } from '@/components/NotificationBell';
+import { RoutePendingProvider } from '@/components/navigation/RoutePending';
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading, user, logout } = useAuth();
+  const { isAuthenticated, isLoading, user, logout, status } = useAuthGate();
   const router = useRouter();
   const pathname = usePathname();
-  const isSalaRoute = pathname?.includes('/portal/sala') ?? false;
+  const isStaffAllowedPortal =
+    (pathname?.includes('/portal/sala') ?? false)
+    || (pathname?.includes('/portal/mensajes') ?? false);
+  const isProjectBoard = /\/portal\/proyectos\/(?!nuevo$|mensajes)[^/]+$/.test(pathname || '');
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push('/login');
-      return;
-    }
-    if (!isLoading && isAuthenticated && (user as any)?.role !== 'general' && !isSalaRoute) {
+    if (status === 'loading' || status === 'unauthenticated') return;
+    if (isAuthenticated && (user as any)?.role !== 'general' && !isStaffAllowedPortal) {
       router.push('/admin/dashboard');
     }
-  }, [isLoading, isAuthenticated, user, router, isSalaRoute]);
+  }, [status, isAuthenticated, user, router, isStaffAllowedPortal]);
 
-  if (isLoading) {
+  if (isLoading || status === 'unauthenticated') {
     return (
       <main className="min-h-screen bg-background p-6">
         <Skeleton className="mb-6 h-8 w-48" />
@@ -37,6 +38,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   const profile = user as { name?: string; email?: string } | null;
 
   return (
+    <RoutePendingProvider>
     <div className="flex min-h-screen bg-background">
       <div className="hidden lg:flex">
         <Sidebar
@@ -45,9 +47,9 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
           onLogout={() => logout()}
         />
       </div>
-      <div className="flex flex-1 flex-col">
-        <main className="flex-1 p-4 pb-20 lg:p-6 lg:pb-6">
-          <div className="mx-auto max-w-5xl">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <main className="min-w-0 flex-1 overflow-x-hidden p-4 pb-20 lg:p-6 lg:pb-6">
+          <div className={isProjectBoard ? 'mx-auto min-w-0 max-w-[90rem]' : 'mx-auto max-w-5xl'}>
             {children}
           </div>
         </main>
@@ -63,5 +65,6 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         <NotificationBell />
       </div>
     </div>
+    </RoutePendingProvider>
   );
 }

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { apiClient, apiUrl } from '@/lib/apiClient';
 import { useTranslations } from 'next-intl';
@@ -65,11 +66,16 @@ export default function MessagingTemplatesPage() {
           <Label>{t('templateName')}</Label>
           <Input value={name} onChange={(e) => setName(e.target.value)} />
           <Label>{t('channel')}</Label>
-          <select className="border-input h-9 rounded-md border px-3" value={channel} onChange={(e) => setChannel(e.target.value)}>
-            <option value="both">both</option>
-            <option value="whatsapp">whatsapp</option>
-            <option value="telegram">telegram</option>
-          </select>
+          <Select value={channel} onValueChange={setChannel}>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="both">both</SelectItem>
+              <SelectItem value="whatsapp">whatsapp</SelectItem>
+              <SelectItem value="telegram">telegram</SelectItem>
+            </SelectContent>
+          </Select>
           <Label>{t('content')}</Label>
           <Input value={content} onChange={(e) => setContent(e.target.value)} />
           <Button onClick={create}>{t('save')}</Button>

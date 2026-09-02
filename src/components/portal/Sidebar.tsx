@@ -3,6 +3,8 @@ import { Link } from '@/i18n/navigation';
 import { usePathname } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
+import { SidebarPrefs } from '@/components/navigation/SidebarPrefs';
+import { useSetRoutePending } from '@/components/navigation/RoutePending';
 import { Home, Calendar, Award, Trophy, Newspaper, BookOpen, Users, MessageSquare, Bell, LogOut, type LucideIcon } from 'lucide-react';
 
 interface NavLink {
@@ -21,6 +23,7 @@ interface SidebarProps {
 export default function Sidebar({ userName, userEmail, onLogout, onNavigate }: SidebarProps) {
   const pathname = usePathname();
   const t = useTranslations('portal.nav');
+  const setPending = useSetRoutePending();
 
   const links: NavLink[] = [
     { href: '/portal', label: t('inicio'), icon: Home },
@@ -47,7 +50,7 @@ export default function Sidebar({ userName, userEmail, onLogout, onNavigate }: S
           const Icon = l.icon;
           const isActive = pathname === l.href || (l.href !== '/portal' && pathname.startsWith(l.href));
           return (
-            <Link key={l.href} href={l.href} onClick={onNavigate}>
+            <Link key={l.href} href={l.href} onClick={() => { setPending(true); onNavigate?.(); }}>
               <Button
                 variant={isActive ? 'secondary' : 'ghost'}
                 className="w-full justify-start gap-3 text-sm"
@@ -66,6 +69,7 @@ export default function Sidebar({ userName, userEmail, onLogout, onNavigate }: S
             {userEmail && <p className="truncate text-xs text-muted-foreground">{userEmail}</p>}
           </div>
         )}
+        <SidebarPrefs />
         <Button variant="ghost" className="w-full justify-start gap-3 text-sm text-muted-foreground" onClick={onLogout}>
           <LogOut className="size-4" />
           {t('salir')}

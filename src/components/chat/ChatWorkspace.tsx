@@ -12,9 +12,10 @@ import { apiClient, apiUrl } from '@/lib/apiClient';
 interface Props {
   selectedId?: string;
   children?: React.ReactNode;
+  basePath?: string;
 }
 
-export function ChatWorkspace({ selectedId, children }: Props) {
+export function ChatWorkspace({ selectedId, children, basePath = '/portal/mensajes' }: Props) {
   const router = useRouter();
   const { data: session } = useSession();
   const t = useTranslations('portal.mensajes');
@@ -41,8 +42,8 @@ export function ChatWorkspace({ selectedId, children }: Props) {
     <ChatLayout
       channels={channels}
       selectedId={selectedId}
-      onSelect={(id) => router.push(`/portal/mensajes/${id}`)}
-      onCreated={(id) => router.push(`/portal/mensajes/${id}`)}
+      onSelect={(id) => router.push(`${basePath}/${id}`)}
+      onCreated={(id) => router.push(`${basePath}/${id}`)}
     >
       {children ?? (
         <div className="flex flex-1 items-center justify-center p-6 text-sm text-muted-foreground">

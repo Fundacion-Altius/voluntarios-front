@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { apiClient, apiUrl } from '@/lib/apiClient';
 import { useTranslations } from 'next-intl';
@@ -66,10 +67,15 @@ export default function MessagingConfigPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <Label>{t('channel')}</Label>
-          <select className="border-input h-9 rounded-md border px-3" value={channel} onChange={(e) => setChannel(e.target.value as 'whatsapp' | 'telegram')}>
-            <option value="whatsapp">WhatsApp</option>
-            <option value="telegram">Telegram</option>
-          </select>
+          <Select value={channel} onValueChange={(value) => setChannel(value as 'whatsapp' | 'telegram')}>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="whatsapp">WhatsApp</SelectItem>
+              <SelectItem value="telegram">Telegram</SelectItem>
+            </SelectContent>
+          </Select>
           <Label>{t('configJson')}</Label>
           <Input value={json} onChange={(e) => setJson(e.target.value)} />
           <Button onClick={save}>{t('save')}</Button>

@@ -34,7 +34,7 @@ export default function LanguageSwitcher() {
         {locale.toUpperCase()}
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-1 rounded-md border bg-popover shadow-md divide-y">
+        <div className="absolute bottom-full left-0 z-50 mb-1 rounded-md border bg-popover shadow-md divide-y">
           {LOCALES.map((l) => (
             <button
               key={l.code}

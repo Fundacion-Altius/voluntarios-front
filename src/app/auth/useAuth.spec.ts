@@ -8,6 +8,11 @@ jest.mock('next-auth/react', () => ({
   signOut: jest.fn(),
 }));
 
+const clearHadSession = jest.fn();
+jest.mock('./AuthProvider', () => ({
+  clearHadSession: () => clearHadSession(),
+}));
+
 describe('useAuth', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -79,6 +84,18 @@ describe('useAuth', () => {
       result.current.logout();
     });
 
+    expect(clearHadSession).toHaveBeenCalled();
     expect(signOut).toHaveBeenCalledWith({ callbackUrl: '/login' });
+  });
+
+  it('exposes next-auth status', () => {
+    (useSession as jest.Mock).mockReturnValue({
+      data: null,
+      status: 'unauthenticated',
+    });
+
+    const { result } = renderHook(() => useAuth());
+
+    expect(result.current.status).toBe('unauthenticated');
   });
 });

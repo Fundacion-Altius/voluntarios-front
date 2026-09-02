@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback, use } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/app/auth/useAuth';
@@ -8,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowLeft, Calendar, DollarSign, FileText, CheckCircle, XCircle, Clock, Upload, Trash2, Edit, Eye, Download } from 'lucide-react';
@@ -16,12 +18,13 @@ import type { Grant, GrantDocument, GrantDocumentType, GrantStatus, GrantType } 
 import { grantApi, grantDocumentApi, grantJustificationApi } from '@/lib/api/grantApi';
 import { STATUS_COLORS, STATUS_LABELS, TYPE_LABELS, VALID_STATUS_TRANSITIONS } from '@/types/grant';
 
-export default function GrantDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function GrantDetailPage() {
   const t = useTranslations('admin.grantDetail');
   const tCommon = useTranslations('common');
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const userId = (user as { id?: string } | null)?.id;
+  const grantId = String(useParams()?.id ?? '');
   
   const [grant, setGrant] = useState<Grant | null>(null);
   const [documents, setDocuments] = useState<GrantDocument[]>([]);
@@ -39,10 +42,9 @@ export default function GrantDetailPage({ params }: { params: Promise<{ id: stri
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const { id: grantId } = use(params);
-
   // Fetch grant details
   const fetchGrant = useCallback(async () => {
+    if (!grantId) return;
     try {
       setIsLoading(true);
       setError(null);
@@ -537,18 +539,22 @@ export default function GrantDetailPage({ params }: { params: Promise<{ id: stri
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">{tCommon('type')}</label>
-                <select
+                <Select
                   value={documentType}
-                  onChange={(e) => setDocumentType(e.target.value as GrantDocumentType)}
-                  className="w-full p-2 border rounded-md"
+                  onValueChange={(value) => setDocumentType(value as GrantDocumentType)}
                   disabled={uploading}
                 >
-                  <option value="application">{tCommon('application')}</option>
-                  <option value="justification">{tCommon('justification')}</option>
-                  <option value="report">{tCommon('report')}</option>
-                  <option value="receipt">{tCommon('receipt')}</option>
-                  <option value="other">{tCommon('other')}</option>
-                </select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="application">{tCommon('application')}</SelectItem>
+                    <SelectItem value="justification">{tCommon('justification')}</SelectItem>
+                    <SelectItem value="report">{tCommon('report')}</SelectItem>
+                    <SelectItem value="receipt">{tCommon('receipt')}</SelectItem>
+                    <SelectItem value="other">{tCommon('other')}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">{tCommon('file')}</label>

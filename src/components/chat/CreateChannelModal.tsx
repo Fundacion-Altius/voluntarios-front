@@ -15,34 +15,43 @@ interface Props {
 export function CreateChannelModal({ onCreated }: Props) {
   const t = useTranslations('portal.mensajes');
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<'direct' | 'group'>('group');
+  const [mode, setMode] = useState<'direct' | 'group'>('direct');
   const [name, setName] = useState('');
   const [topic, setTopic] = useState('');
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Array<{ id: string; name?: string; email?: string }>>([]);
-  const [selected, setSelected] = useState<Array<{ id: string; name?: string; email?: string }>>([]);
+  const [error, setError] = useState('');
+  const [results, setResults] = useState<Array<{ id: string; user_id?: string; name?: string; email?: string }>>([]);
+  const [selected, setSelected] = useState<Array<{ id: string; user_id?: string; name?: string; email?: string }>>([]);
 
   async function search(q: string) {
     setQuery(q);
     if (q.length < 2) { setResults([]); return; }
     try {
-      const result = await apiClient<{ data: Array<{ id: string; name?: string; email?: string }> }>(
+      const result = await apiClient<{ data: Array<{ id: string; user_id?: string; name?: string; email?: string }> }>(
         apiUrl(`/api/users/search?q=${encodeURIComponent(q)}`),
       );
-      setResults(result.success ? (result.data.data || []) : []);
+      if (!result.success) { setResults([]); return; }
+      const payload = result.data as { data?: typeof results } | typeof results;
+      const list = Array.isArray(payload) ? payload : (payload.data || []);
+      setResults(list);
     } catch { setResults([]); }
   }
 
   async function create() {
+    setError('');
+    const otherId = selected[0]?.id || selected[0]?.user_id;
     const body =
       mode === 'direct'
-        ? { type: 'direct', otherUserId: selected[0]?.id }
-        : { type: 'group', name: name.trim(), topic: topic.trim() || null, memberIds: selected.map((u) => u.id) };
+        ? { type: 'direct', otherUserId: otherId }
+        : { type: 'group', name: name.trim(), topic: topic.trim() || null, memberIds: selected.map((u) => u.id || u.user_id) };
     const channelResult = await apiClient<{ id: string }>(apiUrl('/api/chat/channels'), {
       method: 'POST',
       body: JSON.stringify(body),
     });
-    if (!channelResult.success) return;
+    if (!channelResult.success) {
+      setError(channelResult.error);
+      return;
+    }
     setOpen(false);
     onCreated(channelResult.data.id);
   }
@@ -50,11 +59,13 @@ export function CreateChannelModal({ onCreated }: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm"><Plus className="mr-1 size-4" /> {t('nuevaConversacion')}</Button>
+        <Button size="icon" variant="outline" className="shrink-0" aria-label={t('nuevaConversacion')} title={t('nuevaConversacion')}>
+          <Plus className="size-4" />
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader><DialogTitle>{t('nuevaConversacion')}</DialogTitle></DialogHeader>
-        <div className="flex gap-2 pt-2">
+        <div className="grid grid-cols-2 gap-2 pt-2">
           <Button size="sm" variant={mode === 'direct' ? 'default' : 'outline'} onClick={() => setMode('direct')}>{t('directo')}</Button>
           <Button size="sm" variant={mode === 'group' ? 'default' : 'outline'} onClick={() => setMode('group')}>{t('grupal')}</Button>
         </div>
@@ -83,6 +94,7 @@ export function CreateChannelModal({ onCreated }: Props) {
             <button type="button" onClick={() => setSelected(selected.filter((s) => s.id !== u.id))}>x</button>
           </div>
         ))}
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
         <Button onClick={() => void create()} disabled={mode === 'direct' ? selected.length !== 1 : !name.trim()}>
           {t('crear')}
         </Button>

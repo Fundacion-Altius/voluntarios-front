@@ -102,19 +102,19 @@ export default function GrantsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">{t('title')}</h1>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold sm:text-3xl">{t('title')}</h1>
           <p className="text-muted-foreground">{t('subtitle')}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={fetchAllData}>
-            <RefreshCw className="h-4 w-4 mr-2" />
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+          <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={fetchAllData}>
+            <RefreshCw className="mr-2 h-4 w-4" />
             {tCommon('refresh')}
           </Button>
-          <Link href="/admin/grants/new">
-            <Button size="sm">
-              <Plus className="h-4 w-4 mr-2" />
+          <Link href="/admin/grants/new" className="w-full sm:w-auto">
+            <Button size="sm" className="w-full">
+              <Plus className="mr-2 h-4 w-4" />
               {t('newGrant')}
             </Button>
           </Link>

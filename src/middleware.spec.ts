@@ -39,6 +39,11 @@ describe('middleware', () => {
     expect(Array.isArray(mod.config.matcher)).toBe(true);
   });
 
+  it('config matcher excludes ws paths', async () => {
+    const mod = await import('@/middleware');
+    expect(mod.config.matcher.some((p: string) => /ws/.test(p))).toBe(true);
+  });
+
   it('config matcher excludes api paths', async () => {
     const mod = await import('@/middleware');
     expect(mod.config.matcher.some((p: string) => p.includes('api'))).toBe(true);

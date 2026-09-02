@@ -5,6 +5,7 @@ import { useAuth } from '@/app/auth/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { apiClient, apiUrl } from '@/lib/apiClient';
 import { useTranslations } from 'next-intl';
@@ -56,21 +57,31 @@ export default function MessagingLogsPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex flex-wrap gap-3">
-            <div>
+            <div className="space-y-1">
               <Label>{t('channel')}</Label>
-              <select className="border-input h-9 rounded-md border px-3" value={channel} onChange={(e) => setChannel(e.target.value)}>
-                <option value="">{t('all')}</option>
-                <option value="whatsapp">whatsapp</option>
-                <option value="telegram">telegram</option>
-              </select>
+              <Select value={channel || 'all'} onValueChange={(value) => setChannel(value === 'all' ? '' : value)}>
+                <SelectTrigger className="w-44">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('all')}</SelectItem>
+                  <SelectItem value="whatsapp">whatsapp</SelectItem>
+                  <SelectItem value="telegram">telegram</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <div>
+            <div className="space-y-1">
               <Label>{t('direction')}</Label>
-              <select className="border-input h-9 rounded-md border px-3" value={direction} onChange={(e) => setDirection(e.target.value)}>
-                <option value="">{t('all')}</option>
-                <option value="inbound">inbound</option>
-                <option value="outbound">outbound</option>
-              </select>
+              <Select value={direction || 'all'} onValueChange={(value) => setDirection(value === 'all' ? '' : value)}>
+                <SelectTrigger className="w-44">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('all')}</SelectItem>
+                  <SelectItem value="inbound">inbound</SelectItem>
+                  <SelectItem value="outbound">outbound</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label>{t('fromDate')}</Label>

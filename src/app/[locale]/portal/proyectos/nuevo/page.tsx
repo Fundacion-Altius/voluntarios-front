@@ -1,7 +1,6 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useRouter } from '@/i18n/navigation';
-import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,26 +8,17 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-
-import { getApiBaseUrl } from '@/lib/apiUrl';
-
-const API_URL = getApiBaseUrl();
+import { apiClient, apiUrl } from '@/lib/apiClient';
 
 export default function NuevoProyectoPage() {
   const router = useRouter();
-  const { data: session } = useSession();
   const t = useTranslations('portal.nuevoProyecto');
-  const authRef = useRef<string | undefined>(undefined);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (session) authRef.current = (session as any)?.authToken;
-  }, [session]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,36 +27,22 @@ export default function NuevoProyectoPage() {
     setSubmitting(true);
     setError('');
 
-    try {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${authRef.current}`,
-      };
+    const result = await apiClient<{ projectId: string }>(apiUrl('/api/community/projects'), {
+      method: 'POST',
+      body: JSON.stringify({
+        title: title.trim(),
+        description: description.trim() || null,
+        dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+      }),
+    });
 
-      const res = await fetch(`${API_URL}/api/community/projects`, {
-        method: 'POST',
-        headers,
-        credentials: 'include',
-        body: JSON.stringify({
-          title: title.trim(),
-          description: description.trim() || null,
-          dueDate: dueDate ? new Date(dueDate).toISOString() : null,
-        }),
-      });
-
-      if (!res.ok) {
-        const body = await res.json();
-        setError(body.error || t('errorCrear'));
-        setSubmitting(false);
-        return;
-      }
-
-      const data = await res.json();
-      router.push(`/portal/proyectos/${data.projectId}`);
-    } catch (err: any) {
-      setError(err.message);
+    if (!result.success) {
+      setError(result.error || t('errorCrear'));
       setSubmitting(false);
+      return;
     }
+
+    router.push(`/portal/proyectos/${result.data.projectId}`);
   };
 
   return (

@@ -1,6 +1,8 @@
-import NextAuth from 'next-auth';
+import NextAuth, { type NextAuthOptions } from 'next-auth';
 import AzureADProvider from 'next-auth/providers/azure-ad';
+import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { oauthFromEnv } from '@/lib/oauthFromEnv';
 
 declare module 'next-auth' {
   interface Session {
@@ -15,24 +17,36 @@ declare module 'next-auth' {
   }
 }
 
-const providers = [];
+function getAuthOptions(): NextAuthOptions {
+  const oauth = oauthFromEnv();
+  const providers: NextAuthOptions['providers'] = [];
 
-if (process.env.AZURE_AD_CLIENT_ID) {
-  providers.push(
-    AzureADProvider({
-      clientId: process.env.AZURE_AD_CLIENT_ID,
-      clientSecret: process.env.AZURE_AD_CLIENT_SECRET || '',
-      tenantId: process.env.AZURE_AD_TENANT_ID || 'common',
-      authorization: {
-        params: {
-          scope: 'openid profile email offline_access',
+  if (oauth.google) {
+    providers.push(
+      GoogleProvider({
+        clientId: oauth.googleClientId,
+        clientSecret: oauth.googleClientSecret,
+      }),
+    );
+  }
+
+  if (oauth.azure) {
+    providers.push(
+      AzureADProvider({
+        clientId: oauth.azureClientId,
+        clientSecret: oauth.azureClientSecret,
+        tenantId: oauth.azureTenantId,
+        authorization: {
+          params: {
+            scope: 'openid profile email offline_access',
+          },
         },
-      },
-    }),
-  );
-}
+      }),
+    );
+  }
 
-providers.push(CredentialsProvider({
+  providers.push(
+    CredentialsProvider({
       name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
@@ -42,13 +56,14 @@ providers.push(CredentialsProvider({
         user_type: { label: 'User Type' },
         csrfToken: { label: 'CSRF Token' },
         authToken: { label: 'Auth Token' },
+        user_id: { label: 'User ID' },
       },
       async authorize(credentials, req) {
         if (!credentials?.email) return null;
 
         if (credentials?.name && credentials?.role && credentials?.authToken) {
           return {
-            id: credentials.email as string,
+            id: (credentials.user_id as string) || (credentials.email as string),
             email: credentials.email as string,
             name: credentials.name as string,
             role: credentials.role as string,
@@ -89,59 +104,72 @@ providers.push(CredentialsProvider({
         };
       },
     }),
-);
+  );
 
-const handler = NextAuth({
-  providers,
-  callbacks: {
-    async signIn({ account, profile }) {
-      return true;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.email = token.email || '';
-        session.user.name = token.name || '';
-        (session.user as any).role = token.role as string;
-        (session.user as any).user_type = token.user_type as string;
-        session.csrfToken = token.csrfToken as string;
-        session.authToken = token.authToken as string;
-      }
-      return session;
-    },
-    async jwt({ token, account, user }) {
-      if (account) {
-        if (account.provider === 'azure-ad') {
-          token.authToken = account.id_token as string;
-          try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
-              headers: { Authorization: `Bearer ${account.id_token}` },
-            });
-            if (res.ok) {
-              const profile = await res.json();
-              token.role = profile.role;
-              token.user_type = profile.user_type;
-            }
-          } catch {}
+  return {
+    providers,
+    callbacks: {
+      async signIn() {
+        return true;
+      },
+      async session({ session, token }) {
+        if (session.user) {
+          session.user.email = token.email || '';
+          session.user.name = token.name || '';
+          (session.user as any).role = token.role as string;
+          (session.user as any).user_type = token.user_type as string;
+          session.csrfToken = token.csrfToken as string;
+          session.authToken = token.authToken as string;
+          (session.user as any).id = (token.userId as string) || token.sub || '';
         }
-        token.email = token.email;
-      }
-      if (user) {
-        token.role = (user as any).role || token.role;
-        token.user_type = (user as any).user_type || token.user_type;
-        token.csrfToken = (user as any).csrfToken || token.csrfToken;
-        token.authToken = (user as any).authToken || token.authToken;
-      }
-      return token;
+        return session;
+      },
+      async jwt({ token, account, user, trigger, session }) {
+        if (trigger === 'update') {
+          const next = (session as { authToken?: string } | undefined)?.authToken;
+          if (next) token.authToken = next;
+          return token;
+        }
+        if (account) {
+          if (account.provider === 'azure-ad' || account.provider === 'google') {
+            token.authToken = (account.id_token || account.access_token) as string;
+            try {
+              const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
+                headers: { Authorization: `Bearer ${account.id_token}` },
+              });
+              if (res.ok) {
+                const profile = await res.json();
+                token.role = profile.role;
+                token.user_type = profile.user_type;
+              }
+            } catch {}
+          }
+          token.email = token.email;
+        }
+        if (user) {
+          token.role = (user as any).role || token.role;
+          token.user_type = (user as any).user_type || token.user_type;
+          token.csrfToken = (user as any).csrfToken || token.csrfToken;
+          token.authToken = (user as any).authToken || token.authToken;
+          token.userId = user.id || token.userId;
+        }
+        return token;
+      },
     },
-  },
-  pages: {
-    signIn: '/login',
-    error: '/login',
-  },
-  session: {
-    strategy: 'jwt',
-  },
-  trustHost: true,
-});
+    pages: {
+      signIn: '/login',
+      error: '/login',
+    },
+    session: {
+      strategy: 'jwt',
+      maxAge: 30 * 24 * 60 * 60,
+    },
+    jwt: {
+      maxAge: 30 * 24 * 60 * 60,
+    },
+  };
+}
+
+const handler = (...args: [any, any]) => NextAuth(getAuthOptions())(...args);
 
 export { handler as GET, handler as POST };

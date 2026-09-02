@@ -22,10 +22,8 @@ export default function VideoRoomPage({ params }: { params: { roomId: string } }
   const [joining, setJoining] = useState(false);
   const [joinError, setJoinError] = useState<string | null>(null);
 
-  const { state, startLocalStream, toggleMic, toggleCamera, toggleScreenShare, join, cleanup } = useMediasoupRoom(
-    params.roomId,
-    role,
-  );
+  const { state, startLocalStream, toggleMic, toggleCamera, toggleScreenShare, join, cleanup, disconnect } =
+    useMediasoupRoom(params.roomId, role);
 
   useEffect(() => {
     return () => cleanup();
@@ -40,7 +38,7 @@ export default function VideoRoomPage({ params }: { params: { roomId: string } }
       await join(session?.authToken);
     } catch (err: any) {
       setJoinError(err?.message || err?.toString() || t('errorUnirse'));
-      cleanup();
+      disconnect();
       setJoining(false);
     }
   };
@@ -60,6 +58,9 @@ export default function VideoRoomPage({ params }: { params: { roomId: string } }
           </CardHeader>
           <CardContent className="space-y-4">
             <VideoGrid peers={state.peers} localStream={state.localStream} userId={state.userId} />
+            {(joinError || state.error) && (
+              <p className="text-sm text-destructive">{joinError || state.error}</p>
+            )}
             <VideoControls
               isMicOn={state.isMicOn}
               isCameraOn={state.isCameraOn}
@@ -84,11 +85,11 @@ export default function VideoRoomPage({ params }: { params: { roomId: string } }
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">{t('salaId')}: {params.roomId}</p>
-          <div className="flex items-center gap-2">
-            <Button variant={role === 'guest' ? 'secondary' : 'outline'} onClick={() => setRole('guest')}>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Button className="w-full sm:w-auto" variant={role === 'guest' ? 'secondary' : 'outline'} onClick={() => setRole('guest')}>
               {t('unirseParticipante')}
             </Button>
-            <Button variant={role === 'host' ? 'secondary' : 'outline'} onClick={() => setRole('host')}>
+            <Button className="w-full sm:w-auto" variant={role === 'host' ? 'secondary' : 'outline'} onClick={() => setRole('host')}>
               {t('unirseAnfitrion')}
             </Button>
           </div>

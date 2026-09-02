@@ -1,10 +1,9 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
-import { useSession } from 'next-auth/react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,81 +12,115 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Save, ArrowLeft } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
+import { apiClient, apiUrl } from '@/lib/apiClient';
 
-import { getApiBaseUrl } from '@/lib/apiUrl';
+function slugify(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80);
+}
 
-const API_URL = getApiBaseUrl();
+function asCategoryList(payload: unknown): Array<{ id: string; name: string }> {
+  if (Array.isArray(payload)) return payload;
+  if (payload && typeof payload === 'object' && Array.isArray((payload as { data?: unknown }).data)) {
+    return (payload as { data: Array<{ id: string; name: string }> }).data;
+  }
+  return [];
+}
 
 export default function BlogEditorPage() {
   const t = useTranslations('admin.blog');
   const tc = useTranslations('common');
-  const { data: session } = useSession();
-  const authToken = (session as any)?.authToken;
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get('id');
 
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
+  const [slugTouched, setSlugTouched] = useState(false);
   const [excerpt, setExcerpt] = useState('');
   const [body, setBody] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [categoryId, setCategoryId] = useState('');
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
   const [loading, setLoading] = useState(!!editId);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const loadCategories = async (): Promise<Array<{ id: string; name: string }>> => {
+    const result = await apiClient<unknown>(apiUrl('/api/blog/categories'));
+    if (!result.success) return [];
+    return asCategoryList(result.data);
+  };
 
   useEffect(() => {
-    if (!authToken) return;
-    fetch(`${API_URL}/api/blog/categories`, {
-      headers: { Authorization: `Bearer ${authToken}` },
-      credentials: 'include',
-    })
-      .then((res) => (res.ok ? res.json() : []))
-      .then(setCategories)
-      .catch(() => {});
-  }, [authToken]);
+    void loadCategories().then(async (list) => {
+      let next = list;
+      if (next.length === 0) {
+        const created = await apiClient<{ id: string; name: string }>(apiUrl('/api/blog/categories'), {
+          method: 'POST',
+          body: JSON.stringify({ name: 'General', slug: 'general', description: null }),
+        });
+        if (created.success && created.data.id) next = [created.data];
+        else next = await loadCategories();
+      }
+      setCategories(next);
+      setCategoryId((current) => current || next[0]?.id || '');
+    });
+  }, []);
 
   useEffect(() => {
-    if (!authToken || !editId) return;
-    fetch(`${API_URL}/api/blog/posts/${editId}`, {
-      headers: { Authorization: `Bearer ${authToken}` },
-      credentials: 'include',
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data) {
-          setTitle(data.title || '');
-          setSlug(data.slug || '');
-          setExcerpt(data.excerpt || '');
-          setBody(data.body || '');
-          setImageUrl(data.image_url || '');
-          setCategoryId(data.category_id || '');
-        }
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [editId, authToken]);
+    if (!editId) return;
+    void apiClient<any>(apiUrl(`/api/blog/posts/${editId}`)).then((result) => {
+      if (result.success && result.data) {
+        const data = result.data;
+        setTitle(data.title || '');
+        setSlug(data.slug || '');
+        setSlugTouched(true);
+        setExcerpt(data.excerpt || '');
+        setBody(data.body || '');
+        setImageUrl(data.image_url || '');
+        setCategoryId(data.category_id || '');
+      }
+    }).finally(() => setLoading(false));
+  }, [editId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!authToken) return;
     setSaving(true);
-    try {
-      const url = editId
-        ? `${API_URL}/api/blog/posts/${editId}`
-        : `${API_URL}/api/blog/posts`;
-      const method = editId ? 'PUT' : 'POST';
-      const res = await fetch(url, {
-        method,
-        headers: { Authorization: `Bearer ${authToken}`, 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ title, slug, excerpt, body, image_url: imageUrl || null, category_id: categoryId }),
-      });
-      if (res.ok) router.push('/admin/blog');
-    } catch {} finally {
+    setError('');
+    const resolvedSlug = slug.trim() || slugify(title);
+    const resolvedCategory = categoryId || categories[0]?.id;
+    if (!resolvedCategory) {
+      setError(t('errorCategoria'));
       setSaving(false);
+      return;
     }
+
+    const payload = {
+      title: title.trim(),
+      slug: resolvedSlug,
+      excerpt: excerpt.trim() || null,
+      body,
+      image_url: imageUrl.trim() || null,
+      category_id: resolvedCategory,
+    };
+
+    const result = editId
+      ? await apiClient(apiUrl(`/api/blog/posts/${editId}`), { method: 'PUT', body: JSON.stringify(payload) })
+      : await apiClient(apiUrl('/api/blog/posts'), { method: 'POST', body: JSON.stringify(payload) });
+
+    if (!result.success) {
+      setError(result.error || t('errorGuardar'));
+      setSaving(false);
+      return;
+    }
+    router.push('/admin/blog');
   };
 
   if (loading) {
@@ -105,18 +138,31 @@ export default function BlogEditorPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="title">{tc('titulo')}</Label>
-              <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  if (!slugTouched) setSlug(slugify(e.target.value));
+                }}
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="slug">Slug</Label>
-              <Input id="slug" value={slug} onChange={(e) => setSlug(e.target.value)} required placeholder="mi-publicacion" />
+              <Input
+                id="slug"
+                value={slug}
+                onChange={(e) => { setSlugTouched(true); setSlug(e.target.value); }}
+                placeholder="mi-publicacion"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="category">{tc('categoria')}</Label>
-              <Select value={categoryId} onValueChange={setCategoryId} required>
+              <Select value={categoryId} onValueChange={setCategoryId}>
                 <SelectTrigger><SelectValue placeholder={t('seleccionarCategoria')} /></SelectTrigger>
                 <SelectContent>
-                  {categories.map((cat: any) => (
+                  {categories.map((cat) => (
                     <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
                   ))}
                 </SelectContent>
@@ -134,6 +180,7 @@ export default function BlogEditorPage() {
               <Label htmlFor="imageUrl">{t('urlImagen')}</Label>
               <Input id="imageUrl" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." />
             </div>
+            {error && <p className="text-sm text-destructive">{error}</p>}
             <div className="flex justify-end gap-2">
               <Link href="/admin/blog"><Button type="button" variant="outline">{tc('cancelar')}</Button></Link>
               <Button type="submit" disabled={saving}>

@@ -52,6 +52,7 @@ export function GrantStatsWidget({
   };
 
   const diversification = calcFundingDiversification();
+  const formatPercent = (value: number) => `${Number(value).toFixed(2)}%`;
 
   // Get upcoming deadlines (next 30 days)
   const upcomingDeadlines = grants
@@ -137,7 +138,7 @@ export function GrantStatsWidget({
                     style={{ width: `${diversification.public}%` }}
                   />
                 </div>
-                <span className="text-xs">{diversification.public}%</span>
+                <span className="text-xs tabular-nums">{formatPercent(diversification.public)}</span>
               </div>
             </div>
             <div className="flex items-center justify-between text-sm">
@@ -149,7 +150,7 @@ export function GrantStatsWidget({
                     style={{ width: `${diversification.private}%` }}
                   />
                 </div>
-                <span className="text-xs">{diversification.private}%</span>
+                <span className="text-xs tabular-nums">{formatPercent(diversification.private)}</span>
               </div>
             </div>
             <div className="flex items-center justify-between text-sm">
@@ -161,7 +162,7 @@ export function GrantStatsWidget({
                     style={{ width: `${diversification.EU}%` }}
                   />
                 </div>
-                <span className="text-xs">{diversification.EU}%</span>
+                <span className="text-xs tabular-nums">{formatPercent(diversification.EU)}</span>
               </div>
             </div>
           </div>
@@ -182,19 +183,19 @@ export function GrantStatsWidget({
                 const daysUntil = Math.ceil((deadline.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
                 
                 return (
-                  <div key={grant.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">{grant.name}</p>
-                      <p className="text-xs text-muted-foreground">{grant.funding_body}</p>
+                  <div key={grant.id} className="flex min-w-0 flex-col gap-2 rounded-lg border bg-muted/40 p-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">{grant.name}</p>
+                      <p className="truncate text-xs text-muted-foreground">{grant.funding_body}</p>
                     </div>
-                    <div className="text-center">
-                      <p className="font-bold">{formatCurrency(grant.amount)}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {deadline.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <Badge variant={daysUntil <= 7 ? 'destructive' : 'default'}>
+                    <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end">
+                      <div className="text-left sm:text-right">
+                        <p className="text-sm font-semibold tabular-nums">{formatCurrency(grant.amount)}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {deadline.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}
+                        </p>
+                      </div>
+                      <Badge variant={daysUntil <= 7 ? 'destructive' : 'secondary'}>
                         {daysUntil} días
                       </Badge>
                     </div>

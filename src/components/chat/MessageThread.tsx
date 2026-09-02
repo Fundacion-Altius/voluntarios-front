@@ -36,6 +36,9 @@ export function MessageThread({ messages, currentUserId, emptyLabel, onReply }: 
                   {isOwn && readCount > 0 ? ` · ✓✓ ${readCount}` : ''}
                 </p>
               </div>
+              {onReply && !isOwn && (
+                <p className="mt-1 text-[10px] text-muted-foreground">Responder</p>
+              )}
             </button>
           </div>
         );

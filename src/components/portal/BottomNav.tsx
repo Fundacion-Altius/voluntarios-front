@@ -4,6 +4,7 @@ import { usePathname } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { Home, BookOpen, Calendar, Users, MessageSquare, MoreHorizontal } from 'lucide-react';
 import { useState } from 'react';
+import { useSetRoutePending } from '@/components/navigation/RoutePending';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from '@/components/ui/sheet';
 import Sidebar from './Sidebar';
 
@@ -17,6 +18,7 @@ export default function BottomNav({ userName, userEmail, onLogout }: BottomNavPr
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const t = useTranslations('portal.nav');
+  const setPending = useSetRoutePending();
 
   const primaryTabs = [
     { href: '/portal', label: t('inicio'), icon: Home },
@@ -36,6 +38,7 @@ export default function BottomNav({ userName, userEmail, onLogout }: BottomNavPr
             <Link
               key={tabs.href}
               href={tabs.href}
+              onClick={() => setPending(true)}
               className={`flex flex-col items-center gap-0.5 px-3 py-2 text-xs ${
                 isActive ? 'text-primary' : 'text-muted-foreground'
               }`}

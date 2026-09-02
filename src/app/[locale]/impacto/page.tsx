@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { getApiBaseUrl } from '@/lib/apiUrl';
+import { apiClient, apiUrl } from '@/lib/apiClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -54,7 +54,7 @@ function KpiCard({ kpi }: { kpi: ImpactKpi }) {
 
 function LoadingSkeleton() {
   return (
-    <div className="space-y-4">
+    <div className="mx-auto max-w-5xl space-y-4 px-4 py-8 sm:px-6 lg:px-8">
       <Skeleton className="h-8 w-48" />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 5 }).map((_, i) => (
@@ -77,17 +77,14 @@ export default function PublicImpactDashboardPage() {
         setLoading(true);
         setError(null);
 
-        const apiUrl = getApiBaseUrl();
-        const response = await fetch(`${apiUrl}/api/impact/kpis`);
+        const result = await apiClient<ImpactKpiResponse>(apiUrl('/api/impact/kpis'));
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          setError(errorData.message || errorData.error || `HTTP error! status: ${response.status}`);
+        if (!result.success) {
+          setError(result.error || 'Failed to fetch impact KPIs');
           return;
         }
 
-        const data: ImpactKpiResponse = await response.json();
-
+        const data = result.data;
         if (data.success && data.data) {
           setKpis(data.data);
         } else {
@@ -108,7 +105,7 @@ export default function PublicImpactDashboardPage() {
 
   if (error) {
     return (
-      <div className="space-y-4">
+      <div className="mx-auto max-w-5xl space-y-4 px-4 py-8 sm:px-6 lg:px-8">
         <h1 className="text-2xl font-bold">{t('title')}</h1>
         <div className="rounded-md bg-destructive/10 p-4 text-sm text-destructive">
           {error}
@@ -125,15 +122,15 @@ export default function PublicImpactDashboardPage() {
 
   if (!kpis || kpis.length === 0) {
     return (
-      <div className="space-y-4">
-        <h1 className="text-2xl font-bold">{t('title')}</h1>
-        <p className="text-muted-foreground">No hay datos de impacto disponibles.</p>
-      </div>
+    <div className="mx-auto max-w-5xl space-y-4 px-4 py-8 sm:px-6 lg:px-8">
+      <h1 className="text-2xl font-bold">{t('title')}</h1>
+      <p className="text-muted-foreground">No hay datos de impacto disponibles.</p>
+    </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
       <div>
         <h1 className="text-2xl font-bold">{t('title')}</h1>
         <p className="text-muted-foreground mt-1">

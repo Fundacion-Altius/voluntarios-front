@@ -32,11 +32,13 @@ app.prepare().then(() => {
 
   server.on('upgrade', (req, socket, head) => {
     const parsed = parse(req.url, true);
-    if (parsed.pathname && parsed.pathname.startsWith('/ws')) {
+    const pathname = parsed.pathname || '';
+    const isRealtimeWs = pathname.startsWith('/ws') || /^\/(es|ca|en)\/ws(\/|$)/.test(pathname);
+    if (isRealtimeWs) {
       try {
         proxy.ws(req, socket, head);
       } catch (err) {
-        console.error('[proxy:ws] WebSocket proxy error:', parsed.pathname, err.code || err.message);
+        console.error('[proxy:ws] WebSocket proxy error:', pathname, err.code || err.message);
         socket.destroy();
       }
     } else {

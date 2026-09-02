@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
@@ -79,11 +80,16 @@ export default function ScheduledExportsPage() {
           </div>
           <div className="space-y-1">
             <Label htmlFor="cadence">{t('cadence')}</Label>
-            <select id="cadence" className="border-input h-9 w-full rounded-md border bg-transparent px-3 text-sm" value={cadence} onChange={(event) => setCadence(event.target.value)}>
-              <option value="daily">daily</option>
-              <option value="weekly">weekly</option>
-              <option value="monthly">monthly</option>
-            </select>
+            <Select value={cadence} onValueChange={setCadence}>
+              <SelectTrigger id="cadence" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily">daily</SelectItem>
+                <SelectItem value="weekly">weekly</SelectItem>
+                <SelectItem value="monthly">monthly</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <Button onClick={create}>{t('createSchedule')}</Button>
         </CardContent>

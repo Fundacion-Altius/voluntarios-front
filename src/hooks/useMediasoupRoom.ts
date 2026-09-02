@@ -41,25 +41,23 @@ function deriveWsUrl(): string {
   }
 }
 
-const WS_BASE = deriveWsUrl();
-
-function turnHost(): string {
-  if (typeof window !== 'undefined') {
-    const h = window.location.hostname;
-    if (h !== 'localhost' && h !== '127.0.0.1') return h;
-  }
-  return process.env.NEXT_PUBLIC_TURN_HOST || 'localhost';
+function isNgrokHost(hostname: string): boolean {
+  return hostname.includes('ngrok-free.app') || hostname.includes('ngrok.io');
 }
-const TURN_HOST = turnHost();
-const TURN_PORT = Number(process.env.NEXT_PUBLIC_TURN_PORT || 3478);
-const TURN_USERNAME = process.env.NEXT_PUBLIC_TURN_USERNAME || 'voluntarios';
-const TURN_PASSWORD = process.env.NEXT_PUBLIC_TURN_PASSWORD || 'turnpassword';
 
 function buildIceServers(): RTCIceServer[] {
+  const stun = { urls: 'stun:stun.l.google.com:19302' };
+  if (typeof window !== 'undefined' && isNgrokHost(window.location.hostname)) {
+    return [stun];
+  }
+  const host = process.env.NEXT_PUBLIC_TURN_HOST || 'localhost';
+  const port = Number(process.env.NEXT_PUBLIC_TURN_PORT || 3478);
+  const username = process.env.NEXT_PUBLIC_TURN_USERNAME || 'voluntarios';
+  const credential = process.env.NEXT_PUBLIC_TURN_PASSWORD || 'turnpassword';
   return [
-    { urls: `turn:${TURN_HOST}:${TURN_PORT}?transport=udp`, username: TURN_USERNAME, credential: TURN_PASSWORD },
-    { urls: `turn:${TURN_HOST}:${TURN_PORT}?transport=tcp`, username: TURN_USERNAME, credential: TURN_PASSWORD },
-    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: `turn:${host}:${port}?transport=udp`, username, credential },
+    { urls: `turn:${host}:${port}?transport=tcp`, username, credential },
+    stun,
   ];
 }
 
@@ -99,6 +97,8 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
   const resolveTransportSend = useRef<((d: unknown) => void) | null>(null);
   const resolveTransportRecv = useRef<((d: unknown) => void) | null>(null);
   const resolveRouterCaps = useRef<((caps: RtpCapabilities) => void) | null>(null);
+  const pendingConnectRef = useRef<Map<string, () => void>>(new Map());
+  const pendingProduceRef = useRef<Array<(id: string) => void>>([]);
 
   const setStatePartial = useCallback((partial: Partial<MediasoupRoomState>) => {
     setState((prev) => ({ ...prev, ...partial }));
@@ -117,18 +117,11 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
     setState((prev) => {
       const peers = new Map(prev.peers);
       const existing = peers.get(peerId) || {};
-      const currentVideo = existing.video;
-      const currentAudio = existing.audio;
-
-      let allTracks: MediaStreamTrack[] = [track];
-      if (kind === 'video' && currentAudio) {
-        allTracks = [...currentAudio.getAudioTracks(), track];
-      } else if (kind === 'audio' && currentVideo) {
-        allTracks = [...currentVideo.getVideoTracks(), track];
+      const stream = existing.video || existing.audio || new MediaStream();
+      if (!stream.getTracks().some((t) => t.id === track.id)) {
+        stream.addTrack(track);
       }
-
-      const stream = new MediaStream(allTracks);
-      peers.set(peerId, { ...existing, [kind]: stream, video: stream.getVideoTracks().length > 0 ? stream : existing.video, audio: stream.getAudioTracks().length > 0 ? stream : existing.audio });
+      peers.set(peerId, { ...existing, [kind]: stream, video: stream, audio: stream });
       return { ...prev, peers };
     });
   }, []);
@@ -150,17 +143,39 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
   }, [sendToWs, roomId]);
 
   const connectTransport = useCallback((transport: Transport, direction: 'send' | 'recv'): void => {
-    (transport as any).on('connect', ({ dtlsParameters }: { dtlsParameters: DtlsParameters }, callback: () => void, _errback: (err: Error) => void) => {
-      sendSignal({ type: 'connect-transport', transportId: transport.id, dtlsParameters });
-      callback();
+    (transport as any).on('connect', ({ dtlsParameters }: { dtlsParameters: DtlsParameters }, callback: () => void, errback: (err: Error) => void) => {
+      pendingConnectRef.current.set(transport.id, callback);
+      try {
+        sendSignal({ type: 'connect-transport', transportId: transport.id, dtlsParameters });
+      } catch (err: any) {
+        pendingConnectRef.current.delete(transport.id);
+        errback(err);
+      }
     });
     if (direction === 'send') {
-      (transport as any).on('produce', ({ kind, rtpParameters }: { kind: string; rtpParameters: unknown }, callback: (data: { id: string }) => void, _errback: (err: Error) => void) => {
-        sendSignal({ type: 'produce', transportId: transport.id, kind, rtpParameters });
-        callback({ id: '' });
+      (transport as any).on('produce', ({ kind, rtpParameters }: { kind: string; rtpParameters: unknown }, callback: (data: { id: string }) => void, errback: (err: Error) => void) => {
+        pendingProduceRef.current.push((id: string) => callback({ id }));
+        try {
+          sendSignal({ type: 'produce', transportId: transport.id, kind, rtpParameters });
+        } catch (err: any) {
+          pendingProduceRef.current.pop();
+          errback(err);
+        }
       });
     }
   }, [sendSignal]);
+
+  const handleProduced = useCallback((msg: { id?: string }): void => {
+    const next = pendingProduceRef.current.shift();
+    if (next && msg.id) next(msg.id);
+  }, []);
+
+  const handleTransportConnected = useCallback((msg: { transportId?: string }): void => {
+    if (!msg.transportId) return;
+    const cb = pendingConnectRef.current.get(msg.transportId);
+    pendingConnectRef.current.delete(msg.transportId);
+    cb?.();
+  }, []);
 
   const handleNewRouterRtpCapabilities = useCallback((msg: { rtpCapabilities: RtpCapabilities }): void => {
     const resolve = resolveRouterCaps.current;
@@ -214,7 +229,12 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
       setPeerTrack(msg.peerId as string, consumer.track, msg.kind as 'video' | 'audio');
     }
     consumersRef.current.set(consumer.id, consumer);
-  }, [setPeerTrack]);
+    sendSignal({ type: 'resume-consumer', consumerId: consumer.id });
+    await consumer.resume();
+    if (msg.kind === 'video') {
+      sendSignal({ type: 'request-keyframe', consumerId: consumer.id });
+    }
+  }, [setPeerTrack, sendSignal]);
 
   const handlePeerLeft = useCallback((from: string): void => {
     removePeer(from);
@@ -234,6 +254,8 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
           'new-transport': handleNewTransport as (msg: unknown) => void,
           'new-producer': handleNewProducer as (msg: unknown) => void,
           'new-consumer': handleNewConsumer as (msg: unknown) => Promise<void>,
+          produced: handleProduced as (msg: unknown) => void,
+          'transport-connected': handleTransportConnected as (msg: unknown) => void,
           'peer-left': (m: unknown) => handlePeerLeft((m as { from: string }).from),
           'call-ended': handleCallEnded as (msg: unknown) => void,
         };
@@ -243,7 +265,7 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
         }
       } catch {}
     },
-    [handleNewRouterRtpCapabilities, handleNewTransport, handleNewProducer, handleNewConsumer, handlePeerLeft, handleCallEnded],
+    [handleNewRouterRtpCapabilities, handleNewTransport, handleNewProducer, handleNewConsumer, handleProduced, handleTransportConnected, handlePeerLeft, handleCallEnded],
   );
 
   const startLocalStream = useCallback(async (withVideo = true, withAudio = true): Promise<MediaStream> => {
@@ -276,9 +298,31 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
   }, [setStatePartial]);
 
   const toggleMic = useCallback(async () => {
-    if (!localStreamRef.current) return;
+    if (!localStreamRef.current) {
+      try {
+        await startLocalStream(false, true);
+      } catch (err: any) {
+        setStatePartial({ error: err?.message ?? 'No se pudo recuperar el micrófono' });
+      }
+      return;
+    }
     const audioTrack = localStreamRef.current.getAudioTracks()[0];
-    if (!audioTrack) return;
+    if (!audioTrack) {
+      try {
+        const newStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+        const newTrack = newStream.getAudioTracks()[0];
+        localStreamRef.current.addTrack(newTrack);
+        if (sendTransportRef.current && producerRef.current === null) {
+          producerRef.current = await sendTransportRef.current.produce({ track: newTrack });
+        } else if (producerRef.current) {
+          await producerRef.current.replaceTrack({ track: newTrack });
+        }
+        setStatePartial({ isMicOn: true, localStream: localStreamRef.current });
+      } catch (err: any) {
+        setStatePartial({ error: err?.message ?? 'No se pudo recuperar el micrófono' });
+      }
+      return;
+    }
     console.warn('toggleMic: audioTrack.readyState:', audioTrack.readyState, 'muted:', audioTrack.muted);
     if (audioTrack.readyState !== 'live') {
       try {
@@ -302,12 +346,35 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
     }
     audioTrack.enabled = !audioTrack.enabled;
     setStatePartial({ isMicOn: audioTrack.enabled });
-  }, [setStatePartial]);
+  }, [setStatePartial, startLocalStream]);
 
   const toggleCamera = useCallback(async () => {
-    if (!localStreamRef.current) return;
+    if (!localStreamRef.current) {
+      try {
+        await startLocalStream(true, true);
+      } catch (err: any) {
+        setStatePartial({ error: err?.message ?? 'No se pudo recuperar la cámara' });
+      }
+      return;
+    }
     const videoTrack = localStreamRef.current.getVideoTracks()[0];
-    if (!videoTrack) return;
+    if (!videoTrack) {
+      try {
+        const newStream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 }, audio: false });
+        const newTrack = newStream.getVideoTracks()[0];
+        localStreamRef.current.addTrack(newTrack);
+        setupTrackMonitorRef.current?.(newTrack);
+        if (sendTransportRef.current && videoProducerRef.current === null) {
+          videoProducerRef.current = await sendTransportRef.current.produce({ track: newTrack });
+        } else if (videoProducerRef.current) {
+          await videoProducerRef.current.replaceTrack({ track: newTrack });
+        }
+        setStatePartial({ isCameraOn: true, cameraRecoveryNeedsGesture: false, localStream: localStreamRef.current });
+      } catch (err: any) {
+        setStatePartial({ error: err?.message ?? 'No se pudo recuperar la cámara' });
+      }
+      return;
+    }
     console.warn('toggleCamera: videoTrack.readyState:', videoTrack.readyState, 'muted:', videoTrack.muted);
     if (videoTrack.readyState !== 'live') {
       try {
@@ -332,7 +399,7 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
     }
     videoTrack.enabled = !videoTrack.enabled;
     setStatePartial({ isCameraOn: videoTrack.enabled, cameraRecoveryNeedsGesture: false });
-  }, [setStatePartial]);
+  }, [setStatePartial, startLocalStream]);
 
   const toggleScreenShare = useCallback(async () => {
     if (!screenStreamRef.current) {
@@ -378,6 +445,8 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
     resolveTransportSend.current = null;
     resolveTransportRecv.current = null;
     resolveRouterCaps.current = null;
+    pendingConnectRef.current.clear();
+    pendingProduceRef.current = [];
     localProducerIdsRef.current.clear();
   }, []);
 
@@ -387,14 +456,22 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
     localStreamRef.current = null;
     screenStreamRef.current?.getTracks().forEach((t) => t.stop());
     screenStreamRef.current = null;
-  }, [cleanupConnections]);
+    setStatePartial({
+      localStream: null,
+      connected: false,
+      isMicOn: false,
+      isCameraOn: false,
+      isScreenSharing: false,
+      cameraRecoveryNeedsGesture: false,
+    });
+  }, [cleanupConnections, setStatePartial]);
 
   const join = useCallback(async (authToken?: string) => {
     if (!roomId) return;
     cleanupConnections();
 
     const tokenParam = authToken ? `?token=${encodeURIComponent(authToken)}` : '';
-    const ws = new WebSocket(`${WS_BASE}/ws/video${tokenParam}`);
+    const ws = new WebSocket(`${deriveWsUrl()}/ws/video${tokenParam}`);
     wsRef.current = ws;
     userIdRef.current = `u_${Math.random().toString(36).slice(2, 8)}`;
     joinedRef.current = true;
@@ -545,6 +622,7 @@ export function useMediasoupRoom(roomId: string, role: RoomRole = 'guest') {
     toggleScreenShare,
     join,
     cleanup,
+    disconnect: cleanupConnections,
     userIdRef,
     joinedRef,
     localStreamRef,

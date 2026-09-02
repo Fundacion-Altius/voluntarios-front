@@ -26,7 +26,6 @@ function deriveWsUrl(): string {
   }
 }
 
-const WS_URL = deriveWsUrl();
 const RECONNECT_DELAY = 5000;
 
 export interface RealtimeNotification {
@@ -52,7 +51,7 @@ export function useRealtimeNotification({ authToken, onNotification }: UseRealti
     if (!authToken) return;
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
-    const ws = new WebSocket(`${WS_URL}?token=${encodeURIComponent(authToken)}`);
+    const ws = new WebSocket(`${deriveWsUrl()}?token=${encodeURIComponent(authToken)}`);
 
     ws.onopen = () => {
       if (!mountedRef.current) { ws.close(); return; }

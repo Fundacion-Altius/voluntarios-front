@@ -8,7 +8,7 @@ export function VideoGrid({ peers, localStream, userId }: { peers: Map<string, {
   const showLocal = !!localStream;
 
   return (
-    <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
       {showLocal && (
         <VideoTile key="local" stream={localStream} label={`You (${userId})`} />
       )}
@@ -33,7 +33,9 @@ function VideoTile({ stream, label }: { stream: MediaStream | undefined; label: 
     const el = videoRef.current;
     if (!el || !stream) return;
 
-    el.srcObject = stream;
+    if (el.srcObject !== stream) {
+      el.srcObject = stream;
+    }
 
     const playVideo = () => {
       if (!el) return;
@@ -47,6 +49,8 @@ function VideoTile({ stream, label }: { stream: MediaStream | undefined; label: 
     };
 
     playVideo();
+    el.addEventListener('loadeddata', playVideo);
+    el.addEventListener('canplay', playVideo);
 
     const track = stream.getVideoTracks()[0];
     if (track) {
@@ -54,21 +58,20 @@ function VideoTile({ stream, label }: { stream: MediaStream | undefined; label: 
     }
 
     return () => {
+      el.removeEventListener('loadeddata', playVideo);
+      el.removeEventListener('canplay', playVideo);
       if (track) {
         track.removeEventListener('unmute', playVideo);
-      }
-      if (el) {
-        el.srcObject = null;
       }
     };
   }, [stream, label, isLocal]);
 
   return (
-    <div className="relative overflow-hidden rounded-lg bg-black">
+        <div className="relative mx-auto aspect-[3/4] w-full max-w-[18rem] overflow-hidden rounded-2xl bg-black shadow-sm md:mx-0 md:max-w-none md:aspect-video md:rounded-lg">
       {stream ? (
-        <video ref={videoRef} autoPlay playsInline muted={isLocal} className="h-48 w-full object-cover md:h-56" />
+        <video ref={videoRef} autoPlay playsInline muted={isLocal} className="h-full w-full object-cover" />
       ) : (
-        <div className="flex h-48 w-full items-center justify-center bg-muted md:h-56">
+        <div className="flex h-full w-full items-center justify-center bg-muted">
           <span className="text-xs text-muted-foreground">No video</span>
         </div>
       )}
