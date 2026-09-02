@@ -46,15 +46,28 @@ export function useRealtimeNotification({ authToken, onNotification }: UseRealti
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
+  const intentionalCloseRef = useRef(false);
+  const onNotificationRef = useRef(onNotification);
+  onNotificationRef.current = onNotification;
+  const authTokenRef = useRef(authToken);
+  authTokenRef.current = authToken;
 
   const connect = useCallback(() => {
-    if (!authToken) return;
-    if (wsRef.current?.readyState === WebSocket.OPEN) return;
+    const token = authTokenRef.current;
+    if (!token) return;
+    const state = wsRef.current?.readyState;
+    if (state === WebSocket.OPEN || state === WebSocket.CONNECTING) return;
 
-    const ws = new WebSocket(`${deriveWsUrl()}?token=${encodeURIComponent(authToken)}`);
+    intentionalCloseRef.current = false;
+    const ws = new WebSocket(`${deriveWsUrl()}?token=${encodeURIComponent(token)}`);
+    wsRef.current = ws;
 
     ws.onopen = () => {
-      if (!mountedRef.current) { ws.close(); return; }
+      if (!mountedRef.current) {
+        intentionalCloseRef.current = true;
+        ws.close();
+        return;
+      }
       setConnected(true);
     };
 
@@ -63,7 +76,7 @@ export function useRealtimeNotification({ authToken, onNotification }: UseRealti
       try {
         const msg = JSON.parse(event.data);
         if (msg.type === 'notification' && msg.data) {
-          onNotification?.(msg.data as RealtimeNotification);
+          onNotificationRef.current?.(msg.data as RealtimeNotification);
         }
       } catch {
         // ignore malformed messages
@@ -71,33 +84,36 @@ export function useRealtimeNotification({ authToken, onNotification }: UseRealti
     };
 
     ws.onclose = () => {
-      if (!mountedRef.current) return;
+      if (wsRef.current === ws) wsRef.current = null;
       setConnected(false);
-      wsRef.current = null;
+      if (!mountedRef.current || intentionalCloseRef.current) return;
       reconnectTimerRef.current = setTimeout(connect, RECONNECT_DELAY);
     };
 
     ws.onerror = () => {
       // onclose will fire after this, which handles reconnection
     };
-
-    wsRef.current = ws;
-  }, [authToken, onNotification]);
+  }, []);
 
   useEffect(() => {
     mountedRef.current = true;
+    if (!authToken) return undefined;
     connect();
 
     return () => {
       mountedRef.current = false;
+      intentionalCloseRef.current = true;
       if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
       if (wsRef.current) {
+        wsRef.current.onopen = null;
+        wsRef.current.onmessage = null;
+        wsRef.current.onerror = null;
         wsRef.current.onclose = null;
         wsRef.current.close();
         wsRef.current = null;
       }
     };
-  }, [connect]);
+  }, [authToken, connect]);
 
   return { connected };
 }
