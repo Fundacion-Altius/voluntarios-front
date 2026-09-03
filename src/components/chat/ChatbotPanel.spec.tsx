@@ -22,6 +22,22 @@ beforeEach(() => {
   mockFetch.mockReset();
 });
 
+function mockAuthenticatedSession() {
+  mockUseSession.mockReturnValue({
+    data: { authToken: "test-token", user: { email: "a@b.com" } } as never,
+    status: "authenticated",
+    update: jest.fn(),
+  } as unknown as ReturnType<typeof useSession>);
+}
+
+function jsonResponse(body: unknown, status = 200): Response {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    json: async () => body,
+  } as Response;
+}
+
 describe("ChatbotPanel (6.1/6.2 frontend)", () => {
   it("shows login prompt when unauthenticated", () => {
     mockUseSession.mockReturnValue({
@@ -37,33 +53,24 @@ describe("ChatbotPanel (6.1/6.2 frontend)", () => {
   });
 
   it("renders input + send button when authenticated", () => {
-    mockUseSession.mockReturnValue({
-      data: { authToken: "test-token", user: { email: "a@b.com" } } as never,
-      status: "authenticated",
-      update: jest.fn(),
-    } as unknown as ReturnType<typeof useSession>);
+    mockAuthenticatedSession();
 
     render(<ChatbotPanel />);
     expect(screen.getByTestId("chatbot-input")).toBeInTheDocument();
     expect(screen.getByTestId("chatbot-send")).toBeInTheDocument();
   });
 
-  it("POSTs to /api/agent/chat and renders assistant reply", async () => {
-    mockUseSession.mockReturnValue({
-      data: { authToken: "test-token", user: { email: "a@b.com" } } as never,
-      status: "authenticated",
-      update: jest.fn(),
-    } as unknown as ReturnType<typeof useSession>);
+  it("creates a session then POSTs { content } to /messages and renders assistant reply", async () => {
+    mockAuthenticatedSession();
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        sessionId: "sess-1",
-        reply: "Hola desde el agente",
-        pendingTools: [],
-      }),
-    } as Response);
+    mockFetch
+      .mockResolvedValueOnce(jsonResponse({ id: "sess-1" }))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          reply: "Hola desde el agente",
+          pendingTools: [],
+        }),
+      );
 
     const user = userEvent.setup();
     render(<ChatbotPanel />);
@@ -76,28 +83,70 @@ describe("ChatbotPanel (6.1/6.2 frontend)", () => {
       expect(screen.getByText("Hola desde el agente")).toBeInTheDocument();
     });
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining("/api/agent/chat"),
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      1,
+      expect.stringMatching(/\/api\/agent\/chat\/sessions$/),
       expect.objectContaining({ method: "POST" }),
+    );
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      2,
+      expect.stringContaining("/api/agent/chat/sessions/sess-1/messages"),
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ content: "Hola" }),
+      }),
     );
   });
 
-  it("renders HITL pending notice when reply has pendingTools", async () => {
-    mockUseSession.mockReturnValue({
-      data: { authToken: "test-token", user: { email: "a@b.com" } } as never,
-      status: "authenticated",
-      update: jest.fn(),
-    } as unknown as ReturnType<typeof useSession>);
+  it("reuses the session id on a second message and only POSTs /messages", async () => {
+    mockAuthenticatedSession();
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        sessionId: "sess-2",
-        reply: "Necesito tu aprobación",
-        pendingTools: ["post--api-contracts"],
-      }),
-    } as Response);
+    mockFetch
+      .mockResolvedValueOnce(jsonResponse({ id: "sess-1" }))
+      .mockResolvedValueOnce(jsonResponse({ reply: "primera" }))
+      .mockResolvedValueOnce(jsonResponse({ reply: "segunda" }));
+
+    const user = userEvent.setup();
+    render(<ChatbotPanel />);
+
+    const input = screen.getByTestId("chatbot-input") as HTMLTextAreaElement;
+    await user.type(input, "uno");
+    await user.click(screen.getByTestId("chatbot-send"));
+    await waitFor(() => {
+      expect(screen.getByText("primera")).toBeInTheDocument();
+    });
+
+    await user.type(input, "dos");
+    await user.click(screen.getByTestId("chatbot-send"));
+    await waitFor(() => {
+      expect(screen.getByText("segunda")).toBeInTheDocument();
+    });
+
+    expect(mockFetch).toHaveBeenCalledTimes(3);
+    expect(mockFetch.mock.calls[0][0]).toMatch(/\/api\/agent\/chat\/sessions$/);
+    expect(mockFetch.mock.calls[1][0]).toContain(
+      "/api/agent/chat/sessions/sess-1/messages",
+    );
+    expect(mockFetch.mock.calls[2][0]).toContain(
+      "/api/agent/chat/sessions/sess-1/messages",
+    );
+    expect(JSON.parse(mockFetch.mock.calls[2][1].body)).toEqual({
+      content: "dos",
+    });
+  });
+
+  it("renders HITL pending notice when reply has pendingTools", async () => {
+    mockAuthenticatedSession();
+
+    mockFetch
+      .mockResolvedValueOnce(jsonResponse({ sessionId: "sess-2" }))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          reply: "Necesito tu aprobación",
+          pendingTools: ["post--api-contracts"],
+        }),
+      );
 
     const user = userEvent.setup();
     render(<ChatbotPanel />);
@@ -111,6 +160,14 @@ describe("ChatbotPanel (6.1/6.2 frontend)", () => {
     });
     expect(screen.getByTestId("hitl-pending-notice").textContent).toContain(
       "post--api-contracts",
+    );
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      2,
+      expect.stringContaining("/api/agent/chat/sessions/sess-2/messages"),
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ content: "crear contrato" }),
+      }),
     );
   });
 });

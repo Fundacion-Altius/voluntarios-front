@@ -14,10 +14,36 @@ interface ChatMessage {
   pendingTools?: string[];
 }
 
-interface ChatResponse {
-  sessionId: string;
-  reply: string;
+interface ChatSessionResponse {
+  id?: string;
+  sessionId?: string;
+}
+
+interface ChatMessageResponse {
+  reply?: string;
+  content?: string;
   pendingTools?: string[];
+}
+
+function authHeaders(authToken?: string): HeadersInit {
+  return {
+    "Content-Type": "application/json",
+    ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+  };
+}
+
+function sessionIdFromCreate(data: ChatSessionResponse): string | null {
+  if (typeof data.id === "string" && data.id.length > 0) return data.id;
+  if (typeof data.sessionId === "string" && data.sessionId.length > 0) {
+    return data.sessionId;
+  }
+  return null;
+}
+
+function assistantReplyFromMessage(data: ChatMessageResponse): string {
+  if (typeof data.reply === "string") return data.reply;
+  if (typeof data.content === "string") return data.content;
+  return "";
 }
 
 export function ChatbotPanel() {
@@ -57,32 +83,49 @@ export function ChatbotPanel() {
     setInput("");
 
     try {
-      const authToken = (session as { authToken?: string }).authToken;
-      const res = await fetch(`${getApiBaseUrl()}/api/agent/chat`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+      const token = (session as { authToken?: string }).authToken;
+      const headers = authHeaders(token);
+      const base = getApiBaseUrl();
+
+      let activeSessionId = sessionId;
+      if (!activeSessionId) {
+        const sessionRes = await fetch(`${base}/api/agent/chat/sessions`, {
+          method: "POST",
+          headers,
+          credentials: "include",
+        });
+        if (!sessionRes.ok) {
+          throw new Error(`Chat API error: ${sessionRes.status}`);
+        }
+        const created = (await sessionRes.json()) as ChatSessionResponse;
+        activeSessionId = sessionIdFromCreate(created);
+        if (!activeSessionId) {
+          throw new Error("Chat API error: missing session id");
+        }
+        setSessionId(activeSessionId);
+      }
+
+      const res = await fetch(
+        `${base}/api/agent/chat/sessions/${activeSessionId}/messages`,
+        {
+          method: "POST",
+          headers,
+          credentials: "include",
+          body: JSON.stringify({ content: text }),
         },
-        credentials: "include",
-        body: JSON.stringify({
-          sessionId,
-          message: text,
-        }),
-      });
+      );
 
       if (!res.ok) {
         throw new Error(`Chat API error: ${res.status}`);
       }
 
-      const data = (await res.json()) as ChatResponse;
-      setSessionId(data.sessionId);
+      const data = (await res.json()) as ChatMessageResponse;
       setMessages((prev) => [
         ...prev,
         {
           id: crypto.randomUUID(),
           role: "assistant",
-          content: data.reply,
+          content: assistantReplyFromMessage(data),
           pendingTools: data.pendingTools,
         },
       ]);
