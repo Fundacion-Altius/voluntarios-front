@@ -3,7 +3,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useSession } from "next-auth/react";
-import { ChatbotPanel } from "./ChatbotPanel";
+import { ChatbotPanel, pendingToolsFromMessage } from "./ChatbotPanel";
 
 const originalRandomUUID = globalThis.crypto?.randomUUID?.bind(globalThis.crypto);
 globalThis.crypto = globalThis.crypto ?? {} as Crypto;
@@ -169,5 +169,97 @@ describe("ChatbotPanel (6.1/6.2 frontend)", () => {
         body: JSON.stringify({ content: "crear contrato" }),
       }),
     );
+  });
+
+  it("renders HITL pending notice from toolCalls with hitlStatus pending", async () => {
+    mockAuthenticatedSession();
+
+    mockFetch
+      .mockResolvedValueOnce(jsonResponse({ id: "sess-3" }))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          id: "msg-1",
+          role: "assistant",
+          content: "Necesito tu aprobación",
+          toolCalls: [
+            {
+              toolName: "post--api-contracts",
+              hitlStatus: "pending",
+              hitlItemId: "hitl-1",
+              result: null,
+              args: {},
+            },
+            {
+              toolName: "get--api-users",
+              hitlStatus: "done",
+              hitlItemId: "hitl-2",
+              result: {},
+              args: {},
+            },
+          ],
+        }),
+      );
+
+    const user = userEvent.setup();
+    render(<ChatbotPanel />);
+
+    const input = screen.getByTestId("chatbot-input") as HTMLTextAreaElement;
+    await user.type(input, "crear contrato");
+    await user.click(screen.getByTestId("chatbot-send"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Necesito tu aprobación")).toBeInTheDocument();
+    });
+    expect(screen.getByTestId("hitl-pending-notice")).toBeInTheDocument();
+    expect(screen.getByTestId("hitl-pending-notice").textContent).toContain(
+      "post--api-contracts",
+    );
+    expect(screen.getByTestId("hitl-pending-notice").textContent).not.toContain(
+      "get--api-users",
+    );
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      2,
+      expect.stringContaining("/api/agent/chat/sessions/sess-3/messages"),
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ content: "crear contrato" }),
+      }),
+    );
+  });
+});
+
+describe("pendingToolsFromMessage", () => {
+  it("honors an explicit pendingTools array when present", () => {
+    expect(
+      pendingToolsFromMessage({
+        pendingTools: ["explicit-tool"],
+        toolCalls: [
+          { toolName: "ignored-pending", hitlStatus: "pending" },
+        ],
+      }),
+    ).toEqual(["explicit-tool"]);
+  });
+
+  it("derives toolName from toolCalls where hitlStatus is pending", () => {
+    expect(
+      pendingToolsFromMessage({
+        id: "msg-1",
+        role: "assistant",
+        content: "ok",
+        toolCalls: [
+          { toolName: "post--api-contracts", hitlStatus: "pending" },
+          { toolName: "get--api-users", hitlStatus: "approved" },
+        ],
+      }),
+    ).toEqual(["post--api-contracts"]);
+  });
+
+  it("returns undefined when no pendingTools and no pending toolCalls", () => {
+    expect(
+      pendingToolsFromMessage({
+        content: "ok",
+        toolCalls: [{ toolName: "get--api-users", hitlStatus: "done" }],
+      }),
+    ).toBeUndefined();
   });
 });

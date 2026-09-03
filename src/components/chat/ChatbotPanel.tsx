@@ -19,10 +19,21 @@ interface ChatSessionResponse {
   sessionId?: string;
 }
 
+interface ToolCall {
+  toolName?: string;
+  hitlStatus?: string;
+  hitlItemId?: string;
+  result?: unknown;
+  args?: unknown;
+}
+
 interface ChatMessageResponse {
+  id?: string;
+  role?: string;
   reply?: string;
   content?: string;
   pendingTools?: string[];
+  toolCalls?: ToolCall[];
 }
 
 function authHeaders(authToken?: string): HeadersInit {
@@ -44,6 +55,23 @@ function assistantReplyFromMessage(data: ChatMessageResponse): string {
   if (typeof data.reply === "string") return data.reply;
   if (typeof data.content === "string") return data.content;
   return "";
+}
+
+export function pendingToolsFromMessage(
+  data: ChatMessageResponse,
+): string[] | undefined {
+  if (Array.isArray(data.pendingTools)) {
+    return data.pendingTools.filter((name): name is string => typeof name === "string");
+  }
+  if (!Array.isArray(data.toolCalls)) return undefined;
+  const pending = data.toolCalls.flatMap((call) =>
+    call.hitlStatus === "pending" &&
+    typeof call.toolName === "string" &&
+    call.toolName.length > 0
+      ? [call.toolName]
+      : [],
+  );
+  return pending.length > 0 ? pending : undefined;
 }
 
 export function ChatbotPanel() {
@@ -126,7 +154,7 @@ export function ChatbotPanel() {
           id: crypto.randomUUID(),
           role: "assistant",
           content: assistantReplyFromMessage(data),
-          pendingTools: data.pendingTools,
+          pendingTools: pendingToolsFromMessage(data),
         },
       ]);
     } catch (e) {
