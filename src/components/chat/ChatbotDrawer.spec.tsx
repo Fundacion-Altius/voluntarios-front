@@ -4,6 +4,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useSession } from "next-auth/react";
 import { ChatbotDrawer } from "./ChatbotDrawer";
+import { resetAgentChatSessionCache } from "./chatbotDisplayName";
 
 jest.mock("next-auth/react", () => ({
   useSession: jest.fn(),
@@ -38,7 +39,15 @@ describe("ChatbotDrawer", () => {
 
   beforeEach(() => {
     mockFetch.mockReset();
-    mockFetch.mockResolvedValue(jsonResponse({ chatbotDisplayName: "Alti" }));
+    resetAgentChatSessionCache();
+    document.cookie = "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+    document.cookie = "csrf_token=test-csrf";
+    mockFetch.mockResolvedValue(
+      jsonResponse({
+        id: "sess-drawer",
+        agentIdentity: { chatbotDisplayName: "Alti" },
+      }),
+    );
     global.fetch = mockFetch as unknown as typeof fetch;
   });
 
@@ -66,7 +75,7 @@ describe("ChatbotDrawer", () => {
   });
 
   it("falls back to Asistente on the FAB when chatbotDisplayName is missing", async () => {
-    mockFetch.mockResolvedValue(jsonResponse({}));
+    mockFetch.mockResolvedValue(jsonResponse({ id: "sess-fallback" }));
     mockAuthenticatedSession();
     render(<ChatbotDrawer />);
 

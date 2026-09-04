@@ -7,10 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { getApiBaseUrl } from "@/lib/apiUrl";
-import {
-  chatbotDisplayNameFromPayload,
-  useChatbotDisplayName,
-} from "./chatbotDisplayName";
+import { ensureAgentChatSession, useChatbotDisplayName } from "./chatbotDisplayName";
 
 export interface PendingTool {
   toolName: string;
@@ -23,12 +20,6 @@ interface ChatMessage {
   content: string;
   pendingTools?: PendingTool[];
   hitlDecision?: "approved" | "denied";
-}
-
-interface ChatSessionResponse {
-  id?: string;
-  sessionId?: string;
-  chatbotDisplayName?: string;
 }
 
 interface ToolCall {
@@ -60,14 +51,6 @@ function authHeaders(authToken?: string): HeadersInit {
     ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
     ...(csrf ? { "X-CSRF-Token": csrf } : {}),
   };
-}
-
-function sessionIdFromCreate(data: ChatSessionResponse): string | null {
-  if (typeof data.id === "string" && data.id.length > 0) return data.id;
-  if (typeof data.sessionId === "string" && data.sessionId.length > 0) {
-    return data.sessionId;
-  }
-  return null;
 }
 
 function assistantReplyFromMessage(data: ChatMessageResponse): string {
@@ -220,7 +203,6 @@ export function ChatbotPanel({ showHeader = true }: { showHeader?: boolean }) {
   const { data: session, status } = useSession();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
-  const [sessionId, setSessionId] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hitlInFlight, setHitlInFlight] = useState<string | null>(null);
@@ -268,30 +250,11 @@ export function ChatbotPanel({ showHeader = true }: { showHeader?: boolean }) {
       await ensureCsrfCookie();
       const token = (session as { authToken?: string }).authToken;
       const headers = authHeaders(token);
-      const base = getApiBaseUrl();
-
-      let activeSessionId = sessionId;
-      if (!activeSessionId) {
-        const sessionRes = await fetch(`${base}/api/agent/chat/sessions`, {
-          method: "POST",
-          headers,
-          credentials: "include",
-        });
-        if (!sessionRes.ok) {
-          throw new Error(`Chat API error: ${sessionRes.status}`);
-        }
-        const created = (await sessionRes.json()) as ChatSessionResponse;
-        activeSessionId = sessionIdFromCreate(created);
-        if (!activeSessionId) {
-          throw new Error("Chat API error: missing session id");
-        }
-        setSessionId(activeSessionId);
-        const sessionName = chatbotDisplayNameFromPayload(created);
-        if (sessionName) setDisplayName(sessionName);
-      }
+      const ensured = await ensureAgentChatSession(token);
+      setDisplayName(ensured.displayName);
 
       const res = await fetch(
-        `${base}/api/agent/chat/sessions/${activeSessionId}/messages`,
+        `${getApiBaseUrl()}/api/agent/chat/sessions/${ensured.sessionId}/messages`,
         {
           method: "POST",
           headers,
@@ -371,7 +334,7 @@ export function ChatbotPanel({ showHeader = true }: { showHeader?: boolean }) {
             }
           >
             <div className="font-medium text-xs text-muted-foreground">
-              {m.role === "user" ? "Tú" : "Asistente"}
+              {m.role === "user" ? "Tú" : displayName}
             </div>
             <div
               className="whitespace-pre-wrap"
@@ -394,7 +357,7 @@ export function ChatbotPanel({ showHeader = true }: { showHeader?: boolean }) {
             aria-live="polite"
           >
             <div className="font-medium text-xs text-muted-foreground">
-              Asistente
+              {displayName}
             </div>
             <div className="text-muted-foreground">Pensando…</div>
           </div>

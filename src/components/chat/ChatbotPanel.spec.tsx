@@ -4,6 +4,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useSession } from "next-auth/react";
 import { ChatbotPanel, pendingToolsFromMessage } from "./ChatbotPanel";
+import { resetAgentChatSessionCache } from "./chatbotDisplayName";
 
 const originalRandomUUID = globalThis.crypto?.randomUUID?.bind(globalThis.crypto);
 globalThis.crypto = globalThis.crypto ?? {} as Crypto;
@@ -18,21 +19,13 @@ const mockUseSession = jest.mocked(useSession);
 
 const CSRF_TOKEN = "test-csrf";
 
-let mePayload: unknown = {};
-
 const mockFetch = jest.fn();
 beforeEach(() => {
-  mePayload = {};
   mockFetch.mockReset();
+  resetAgentChatSessionCache();
   document.cookie = "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
   document.cookie = `csrf_token=${CSRF_TOKEN}`;
-  global.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
-    const url = String(input);
-    if (url.includes("/api/auth/me") || url.includes("/api/tenants/current")) {
-      return jsonResponse(mePayload);
-    }
-    return mockFetch(input, init);
-  }) as typeof fetch;
+  global.fetch = mockFetch as unknown as typeof fetch;
 });
 
 function expectedAuthHeaders() {
@@ -273,7 +266,10 @@ describe("ChatbotPanel (6.1/6.2 frontend)", () => {
 
     mockFetch.mockImplementation(async (url: string) => {
       if (String(url).match(/\/api\/agent\/chat\/sessions$/)) {
-        return jsonResponse({ id: "sess-think" });
+        return jsonResponse({
+          id: "sess-think",
+          agentIdentity: { chatbotDisplayName: "Alti" },
+        });
       }
       return messagesPromise;
     });
@@ -288,7 +284,7 @@ describe("ChatbotPanel (6.1/6.2 frontend)", () => {
     await waitFor(() => {
       expect(screen.getByTestId("chatbot-thinking")).toBeInTheDocument();
     });
-    expect(screen.getByTestId("chatbot-thinking")).toHaveTextContent("Asistente");
+    expect(screen.getByTestId("chatbot-thinking")).toHaveTextContent("Alti");
     expect(screen.getByTestId("chatbot-thinking")).toHaveTextContent("Pensando…");
     expect(screen.getByTestId("chatbot-send")).toHaveTextContent("Enviando…");
     expect(screen.queryByText("respuesta lista")).not.toBeInTheDocument();
@@ -393,14 +389,24 @@ describe("ChatbotPanel (6.1/6.2 frontend)", () => {
     expect(bubbles[1].textContent).toBe("Actividades:\n• Taller\n• Comedor");
   });
 
-  it("shows chatbotDisplayName from /api/auth/me in the panel header", async () => {
-    mePayload = { chatbotDisplayName: "Alti" };
+  it("shows chatbotDisplayName from session.agentIdentity in the panel header", async () => {
     mockAuthenticatedSession();
+    mockFetch.mockResolvedValueOnce(
+      jsonResponse({
+        id: "sess-name",
+        agentIdentity: { chatbotDisplayName: "Alti" },
+      }),
+    );
+
     render(<ChatbotPanel />);
 
     await waitFor(() => {
       expect(screen.getByTestId("chatbot-panel-title")).toHaveTextContent("Alti");
     });
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringMatching(/\/api\/agent\/chat\/sessions$/),
+      expect.objectContaining({ method: "POST" }),
+    );
   });
 
   it("uses chatbotDisplayName from session create as the panel title", async () => {
@@ -408,22 +414,28 @@ describe("ChatbotPanel (6.1/6.2 frontend)", () => {
 
     mockFetch
       .mockResolvedValueOnce(
-        jsonResponse({ id: "sess-name", chatbotDisplayName: "Alti" }),
+        jsonResponse({
+          id: "sess-name",
+          agentIdentity: { chatbotDisplayName: "Alti" },
+        }),
       )
-      .mockResolvedValueOnce(jsonResponse({ reply: "Hola" }));
+      .mockResolvedValueOnce(jsonResponse({ reply: "Hola desde Alti" }));
 
     const user = userEvent.setup();
     render(<ChatbotPanel />);
 
-    expect(screen.getByTestId("chatbot-panel-title")).toHaveTextContent("Asistente");
+    await waitFor(() => {
+      expect(screen.getByTestId("chatbot-panel-title")).toHaveTextContent("Alti");
+    });
 
     const input = screen.getByTestId("chatbot-input") as HTMLTextAreaElement;
     await user.type(input, "Hola");
     await user.click(screen.getByTestId("chatbot-send"));
 
     await waitFor(() => {
-      expect(screen.getByTestId("chatbot-panel-title")).toHaveTextContent("Alti");
+      expect(screen.getByText("Hola desde Alti")).toBeInTheDocument();
     });
+    expect(screen.getByTestId("chatbot-panel-title")).toHaveTextContent("Alti");
   });
 
   it("POSTs approve with CSRF and Bearer then shows Aprobado", async () => {
