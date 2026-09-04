@@ -16,11 +16,23 @@ jest.mock("next-auth/react", () => ({
 
 const mockUseSession = jest.mocked(useSession);
 
+const CSRF_TOKEN = "test-csrf";
+
 const mockFetch = jest.fn();
 beforeEach(() => {
   global.fetch = mockFetch as unknown as typeof fetch;
   mockFetch.mockReset();
+  document.cookie = "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+  document.cookie = `csrf_token=${CSRF_TOKEN}`;
 });
+
+function expectedAuthHeaders() {
+  return expect.objectContaining({
+    "Content-Type": "application/json",
+    Authorization: "Bearer test-token",
+    "X-CSRF-Token": CSRF_TOKEN,
+  });
+}
 
 function mockAuthenticatedSession() {
   mockUseSession.mockReturnValue({
@@ -87,13 +99,19 @@ describe("ChatbotPanel (6.1/6.2 frontend)", () => {
     expect(mockFetch).toHaveBeenNthCalledWith(
       1,
       expect.stringMatching(/\/api\/agent\/chat\/sessions$/),
-      expect.objectContaining({ method: "POST" }),
+      expect.objectContaining({
+        method: "POST",
+        credentials: "include",
+        headers: expectedAuthHeaders(),
+      }),
     );
     expect(mockFetch).toHaveBeenNthCalledWith(
       2,
       expect.stringContaining("/api/agent/chat/sessions/sess-1/messages"),
       expect.objectContaining({
         method: "POST",
+        credentials: "include",
+        headers: expectedAuthHeaders(),
         body: JSON.stringify({ content: "Hola" }),
       }),
     );
@@ -125,12 +143,15 @@ describe("ChatbotPanel (6.1/6.2 frontend)", () => {
 
     expect(mockFetch).toHaveBeenCalledTimes(3);
     expect(mockFetch.mock.calls[0][0]).toMatch(/\/api\/agent\/chat\/sessions$/);
+    expect(mockFetch.mock.calls[0][1].headers["X-CSRF-Token"]).toBe(CSRF_TOKEN);
     expect(mockFetch.mock.calls[1][0]).toContain(
       "/api/agent/chat/sessions/sess-1/messages",
     );
+    expect(mockFetch.mock.calls[1][1].headers["X-CSRF-Token"]).toBe(CSRF_TOKEN);
     expect(mockFetch.mock.calls[2][0]).toContain(
       "/api/agent/chat/sessions/sess-1/messages",
     );
+    expect(mockFetch.mock.calls[2][1].headers["X-CSRF-Token"]).toBe(CSRF_TOKEN);
     expect(JSON.parse(mockFetch.mock.calls[2][1].body)).toEqual({
       content: "dos",
     });
@@ -166,6 +187,7 @@ describe("ChatbotPanel (6.1/6.2 frontend)", () => {
       expect.stringContaining("/api/agent/chat/sessions/sess-2/messages"),
       expect.objectContaining({
         method: "POST",
+        headers: expectedAuthHeaders(),
         body: JSON.stringify({ content: "crear contrato" }),
       }),
     );
@@ -222,9 +244,53 @@ describe("ChatbotPanel (6.1/6.2 frontend)", () => {
       expect.stringContaining("/api/agent/chat/sessions/sess-3/messages"),
       expect.objectContaining({
         method: "POST",
+        headers: expectedAuthHeaders(),
         body: JSON.stringify({ content: "crear contrato" }),
       }),
     );
+  });
+
+  it("fetches /api/csrf-token when the cookie is missing then sends X-CSRF-Token", async () => {
+    document.cookie = "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+    mockAuthenticatedSession();
+
+    mockFetch.mockImplementation(async (url: string) => {
+      if (String(url).includes("/api/csrf-token")) {
+        document.cookie = "csrf_token=csrf-from-endpoint";
+        return jsonResponse({ csrfToken: "csrf-from-endpoint" });
+      }
+      if (String(url).match(/\/api\/agent\/chat\/sessions$/)) {
+        return jsonResponse({ id: "sess-csrf" });
+      }
+      return jsonResponse({ reply: "ok" });
+    });
+
+    const user = userEvent.setup();
+    render(<ChatbotPanel />);
+
+    const input = screen.getByTestId("chatbot-input") as HTMLTextAreaElement;
+    await user.type(input, "Hola");
+    await user.click(screen.getByTestId("chatbot-send"));
+
+    await waitFor(() => {
+      expect(screen.getByText("ok")).toBeInTheDocument();
+    });
+
+    expect(mockFetch.mock.calls[0][0]).toMatch(/\/api\/csrf-token$/);
+    expect(mockFetch.mock.calls[0][1]).toEqual({ credentials: "include" });
+    expect(mockFetch.mock.calls[1][0]).toMatch(/\/api\/agent\/chat\/sessions$/);
+    expect(mockFetch.mock.calls[1][1].headers["X-CSRF-Token"]).toBe(
+      "csrf-from-endpoint",
+    );
+    expect(mockFetch.mock.calls[2][0]).toContain(
+      "/api/agent/chat/sessions/sess-csrf/messages",
+    );
+    expect(mockFetch.mock.calls[2][1].headers["X-CSRF-Token"]).toBe(
+      "csrf-from-endpoint",
+    );
+    expect(JSON.parse(mockFetch.mock.calls[2][1].body)).toEqual({
+      content: "Hola",
+    });
   });
 });
 

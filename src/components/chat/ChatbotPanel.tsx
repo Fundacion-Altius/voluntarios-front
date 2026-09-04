@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useState } from "react";
+import { getCSRFToken } from "@/app/lib/csrf";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,10 +37,17 @@ interface ChatMessageResponse {
   toolCalls?: ToolCall[];
 }
 
+async function ensureCsrfCookie(): Promise<void> {
+  if (typeof window === "undefined" || getCSRFToken()) return;
+  await fetch(`${getApiBaseUrl()}/api/csrf-token`, { credentials: "include" });
+}
+
 function authHeaders(authToken?: string): HeadersInit {
+  const csrf = getCSRFToken();
   return {
     "Content-Type": "application/json",
     ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+    ...(csrf ? { "X-CSRF-Token": csrf } : {}),
   };
 }
 
@@ -111,6 +119,7 @@ export function ChatbotPanel() {
     setInput("");
 
     try {
+      await ensureCsrfCookie();
       const token = (session as { authToken?: string }).authToken;
       const headers = authHeaders(token);
       const base = getApiBaseUrl();
