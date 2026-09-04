@@ -1,0 +1,53 @@
+const os = require('os');
+
+const cpuCount = os.cpus().length;
+const concurrency = Math.max(2, Math.min(6, Math.floor(cpuCount / 2)));
+
+module.exports = {
+  packageManager: 'pnpm',
+  concurrency,
+  testRunner: 'jest',
+  reporters: ['json', 'html', 'progress'],
+  coverageAnalysis: 'perTest',
+  checkers: ['typescript'],
+  plugins: [
+    '@stryker-mutator/jest-runner',
+    '@stryker-mutator/typescript-checker',
+  ],
+  incremental: true,
+  mutate: [
+    'src/lib/apiClient.ts',
+    'src/lib/apiUrl.ts',
+    'src/lib/tenantHost.ts',
+    'src/app/utils.ts',
+    'src/app/lib/csrf.ts',
+    '!src/**/*.spec.ts',
+    '!src/**/*.test.ts',
+    '!src/**/*.spec.tsx',
+    '!src/**/*.test.tsx',
+    '!src/app/api/**',
+    '!src/app/auth/**',
+    '!src/app/components/**',
+    '!src/app/dashboard/**',
+    '!src/app/[locale]/**',
+    '!src/app/confidencialidad/**',
+    '!src/app/crear-password/**',
+    '!src/app/datos/**',
+    '!src/app/encuesta/**',
+    '!src/app/hazte-voluntario/**',
+    '!src/app/imagen/**',
+    '!src/app/impacto/**',
+    '!src/app/login/**',
+    '!src/app/portal/**',
+    '!src/app/recuperar-password/**',
+    '!src/app/restablecer-password/**',
+    '!src/components/**',
+    '!src/i18n/**',
+    '!src/__tests__/**',
+    '!src/hooks/**',
+    '!src/lib/api/grantApi.ts',
+    '!src/types/grant.ts',
+    '!.next/**',
+    '!node_modules/**',
+  ],
+};
