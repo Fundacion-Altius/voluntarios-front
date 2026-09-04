@@ -18,12 +18,21 @@ const mockUseSession = jest.mocked(useSession);
 
 const CSRF_TOKEN = "test-csrf";
 
+let mePayload: unknown = {};
+
 const mockFetch = jest.fn();
 beforeEach(() => {
-  global.fetch = mockFetch as unknown as typeof fetch;
+  mePayload = {};
   mockFetch.mockReset();
   document.cookie = "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
   document.cookie = `csrf_token=${CSRF_TOKEN}`;
+  global.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+    if (url.includes("/api/auth/me") || url.includes("/api/tenants/current")) {
+      return jsonResponse(mePayload);
+    }
+    return mockFetch(input, init);
+  }) as typeof fetch;
 });
 
 function expectedAuthHeaders() {
@@ -353,6 +362,67 @@ describe("ChatbotPanel (6.1/6.2 frontend)", () => {
     );
     expect(JSON.parse(mockFetch.mock.calls[2][1].body)).toEqual({
       content: "Hola",
+    });
+  });
+
+  it("renders assistant newlines with whitespace-pre-wrap", async () => {
+    mockAuthenticatedSession();
+
+    mockFetch
+      .mockResolvedValueOnce(jsonResponse({ id: "sess-wrap" }))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          reply: "Actividades:\n• Taller\n• Comedor",
+        }),
+      );
+
+    const user = userEvent.setup();
+    render(<ChatbotPanel />);
+
+    const input = screen.getByTestId("chatbot-input") as HTMLTextAreaElement;
+    await user.type(input, "actividades");
+    await user.click(screen.getByTestId("chatbot-send"));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Actividades:/)).toBeInTheDocument();
+    });
+
+    const bubbles = screen.getAllByTestId("chatbot-message-content");
+    expect(bubbles[0]).toHaveClass("whitespace-pre-wrap");
+    expect(bubbles[1]).toHaveClass("whitespace-pre-wrap");
+    expect(bubbles[1].textContent).toBe("Actividades:\n• Taller\n• Comedor");
+  });
+
+  it("shows chatbotDisplayName from /api/auth/me in the panel header", async () => {
+    mePayload = { chatbotDisplayName: "Alti" };
+    mockAuthenticatedSession();
+    render(<ChatbotPanel />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("chatbot-panel-title")).toHaveTextContent("Alti");
+    });
+  });
+
+  it("uses chatbotDisplayName from session create as the panel title", async () => {
+    mockAuthenticatedSession();
+
+    mockFetch
+      .mockResolvedValueOnce(
+        jsonResponse({ id: "sess-name", chatbotDisplayName: "Alti" }),
+      )
+      .mockResolvedValueOnce(jsonResponse({ reply: "Hola" }));
+
+    const user = userEvent.setup();
+    render(<ChatbotPanel />);
+
+    expect(screen.getByTestId("chatbot-panel-title")).toHaveTextContent("Asistente");
+
+    const input = screen.getByTestId("chatbot-input") as HTMLTextAreaElement;
+    await user.type(input, "Hola");
+    await user.click(screen.getByTestId("chatbot-send"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("chatbot-panel-title")).toHaveTextContent("Alti");
     });
   });
 

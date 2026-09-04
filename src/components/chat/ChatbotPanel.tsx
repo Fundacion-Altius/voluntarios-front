@@ -7,6 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { getApiBaseUrl } from "@/lib/apiUrl";
+import {
+  chatbotDisplayNameFromPayload,
+  useChatbotDisplayName,
+} from "./chatbotDisplayName";
 
 export interface PendingTool {
   toolName: string;
@@ -24,6 +28,7 @@ interface ChatMessage {
 interface ChatSessionResponse {
   id?: string;
   sessionId?: string;
+  chatbotDisplayName?: string;
 }
 
 interface ToolCall {
@@ -211,7 +216,7 @@ function HitlPendingNotice({
   );
 }
 
-export function ChatbotPanel() {
+export function ChatbotPanel({ showHeader = true }: { showHeader?: boolean }) {
   const { data: session, status } = useSession();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -220,6 +225,11 @@ export function ChatbotPanel() {
   const [error, setError] = useState<string | null>(null);
   const [hitlInFlight, setHitlInFlight] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const authToken = (session as { authToken?: string } | null)?.authToken;
+  const { displayName, setDisplayName } = useChatbotDisplayName(
+    status === "authenticated" && !!session,
+    authToken,
+  );
 
   useEffect(() => {
     if (!isSending) return;
@@ -276,6 +286,8 @@ export function ChatbotPanel() {
           throw new Error("Chat API error: missing session id");
         }
         setSessionId(activeSessionId);
+        const sessionName = chatbotDisplayNameFromPayload(created);
+        if (sessionName) setDisplayName(sessionName);
       }
 
       const res = await fetch(
@@ -332,6 +344,14 @@ export function ChatbotPanel() {
 
   return (
     <Card className="flex flex-col gap-3 p-4" data-testid="chatbot-panel">
+      {showHeader ? (
+        <h1
+          className="text-base font-semibold"
+          data-testid="chatbot-panel-title"
+        >
+          {displayName}
+        </h1>
+      ) : null}
       <div
         ref={listRef}
         className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto"
@@ -353,7 +373,12 @@ export function ChatbotPanel() {
             <div className="font-medium text-xs text-muted-foreground">
               {m.role === "user" ? "Tú" : "Asistente"}
             </div>
-            <div>{m.content}</div>
+            <div
+              className="whitespace-pre-wrap"
+              data-testid="chatbot-message-content"
+            >
+              {m.content}
+            </div>
             <HitlPendingNotice
               pendingTools={m.pendingTools}
               hitlDecision={m.hitlDecision}
@@ -384,7 +409,7 @@ export function ChatbotPanel() {
         </div>
       )}
       <Textarea
-        aria-label="Mensaje al chatbot"
+        aria-label={`Mensaje a ${displayName}`}
         placeholder="Escribe tu mensaje…"
         value={input}
         onChange={(e) => setInput(e.target.value)}
