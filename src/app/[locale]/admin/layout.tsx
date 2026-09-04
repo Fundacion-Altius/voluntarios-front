@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminBottomNav from '@/components/admin/AdminBottomNav';
 import { NotificationBell } from '@/components/NotificationBell';
+import { ChatbotDrawer } from '@/components/chat/ChatbotDrawer';
 import { RoutePendingProvider } from '@/components/navigation/RoutePending';
 
 export default function AdminLayout({
@@ -47,6 +48,7 @@ export default function AdminLayout({
         <div className="fixed right-4 top-4 z-50">
           <NotificationBell />
         </div>
+        <ChatbotDrawer />
       </div>
     );
   }
@@ -76,6 +78,7 @@ export default function AdminLayout({
       <div className="fixed right-4 top-4 z-50">
         <NotificationBell />
       </div>
+      <ChatbotDrawer />
     </div>
     </RoutePendingProvider>
   );
