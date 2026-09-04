@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Sidebar from '@/components/portal/Sidebar';
 import BottomNav from '@/components/portal/BottomNav';
 import { NotificationBell } from '@/components/NotificationBell';
+import { ChatbotDrawer } from '@/components/chat/ChatbotDrawer';
 import { RoutePendingProvider } from '@/components/navigation/RoutePending';
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
@@ -64,6 +65,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       <div className="fixed right-4 top-4 z-50">
         <NotificationBell />
       </div>
+      <ChatbotDrawer />
     </div>
     </RoutePendingProvider>
   );
