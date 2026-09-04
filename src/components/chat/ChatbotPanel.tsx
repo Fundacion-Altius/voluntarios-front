@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getCSRFToken } from "@/app/lib/csrf";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -89,6 +89,12 @@ export function ChatbotPanel() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isSending) return;
+    listRef.current?.lastElementChild?.scrollIntoView?.({ block: "nearest" });
+  }, [isSending, messages.length]);
 
   if (status === "loading") {
     return <div className="p-4 text-sm text-muted-foreground">Cargando…</div>;
@@ -176,7 +182,10 @@ export function ChatbotPanel() {
 
   return (
     <Card className="flex flex-col gap-3 p-4" data-testid="chatbot-panel">
-      <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto">
+      <div
+        ref={listRef}
+        className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto"
+      >
         {messages.length === 0 && (
           <p className="text-sm text-muted-foreground">
             Escribe un mensaje para iniciar la conversación con el asistente.
@@ -205,6 +214,18 @@ export function ChatbotPanel() {
             )}
           </div>
         ))}
+        {isSending && (
+          <div
+            className="self-start max-w-[80%] rounded-md bg-muted px-3 py-2 text-sm"
+            data-testid="chatbot-thinking"
+            aria-live="polite"
+          >
+            <div className="font-medium text-xs text-muted-foreground">
+              Asistente
+            </div>
+            <div className="text-muted-foreground">Pensando…</div>
+          </div>
+        )}
       </div>
       {error && (
         <div

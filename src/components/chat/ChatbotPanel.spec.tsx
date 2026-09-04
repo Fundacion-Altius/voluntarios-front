@@ -250,6 +250,65 @@ describe("ChatbotPanel (6.1/6.2 frontend)", () => {
     );
   });
 
+  it("shows an in-chat thinking indicator while a send is in flight and hides it after resolve", async () => {
+    mockAuthenticatedSession();
+
+    let resolveMessages: (value: Response) => void = () => {};
+    const messagesPromise = new Promise<Response>((resolve) => {
+      resolveMessages = resolve;
+    });
+
+    mockFetch.mockImplementation(async (url: string) => {
+      if (String(url).match(/\/api\/agent\/chat\/sessions$/)) {
+        return jsonResponse({ id: "sess-think" });
+      }
+      return messagesPromise;
+    });
+
+    const user = userEvent.setup();
+    render(<ChatbotPanel />);
+
+    const input = screen.getByTestId("chatbot-input") as HTMLTextAreaElement;
+    await user.type(input, "Hola");
+    await user.click(screen.getByTestId("chatbot-send"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("chatbot-thinking")).toBeInTheDocument();
+    });
+    expect(screen.getByTestId("chatbot-thinking")).toHaveTextContent("Asistente");
+    expect(screen.getByTestId("chatbot-thinking")).toHaveTextContent("Pensando…");
+    expect(screen.getByTestId("chatbot-send")).toHaveTextContent("Enviando…");
+    expect(screen.queryByText("respuesta lista")).not.toBeInTheDocument();
+
+    resolveMessages(jsonResponse({ reply: "respuesta lista" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("respuesta lista")).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId("chatbot-thinking")).not.toBeInTheDocument();
+    expect(screen.getByTestId("chatbot-send")).toHaveTextContent("Enviar");
+  });
+
+  it("hides the thinking indicator when the send fails", async () => {
+    mockAuthenticatedSession();
+
+    mockFetch
+      .mockResolvedValueOnce(jsonResponse({ id: "sess-err" }))
+      .mockResolvedValueOnce(jsonResponse({}, 500));
+
+    const user = userEvent.setup();
+    render(<ChatbotPanel />);
+
+    const input = screen.getByTestId("chatbot-input") as HTMLTextAreaElement;
+    await user.type(input, "Hola");
+    await user.click(screen.getByTestId("chatbot-send"));
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId("chatbot-thinking")).not.toBeInTheDocument();
+  });
+
   it("fetches /api/csrf-token when the cookie is missing then sends X-CSRF-Token", async () => {
     document.cookie = "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
     mockAuthenticatedSession();
