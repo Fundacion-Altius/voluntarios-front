@@ -8,11 +8,17 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { getApiBaseUrl } from "@/lib/apiUrl";
 
+export interface PendingTool {
+  toolName: string;
+  hitlItemId?: string;
+}
+
 interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
-  pendingTools?: string[];
+  pendingTools?: PendingTool[];
+  hitlDecision?: "approved" | "denied";
 }
 
 interface ChatSessionResponse {
@@ -65,21 +71,144 @@ function assistantReplyFromMessage(data: ChatMessageResponse): string {
   return "";
 }
 
+function hitlItemIdFromCalls(
+  toolCalls: ToolCall[] | undefined,
+  toolName: string,
+): string | undefined {
+  if (!Array.isArray(toolCalls)) return undefined;
+  const match = toolCalls.find(
+    (call) =>
+      call.toolName === toolName &&
+      call.hitlStatus === "pending" &&
+      typeof call.hitlItemId === "string" &&
+      call.hitlItemId.length > 0,
+  );
+  return match?.hitlItemId;
+}
+
+function pendingToolFromCall(call: ToolCall): PendingTool | undefined {
+  if (
+    call.hitlStatus !== "pending" ||
+    typeof call.toolName !== "string" ||
+    call.toolName.length === 0
+  ) {
+    return undefined;
+  }
+  const item: PendingTool = { toolName: call.toolName };
+  if (typeof call.hitlItemId === "string" && call.hitlItemId.length > 0) {
+    item.hitlItemId = call.hitlItemId;
+  }
+  return item;
+}
+
 export function pendingToolsFromMessage(
   data: ChatMessageResponse,
-): string[] | undefined {
+): PendingTool[] | undefined {
   if (Array.isArray(data.pendingTools)) {
-    return data.pendingTools.filter((name): name is string => typeof name === "string");
+    return data.pendingTools.flatMap((name) => {
+      if (typeof name !== "string" || name.length === 0) return [];
+      const hitlItemId = hitlItemIdFromCalls(data.toolCalls, name);
+      return hitlItemId ? [{ toolName: name, hitlItemId }] : [{ toolName: name }];
+    });
   }
   if (!Array.isArray(data.toolCalls)) return undefined;
-  const pending = data.toolCalls.flatMap((call) =>
-    call.hitlStatus === "pending" &&
-    typeof call.toolName === "string" &&
-    call.toolName.length > 0
-      ? [call.toolName]
-      : [],
-  );
+  const pending = data.toolCalls.flatMap((call) => {
+    const item = pendingToolFromCall(call);
+    return item ? [item] : [];
+  });
   return pending.length > 0 ? pending : undefined;
+}
+
+function withHitlDecision(
+  messages: ChatMessage[],
+  hitlItemId: string,
+  decision: "approved" | "denied",
+): ChatMessage[] {
+  return messages.map((message) => {
+    if (!message.pendingTools?.some((tool) => tool.hitlItemId === hitlItemId)) {
+      return message;
+    }
+    const pendingTools = message.pendingTools.filter((tool) => tool.hitlItemId !== hitlItemId);
+    return {
+      ...message,
+      pendingTools,
+      hitlDecision: pendingTools.length === 0 ? decision : message.hitlDecision,
+    };
+  });
+}
+
+async function postHitlDecision(
+  hitlItemId: string,
+  action: "approve" | "deny",
+  authToken?: string,
+): Promise<void> {
+  await ensureCsrfCookie();
+  const res = await fetch(
+    `${getApiBaseUrl()}/api/hitl/${encodeURIComponent(hitlItemId)}/${action}`,
+    {
+      method: "POST",
+      headers: authHeaders(authToken),
+      credentials: "include",
+    },
+  );
+  if (!res.ok) {
+    throw new Error(`HITL API error: ${res.status}`);
+  }
+}
+
+function HitlPendingNotice({
+  pendingTools,
+  hitlDecision,
+  inFlight,
+  onDecide,
+}: {
+  pendingTools?: PendingTool[];
+  hitlDecision?: "approved" | "denied";
+  inFlight: boolean;
+  onDecide: (item: PendingTool, action: "approve" | "deny") => void;
+}) {
+  const pending = pendingTools ?? [];
+  if (pending.length === 0 && !hitlDecision) return null;
+
+  const actionable = pending.find((tool) => typeof tool.hitlItemId === "string" && tool.hitlItemId.length > 0);
+
+  return (
+    <div
+      className="mt-2 rounded border border-amber-300 bg-amber-50 px-2 py-1 text-xs text-amber-900"
+      data-testid="hitl-pending-notice"
+    >
+      {pending.length > 0 ? (
+        <>
+          <div>Esperando aprobación humana para: {pending.map((tool) => tool.toolName).join(", ")}</div>
+          {actionable ? (
+            <div className="mt-1 flex flex-wrap gap-1">
+              <Button
+                type="button"
+                size="xs"
+                data-testid="hitl-approve"
+                disabled={inFlight}
+                onClick={() => onDecide(actionable, "approve")}
+              >
+                Permitir
+              </Button>
+              <Button
+                type="button"
+                size="xs"
+                variant="outline"
+                data-testid="hitl-deny"
+                disabled={inFlight}
+                onClick={() => onDecide(actionable, "deny")}
+              >
+                Denegar
+              </Button>
+            </div>
+          ) : null}
+        </>
+      ) : (
+        <div>{hitlDecision === "approved" ? "Aprobado" : "Denegado"}</div>
+      )}
+    </div>
+  );
 }
 
 export function ChatbotPanel() {
@@ -89,6 +218,7 @@ export function ChatbotPanel() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hitlInFlight, setHitlInFlight] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -180,6 +310,26 @@ export function ChatbotPanel() {
     }
   };
 
+  const decideHitl = async (item: PendingTool, action: "approve" | "deny") => {
+    const hitlItemId = item.hitlItemId;
+    if (!hitlItemId || hitlInFlight) return;
+
+    setError(null);
+    setHitlInFlight(hitlItemId);
+    try {
+      const token = (session as { authToken?: string }).authToken;
+      await postHitlDecision(hitlItemId, action, token);
+      setMessages((prev) =>
+        withHitlDecision(prev, hitlItemId, action === "approve" ? "approved" : "denied"),
+      );
+    } catch (e) {
+      const err = e instanceof Error ? e.message : String(e);
+      setError(err);
+    } finally {
+      setHitlInFlight(null);
+    }
+  };
+
   return (
     <Card className="flex flex-col gap-3 p-4" data-testid="chatbot-panel">
       <div
@@ -204,14 +354,12 @@ export function ChatbotPanel() {
               {m.role === "user" ? "Tú" : "Asistente"}
             </div>
             <div>{m.content}</div>
-            {m.pendingTools && m.pendingTools.length > 0 && (
-              <div
-                className="mt-2 rounded border border-amber-300 bg-amber-50 px-2 py-1 text-xs text-amber-900"
-                data-testid="hitl-pending-notice"
-              >
-                Esperando aprobación humana para: {m.pendingTools.join(", ")}
-              </div>
-            )}
+            <HitlPendingNotice
+              pendingTools={m.pendingTools}
+              hitlDecision={m.hitlDecision}
+              inFlight={hitlInFlight !== null}
+              onDecide={(item, action) => void decideHitl(item, action)}
+            />
           </div>
         ))}
         {isSending && (

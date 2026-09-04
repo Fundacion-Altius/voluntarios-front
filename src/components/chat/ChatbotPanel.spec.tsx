@@ -182,6 +182,8 @@ describe("ChatbotPanel (6.1/6.2 frontend)", () => {
     expect(screen.getByTestId("hitl-pending-notice").textContent).toContain(
       "post--api-contracts",
     );
+    expect(screen.queryByTestId("hitl-approve")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("hitl-deny")).not.toBeInTheDocument();
     expect(mockFetch).toHaveBeenNthCalledWith(
       2,
       expect.stringContaining("/api/agent/chat/sessions/sess-2/messages"),
@@ -239,6 +241,8 @@ describe("ChatbotPanel (6.1/6.2 frontend)", () => {
     expect(screen.getByTestId("hitl-pending-notice").textContent).not.toContain(
       "get--api-users",
     );
+    expect(screen.getByTestId("hitl-approve")).toHaveTextContent("Permitir");
+    expect(screen.getByTestId("hitl-deny")).toHaveTextContent("Denegar");
     expect(mockFetch).toHaveBeenNthCalledWith(
       2,
       expect.stringContaining("/api/agent/chat/sessions/sess-3/messages"),
@@ -351,6 +355,198 @@ describe("ChatbotPanel (6.1/6.2 frontend)", () => {
       content: "Hola",
     });
   });
+
+  it("POSTs approve with CSRF and Bearer then shows Aprobado", async () => {
+    mockAuthenticatedSession();
+
+    mockFetch
+      .mockResolvedValueOnce(jsonResponse({ id: "sess-hitl-ok" }))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          content: "Necesito tu aprobación",
+          toolCalls: [
+            {
+              toolName: "post--api-contracts",
+              hitlStatus: "pending",
+              hitlItemId: "hitl-1",
+            },
+          ],
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({ decision: "approved", item: { id: "hitl-1" } }),
+      );
+
+    const user = userEvent.setup();
+    render(<ChatbotPanel />);
+
+    const input = screen.getByTestId("chatbot-input") as HTMLTextAreaElement;
+    await user.type(input, "crear contrato");
+    await user.click(screen.getByTestId("chatbot-send"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("hitl-approve")).toBeInTheDocument();
+    });
+    await user.click(screen.getByTestId("hitl-approve"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("hitl-pending-notice")).toHaveTextContent("Aprobado");
+    });
+    expect(screen.queryByTestId("hitl-approve")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("hitl-deny")).not.toBeInTheDocument();
+    expect(screen.queryByText(/Esperando aprobación humana/)).not.toBeInTheDocument();
+
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      3,
+      expect.stringContaining("/api/hitl/hitl-1/approve"),
+      expect.objectContaining({
+        method: "POST",
+        credentials: "include",
+        headers: expectedAuthHeaders(),
+      }),
+    );
+  });
+
+  it("POSTs deny with CSRF and Bearer then shows Denegado", async () => {
+    mockAuthenticatedSession();
+
+    mockFetch
+      .mockResolvedValueOnce(jsonResponse({ id: "sess-hitl-deny" }))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          content: "Necesito tu aprobación",
+          toolCalls: [
+            {
+              toolName: "post--api-contracts",
+              hitlStatus: "pending",
+              hitlItemId: "hitl-9",
+            },
+          ],
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({ decision: "denied", item: { id: "hitl-9" } }),
+      );
+
+    const user = userEvent.setup();
+    render(<ChatbotPanel />);
+
+    const input = screen.getByTestId("chatbot-input") as HTMLTextAreaElement;
+    await user.type(input, "crear contrato");
+    await user.click(screen.getByTestId("chatbot-send"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("hitl-deny")).toBeInTheDocument();
+    });
+    await user.click(screen.getByTestId("hitl-deny"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("hitl-pending-notice")).toHaveTextContent("Denegado");
+    });
+    expect(screen.queryByTestId("hitl-approve")).not.toBeInTheDocument();
+
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      3,
+      expect.stringContaining("/api/hitl/hitl-9/deny"),
+      expect.objectContaining({
+        method: "POST",
+        credentials: "include",
+        headers: expectedAuthHeaders(),
+      }),
+    );
+  });
+
+  it("disables HITL buttons while approve is in flight", async () => {
+    mockAuthenticatedSession();
+
+    let resolveApprove: (value: Response) => void = () => {};
+    const approvePromise = new Promise<Response>((resolve) => {
+      resolveApprove = resolve;
+    });
+
+    mockFetch.mockImplementation(async (url: string) => {
+      if (String(url).match(/\/api\/agent\/chat\/sessions$/)) {
+        return jsonResponse({ id: "sess-hitl-wait" });
+      }
+      if (String(url).includes("/messages")) {
+        return jsonResponse({
+          content: "Necesito tu aprobación",
+          toolCalls: [
+            {
+              toolName: "post--api-contracts",
+              hitlStatus: "pending",
+              hitlItemId: "hitl-wait",
+            },
+          ],
+        });
+      }
+      return approvePromise;
+    });
+
+    const user = userEvent.setup();
+    render(<ChatbotPanel />);
+
+    const input = screen.getByTestId("chatbot-input") as HTMLTextAreaElement;
+    await user.type(input, "crear contrato");
+    await user.click(screen.getByTestId("chatbot-send"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("hitl-approve")).toBeEnabled();
+    });
+    await user.click(screen.getByTestId("hitl-approve"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("hitl-approve")).toBeDisabled();
+    });
+    expect(screen.getByTestId("hitl-deny")).toBeDisabled();
+
+    resolveApprove(jsonResponse({ decision: "approved", item: { id: "hitl-wait" } }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("hitl-pending-notice")).toHaveTextContent("Aprobado");
+    });
+  });
+
+  it("shows HITL API errors in the existing error area and keeps pending buttons", async () => {
+    mockAuthenticatedSession();
+
+    mockFetch
+      .mockResolvedValueOnce(jsonResponse({ id: "sess-hitl-err" }))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          content: "Necesito tu aprobación",
+          toolCalls: [
+            {
+              toolName: "post--api-contracts",
+              hitlStatus: "pending",
+              hitlItemId: "hitl-err",
+            },
+          ],
+        }),
+      )
+      .mockResolvedValueOnce(jsonResponse({}, 500));
+
+    const user = userEvent.setup();
+    render(<ChatbotPanel />);
+
+    const input = screen.getByTestId("chatbot-input") as HTMLTextAreaElement;
+    await user.type(input, "crear contrato");
+    await user.click(screen.getByTestId("chatbot-send"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("hitl-approve")).toBeInTheDocument();
+    });
+    await user.click(screen.getByTestId("hitl-approve"));
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent("HITL API error: 500");
+    });
+    expect(screen.getByTestId("hitl-pending-notice")).toHaveTextContent(
+      "Esperando aprobación humana",
+    );
+    expect(screen.getByTestId("hitl-approve")).toBeEnabled();
+    expect(screen.getByTestId("hitl-deny")).toBeEnabled();
+  });
 });
 
 describe("pendingToolsFromMessage", () => {
@@ -362,7 +558,7 @@ describe("pendingToolsFromMessage", () => {
           { toolName: "ignored-pending", hitlStatus: "pending" },
         ],
       }),
-    ).toEqual(["explicit-tool"]);
+    ).toEqual([{ toolName: "explicit-tool" }]);
   });
 
   it("derives toolName from toolCalls where hitlStatus is pending", () => {
@@ -376,7 +572,36 @@ describe("pendingToolsFromMessage", () => {
           { toolName: "get--api-users", hitlStatus: "approved" },
         ],
       }),
-    ).toEqual(["post--api-contracts"]);
+    ).toEqual([{ toolName: "post--api-contracts" }]);
+  });
+
+  it("includes hitlItemId from pending toolCalls", () => {
+    expect(
+      pendingToolsFromMessage({
+        toolCalls: [
+          {
+            toolName: "post--api-contracts",
+            hitlStatus: "pending",
+            hitlItemId: "hitl-1",
+          },
+        ],
+      }),
+    ).toEqual([{ toolName: "post--api-contracts", hitlItemId: "hitl-1" }]);
+  });
+
+  it("attaches hitlItemId from matching pending toolCalls onto pendingTools names", () => {
+    expect(
+      pendingToolsFromMessage({
+        pendingTools: ["post--api-contracts"],
+        toolCalls: [
+          {
+            toolName: "post--api-contracts",
+            hitlStatus: "pending",
+            hitlItemId: "hitl-9",
+          },
+        ],
+      }),
+    ).toEqual([{ toolName: "post--api-contracts", hitlItemId: "hitl-9" }]);
   });
 
   it("returns undefined when no pendingTools and no pending toolCalls", () => {
