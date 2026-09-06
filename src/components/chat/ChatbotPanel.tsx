@@ -7,7 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { getApiBaseUrl } from "@/lib/apiUrl";
-import { ensureAgentChatSession, useChatbotDisplayName } from "./chatbotDisplayName";
+import {
+  ensureAgentChatSession,
+  resetAgentChatSessionCache,
+  useChatbotDisplayName,
+} from "./chatbotDisplayName";
 
 export interface PendingTool {
   toolName: string;
@@ -144,6 +148,38 @@ async function postHitlDecision(
   }
 }
 
+async function postChatMessageWithSessionRetry(
+  content: string,
+  authToken: string | undefined,
+  headers: HeadersInit,
+  setDisplayName: (name: string) => void,
+): Promise<ChatMessageResponse> {
+  const postOnce = async (sessionId: string) =>
+    fetch(`${getApiBaseUrl()}/api/agent/chat/sessions/${sessionId}/messages`, {
+      method: "POST",
+      headers,
+      credentials: "include",
+      body: JSON.stringify({ content }),
+    });
+
+  let ensured = await ensureAgentChatSession(authToken);
+  setDisplayName(ensured.displayName);
+  let res = await postOnce(ensured.sessionId);
+
+  // Stale module-cached session after backend restart / multi-instance miss
+  if (res.status === 404) {
+    resetAgentChatSessionCache();
+    ensured = await ensureAgentChatSession(authToken);
+    setDisplayName(ensured.displayName);
+    res = await postOnce(ensured.sessionId);
+  }
+
+  if (!res.ok) {
+    throw new Error(`Chat API error: ${res.status}`);
+  }
+  return (await res.json()) as ChatMessageResponse;
+}
+
 function HitlPendingNotice({
   pendingTools,
   hitlDecision,
@@ -250,24 +286,7 @@ export function ChatbotPanel({ showHeader = true }: { showHeader?: boolean }) {
       await ensureCsrfCookie();
       const token = (session as { authToken?: string }).authToken;
       const headers = authHeaders(token);
-      const ensured = await ensureAgentChatSession(token);
-      setDisplayName(ensured.displayName);
-
-      const res = await fetch(
-        `${getApiBaseUrl()}/api/agent/chat/sessions/${ensured.sessionId}/messages`,
-        {
-          method: "POST",
-          headers,
-          credentials: "include",
-          body: JSON.stringify({ content: text }),
-        },
-      );
-
-      if (!res.ok) {
-        throw new Error(`Chat API error: ${res.status}`);
-      }
-
-      const data = (await res.json()) as ChatMessageResponse;
+      const data = await postChatMessageWithSessionRetry(text, token, headers, setDisplayName);
       setMessages((prev) => [
         ...prev,
         {
