@@ -2,19 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-import { getApiBaseUrl } from '@/lib/apiUrl';
-
-const API_URL = getApiBaseUrl();
-
-function deriveWsUrl(): string {
-  try {
-    const url = new URL(API_URL);
-    const protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
-    return `${protocol}//${url.host}`;
-  } catch {
-    return 'ws://localhost:3001';
-  }
-}
+import { deriveWsUrl } from '@/lib/wsUrl';
 
 const WS_URL = deriveWsUrl();
 const RECONNECT_DELAY = 5000;

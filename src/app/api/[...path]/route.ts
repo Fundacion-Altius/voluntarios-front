@@ -10,6 +10,8 @@ async function proxy(request: NextRequest) {
   const headers = new Headers(request.headers);
   const incomingHost = headers.get('host');
   headers.delete('host');
+  // Node fetch decompresses the upstream body; never ask for (or advertise) compression.
+  headers.set('accept-encoding', 'identity');
   if (incomingHost) {
     headers.set('x-forwarded-host', incomingHost);
   }
@@ -25,7 +27,10 @@ async function proxy(request: NextRequest) {
   });
 
   const responseHeaders = new Headers(res.headers);
+  // Hop-by-hop / encoding headers are invalid after Node has already decoded the body.
   responseHeaders.delete('transfer-encoding');
+  responseHeaders.delete('content-encoding');
+  responseHeaders.delete('content-length');
 
   return new NextResponse(res.body, {
     status: res.status,
