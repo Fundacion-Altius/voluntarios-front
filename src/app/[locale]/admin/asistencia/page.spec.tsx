@@ -88,7 +88,8 @@ describe('admin asistencia page', () => {
       expect(screen.getByText('Ana García')).toBeInTheDocument();
     });
     expect(screen.getByText('Confirmada')).toBeInTheDocument();
-    expect(screen.getByText(/\d{2}:05/)).toBeInTheDocument();
+    // toLocaleTimeString() is runner-locale: "09:05:00" locally vs "9:05:00 AM" on GitHub ubuntu.
+    expect(screen.getByText(/\d{1,2}:05/)).toBeInTheDocument();
   });
 
   it('shows cancelled entries with a badge and offers walk-in form for free volunteers', async () => {
