@@ -7,8 +7,14 @@
  * tenant host to establish the session there.
  */
 
-import { NextResponse } from 'next/server';
-import { verifySignedState, createHandoffToken, getAuthHost, isAuthHost } from '@/lib/authState';
+import { NextRequest, NextResponse } from 'next/server';
+import {
+  verifySignedState,
+  createHandoffToken,
+  getAuthHost,
+  isAuthHost,
+  type HandoffTokenPayload,
+} from '@/lib/authState';
 import { getToken } from 'next-auth/jwt';
 
 /**
@@ -50,7 +56,7 @@ function validateAndExtractState(state: string): { tenant: string; returnTo: str
 /**
  * Validates that the request is coming from an auth host
  */
-function validateAuthHost(request: Request): boolean {
+function validateAuthHost(request: NextRequest): boolean {
   const host = request.headers.get('host') || request.headers.get('x-forwarded-host');
   if (!isAuthHost(host)) {
     console.error(`Tenant handoff: not on auth host (${host})`);
@@ -62,11 +68,11 @@ function validateAuthHost(request: Request): boolean {
 /**
  * Extracts user data from NextAuth session
  */
-function extractUserDataFromSession(session: Record<string, any>) {
+function extractUserDataFromSession(session: Record<string, unknown>) {
   return {
-    id: session.sub || '',
-    email: session.email || '',
-    name: session.name || '',
+    id: (session.sub as string) || '',
+    email: (session.email as string) || '',
+    name: (session.name as string) || '',
     role: session.role as string | undefined,
     user_type: session.user_type as string | undefined,
   };
@@ -75,11 +81,14 @@ function extractUserDataFromSession(session: Record<string, any>) {
 /**
  * Creates a handoff token payload
  */
-function createHandoffPayload(userData: Record<string, any>, session: Record<string, any>): object {
+function createHandoffPayload(
+  userData: HandoffTokenPayload['user'],
+  session: Record<string, unknown>,
+): HandoffTokenPayload {
   return {
     user: userData,
-    authToken: session.authToken || '',
-    csrfToken: session.csrfToken,
+    authToken: (session.authToken as string) || '',
+    csrfToken: session.csrfToken as string | undefined,
     expires: Date.now() + 5 * 60 * 1000, // 5 minutes from now
   };
 }
@@ -131,29 +140,29 @@ function handleHandoffError(error: unknown, requestUrl: string): NextResponse {
   );
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
   // Validate OAuth callback parameters
-  const validationResult = validateOAuthCallback(searchParams, request.url);
-  if ('error' in validationResult && validationResult.error) {
+  const validationResult = validateOAuthCallback(searchParams);
+  if ('error' in validationResult) {
     return handleOAuthError(validationResult.error, validationResult.errorDescription, request.url);
   }
 
-  // Extract and validate state
-  const verifiedState = validateAndExtractState(validationResult.state);
-  if (!verifiedState) {
-    return handleValidationError('invalid_state', request.url);
-  }
-
-  const { tenant, returnTo } = verifiedState;
-
-  // Verify we're on an auth host
-  if (!validateAuthHost(request)) {
-    return handleValidationError('not_auth_host', request.url);
-  }
-
   try {
+    // Extract and validate state
+    const verifiedState = validateAndExtractState(validationResult.state);
+    if (!verifiedState) {
+      return handleValidationError('invalid_state', request.url);
+    }
+
+    const { tenant, returnTo } = verifiedState;
+
+    // Verify we're on an auth host
+    if (!validateAuthHost(request)) {
+      return handleValidationError('not_auth_host', request.url);
+    }
+
     // Get session from NextAuth
     const session = await getToken({
       req: request,
@@ -181,6 +190,6 @@ export async function GET(request: Request) {
 }
 
 // Handle POST requests as well (some OAuth providers might use POST)
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   return GET(request);
 }

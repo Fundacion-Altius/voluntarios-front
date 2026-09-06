@@ -12,8 +12,8 @@ test.describe('Contract → Email Flow (production)', () => {
     await page.locator('input#telefono').fill('600000000');
     await page.locator('input#email').fill('creciendotech@gmail.com');
 
-    await page.locator('#Presencial').check();
-    await page.locator('[id="Reparto de Alimentos"]').check();
+    await page.locator('#Presencial').click();
+    await page.locator('[id="Reparto de Alimentos"]').click();
 
     await page.evaluate(() => {
       const trigger = document.querySelector('#lugar') as HTMLElement;
@@ -29,7 +29,7 @@ test.describe('Contract → Email Flow (production)', () => {
         }
       }
     });
-    await page.locator('#dias-lab-ma').check();
+    await page.locator('#dias-lab-ma').click();
 
     await page.locator('button[type="submit"]').click();
     await expect(page.locator('label:has-text("Firma:")')).toBeVisible({ timeout: 10000 });
@@ -49,9 +49,9 @@ test.describe('Contract → Email Flow (production)', () => {
     await page.locator('button:has-text("Siguiente")').click();
     await expect(page.getByText('Acepto la autorización para')).toBeVisible();
 
-    await page.locator('#datos').check();
-    await page.locator('#confidencialidad').check();
-    await page.locator('#imagen').check();
+    await page.locator('#datos').click();
+    await page.locator('#confidencialidad').click();
+    await page.locator('#imagen').click();
     await page.locator('button:has-text("Enviar contrato")').click();
     await expect(page.locator('text=Tu contrato se ha enviado')).toBeVisible({ timeout: 15000 });
   });

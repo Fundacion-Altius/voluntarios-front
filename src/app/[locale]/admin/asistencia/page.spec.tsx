@@ -12,6 +12,19 @@ jest.mock('next-auth/react', () => ({
   useSession: () => stableSession,
 }));
 
+jest.mock('@/i18n/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    back: jest.fn(),
+    prefetch: jest.fn(),
+  }),
+  Link: ({ children, href, ...props }: { children: React.ReactNode; href: string }) => (
+    <a href={href} {...props}>{children}</a>
+  ),
+  usePathname: () => '/es/admin/asistencia',
+}));
+
 const TYPE_ID = '22222222-2222-2222-2222-222222222222';
 const entry = {
   activityTypeId: TYPE_ID,

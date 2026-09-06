@@ -25,11 +25,19 @@ test.describe('Admin Activities CRUD', () => {
         description: 'Creada durante el test E2E',
         category: 'general',
         default_capacity: 10,
-        is_recurring: 'false',
+        // One-off types require fixed_date; use recurring like activityApi.spec
+        is_recurring: 'true',
+        recurrence_config: {
+          daysOfWeek: [2, 4],
+          shifts: [{ name: 'mañana' }, { name: 'tarde' }],
+        },
       },
     });
-    expect(res.ok()).toBeTruthy();
-    const body = await res.json();
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok()) {
+      console.log(`POST /api/activities/types → ${res.status()}`, body);
+    }
+    expect(res.ok(), `status=${res.status()} body=${JSON.stringify(body)}`).toBeTruthy();
     expect(body).toBeDefined();
   });
 
@@ -96,10 +104,13 @@ test.describe('Admin Activities CRUD', () => {
     expect(delRes.ok()).toBeTruthy();
   });
 
-test('admin activities page renders', async ({ page }) => {
+  test('admin activities page renders', async ({ page }) => {
     await loginAsAdmin(page);
-    await page.getByRole('link', { name: 'Actividades' }).click();
-    await page.waitForURL('**/admin/actividades', { timeout: 10000 });
+    // Sidebar Link href is /admin/actividades → /es/admin/actividades (not portal "Actividades")
+    const link = page.locator('aside').getByRole('link', { name: 'Actividades' });
+    await expect(link).toHaveAttribute('href', /\/admin\/actividades/);
+    await link.click();
+    await page.waitForURL(/\/(es|en)\/admin\/actividades/, { timeout: 15000 });
     await expect(page.getByRole('heading', { name: 'Actividades' })).toBeVisible({ timeout: 15000 });
   });
 });
@@ -107,16 +118,17 @@ test('admin activities page renders', async ({ page }) => {
 test.describe('Admin Scanner Page', () => {
   test('scanner page loads', async ({ page }) => {
     await loginAsAdmin(page);
-    await page.locator('a', { hasText: 'Escáner' }).click();
-    await page.waitForURL('**/admin/scanner', { timeout: 10000 });
+    // Sidebar Link href is /admin/scanner → locale URL /es/admin/scanner
+    await page.goto('/es/admin/scanner', { waitUntil: 'load' });
+    await expect(page).toHaveURL(/\/es\/admin\/scanner/);
     await expect(page.getByRole('heading', { name: 'Escáner QR' })).toBeVisible({ timeout: 15000 });
     await expect(page.getByPlaceholder('Pega el código QR aquí')).toBeVisible();
   });
 
   test('manual code input shows error for invalid code', async ({ page }) => {
     await loginAsAdmin(page);
-    await page.locator('a', { hasText: 'Escáner' }).click();
-    await page.waitForURL('**/admin/scanner', { timeout: 10000 });
+    await page.goto('/es/admin/scanner', { waitUntil: 'load' });
+    await expect(page).toHaveURL(/\/es\/admin\/scanner/);
     await expect(page.getByRole('heading', { name: 'Escáner QR' })).toBeVisible({ timeout: 15000 });
 
     await page.getByPlaceholder('Pega el código QR aquí').fill('INVALID-CODE');

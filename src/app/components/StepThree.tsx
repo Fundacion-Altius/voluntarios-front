@@ -47,6 +47,7 @@ const StepThree: React.FC<StepThreeProps> = ({
               handleInputChange({
                 target: {
                   id: "datos",
+                  name: "derechoDatos",
                   type: "checkbox",
                   checked: checked as boolean,
                 },
@@ -69,6 +70,7 @@ const StepThree: React.FC<StepThreeProps> = ({
               handleInputChange({
                 target: {
                   id: "confidencialidad",
+                  name: "derechoConfidencialidad",
                   type: "checkbox",
                   checked: checked as boolean,
                 },
@@ -91,6 +93,7 @@ const StepThree: React.FC<StepThreeProps> = ({
               handleInputChange({
                 target: {
                   id: "imagen",
+                  name: "derechoImagen",
                   type: "checkbox",
                   checked: checked as boolean,
                 },

@@ -19,15 +19,42 @@ export async function loginAsBrowser(
   email: string,
   password: string,
 ): Promise<void> {
-  const csrfRes = await page.request.get(`${FRONTEND_URL}/api/auth/csrf`);
-  const { csrfToken } = await csrfRes.json();
+  // Retry CSRF — Next dev server can ECONNRESET under parallel workers
+  let csrfToken: string | undefined;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const csrfRes = await page.request.get(`${FRONTEND_URL}/api/auth/csrf`);
+      if (csrfRes.ok()) {
+        csrfToken = (await csrfRes.json()).csrfToken;
+        if (csrfToken) break;
+      }
+    } catch {
+      // transient ECONNRESET / connection reset
+    }
+    if (attempt < 3) await new Promise((r) => setTimeout(r, 1000 * attempt));
+  }
+  if (!csrfToken) {
+    throw new Error('Failed to fetch NextAuth CSRF token after retries (front :3000)');
+  }
 
-  const authRes = await page.request.post(
-    `${FRONTEND_URL}/api/auth/callback/credentials`,
-    {
-      form: { csrfToken, email, password, json: 'true' },
-    },
-  );
+  let authRes: Awaited<ReturnType<typeof page.request.post>> | null = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      authRes = await page.request.post(
+        `${FRONTEND_URL}/api/auth/callback/credentials`,
+        {
+          form: { csrfToken, email, password, json: 'true' },
+        },
+      );
+      break;
+    } catch {
+      // transient ECONNRESET under parallel worker load; retry
+    }
+    if (attempt < 3) await new Promise((r) => setTimeout(r, 1000 * attempt));
+  }
+  if (!authRes) {
+    throw new Error('Failed credentials callback after retries (front :3000)');
+  }
 
   const raw = authRes.headers()['set-cookie'] || '';
   const match = raw.match(/next-auth\.session-token=([^;]+)/);

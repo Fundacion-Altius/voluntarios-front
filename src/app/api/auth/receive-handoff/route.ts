@@ -6,8 +6,8 @@
  * creates a NextAuth session on the tenant host, and sets a host-only session cookie.
  */
 
-import { NextResponse } from 'next/server';
-import { verifyHandoffToken, isAuthHost } from '@/lib/authState';
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyHandoffToken, isAuthHost, type HandoffTokenPayload } from '@/lib/authState';
 import { encode } from 'next-auth/jwt';
 
 /**
@@ -30,7 +30,7 @@ function validateHandoffParams(searchParams: URLSearchParams): {
 /**
  * Validates the handoff token and checks expiry
  */
-function __validateHandoffTokenData(token: string): Record<string, any> | { error: string } {
+function validateHandoffTokenData(token: string): HandoffTokenPayload | { error: string } {
   const handoffPayload = verifyHandoffToken(token);
   if (!handoffPayload) {
     return { error: 'invalid_token' };
@@ -47,7 +47,7 @@ function __validateHandoffTokenData(token: string): Record<string, any> | { erro
 /**
  * Validates that we're on a tenant host (not auth host)
  */
-function validateTenantHost(request: Request): boolean {
+function validateTenantHost(request: NextRequest): boolean {
   const host = request.headers.get('host') || request.headers.get('x-forwarded-host');
   if (isAuthHost(host)) {
     console.error(`Receive handoff: should not be on auth host (${host})`);
@@ -59,23 +59,23 @@ function validateTenantHost(request: Request): boolean {
 /**
  * Creates a NextAuth session token from handoff payload
  */
-async function createSessionToken(handoffPayload: Record<string, any>): Promise<string> {
+async function createSessionToken(handoffPayload: HandoffTokenPayload): Promise<string> {
+  const secret = process.env.NEXTAUTH_SECRET;
+  if (!secret) {
+    throw new Error('NEXTAUTH_SECRET is required');
+  }
+
   return encode({
-    token: handoffPayload.authToken,
-    user: {
-      id: handoffPayload.user.id,
-      email: handoffPayload.user.email,
+    token: {
       name: handoffPayload.user.name,
+      email: handoffPayload.user.email,
+      sub: handoffPayload.user.id,
       role: handoffPayload.user.role,
       user_type: handoffPayload.user.user_type,
+      csrfToken: handoffPayload.csrfToken,
+      authToken: handoffPayload.authToken,
     },
-    name: handoffPayload.user.name,
-    email: handoffPayload.user.email,
-    sub: handoffPayload.user.id,
-    role: handoffPayload.user.role,
-    user_type: handoffPayload.user.user_type,
-    csrfToken: handoffPayload.csrfToken,
-    authToken: handoffPayload.authToken,
+    secret,
   });
 }
 
@@ -84,7 +84,7 @@ async function createSessionToken(handoffPayload: Record<string, any>): Promise<
  */
 function buildSessionResponse(
   returnTo: string,
-  request: Request,
+  request: NextRequest,
   sessionToken: string,
   csrfToken: string | undefined
 ): NextResponse {
@@ -133,27 +133,27 @@ function handleReceiveError(error: unknown, requestUrl: string): NextResponse {
   );
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
-  // Validate request parameters
-  const params = validateHandoffParams(searchParams);
-  if ('error' in params) {
-    return handleValidationError(params.error, request.url);
-  }
-
-  // Validate handoff token
-  const handoffPayload = validateHandooffTokenData(params.token);
-  if ('error' in handoffPayload) {
-    return handleValidationError(handoffPayload.error, request.url);
-  }
-
-  // Verify we're on a tenant host
-  if (!validateTenantHost(request)) {
-    return handleValidationError('on_auth_host', request.url);
-  }
-
   try {
+    // Validate request parameters
+    const params = validateHandoffParams(searchParams);
+    if ('error' in params) {
+      return handleValidationError(params.error, request.url);
+    }
+
+    // Validate handoff token
+    const handoffPayload = validateHandoffTokenData(params.token);
+    if ('error' in handoffPayload) {
+      return handleValidationError(handoffPayload.error, request.url);
+    }
+
+    // Verify we're on a tenant host
+    if (!validateTenantHost(request)) {
+      return handleValidationError('on_auth_host', request.url);
+    }
+
     // Create session token
     const sessionToken = await createSessionToken(handoffPayload);
 
@@ -175,6 +175,6 @@ export async function GET(request: Request) {
 }
 
 // Handle POST requests as well
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   return GET(request);
 }

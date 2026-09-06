@@ -1,10 +1,12 @@
 /**
+ * @jest-environment node
+ *
  * Unit tests for receive-handoff endpoint
  * Tests the session establishment on tenant hosts
  */
 
 import { GET, POST } from './route';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { verifyHandoffToken, isAuthHost } from '@/lib/authState';
 import { encode } from 'next-auth/jwt';
 
@@ -20,20 +22,22 @@ jest.mock('@/lib/authState', () => ({
 
 describe('receive-handoff endpoint', () => {
   const mockRequest = (url: string, headers?: Record<string, string>) => {
-    return new Request(url, {
+    return new NextRequest(url, {
       headers: headers || {},
     });
   };
 
+  const env = process.env as Record<string, string | undefined>;
+
   beforeEach(() => {
     jest.clearAllMocks();
-    process.env.NEXTAUTH_SECRET = 'test-secret';
-    process.env.NODE_ENV = 'development';
+    env.NEXTAUTH_SECRET = 'test-secret';
+    env.NODE_ENV = 'development';
   });
 
   afterEach(() => {
-    delete process.env.NEXTAUTH_SECRET;
-    delete process.env.NODE_ENV;
+    delete env.NEXTAUTH_SECRET;
+    env.NODE_ENV = 'test';
   });
 
   describe('GET method', () => {
@@ -41,7 +45,7 @@ describe('receive-handoff endpoint', () => {
       const request = mockRequest('http://fundacionaltius.localhost:3000/api/auth/receive-handoff');
       const response = await GET(request);
       
-      expect(response.status).toBe(302);
+      expect(response.status).toBe(307);
       const url = new URL(response.headers.get('location') || '');
       expect(url.searchParams.get('error')).toBe('missing_token');
     });
@@ -52,7 +56,7 @@ describe('receive-handoff endpoint', () => {
       const request = mockRequest('http://fundacionaltius.localhost:3000/api/auth/receive-handoff?token=invalid-token');
       const response = await GET(request);
       
-      expect(response.status).toBe(302);
+      expect(response.status).toBe(307);
       const url = new URL(response.headers.get('location') || '');
       expect(url.searchParams.get('error')).toBe('invalid_token');
     });
@@ -69,7 +73,7 @@ describe('receive-handoff endpoint', () => {
       const request = mockRequest('http://fundacionaltius.localhost:3000/api/auth/receive-handoff?token=expired-token');
       const response = await GET(request);
       
-      expect(response.status).toBe(302);
+      expect(response.status).toBe(307);
       const url = new URL(response.headers.get('location') || '');
       expect(url.searchParams.get('error')).toBe('token_expired');
     });
@@ -89,7 +93,7 @@ describe('receive-handoff endpoint', () => {
       });
       const response = await GET(request);
       
-      expect(response.status).toBe(302);
+      expect(response.status).toBe(307);
       const url = new URL(response.headers.get('location') || '');
       expect(url.searchParams.get('error')).toBe('on_auth_host');
     });
@@ -117,34 +121,29 @@ describe('receive-handoff endpoint', () => {
       });
       const response = await GET(request);
       
-      expect(response.status).toBe(302);
+      expect(response.status).toBe(307);
       const location = response.headers.get('location');
-      expect(location).toBe('/admin/dashboard');
+      expect(location).toBe('http://fundacionaltius.localhost:3000/admin/dashboard');
       
       // Verify session cookie is set
       const setCookie = response.headers.get('set-cookie');
       expect(setCookie).toContain('next-auth.session-token=test-session-token');
       expect(setCookie).toContain('Path=/');
       expect(setCookie).toContain('HttpOnly');
-      expect(setCookie).toContain('SameSite=Lax');
+      expect(setCookie).toMatch(/SameSite=lax/i);
       
-      // Verify encode was called with correct payload
+      // Verify encode was called with correct JWT payload
       expect(encode).toHaveBeenCalledWith({
-        token: 'test-auth-token',
-        user: {
-          id: 'user-123',
-          email: 'test@example.com',
+        token: {
           name: 'Test User',
+          email: 'test@example.com',
+          sub: 'user-123',
           role: 'admin',
           user_type: 'staff',
+          csrfToken: 'test-csrf-token',
+          authToken: 'test-auth-token',
         },
-        name: 'Test User',
-        email: 'test@example.com',
-        sub: 'user-123',
-        role: 'admin',
-        user_type: 'staff',
-        csrfToken: 'test-csrf-token',
-        authToken: 'test-auth-token',
+        secret: 'test-secret',
       });
     });
 
@@ -170,7 +169,7 @@ describe('receive-handoff endpoint', () => {
     });
 
     it('should use secure cookies in production', async () => {
-      process.env.NODE_ENV = 'production';
+      env.NODE_ENV = 'production';
       
       const validPayload = {
         user: { id: 'user-123', email: 'test@example.com', name: 'Test User' },
@@ -200,7 +199,7 @@ describe('receive-handoff endpoint', () => {
       const request = mockRequest('http://fundacionaltius.localhost:3000/api/auth/receive-handoff?token=valid-token');
       const response = await GET(request);
       
-      expect(response.status).toBe(302);
+      expect(response.status).toBe(307);
       const url = new URL(response.headers.get('location') || '');
       expect(url.searchParams.get('error')).toBe('session_creation_failed');
     });
@@ -219,15 +218,15 @@ describe('receive-handoff endpoint', () => {
       (isAuthHost as jest.Mock).mockReturnValue(false);
       (encode as jest.Mock).mockResolvedValue('test-session-token');
       
-      const request = new Request('http://fundacionaltius.localhost:3000/api/auth/receive-handoff?token=valid-token&return_to=/admin/dashboard', {
+      const request = new NextRequest('http://fundacionaltius.localhost:3000/api/auth/receive-handoff?token=valid-token&return_to=/admin/dashboard', {
         method: 'POST',
         headers: { host: 'fundacionaltius.localhost:3000' },
       });
       const response = await POST(request);
       
-      expect(response.status).toBe(302);
+      expect(response.status).toBe(307);
       const location = response.headers.get('location');
-      expect(location).toBe('/admin/dashboard');
+      expect(location).toBe('http://fundacionaltius.localhost:3000/admin/dashboard');
     });
   });
 });

@@ -4,7 +4,10 @@ import path from 'path';
 
 const BACKEND_URL = 'http://localhost:3001';
 const FRONTEND_URL = 'http://localhost:3000';
-const PUBLIC_DIR = path.resolve('/home/student/Documentos/dev/voluntarios/voluntarios-back/public');
+// Monorepo-relative (or E2E_BACKEND_PUBLIC_DIR); never hardcode /home/student/...
+const PUBLIC_DIR =
+  process.env.E2E_BACKEND_PUBLIC_DIR ||
+  path.resolve(process.cwd(), '../voluntarios-back/public');
 
 test('contract form renders styled shadcn elements', async ({ page }) => {
   const errors: string[] = [];
@@ -55,6 +58,7 @@ test('create a contract with Nave area and generate PDF', async ({ request }) =>
   };
 
   // Clear any existing PDFs for a clean check
+  fs.mkdirSync(PUBLIC_DIR, { recursive: true });
   const beforeFiles = fs.readdirSync(PUBLIC_DIR).filter(f => f.startsWith('contrato-') && f.endsWith('.pdf'));
   for (const f of beforeFiles) {
     fs.unlinkSync(path.join(PUBLIC_DIR, f));

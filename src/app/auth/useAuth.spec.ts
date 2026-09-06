@@ -1,11 +1,21 @@
 import { renderHook, act } from '@testing-library/react';
 import { useAuth } from './useAuth';
-import { useSession, signIn, signOut } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react';
 
 jest.mock('next-auth/react', () => ({
   useSession: jest.fn(),
   signIn: jest.fn(),
   signOut: jest.fn(),
+}));
+
+const mockRouterPush = jest.fn();
+jest.mock('@/i18n/navigation', () => ({
+  useRouter: () => ({
+    push: mockRouterPush,
+    replace: jest.fn(),
+    back: jest.fn(),
+    prefetch: jest.fn(),
+  }),
 }));
 
 const clearHadSession = jest.fn();
@@ -16,6 +26,7 @@ jest.mock('./AuthProvider', () => ({
 describe('useAuth', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    global.fetch = jest.fn();
   });
 
   it('returns unauthenticated state when no session', () => {
@@ -72,20 +83,23 @@ describe('useAuth', () => {
     expect(signIn).toHaveBeenCalledWith('credentials', { callbackUrl: '/admin/dashboard' });
   });
 
-  it('calls signOut with callback on logout', () => {
+  it('clears session and routes to login on logout', async () => {
     (useSession as jest.Mock).mockReturnValue({
       data: {},
       status: 'authenticated',
     });
+    (global.fetch as jest.Mock)
+      .mockResolvedValueOnce({ json: async () => ({ csrfToken: 'csrf' }) })
+      .mockResolvedValueOnce({ type: 'opaqueredirect', status: 302 });
 
     const { result } = renderHook(() => useAuth());
 
-    act(() => {
-      result.current.logout();
+    await act(async () => {
+      await result.current.logout();
     });
 
     expect(clearHadSession).toHaveBeenCalled();
-    expect(signOut).toHaveBeenCalledWith({ callbackUrl: '/login' });
+    expect(mockRouterPush).toHaveBeenCalledWith('/login');
   });
 
   it('exposes next-auth status', () => {

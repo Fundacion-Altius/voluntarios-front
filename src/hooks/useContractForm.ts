@@ -7,6 +7,13 @@ import { apiPost } from '@/app/lib/csrf';
 
 type Result<T> = { success: true; data?: T } | { success: false; error: string };
 
+/** DOM checkbox ids → DatosContrato boolean field names */
+const CONSENT_FIELD_BY_ID: Record<string, keyof DatosContrato> = {
+  datos: 'derechoDatos',
+  confidencialidad: 'derechoConfidencialidad',
+  imagen: 'derechoImagen',
+};
+
 export function useContractForm() {
   const [step, setStep] = useState(1);
   const [datosContrato, setDatosContrato] = useState<DatosContrato>({
@@ -45,9 +52,9 @@ export function useContractForm() {
   ) => {
     if (e.type !== 'select') {
       const { name, value, type, id } = e.target;
-      // Use id as fallback when name is not present (custom Radix checkbox buttons
-      // don't carry a semantic name attribute on the button element)
-      const fieldName = name ?? id;
+      // Prefer name; fall back to id. Map consent checkbox DOM ids → derecho* fields.
+      const rawKey = name || id;
+      const fieldName = CONSENT_FIELD_BY_ID[rawKey] ?? rawKey;
       if (type !== 'checkbox') {
         return setDatosContrato((prev) => ({ ...prev, [fieldName]: value }));
       }

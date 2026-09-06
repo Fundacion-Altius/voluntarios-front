@@ -32,8 +32,8 @@ test.describe('Contract Generation Flow', () => {
     await page.locator('input#domicilio').fill('123 Main St');
     await page.locator('input#telefono').fill('123456789');
     await page.locator('input#email').fill('john@example.com');
-    await page.locator('#Presencial').check();
-    await page.locator('[id="Reparto de Alimentos"]').check();
+    await page.locator('#Presencial').click();
+    await page.locator('[id="Reparto de Alimentos"]').click();
     await page.evaluate(() => {
       const trigger = document.querySelector('#lugar') as HTMLElement;
       if (trigger) trigger.click();
@@ -48,7 +48,7 @@ test.describe('Contract Generation Flow', () => {
         }
       }
     });
-    await page.locator('#dias-lab-ma').check();
+    await page.locator('#dias-lab-ma').click();
 
     // Verify form is interactive (React has hydrated) before clicking submit
     await page.waitForFunction(() => {
@@ -79,9 +79,9 @@ test.describe('Contract Generation Flow', () => {
     await expect(page.getByText('Acepto la autorización para')).toBeVisible();
 
     // 3.3 Consent checkboxes and contract submission scenario
-    await page.locator('#datos').check();
-    await page.locator('#confidencialidad').check();
-    await page.locator('#imagen').check();
+    await page.locator('#datos').click();
+    await page.locator('#confidencialidad').click();
+    await page.locator('#imagen').click();
     await page.locator('button:has-text("Enviar contrato")').click();
     await expect(page.locator('text=Tu contrato se ha enviado')).toBeVisible();
 

@@ -16,8 +16,8 @@ test.describe('Real API Flow @real-api', () => {
       await page.locator('input#domicilio').fill('123 Real St');
       await page.locator('input#telefono').fill('123456789');
       await page.locator('input#email').fill(`real-e2e-${uniqueId}@test.com`);
-      await page.locator('#Presencial').check();
-      await page.locator('[id="Nave"]').check();
+      await page.locator('#Presencial').click();
+      await page.locator('[id="Nave"]').click();
       await page.evaluate(() => {
         const trigger = document.querySelector('#lugar') as HTMLElement;
         if (trigger) trigger.click();
@@ -32,7 +32,7 @@ test.describe('Real API Flow @real-api', () => {
           }
         }
       });
-      await page.locator('#dias-lab-ma').check();
+      await page.locator('#dias-lab-ma').click();
 
       await page.waitForFunction(() => {
         const form = document.querySelector('form');
@@ -60,9 +60,9 @@ test.describe('Real API Flow @real-api', () => {
       await expect(page.getByText('Acepto la autorización para')).toBeVisible();
 
       // ───── Step 3: Consent checkboxes and submit ─────
-      await page.locator('#datos').check();
-      await page.locator('#confidencialidad').check();
-      await page.locator('#imagen').check();
+      await page.locator('#datos').click();
+      await page.locator('#confidencialidad').click();
+      await page.locator('#imagen').click();
 
       const [response] = await Promise.all([
         page.waitForResponse((res) => res.url().includes('/api/contracts') && res.request().method() === 'POST'),
@@ -103,9 +103,18 @@ test.describe('Real API Flow @real-api', () => {
       expect(contractData.areas).toContain('Nave');
       expect(contractData.domicilio).toBe('123 Real St');
       expect(contractData.telefono).toBe('123456789');
-      expect(contractData.derechoDatos).toBe(true);
-      expect(contractData.derechoImagen).toBe(true);
-      expect(contractData.derechoConfidencialidad).toBe(true);
+      try {
+        expect(contractData.derechoDatos).toBe(true);
+        expect(contractData.derechoImagen).toBe(true);
+        expect(contractData.derechoConfidencialidad).toBe(true);
+      } catch (err) {
+        console.log('rights fields from GET /api/contracts/:id', {
+          derechoDatos: contractData.derechoDatos,
+          derechoImagen: contractData.derechoImagen,
+          derechoConfidencialidad: contractData.derechoConfidencialidad,
+        });
+        throw err;
+      }
       expect(contractData.firma).not.toBe('data:image/png;base64,');
       expect(typeof contractData.firma).toBe('object');
       expect(contractData.firma).toHaveProperty('iv');

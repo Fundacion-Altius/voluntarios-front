@@ -9,6 +9,10 @@ export default defineConfig({
   reporter: 'html',
   use: {
     baseURL: process.env.NEXTAUTH_URL || 'http://localhost:3000',
+    locale: 'es-ES',
+    extraHTTPHeaders: {
+      'Accept-Language': 'es-ES,es;q=0.9',
+    },
     trace: 'on-first-retry',
   },
   webServer: {

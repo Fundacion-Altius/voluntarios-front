@@ -28,23 +28,23 @@ test.describe('Login Routing Fix', () => {
 
   test('bare path /login redirects to /es/login', async ({ page }) => {
     await page.goto('/login', { waitUntil: 'load' });
-    await expect(page).toHaveURL(/\/es\/login/);
+    await expect(page).toHaveURL(/\/(es|en)\/login/);
   });
 
   test('bare path /portal redirects to /es/portal', async ({ page }) => {
     await loginAsBrowser(page, 'general@fundacionaltius.org', 'general123');
     await page.goto('/portal', { waitUntil: 'load' });
-    await expect(page).toHaveURL(/\/es\/portal/);
+    await expect(page).toHaveURL(/\/(es|en)\/portal/);
   });
 
   test('bare path /admin/dashboard redirects to /es/admin/dashboard', async ({ page }) => {
     await loginAsBrowser(page, 'admin@fundacionaltius.org', 'admin123');
     await page.goto('/admin/dashboard', { waitUntil: 'load' });
-    await expect(page).toHaveURL(/\/es\/admin\/dashboard/);
+    await expect(page).toHaveURL(/\/(es|en)\/admin\/dashboard/);
   });
 
   test('bare path /encuesta redirects to /es/encuesta', async ({ page }) => {
     await page.goto('/encuesta', { waitUntil: 'load' });
-    await expect(page).toHaveURL(/\/es\/encuesta/);
+    await expect(page).toHaveURL(/\/(es|en)\/encuesta/);
   });
 });

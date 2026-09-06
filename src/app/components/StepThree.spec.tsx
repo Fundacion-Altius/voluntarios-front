@@ -95,4 +95,19 @@ describe("StepThree Component", () => {
     expect(screen.getByRole("link", { name: /autorización de confidencialidad/i })).toHaveAttribute("href", "/es/confidencialidad");
     expect(screen.getByRole("link", { name: /cesión de derechos de imagen/i })).toHaveAttribute("href", "/es/imagen");
   });
+
+  it("calls handleInputChange with derecho* field names when consent checkboxes toggle", async () => {
+    const { user } = setup();
+    const checkboxes = document.querySelectorAll('[data-slot="checkbox"]');
+    expect(checkboxes.length).toBeGreaterThanOrEqual(3);
+    await user.click(checkboxes[0]);
+    await user.click(checkboxes[1]);
+    await user.click(checkboxes[2]);
+    const names = mockHandleInputChange.mock.calls.map(
+      (c) => (c[0] as React.ChangeEvent<HTMLInputElement>).target.name,
+    );
+    expect(names).toEqual(
+      expect.arrayContaining(["derechoDatos", "derechoConfidencialidad", "derechoImagen"]),
+    );
+  });
 });

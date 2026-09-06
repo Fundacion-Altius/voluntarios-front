@@ -6,7 +6,7 @@ test.describe('Survey Flow (real API)', () => {
 
     await expect(page).toHaveURL('/es/encuesta');
 
-    const questionText = page.getByText('¿Cómo valoras la organización de la actividad?');
+    const questionText = page.getByText('¿Cómo valoras la organización de la actividad?').first();
     await expect(questionText).toBeVisible({ timeout: 10000 });
 
     const starButtons = page.getByRole('button', { name: /Rate \d out of 5/ });
@@ -82,9 +82,11 @@ test.describe('Survey Flow (real API)', () => {
 
     const homeLink = page.getByRole('link', { name: 'Volver al inicio' });
     await expect(homeLink).toBeVisible();
+    await expect(homeLink).toHaveAttribute('href', /\/(es\/?)?$/);
 
     await homeLink.click();
-    await expect(page).toHaveURL('http://localhost:3000/');
+    // next-intl Link → `/es` (locale home); allow bare `/` too
+    await page.waitForURL(/\/(es\/?)?$/, { timeout: 15000 });
   });
 
   test('anonymous access without authentication', async ({ page }) => {
