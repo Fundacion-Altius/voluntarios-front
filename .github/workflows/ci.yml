@@ -1,8 +1,18 @@
-# CI for voluntarios-front — the safety net. Nothing builds or deploys unless
-# every step here is green: lint (next lint), unit tests (Jest), and a real
-# production build (typecheck + bundle, i.e. the exact artifact CD ships).
-# Playwright e2e tests need the full backend stack, so they are not part of
-# this gate (see docs/conventions/testing.md).
+# CI for voluntarios-front — aligns with the monorepo Definition of Done:
+#   doppler run -- ./scripts/check-done.sh --front
+#
+# check-done --front runs:
+#   1. pnpm exec jest --watchAll=false
+#   2. pnpm run typecheck
+#   3. pnpm run lint
+#   4. pnpm run test:e2e   (Playwright; needs Doppler + a live backend)
+#
+# This workflow runs gates 1–3 on every push/PR to main and dev, plus the
+# existing production `pnpm build` packaging gate (Next.js). Gate 4 is a
+# separate job that runs only when DOPPLER_TOKEN is configured; otherwise
+# it exits 0 with a skip message. Do not invent stub secrets here.
+#
+# Vercel still deploys on push. Mutation testing stays in mutation-testing.yml.
 
 name: CI
 
@@ -31,11 +41,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint
-        run: pnpm lint
-
       - name: Unit tests
-        run: pnpm test
+        run: pnpm exec jest --watchAll=false
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Lint
+        run: pnpm run lint
 
       # Verifies the production bundle that CD will ship. Build-time public
       # config is stubbed to localhost; real values come from build args in CD.
@@ -45,3 +58,56 @@ jobs:
           NEXT_PUBLIC_API_URL: http://localhost:3001
           NEXTAUTH_URL: http://localhost:3000
           NEXT_PUBLIC_AZURE_AD_ENABLED: 'false'
+
+  e2e:
+    name: Playwright e2e
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Doppler token
+        id: doppler
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+        run: |
+          if [ -z "${DOPPLER_TOKEN}" ]; then
+            echo "available=false" >> "${GITHUB_OUTPUT}"
+            echo "::notice title=Playwright e2e skipped::DOPPLER_TOKEN is not configured. Local DoD: doppler run -- ./scripts/check-done.sh --front (last gate: pnpm run test:e2e)."
+            echo "Skipping Playwright e2e: DOPPLER_TOKEN is not configured on this repository."
+            echo "Local Definition of Done: doppler run -- ./scripts/check-done.sh --front"
+            echo "That script's last gate is pnpm run test:e2e, which needs Doppler-injected env and a live backend stack."
+            echo "Add a DOPPLER_TOKEN repository (or environment) secret to run this job; do not commit tokens."
+          else
+            echo "available=true" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - if: steps.doppler.outputs.available == 'true'
+        uses: actions/checkout@v4
+
+      - if: steps.doppler.outputs.available == 'true'
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - if: steps.doppler.outputs.available == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        if: steps.doppler.outputs.available == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        if: steps.doppler.outputs.available == 'true'
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Install Doppler CLI
+        if: steps.doppler.outputs.available == 'true'
+        uses: dopplerhq/cli-action@v3
+
+      - name: Playwright e2e
+        if: steps.doppler.outputs.available == 'true'
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+          CI: true
+        run: doppler run -- pnpm run test:e2e
