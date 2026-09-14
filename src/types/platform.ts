@@ -9,6 +9,8 @@ export interface PlatformTenant {
   comped?: boolean;
   comped_end_date?: string | null;
   early_bird?: boolean;
+  stripe_customer_id?: string | null;
+  subscription_status?: string;
   allowed_email_domains?: string[];
   created_at: string;
   updated_at: string;

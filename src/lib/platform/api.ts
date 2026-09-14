@@ -53,4 +53,30 @@ export const platformApi = {
   metrics: () => request<DashboardMetrics>("/dashboard/metrics"),
   tenantList: () => request<{ tenants: TenantSummary[] }>("/dashboard/tenants"),
   timeline: () => request<{ timeline: Record<string, number> }>("/dashboard/metrics/timeline"),
+
+  // Billing endpoints
+  getPrices: () => request<{ prices: Array<{ id: string; unit_amount: number | null; currency: string; interval: string | null; product: { id: string; name: string | null; description: string | null } }> }>("/billing/prices"),
+  createCheckoutSession: (tenantId: string, priceId: string) =>
+    request<{ sessionId: string; url: string | null }>(`/billing/tenants/${tenantId}/checkout`, {
+      method: "POST",
+      body: JSON.stringify({ priceId }),
+    }),
+  createPortalSession: (tenantId: string) =>
+    request<{ url: string }>(`/billing/tenants/${tenantId}/portal`, { method: "POST" }),
+
+  // Metrics endpoint
+  billingMetrics: () => request<{
+    mrr: number;
+    arr: number;
+    churnRate: number;
+    activeSubscriptions: number;
+    totalSubscriptions: number;
+    canceledSubscriptions: number;
+    pastDueSubscriptions: number;
+    formatted: {
+      mrr: string;
+      arr: string;
+      churnRate: string;
+    };
+  }>("/metrics"),
 };
