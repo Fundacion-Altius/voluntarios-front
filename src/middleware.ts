@@ -31,6 +31,11 @@ export default function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/ws')) {
     return NextResponse.next();
   }
+
+  // Platform control plane is tenantless and locale-less — skip tenant + intl handling.
+  if (request.nextUrl.pathname.startsWith('/platform')) {
+    return NextResponse.next();
+  }
   
   // Check if this request should bypass tenant validation
   if (shouldBypassTenantCheck(request)) {
