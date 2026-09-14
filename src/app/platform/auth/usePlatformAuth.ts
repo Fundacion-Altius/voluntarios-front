@@ -1,32 +1,31 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { getPlatformToken, platformApi, setPlatformToken } from "@/lib/platform/api";
+import { platformApi } from "@/lib/platform/api";
 import type { PlatformUser } from "@/types/platform";
 
+/**
+ * Platform auth hook. Relies on the HttpOnly cookie set by the backend on
+ * login; no client-side token persistence. `me()` validates the session.
+ */
 export function usePlatformAuth() {
   const [user, setUser] = useState<PlatformUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = getPlatformToken();
-    if (!token) {
-      setLoading(false);
-      return;
-    }
+    // Validate the session via the cookie; if it fails, we're logged out.
     platformApi
       .me()
       .then(setUser)
-      .catch(() => setPlatformToken(null))
+      .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
     setError(null);
     try {
-      const { token, user: u } = await platformApi.login(email, password);
-      setPlatformToken(token);
+      const { user: u } = await platformApi.login(email, password);
       setUser(u);
       return u;
     } catch (e) {
@@ -41,7 +40,6 @@ export function usePlatformAuth() {
     } catch {
       // ignore server logout errors, clear locally anyway
     }
-    setPlatformToken(null);
     setUser(null);
   }, []);
 

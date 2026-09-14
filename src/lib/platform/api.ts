@@ -4,26 +4,17 @@ const API_BASE =
   process.env.NEXT_PUBLIC_PLATFORM_API_URL ??
   `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"}/api/platform`;
 
-export const PLATFORM_TOKEN_KEY = "platform_auth_token";
-
-export function getPlatformToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(PLATFORM_TOKEN_KEY);
-}
-
-export function setPlatformToken(token: string | null): void {
-  if (typeof window === "undefined") return;
-  if (token) localStorage.setItem(PLATFORM_TOKEN_KEY, token);
-  else localStorage.removeItem(PLATFORM_TOKEN_KEY);
-}
-
+/**
+ * Platform API client. Token is delivered via HttpOnly cookie set by the
+ * backend on login; we do NOT persist the raw JWT anywhere on the client.
+ * `credentials: "include"` ensures the cookie is sent with every request.
+ */
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const token = getPlatformToken();
   const res = await fetch(`${API_BASE}${path}`, {
     ...init,
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(init.headers ?? {}),
     },
   });
@@ -36,7 +27,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 export const platformApi = {
   login: (email: string, password: string) =>
-    request<{ token: string; user: PlatformUser }>("/auth/login", {
+    request<{ user: PlatformUser }>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     }),

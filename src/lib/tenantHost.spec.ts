@@ -77,16 +77,21 @@ describe('resolveTenantHost', () => {
     await expect(resolveTenantHost('ghost.klaruk.com')).resolves.toEqual({ known: false });
   });
 
-  it('fails open when the backend is unreachable', async () => {
+  it('fails closed when the backend is unreachable', async () => {
     global.fetch = jest.fn().mockRejectedValue(new Error('down')) as any;
-    await expect(resolveTenantHost('ghost.klaruk.com')).resolves.toEqual({ known: null });
+    await expect(resolveTenantHost('ghost.klaruk.com')).resolves.toEqual({ known: null, failClosed: true });
+  });
+
+  it('fails closed when the backend returns 5xx', async () => {
+    mockResolve(503);
+    await expect(resolveTenantHost('ghost.klaruk.com')).resolves.toEqual({ known: null, failClosed: true });
   });
 
   it('returns null for non-tenant hosts without calling the backend', async () => {
     const spy = jest.fn();
     global.fetch = spy as any;
-    await expect(resolveTenantHost('klaruk.com')).resolves.toEqual({ known: null });
-    await expect(resolveTenantHost('localhost:3000')).resolves.toEqual({ known: null });
+    await expect(resolveTenantHost('klaruk.com')).resolves.toEqual({ known: null, failClosed: false });
+    await expect(resolveTenantHost('localhost:3000')).resolves.toEqual({ known: null, failClosed: false });
     expect(spy).not.toHaveBeenCalled();
   });
 

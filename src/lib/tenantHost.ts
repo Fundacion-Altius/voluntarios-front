@@ -42,7 +42,7 @@ export function isValidTenantSlugFormat(slug: string | undefined | null): boolea
 export type TenantHostVerdict =
   | { known: true; active: boolean; status: 'active' | 'suspended' | 'archived' }
   | { known: false }
-  | { known: null };
+  | { known: null; failClosed: boolean };
 
 function backendBase(): string {
   return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
@@ -63,23 +63,25 @@ async function fetchTenantStatus(slug: string): Promise<TenantHostVerdict> {
   try {
     const res = await fetch(`${backendBase()}/api/tenants/resolve?slug=${encodeURIComponent(slug)}`, {
       // AbortSignal.timeout exists on Edge and Node 18+; fall back to no
-      // timeout where unavailable (the verdict still resolves or fails open).
+      // timeout where unavailable (the verdict still resolves or fails closed).
       signal: typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(2000) : undefined,
     });
     if (res.status === 404) {
       verdict = { known: false };
     } else if (!res.ok) {
-      verdict = { known: null };
+      // Backend responded but with an error: treat as unreachable for gating.
+      verdict = { known: null, failClosed: true };
     } else {
       const body = (await res.json()) as { tenant?: { status?: string } };
       const status = body.tenant?.status;
       verdict =
         status === 'active' || status === 'suspended' || status === 'archived'
           ? { known: true, active: status === 'active', status }
-          : { known: null };
+          : { known: null, failClosed: true };
     }
   } catch {
-    verdict = { known: null };
+    // Network error, timeout: treat as unreachable for gating.
+    verdict = { known: null, failClosed: true };
   }
   verdictCache.set(slug, { verdict, expiresAt: Date.now() + VERDICT_TTL_MS });
   return verdict;
@@ -88,19 +90,18 @@ async function fetchTenantStatus(slug: string): Promise<TenantHostVerdict> {
 /**
  * Backend-driven tenant host verdict.
  *
- * - Returns `{ known: null }` when the host carries no tenant slug (apex,
- *   localhost, auth hosts) OR when the backend cannot be reached. Callers
- *   must treat `null` as "no decision" and let the request through: the
- *   backend tenant resolver is the authoritative gate and will 403/404 API
- *   traffic, so this frontend check is a UX fast-path, not a security
- *   boundary.
+ * - `{ known: null, failClosed: false }` when the host carries no tenant slug
+ *   (apex, localhost, auth hosts). Callers must let the request through.
+ * - `{ known: null, failClosed: true }` when the host parsed as a tenant
+ *   subdomain but the backend resolve was unreachable/invalid. Callers must
+ *   fail closed (503) rather than silently serve.
  * - `{ known: false }` → the backend has no such tenant → 404.
  * - `{ known: true, active: false }` → suspended/archived → 403 (matches the
  *   backend resolver, which answers 403 + tenant_suspended/tenant_archived).
  */
 export async function resolveTenantHost(hostHeader: string | undefined | null): Promise<TenantHostVerdict> {
   const parsed = parseTenantSlugFromHost(hostHeader);
-  if (parsed.reason !== 'ok' || !parsed.slug) return { known: null };
+  if (parsed.reason !== 'ok' || !parsed.slug) return { known: null, failClosed: false };
   return fetchTenantStatus(parsed.slug);
 }
 

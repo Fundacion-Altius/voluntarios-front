@@ -100,6 +100,28 @@ describe('middleware tenant host gate', () => {
     expect(res.status).toBe(403);
   });
 
+  it('503s tenant hosts when the backend resolve is unreachable', async () => {
+    const { resetTenantHostCache } = await import('@/lib/tenantHost');
+    resetTenantHostCache();
+    global.fetch = jest.fn().mockRejectedValue(new Error('down')) as any;
+    const mod = await import('@/middleware');
+    const res = await mod.default(tenantRequest('ghost.klaruk.com'));
+    expect(res.status).toBe(503);
+  });
+
+  it('503s tenant hosts when the backend returns 5xx', async () => {
+    const { resetTenantHostCache } = await import('@/lib/tenantHost');
+    resetTenantHostCache();
+    global.fetch = jest.fn().mockResolvedValue({
+      status: 503,
+      ok: false,
+      json: () => Promise.resolve({}),
+    }) as any;
+    const mod = await import('@/middleware');
+    const res = await mod.default(tenantRequest('ghost.klaruk.com'));
+    expect(res.status).toBe(503);
+  });
+
   it('lets platform paths through without backend checks', async () => {
     const spy = jest.fn();
     global.fetch = spy as any;

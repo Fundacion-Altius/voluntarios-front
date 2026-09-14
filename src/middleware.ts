@@ -44,8 +44,8 @@ export default async function middleware(request: NextRequest) {
 
   // Backend-driven host gate: unknown slugs 404, suspended/archived slugs
   // 403 (mirrors the backend resolver). Unverifiable hosts (no slug parsed
-  // or backend unreachable) pass through — the backend resolver is the
-  // authoritative gate for tenant traffic.
+  // or backend unreachable) fail closed with 503 — the backend resolver is
+  // the authoritative gate, and an outage must not silently allow traffic.
   const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host');
   const verdict = await resolveTenantHost(host);
   if (verdict.known === false) {
@@ -54,6 +54,9 @@ export default async function middleware(request: NextRequest) {
   if (verdict.known === true && !verdict.active) {
     return new NextResponse(`Tenant ${verdict.status}`, { status: 403 });
   }
+  if (verdict.known === null && verdict.failClosed) {
+    return new NextResponse('Service Unavailable', { status: 503 });
+  }
   return intlMiddleware(request);
 }
 
@@ -61,5 +64,5 @@ export const config = {
   // Matcher ignoring _next, api, ws (mediasoup/realtime), and files with extensions
   // Route matcher config constant, equivalent mutants only — excluded from mutation scope.
   // Stryker disable next-line StringLiteral, ArrayDeclaration
-  matcher: ['/((?!api|_next|_vercel|ws(?:/.*)?|.*\\..*).*)'],
+  matcher: ['/((?!api|_next|_vercel|ws(?:/.*)?|.*\\..*)|)'],
 };
