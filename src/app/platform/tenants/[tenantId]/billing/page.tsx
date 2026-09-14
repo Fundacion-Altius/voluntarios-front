@@ -6,9 +6,9 @@ import { platformApi } from "@/lib/platform/api";
 
 interface Price {
   id: string;
-  unit_amount: number;
+  unit_amount: number | null;
   currency: string;
-  interval: string;
+  interval: string | null;
   product: {
     id: string;
     name: string | null;
@@ -107,7 +107,7 @@ export default function TenantBillingPage() {
               </span>
             </h3>
             <p className="text-3xl font-bold mt-2">
-              €{(earlyBirdPlan.unit_amount / 100).toFixed(0)}
+              €{((earlyBirdPlan.unit_amount ?? 0) / 100).toFixed(0)}
               <span className="text-sm font-normal">/mes</span>
             </p>
             <p className="text-sm text-gray-500 mt-2">
@@ -128,7 +128,7 @@ export default function TenantBillingPage() {
           <div className="border rounded-lg p-6">
             <h3 className="text-lg font-semibold">Starter</h3>
             <p className="text-3xl font-bold mt-2">
-              €{(starterPlan.unit_amount / 100).toFixed(0)}
+              €{((starterPlan.unit_amount ?? 0) / 100).toFixed(0)}
               <span className="text-sm font-normal">/mes</span>
             </p>
             <p className="text-sm text-gray-500 mt-2">
