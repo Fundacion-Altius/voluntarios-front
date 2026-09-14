@@ -82,6 +82,24 @@ describe('middleware tenant host gate', () => {
     } as any;
   }
 
+  it('404s unknown tenant on a deep page path (matcher covers /es/portal, not just /)', async () => {
+    const { resetTenantHostCache } = await import('@/lib/tenantHost');
+    resetTenantHostCache();
+    mockResolve(404);
+    const mod = await import('@/middleware');
+    const res = await mod.default(tenantRequest('ghost.klaruk.com', '/es/portal'));
+    expect(res.status).toBe(404);
+  });
+
+  it('503s tenant host on deep path when backend unreachable', async () => {
+    const { resetTenantHostCache } = await import('@/lib/tenantHost');
+    resetTenantHostCache();
+    global.fetch = jest.fn().mockRejectedValue(new Error('down')) as any;
+    const mod = await import('@/middleware');
+    const res = await mod.default(tenantRequest('ghost.klaruk.com', '/es'));
+    expect(res.status).toBe(503);
+  });
+
   it('404s hosts the backend does not know', async () => {
     const { resetTenantHostCache } = await import('@/lib/tenantHost');
     resetTenantHostCache();

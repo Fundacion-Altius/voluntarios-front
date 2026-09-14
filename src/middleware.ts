@@ -64,5 +64,5 @@ export const config = {
   // Matcher ignoring _next, api, ws (mediasoup/realtime), and files with extensions
   // Route matcher config constant, equivalent mutants only — excluded from mutation scope.
   // Stryker disable next-line StringLiteral, ArrayDeclaration
-  matcher: ['/((?!api|_next|_vercel|ws(?:/.*)?|.*\\..*)|)'],
+  matcher: ['/((?!api|_next|_vercel|ws(?:/.*)?|.*\\..*).*)'],
 };
