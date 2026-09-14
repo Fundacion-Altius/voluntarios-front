@@ -7,7 +7,7 @@
  */
 
 import crypto from 'node:crypto';
-import { KNOWN_TENANT_SLUGS } from './tenantHost';
+import { isValidTenantSlugFormat } from './tenantHost';
 
 /**
  * State payload for OAuth flows
@@ -57,9 +57,11 @@ export function createSignedState(
     throw new Error('NEXTAUTH_SECRET is required for state signing');
   }
 
-  // Validate tenant
-  if (!KNOWN_TENANT_SLUGS.includes(tenant as typeof KNOWN_TENANT_SLUGS[number])) {
-    throw new Error(`Unknown tenant: ${tenant}. Must be one of: ${KNOWN_TENANT_SLUGS.join(', ')}`);
+  // Validate tenant slug shape. Existence is enforced by the backend tenant
+  // resolver at login/handoff time, so any well-formed slug is acceptable
+  // here (a platform-created tenant must work without a frontend redeploy).
+  if (!isValidTenantSlugFormat(tenant)) {
+    throw new Error(`Invalid tenant slug: ${tenant}. Must be a lowercase DNS-style label.`);
   }
 
   // Validate returnTo is a safe path (no protocol, no absolute URL)
@@ -129,9 +131,10 @@ export function verifySignedState(
       return null; // Expired or future timestamp
     }
 
-    // Verify tenant is known
-    if (!KNOWN_TENANT_SLUGS.includes(payload.tenant as typeof KNOWN_TENANT_SLUGS[number])) {
-      return null; // Unknown tenant
+    // Verify tenant slug shape (see createSignedState: existence is enforced
+    // by the backend, the signature only needs a well-formed slug).
+    if (!isValidTenantSlugFormat(payload.tenant)) {
+      return null; // Malformed tenant slug
     }
 
     // Verify returnTo is a safe path

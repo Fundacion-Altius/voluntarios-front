@@ -39,10 +39,15 @@ describe('authState', () => {
       expect(state2).not.toBe(state3);
     });
 
-    it('should throw error for unknown tenant', () => {
+    it('should throw error for malformed tenant slug', () => {
       expect(() => {
-        createSignedState('unknown-tenant', '/admin/dashboard', TEST_CONFIG);
-      }).toThrow('Unknown tenant: unknown-tenant');
+        createSignedState('Bad Slug!!', '/admin/dashboard', TEST_CONFIG);
+      }).toThrow('Invalid tenant slug: Bad Slug!!');
+    });
+
+    it('should accept a well-formed platform-created slug without redeploy', () => {
+      const state = createSignedState('brand-new-ngo', '/admin/dashboard', TEST_CONFIG);
+      expect(typeof state).toBe('string');
     });
 
     it('should throw error for invalid returnTo (absolute URL)', () => {
@@ -131,9 +136,9 @@ describe('authState', () => {
       expect(verified).toBeNull();
     });
 
-    it('should return null for unknown tenant in state', () => {
+    it('should verify a well-formed slug without backend knowledge (existence is enforced by backend)', () => {
       const payload = {
-        tenant: 'unknown-tenant',
+        tenant: 'brand-new-ngo',
         returnTo: '/admin/dashboard',
         timestamp: Date.now(),
       };
@@ -143,7 +148,24 @@ describe('authState', () => {
         .update(payloadString)
         .digest('hex');
       const state = `${payloadBase64}.${signature}`;
-      
+
+      const verified = verifySignedState(state, TEST_CONFIG);
+      expect(verified).toEqual({ tenant: 'brand-new-ngo', returnTo: '/admin/dashboard' });
+    });
+
+    it('should return null for malformed tenant slug in state', () => {
+      const payload = {
+        tenant: 'Bad Slug!!',
+        returnTo: '/admin/dashboard',
+        timestamp: Date.now(),
+      };
+      const payloadString = JSON.stringify(payload);
+      const payloadBase64 = Buffer.from(payloadString, 'utf-8').toString('base64url');
+      const signature = crypto.createHmac('sha256', TEST_CONFIG.secret)
+        .update(payloadString)
+        .digest('hex');
+      const state = `${payloadBase64}.${signature}`;
+
       const verified = verifySignedState(state, TEST_CONFIG);
       expect(verified).toBeNull();
     });

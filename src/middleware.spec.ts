@@ -59,3 +59,53 @@ describe('middleware', () => {
     expect(mod.config.matcher.some((p: string) => p.includes('.*\\..*'))).toBe(true);
   });
 });
+
+describe('middleware tenant host gate', () => {
+  const realFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = realFetch;
+  });
+
+  function mockResolve(status: number, body: unknown = {}) {
+    global.fetch = jest.fn().mockResolvedValue({
+      status,
+      ok: status >= 200 && status < 300,
+      json: () => Promise.resolve(body),
+    }) as any;
+  }
+
+  function tenantRequest(host: string, pathname = '/es') {
+    return {
+      headers: { get: (name: string) => (name.toLowerCase() === 'host' ? host : null) },
+      nextUrl: { pathname },
+    } as any;
+  }
+
+  it('404s hosts the backend does not know', async () => {
+    const { resetTenantHostCache } = await import('@/lib/tenantHost');
+    resetTenantHostCache();
+    mockResolve(404);
+    const mod = await import('@/middleware');
+    const res = await mod.default(tenantRequest('ghost.klaruk.com'));
+    expect(res.status).toBe(404);
+  });
+
+  it('403s suspended tenant hosts', async () => {
+    const { resetTenantHostCache } = await import('@/lib/tenantHost');
+    resetTenantHostCache();
+    mockResolve(200, { tenant: { id: '1', slug: 'old-ngo', name: 'Old', status: 'suspended' } });
+    const mod = await import('@/middleware');
+    const res = await mod.default(tenantRequest('old-ngo.klaruk.com'));
+    expect(res.status).toBe(403);
+  });
+
+  it('lets platform paths through without backend checks', async () => {
+    const spy = jest.fn();
+    global.fetch = spy as any;
+    const mod = await import('@/middleware');
+    const res = await mod.default(tenantRequest('ghost.klaruk.com', '/platform/dashboard'));
+    expect(res.status).toBe(200);
+    expect(spy).not.toHaveBeenCalled();
+  });
+});

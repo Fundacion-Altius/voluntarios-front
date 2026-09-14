@@ -1,5 +1,3 @@
-export const KNOWN_TENANT_SLUGS = ['fundacionaltius', 'homelessentrepreneur'] as const;
-
 export function parseTenantSlugFromHost(hostHeader: string | undefined | null): {
   slug: string | null;
   reason: 'ok' | 'apex' | 'no-subdomain' | 'empty';
@@ -31,9 +29,79 @@ export function parseTenantSlugFromHost(hostHeader: string | undefined | null): 
   return { slug: null, reason: 'no-subdomain' };
 }
 
-export function should404UnknownTenantHost(hostHeader: string | undefined | null): boolean {
+/**
+ * Syntactic slug check (lowercase alphanumerics + hyphens, DNS-label style).
+ * This is NOT an existence check — tenant existence and status always come
+ * from the backend (see resolveTenantHost). Used for fail-fast validation
+ * where no backend call is appropriate (e.g. OAuth state shaping).
+ */
+export function isValidTenantSlugFormat(slug: string | undefined | null): boolean {
+  return typeof slug === 'string' && /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(slug);
+}
+
+export type TenantHostVerdict =
+  | { known: true; active: boolean; status: 'active' | 'suspended' | 'archived' }
+  | { known: false }
+  | { known: null };
+
+function backendBase(): string {
+  return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+}
+
+const VERDICT_TTL_MS = 60_000;
+const verdictCache = new Map<string, { verdict: TenantHostVerdict; expiresAt: number }>();
+
+/** Test-only cache reset. */
+export function resetTenantHostCache(): void {
+  verdictCache.clear();
+}
+
+async function fetchTenantStatus(slug: string): Promise<TenantHostVerdict> {
+  const cached = verdictCache.get(slug);
+  if (cached && cached.expiresAt > Date.now()) return cached.verdict;
+  let verdict: TenantHostVerdict;
+  try {
+    const res = await fetch(`${backendBase()}/api/tenants/resolve?slug=${encodeURIComponent(slug)}`, {
+      // AbortSignal.timeout exists on Edge and Node 18+; fall back to no
+      // timeout where unavailable (the verdict still resolves or fails open).
+      signal: typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(2000) : undefined,
+    });
+    if (res.status === 404) {
+      verdict = { known: false };
+    } else if (!res.ok) {
+      verdict = { known: null };
+    } else {
+      const body = (await res.json()) as { tenant?: { status?: string } };
+      const status = body.tenant?.status;
+      verdict =
+        status === 'active' || status === 'suspended' || status === 'archived'
+          ? { known: true, active: status === 'active', status }
+          : { known: null };
+    }
+  } catch {
+    verdict = { known: null };
+  }
+  verdictCache.set(slug, { verdict, expiresAt: Date.now() + VERDICT_TTL_MS });
+  return verdict;
+}
+
+/**
+ * Backend-driven tenant host verdict.
+ *
+ * - Returns `{ known: null }` when the host carries no tenant slug (apex,
+ *   localhost, auth hosts) OR when the backend cannot be reached. Callers
+ *   must treat `null` as "no decision" and let the request through: the
+ *   backend tenant resolver is the authoritative gate and will 403/404 API
+ *   traffic, so this frontend check is a UX fast-path, not a security
+ *   boundary.
+ * - `{ known: false }` → the backend has no such tenant → 404.
+ * - `{ known: true, active: false }` → suspended/archived → 403 (matches the
+ *   backend resolver, which answers 403 + tenant_suspended/tenant_archived).
+ */
+export async function resolveTenantHost(hostHeader: string | undefined | null): Promise<TenantHostVerdict> {
   const parsed = parseTenantSlugFromHost(hostHeader);
-  return parsed.reason === 'ok' && !!parsed.slug && !KNOWN_TENANT_SLUGS.includes(parsed.slug as (typeof KNOWN_TENANT_SLUGS)[number]);
+  if (parsed.reason !== 'ok' || !parsed.slug) return { known: null };
+  return fetchTenantStatus(parsed.slug);
 }
 
 const AUTH_HOSTS = ['localhost', '127.0.0.1', 'auth.klaruk.com'];

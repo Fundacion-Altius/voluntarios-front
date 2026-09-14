@@ -1,7 +1,7 @@
 import createMiddleware from 'next-intl/middleware';
 import { NextRequest, NextResponse } from 'next/server';
 import { routing } from '@/i18n/routing';
-import { should404UnknownTenantHost, isAuthHost } from '@/lib/tenantHost';
+import { resolveTenantHost, isAuthHost } from '@/lib/tenantHost';
 
 const intlMiddleware = createMiddleware(routing);
 
@@ -27,7 +27,7 @@ function shouldBypassTenantCheck(request: NextRequest): boolean {
   return false;
 }
 
-export default function middleware(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/ws')) {
     return NextResponse.next();
   }
@@ -36,15 +36,23 @@ export default function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/platform')) {
     return NextResponse.next();
   }
-  
+
   // Check if this request should bypass tenant validation
   if (shouldBypassTenantCheck(request)) {
     return intlMiddleware(request);
   }
-  
+
+  // Backend-driven host gate: unknown slugs 404, suspended/archived slugs
+  // 403 (mirrors the backend resolver). Unverifiable hosts (no slug parsed
+  // or backend unreachable) pass through — the backend resolver is the
+  // authoritative gate for tenant traffic.
   const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host');
-  if (should404UnknownTenantHost(host)) {
+  const verdict = await resolveTenantHost(host);
+  if (verdict.known === false) {
     return new NextResponse('Not Found', { status: 404 });
+  }
+  if (verdict.known === true && !verdict.active) {
+    return new NextResponse(`Tenant ${verdict.status}`, { status: 403 });
   }
   return intlMiddleware(request);
 }
