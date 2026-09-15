@@ -58,3 +58,4 @@ eslintcc-report.json
 openapi-ts-error-*.log
 tasks.md
 test-ws-proxy.js
+\n.agents/\n.vibe/
