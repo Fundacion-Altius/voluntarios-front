@@ -26,7 +26,7 @@ interface BillingState {
 
 export default function TenantBillingPage() {
   const params = useParams();
-  const tenantId = params.tenantId as string;
+  const tenantId = params.id as string;
   const [state, setState] = useState<BillingState>({
     prices: [],
     loading: true,
