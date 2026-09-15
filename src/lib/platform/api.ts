@@ -4,20 +4,106 @@ const API_BASE =
   process.env.NEXT_PUBLIC_PLATFORM_API_URL ??
   `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"}/api/platform`;
 
+const CSRF_BASE =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/platform$/, "") ??
+  process.env.NEXT_PUBLIC_API_URL ??
+  "http://localhost:3001";
+
+let cachedCsrfToken: string | null = null;
+let pendingCsrfRequest: Promise<string> | null = null;
+
+/**
+ * Fetch a CSRF token from the backend. Cached for the session.
+ */
+async function getCsrfToken(): Promise<string> {
+  if (cachedCsrfToken) return cachedCsrfToken;
+  if (pendingCsrfRequest) return pendingCsrfRequest;
+
+  pendingCsrfRequest = (async () => {
+    const res = await fetch(`${CSRF_BASE}/api/csrf-token`, {
+      credentials: "include",
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to fetch CSRF token: ${res.status}`);
+    }
+    const data = (await res.json()) as { csrfToken: string };
+    cachedCsrfToken = data.csrfToken;
+    return cachedCsrfToken;
+  })();
+
+  try {
+    return await pendingCsrfRequest;
+  } finally {
+    pendingCsrfRequest = null;
+  }
+}
+
+/**
+ * Invalidate cached CSRF token (e.g., after 403).
+ */
+function invalidateCsrfToken(): void {
+  cachedCsrfToken = null;
+}
+
+/** Test-only: reset CSRF cache. */
+export function __resetCsrfCache(): void {
+  cachedCsrfToken = null;
+  pendingCsrfRequest = null;
+}
+
+const MUTATING_METHODS = ["POST", "PUT", "PATCH", "DELETE"];
+
 /**
  * Platform API client. Token is delivered via HttpOnly cookie set by the
  * backend on login; we do NOT persist the raw JWT anywhere on the client.
  * `credentials: "include"` ensures the cookie is sent with every request.
+ *
+ * CSRF: for mutating requests, we fetch a CSRF token and send it as the
+ * `x-csrf-token` header. On 403, we refresh the token and retry once.
  */
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const method = (init.method ?? "GET").toUpperCase();
+  const isMutating = MUTATING_METHODS.includes(method);
+
+  // Build headers with CSRF token for mutating requests
+  let csrfToken: string | undefined;
+  if (isMutating) {
+    csrfToken = await getCsrfToken();
+  }
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(init.headers ? Object.fromEntries(new Headers(init.headers).entries()) : {}),
+  };
+  if (csrfToken) {
+    headers["x-csrf-token"] = csrfToken;
+  }
+
   const res = await fetch(`${API_BASE}${path}`, {
     ...init,
     credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...(init.headers ?? {}),
-    },
+    headers,
   });
+
+  // On CSRF failure, refresh token and retry once
+  if (res.status === 403 && isMutating) {
+    invalidateCsrfToken();
+    const freshToken = await getCsrfToken();
+    const retryRes = await fetch(`${API_BASE}${path}`, {
+      ...init,
+      credentials: "include",
+      headers: {
+        ...headers,
+        "x-csrf-token": freshToken,
+      },
+    });
+    if (!retryRes.ok) {
+      const body = await retryRes.json().catch(() => ({}));
+      throw new Error((body as { error?: string }).error ?? `Platform API ${retryRes.status}`);
+    }
+    return retryRes.json() as Promise<T>;
+  }
+
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error((body as { error?: string }).error ?? `Platform API ${res.status}`);
