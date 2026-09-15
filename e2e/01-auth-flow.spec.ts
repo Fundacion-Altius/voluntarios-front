@@ -22,7 +22,19 @@ test.describe('Auth Flow', () => {
 
     await page.fill('input[type="email"]', 'admin@fundacionaltius.org');
     await page.fill('input[type="password"]', 'admin123');
-    await page.click('button[type="submit"]');
+
+    // Wait for BFF login (Set-Cookie) and navigation together — avoids racing
+    // the redirect before auth_token is applied under parallel workers.
+    const [loginRes] = await Promise.all([
+      page.waitForResponse(
+        (res) =>
+          res.url().includes('/api/auth/login') &&
+          res.request().method() === 'POST',
+        { timeout: 20000 },
+      ),
+      page.click('button[type="submit"]'),
+    ]);
+    expect(loginRes.ok()).toBeTruthy();
 
     await page.waitForURL('**/admin/dashboard', { timeout: 20000 });
 

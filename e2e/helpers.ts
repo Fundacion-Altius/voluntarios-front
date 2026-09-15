@@ -8,94 +8,142 @@ export function randomId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 }
 
+async function sleep(ms: number): Promise<void> {
+  await new Promise((r) => setTimeout(r, ms));
+}
+
+function setCookieValues(res: { headers: () => Record<string, string>; headersArray: () => { name: string; value: string }[] }): string {
+  const fromArray = res
+    .headersArray()
+    .filter((h) => h.name.toLowerCase() === 'set-cookie')
+    .map((h) => h.value);
+  if (fromArray.length > 0) return fromArray.join('\n');
+  return res.headers()['set-cookie'] || '';
+}
+
 /**
- * Authenticate in the browser context by calling NextAuth's internal
- * credentials endpoint via the Playwright request fixture, extracting the
- * session cookie from Set-Cookie, and injecting it into the browser page.
- * This avoids the race condition between signIn() and SessionProvider.
+ * Authenticate in the browser context using the same order as LoginForm:
+ * 1) Front BFF POST /api/auth/login (copies upstream auth_token Set-Cookie)
+ * 2) NextAuth credentials callback with prefilled tokens (no second backend login)
+ *
+ * Retries transient Next-dev ECONNRESET under parallel workers and requires
+ * both next-auth.session-token and tenant auth_token before returning.
  */
 export async function loginAsBrowser(
   page: Page,
   email: string,
   password: string,
 ): Promise<void> {
-  // Retry CSRF — Next dev server can ECONNRESET under parallel workers
-  let csrfToken: string | undefined;
+  let loginData: {
+    authToken?: string;
+    csrfToken?: string;
+    user?: {
+      email?: string;
+      display_name?: string;
+      name?: string;
+      role?: string;
+      user_type?: string;
+      user_id?: string;
+      id?: string;
+    };
+  } | null = null;
+
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const loginRes = await page.request.post(`${FRONTEND_URL}/api/auth/login`, {
+        data: { email, password },
+      });
+      if (loginRes.ok()) {
+        loginData = await loginRes.json();
+        if (loginData?.authToken && loginData?.user) break;
+      }
+    } catch {
+      // transient ECONNRESET / connection reset under parallel workers
+    }
+    if (attempt < 3) await sleep(1000 * attempt);
+  }
+  if (!loginData?.authToken || !loginData.user) {
+    throw new Error(`Failed front /api/auth/login after retries for ${email}`);
+  }
+
+  let nextAuthCsrf: string | undefined;
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       const csrfRes = await page.request.get(`${FRONTEND_URL}/api/auth/csrf`);
       if (csrfRes.ok()) {
-        csrfToken = (await csrfRes.json()).csrfToken;
-        if (csrfToken) break;
+        nextAuthCsrf = (await csrfRes.json()).csrfToken;
+        if (nextAuthCsrf) break;
       }
     } catch {
-      // transient ECONNRESET / connection reset
+      // transient ECONNRESET
     }
-    if (attempt < 3) await new Promise((r) => setTimeout(r, 1000 * attempt));
+    if (attempt < 3) await sleep(1000 * attempt);
   }
-  if (!csrfToken) {
+  if (!nextAuthCsrf) {
     throw new Error('Failed to fetch NextAuth CSRF token after retries (front :3000)');
   }
 
+  const user = loginData.user;
   let authRes: Awaited<ReturnType<typeof page.request.post>> | null = null;
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      authRes = await page.request.post(
-        `${FRONTEND_URL}/api/auth/callback/credentials`,
-        {
-          form: { csrfToken, email, password, json: 'true' },
+      authRes = await page.request.post(`${FRONTEND_URL}/api/auth/callback/credentials`, {
+        form: {
+          csrfToken: nextAuthCsrf,
+          email: user.email || email,
+          name: user.display_name || user.name || email,
+          role: user.role || '',
+          user_type: user.user_type || '',
+          user_id: user.user_id || user.id || '',
+          authToken: loginData.authToken,
+          json: 'true',
         },
-      );
+      });
       break;
     } catch {
       // transient ECONNRESET under parallel worker load; retry
     }
-    if (attempt < 3) await new Promise((r) => setTimeout(r, 1000 * attempt));
+    if (attempt < 3) await sleep(1000 * attempt);
   }
   if (!authRes) {
     throw new Error('Failed credentials callback after retries (front :3000)');
   }
 
-  const raw = authRes.headers()['set-cookie'] || '';
+  const raw = setCookieValues(authRes);
   const match = raw.match(/next-auth\.session-token=([^;]+)/);
   if (!match) {
-    throw new Error(
-      `Failed to extract next-auth.session-token from Set-Cookie: ${raw}`,
-    );
+    throw new Error(`Failed to extract next-auth.session-token from Set-Cookie: ${raw}`);
   }
 
-  const cookies: { name: string; value: string; domain: string; path: string }[] = [
+  // page.request already applied BFF Set-Cookie (auth_token/csrf_token); ensure
+  // session-token + auth cookies are present even if a header was dropped.
+  await page.context().addCookies([
     {
       name: 'next-auth.session-token',
       value: match[1],
       domain: 'localhost',
       path: '/',
+      httpOnly: true,
     },
-  ];
+    {
+      name: 'auth_token',
+      value: loginData.authToken,
+      domain: 'localhost',
+      path: '/',
+      httpOnly: true,
+    },
+    ...(loginData.csrfToken
+      ? [{ name: 'csrf_token', value: loginData.csrfToken, domain: 'localhost', path: '/' }]
+      : []),
+  ]);
 
-  let backendRes: Awaited<ReturnType<typeof page.request.post>> | null = null;
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    try {
-      backendRes = await page.request.post(`${BACKEND_URL}/api/auth/login`, {
-        data: { email, password },
-      });
-      if (backendRes.ok()) break;
-    } catch {
-      // transient ECONNRESET under parallel worker load; retry
-    }
-    if (attempt < 3) await new Promise((r) => setTimeout(r, 1000));
+  const cookies = await page.context().cookies();
+  if (!cookies.some((c) => c.name === 'auth_token')) {
+    throw new Error('loginAsBrowser: auth_token missing after cookie injection');
   }
-  if (backendRes?.ok()) {
-    const backendData = await backendRes.json();
-    if (backendData.authToken) {
-      cookies.push({ name: 'auth_token', value: backendData.authToken, domain: 'localhost', path: '/' });
-    }
-    if (backendData.csrfToken) {
-      cookies.push({ name: 'csrf_token', value: backendData.csrfToken, domain: 'localhost', path: '/' });
-    }
+  if (!cookies.some((c) => c.name === 'next-auth.session-token')) {
+    throw new Error('loginAsBrowser: next-auth.session-token missing after cookie injection');
   }
-
-  await page.context().addCookies(cookies);
 }
 
 export async function loginAs(

@@ -13,12 +13,27 @@ test.describe('Member welcome workflow', () => {
     });
     expect(createRes.ok()).toBeTruthy();
 
+    // Welcome email + metrics record after dispatchEmail; poll so a slow
+    // mailpit/SMTP hiccup under parallel load does not flake the assertion.
+    await expect
+      .poll(
+        async () => {
+          const metricsRes = await request.fetch(`${BACKEND_URL}/api/automation/metrics`, {
+            headers: authHeaders(authToken, csrfToken),
+          });
+          if (!metricsRes.ok()) return 0;
+          const metrics = await metricsRes.json();
+          return metrics.breakdown?.member_comms ?? 0;
+        },
+        { timeout: 15000 },
+      )
+      .toBeGreaterThanOrEqual(1);
+
     const metricsRes = await request.fetch(`${BACKEND_URL}/api/automation/metrics`, {
       headers: authHeaders(authToken, csrfToken),
     });
     expect(metricsRes.ok()).toBeTruthy();
     const metrics = await metricsRes.json();
-    expect(metrics.breakdown.member_comms).toBeGreaterThanOrEqual(1);
     expect(metrics.tasksAutomated).toBeGreaterThanOrEqual(1);
   });
 });

@@ -63,15 +63,19 @@ test.describe('Survey Flow (real API)', () => {
 
     const [response] = await Promise.all([
       page.waitForResponse(
-        (res) => res.url().includes('/api/surveys/submit-answer') && res.request().method() === 'POST'
+        (res) => res.url().includes('/api/surveys/submit-answer') && res.request().method() === 'POST',
+        { timeout: 60000 },
       ),
       submitButton.click(),
     ]);
 
     expect(response.status()).toBe(200);
 
-    await expect(page).toHaveURL('/es/encuesta/confirmacion');
-    await expect(page.getByText('¡Gracias!')).toBeVisible();
+    // Client router.push after a slow submit (insights consumer runs inline
+    // on the backend before the response returns) can land after the default
+    // 5s expect timeout under full parallel suites.
+    await page.waitForURL('**/encuesta/confirmacion', { timeout: 20000 });
+    await expect(page.getByText('¡Gracias!')).toBeVisible({ timeout: 10000 });
   });
 
   test('confirmation page displays and navigation works', async ({ page }) => {

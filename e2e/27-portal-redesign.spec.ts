@@ -1,18 +1,13 @@
 import { test, expect } from '@playwright/test';
-import { seedQuizCourse, BACKEND_URL } from './helpers';
+import { seedQuizCourse, loginAsBrowser } from './helpers';
 
 const PORTAL_USER = { email: 'general@fundacionaltius.org', password: 'general123' };
 
 async function loginAsVolunteer(page: any) {
-  await page.goto('/es/login', { waitUntil: 'load' });
-  await page.waitForFunction(() => {
-    const form = document.querySelector('form');
-    if (!form) return false;
-    return Object.keys(form).some(k => k.startsWith('__react'));
-  }, { timeout: 5000 });
-  await page.fill('input[type="email"]', PORTAL_USER.email);
-  await page.fill('input[type="password"]', PORTAL_USER.password);
-  await page.click('button[type="submit"]');
+  // Shared helper sets tenant auth_token + NextAuth session without UI races
+  // under parallel workers (full check-done / test:e2e).
+  await loginAsBrowser(page, PORTAL_USER.email, PORTAL_USER.password);
+  await page.goto('/es/portal', { waitUntil: 'load' });
   await page.waitForURL('**/portal**', { timeout: 20000 });
 }
 
