@@ -43,9 +43,10 @@ export default async function middleware(request: NextRequest) {
   }
 
   // Backend-driven host gate: unknown slugs 404, suspended/archived slugs
-  // 403 (mirrors the backend resolver). Unverifiable hosts (no slug parsed
-  // or backend unreachable) fail closed with 503 — the backend resolver is
-  // the authoritative gate, and an outage must not silently allow traffic.
+  // 403 (mirrors the backend resolver). Hosts the backend can't reach fail
+  // closed with 503 — the backend resolver is the authoritative gate, and an
+  // outage must not silently allow traffic. Hosts with no tenant slug (apex,
+  // localhost) are not failures; they pass through with failClosed: false.
   const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host');
   const verdict = await resolveTenantHost(host);
   if (verdict.known === false) {

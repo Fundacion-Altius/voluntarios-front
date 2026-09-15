@@ -83,7 +83,12 @@ async function fetchTenantStatus(slug: string): Promise<TenantHostVerdict> {
     // Network error, timeout: treat as unreachable for gating.
     verdict = { known: null, failClosed: true };
   }
-  verdictCache.set(slug, { verdict, expiresAt: Date.now() + VERDICT_TTL_MS });
+  // Do not cache fail-closed verdicts: a transient backend outage would
+  // otherwise stick a 503 on tenant shells until TTL expires, even after
+  // the backend is healthy again. Successful verdicts are cached normally.
+  if (!("failClosed" in verdict && verdict.failClosed)) {
+    verdictCache.set(slug, { verdict, expiresAt: Date.now() + VERDICT_TTL_MS });
+  }
   return verdict;
 }
 
