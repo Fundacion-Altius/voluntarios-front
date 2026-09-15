@@ -1,0 +1,30 @@
+#!/bin/sh
+# DoD pre-push gate (voluntarios-front).
+#
+# Runs ./scripts/check-done.sh --front ONLY when this push updates
+# refs/heads/dev on the "origin" remote. Feature-branch and non-dev pushes
+# skip the heavy gate entirely.
+#
+# Keying is on the REMOTE ref being updated (stdin field 3) + remote name
+# ($1) — never on the current branch name (we use dev, not main).
+#
+# Agents: do NOT use --no-verify when pushing to origin/dev. A failing gate
+# blocks the push on purpose.
+#
+# NOTE: this repo has no husky dependency yet; until `husky` is wired
+# (prepare script) or core.hooksPath points at .husky, git will not execute
+# this hook automatically.
+remote="$1"
+pushing_dev=0
+while read -r _ _ remote_ref _; do
+  if [ "$remote" = "origin" ] && [ "$remote_ref" = "refs/heads/dev" ]; then
+    pushing_dev=1
+  fi
+done
+if [ "$pushing_dev" -ne 1 ]; then
+  echo "pre-push: not pushing to origin/dev — skipping check-done --front."
+  exit 0
+fi
+echo "pre-push: pushing to origin/dev — running check-done --front…"
+mono_root="$(cd "$(dirname "$0")/../.." && pwd)"
+exec "$mono_root/scripts/check-done.sh" --front
