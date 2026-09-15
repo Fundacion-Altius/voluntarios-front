@@ -205,7 +205,7 @@ server {
 **Solution**:
 1. Check that `NEXTAUTH_SECRET` is the same on all instances
 2. Ensure the state hasn't expired (5-minute window)
-3. Verify the tenant is in `KNOWN_TENANT_SLUGS`
+3. Verify the tenant resolves via the backend tenant resolver (`GET /api/tenants/resolve?slug=<slug>` / `resolveTenantHost()` in `src/lib/tenantHost.ts`)
 
 ### Error: Token Expired
 

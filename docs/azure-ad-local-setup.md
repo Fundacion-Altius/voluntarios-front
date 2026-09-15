@@ -220,7 +220,7 @@ The development server logs will show:
 
 **Solution:**
 1. Verify `NEXTAUTH_SECRET` is set and consistent
-2. Check that the tenant is in `KNOWN_TENANT_SLUGS` (fundacionaltius, homelessentrepreneur)
+2. Check that the tenant resolves via the backend (`GET /api/tenants/resolve?slug=<slug>`) — `src/lib/tenantHost.ts`
 3. Ensure the state hasn't expired (5-minute window)
 
 #### Issue: Token Expired
