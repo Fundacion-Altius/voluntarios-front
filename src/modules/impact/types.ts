@@ -48,15 +48,7 @@ export const COORDINATOR_KPI_ORDER: readonly ImpactKpiKey[] = [
   "volunteer_nps",
 ] as const;
 
-/** Raw operational stats kept visible below the coordinator KPIs. */
-export const SECONDARY_KPI_ORDER: readonly ImpactKpiKey[] = [
-  "volunteer_hours_total",
-  "people_served_estimated",
-  "community_satisfaction",
-  "volunteer_growth_rate",
-] as const;
-
-/** Legacy public-dashboard order (unchanged public view). */
+/** Legacy public-dashboard order, kept for reference and tests. */
 export const PUBLIC_KPI_ORDER: readonly ImpactKpiKey[] = [
   "volunteer_hours_total",
   "people_served_estimated",

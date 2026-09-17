@@ -9,8 +9,8 @@ import {
   type TrendsByKpi,
 } from '@/modules/impact/components/ImpactKpiGrid';
 import { ImpactKpiGrid } from '@/modules/impact/components/ImpactKpiGrid';
-import { useImpactKpis } from '@/modules/impact/hooks/useImpactKpis';
-import { PUBLIC_KPI_ORDER } from '@/modules/impact/types';
+import { currentMonthPeriod, useImpactKpis } from '@/modules/impact/hooks/useImpactKpis';
+import { COORDINATOR_KPI_ORDER } from '@/modules/impact/types';
 
 type ImpactTrendsResponse = {
   success: boolean;
@@ -46,11 +46,12 @@ function OrganizationBranding({
 
 export default function PublicImpactDashboardPage() {
   const t = useTranslations('impact.dashboard');
-  // Public view keeps its legacy 8 cards (all-time); the coordinator
-  // reconciliation applies to the admin dashboard only.
+  // Same coordinator view as the admin dashboard (unauthenticated).
+  const monthPeriod = currentMonthPeriod();
   const { kpis, config, loading, error, refresh } = useImpactKpis({
-    includeKeys: PUBLIC_KPI_ORDER,
-    order: PUBLIC_KPI_ORDER,
+    period: monthPeriod,
+    includeKeys: COORDINATOR_KPI_ORDER,
+    order: COORDINATOR_KPI_ORDER,
   });
   const [trendsByKpi, setTrendsByKpi] = useState<TrendsByKpi>({});
 
@@ -58,7 +59,7 @@ export default function PublicImpactDashboardPage() {
     async function fetchTrends() {
       try {
         const trendsResult = await apiClient<ImpactTrendsResponse>(
-          apiUrl('/api/impact/trends?period=12months'),
+          apiUrl(`/api/impact/trends?period=${monthPeriod}`),
         );
         if (trendsResult.success && trendsResult.data.success) {
           setTrendsByKpi(buildTrendsMap(trendsResult.data.data));
@@ -68,7 +69,7 @@ export default function PublicImpactDashboardPage() {
       }
     }
     fetchTrends();
-  }, []);
+  }, [monthPeriod]);
 
   const showEstimateBadge = config?.showEstimateBadge ?? true;
   const organizationLogo =
@@ -94,6 +95,8 @@ export default function PublicImpactDashboardPage() {
         error={error}
         onRetry={refresh}
         showEstimateBadge={showEstimateBadge}
+        showExplanations
+        expectedKeys={COORDINATOR_KPI_ORDER}
       />
 
       <Card className="mt-6">
