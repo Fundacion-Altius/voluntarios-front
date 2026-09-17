@@ -109,7 +109,7 @@ function TrendBadge({ trend }: { trend: ImpactTrendSummary | undefined }) {
       title={t(`trend.${trend.direction}`)}
     >
       <span aria-hidden="true">{symbol}</span>
-      <span>{trend.percentChange.toFixed(1)}%</span>
+      <span>{Math.abs(trend.percentChange).toFixed(1)}%</span>
     </span>
   );
 }

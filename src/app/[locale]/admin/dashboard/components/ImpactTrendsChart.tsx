@@ -71,7 +71,7 @@ function TrendIndicator({ trend }: { trend: ImpactTrendResult['current'] }) {
   return (
     <div className={`flex items-center gap-1 text-sm ${colorClass}`}>
       <span>{symbol}</span>
-      <span>{trend.percentChange.toFixed(1)}%</span>
+      <span>{Math.abs(trend.percentChange).toFixed(1)}%</span>
     </div>
   );
 }
