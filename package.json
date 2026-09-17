@@ -5,7 +5,8 @@
   "scripts": {
     "predev": "node scripts/predev.js",
     "dev": "node server.js",
-    "build": "npx update-browserslist-db@latest && next build",
+    "build": "next build",
+  "update-browserslist": "npx update-browserslist-db@latest",
     "start": "next start",
     "lint": "next lint && biome lint --only=complexity .",
     "lint:biome": "biome lint --only=complexity .",
