@@ -19,14 +19,6 @@ type ImpactConfig = {
   peoplePerHourFactor: number;
 };
 
-const KPI_LABELS: Record<string, string> = {
-  volunteer_hours_total: 'Horas de voluntariado',
-  people_served_estimated: 'Personas atendidas (estimado)',
-  volunteer_retention_rate: 'Tasa de retención de voluntarios',
-  community_satisfaction: 'Satisfacción de la comunidad',
-  volunteer_growth_rate: 'Crecimiento de voluntarios',
-};
-
 const DEFAULT_CONFIG: ImpactConfig = {
   organizationName: 'Fundación Altius',
   organizationLogo: '/logo.png',
@@ -37,6 +29,7 @@ const DEFAULT_CONFIG: ImpactConfig = {
 
 export default function AdminImpactConfigPage() {
   const t = useTranslations('admin.impact');
+  const td = useTranslations('impact.dashboard');
   const [config, setConfig] = useState<ImpactConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -209,7 +202,7 @@ export default function AdminImpactConfigPage() {
                   onCheckedChange={() => toggleKpi(kpiKey)}
                 />
                 <Label htmlFor={`kpi-${kpiKey}`} className="flex-1 cursor-pointer">
-                  {KPI_LABELS[kpiKey] || kpiKey}
+                  {td(`kpi.${kpiKey}`)}
                 </Label>
               </div>
             ))}
@@ -245,7 +238,7 @@ export default function AdminImpactConfigPage() {
                   key={kpiKey}
                   className="px-3 py-1 bg-secondary rounded-full text-sm"
                 >
-                  {KPI_LABELS[kpiKey] || kpiKey}
+                  {td(`kpi.${kpiKey}`)}
                 </span>
               ))}
             </div>

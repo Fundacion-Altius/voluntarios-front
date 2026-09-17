@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   LineChart,
   Line,
@@ -42,17 +43,12 @@ interface Props {
 const KPI_COLORS: Record<string, string> = {
   volunteer_hours_total: 'var(--chart-1)',
   people_served_estimated: 'var(--chart-2)',
-  volunteer_retention_rate: 'var(--chart-3)',
-  community_satisfaction: 'var(--chart-4)',
-  volunteer_growth_rate: 'var(--chart-5)',
-};
-
-const KPI_LABELS: Record<string, string> = {
-  volunteer_hours_total: 'Horas de voluntariado',
-  people_served_estimated: 'Personas atendidas',
-  volunteer_retention_rate: 'Retención de voluntarios',
-  community_satisfaction: 'Satisfacción',
-  volunteer_growth_rate: 'Crecimiento de voluntarios',
+  community_satisfaction: 'var(--chart-3)',
+  volunteer_retention_rate: 'var(--chart-4)',
+  volunteer_churn_rate: 'var(--chart-5)',
+  volunteer_growth_rate: 'var(--chart-6)',
+  coverage_rate: 'var(--chart-7)',
+  time_to_fill: 'var(--chart-8)',
 };
 
 function TrendIndicator({ trend }: { trend: ImpactTrendResult['current'] }) {
@@ -81,11 +77,13 @@ function TrendIndicator({ trend }: { trend: ImpactTrendResult['current'] }) {
 }
 
 export function ImpactTrendsChart({ data, isLoading }: Props) {
+  const t = useTranslations('impact.dashboard');
+  const labelFor = (key: string) => t(`kpi.${key}`);
   if (isLoading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Tendencias de Impacto</CardTitle>
+          <CardTitle className="text-sm font-medium">{t('trendsTitle')}</CardTitle>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-64 w-full" />
@@ -98,11 +96,11 @@ export function ImpactTrendsChart({ data, isLoading }: Props) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Tendencias de Impacto</CardTitle>
+          <CardTitle className="text-sm font-medium">{t('trendsTitle')}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground text-center py-8">
-            No hay datos de tendencias disponibles
+            {t('trendsEmpty')}
           </p>
         </CardContent>
       </Card>
@@ -129,7 +127,7 @@ export function ImpactTrendsChart({ data, isLoading }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-medium">Tendencias de Impacto</CardTitle>
+        <CardTitle className="text-sm font-medium">{t('trendsTitle')}</CardTitle>
       </CardHeader>
       <CardContent>
         {/* Trend summary */}
@@ -139,7 +137,7 @@ export function ImpactTrendsChart({ data, isLoading }: Props) {
               key={trend.kpi}
               className="flex items-center gap-2 text-sm"
             >
-              <span className="font-medium">{KPI_LABELS[trend.kpi] || trend.kpi}:</span>
+              <span className="font-medium">{labelFor(trend.kpi)}:</span>
               <TrendIndicator trend={trend.current} />
             </div>
           ))}
@@ -171,7 +169,7 @@ export function ImpactTrendsChart({ data, isLoading }: Props) {
                   stroke={KPI_COLORS[trend.kpi] || 'var(--chart-1)'}
                   strokeWidth={2}
                   dot={{ r: 3 }}
-                  name={KPI_LABELS[trend.kpi] || trend.kpi}
+                  name={labelFor(trend.kpi)}
                 />
               ))}
             </LineChart>

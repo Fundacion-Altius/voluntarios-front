@@ -9,6 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartTooltipContent } from './ChartTooltipContent';
 
@@ -17,10 +18,11 @@ interface Props {
 }
 
 export function ContractsByMonthChart({ data }: Props) {
+  const t = useTranslations('admin.dashboard');
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-medium">Contratos por Mes</CardTitle>
+        <CardTitle className="text-sm font-medium">{t('signupsByMonth')}</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={240}>
@@ -45,7 +47,7 @@ export function ContractsByMonthChart({ data }: Props) {
               stroke="var(--chart-1)"
               strokeWidth={2}
               dot={{ r: 4, fill: "var(--chart-1)", stroke: "var(--chart-1)" }}
-              name="Contratos"
+              name={t('signupsSeries')}
             />
           </LineChart>
         </ResponsiveContainer>

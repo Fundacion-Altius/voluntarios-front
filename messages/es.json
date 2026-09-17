@@ -281,6 +281,10 @@
     },
     "dashboard": {
       "titulo": "Dashboard",
+      "seccionOtrasMetricas": "Otras métricas",
+      "signupsByMonth": "Altas voluntarios por mes",
+      "signupsByLugar": "Altas voluntarios por lugar",
+      "signupsSeries": "Altas",
       "totalContracts": "Contratos Totales",
       "activeVolunteers": "Voluntarios Activos",
       "surveyCompletionRate": "Tasa de Respuesta",
@@ -1133,7 +1137,51 @@
       "subtitle": "Métricas de impacto de la Fundación Altius",
       "about": "Sobre estos datos",
       "description": "Este dashboard muestra las métricas de impacto calculadas a partir de los datos operativos de la plataforma. Los valores se actualizan automáticamente.",
-      "dataNote": "Algunos valores son estimaciones basadas en factores configurables."
+      "dataNote": "Algunos valores son estimaciones basadas en factores configurables.",
+      "kpi": {
+        "volunteer_hours_total": "Horas de voluntariado",
+        "people_served_estimated": "Personas atendidas (estimado)",
+        "community_satisfaction": "Satisfacción de la comunidad",
+        "volunteer_retention_rate": "Tasa de retención del voluntariado",
+        "volunteer_churn_rate": "Tasa de baja del voluntariado",
+        "volunteer_growth_rate": "Crecimiento de voluntarios",
+        "coverage_rate": "Tasa de cobertura del voluntariado",
+        "time_to_fill": "Tiempo de cobertura",
+        "reliability_rate": "Fiabilidad del voluntariado (Asistencia)",
+        "onboarding_completion_rate": "Finalización del onboarding",
+        "social_impact_per_hour": "Impacto social por hora de voluntariado",
+        "volunteer_nps": "Satisfacción del voluntariado (NPS)"
+      },
+      "kpiDesc": {
+        "coverage_rate": "El porcentaje de plazas de voluntariado cubiertas sobre todas las necesarias.",
+        "reliability_rate": "El porcentaje de horas programadas de voluntariado que se registraron realmente.",
+        "volunteer_churn_rate": "El porcentaje de voluntarios activos que dejaron de participar durante el periodo.",
+        "volunteer_retention_rate": "El porcentaje de voluntarios que se mantuvieron activos desde el inicio hasta el fin del periodo.",
+        "time_to_fill": "El tiempo medio que tarda en reservarse una plaza de voluntariado disponible.",
+        "onboarding_completion_rate": "El porcentaje de voluntarios que finalizaron el onboarding tras haberlo iniciado.",
+        "social_impact_per_hour": "El número de personas atendidas por cada hora que aportan los voluntarios.",
+        "volunteer_nps": "La probabilidad de que los voluntarios recomienden la organización, en base a promotores menos detractores.",
+        "volunteer_hours_total": "Total de horas de voluntariado registradas en el periodo.",
+        "people_served_estimated": "Personas atendidas estimadas a partir de las horas de voluntariado.",
+        "community_satisfaction": "Satisfacción media de la comunidad, en una escala de 1 a 5.",
+        "volunteer_growth_rate": "Variación de voluntarios activos respecto al mismo periodo del año anterior."
+      },
+      "unit": {
+        "hours": "horas",
+        "people": "personas",
+        "perHour": "personas/hora"
+      },
+      "estimateBadge": "Estimado",
+      "empty": "No hay datos de impacto disponibles.",
+      "kpiNoData": "Sin datos todavía",
+      "retry": "Reintentar",
+      "trend": {
+        "up": "Subiendo",
+        "down": "Bajando",
+        "stable": "Estable"
+      },
+      "trendsTitle": "Tendencias de Impacto",
+      "trendsEmpty": "No hay datos de tendencias disponibles"
     }
   }
 }

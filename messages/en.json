@@ -281,6 +281,10 @@
     },
     "dashboard": {
       "titulo": "Dashboard",
+      "seccionOtrasMetricas": "Other metrics",
+      "signupsByMonth": "Volunteer signups by month",
+      "signupsByLugar": "Volunteer signups by location",
+      "signupsSeries": "Signups",
       "totalContracts": "Total Contracts",
       "activeVolunteers": "Active Volunteers",
       "surveyCompletionRate": "Survey Completion Rate",
@@ -1133,7 +1137,51 @@
       "subtitle": "Fundación Altius Impact Metrics",
       "about": "About this data",
       "description": "This dashboard displays impact metrics calculated from the platform's operational data. Values are updated automatically.",
-      "dataNote": "Some values are estimates based on configurable factors."
+      "dataNote": "Some values are estimates based on configurable factors.",
+      "kpi": {
+        "volunteer_hours_total": "Volunteer hours",
+        "people_served_estimated": "People served (estimated)",
+        "community_satisfaction": "Community satisfaction",
+        "volunteer_retention_rate": "Volunteer Retention Rate",
+        "volunteer_churn_rate": "Volunteer Churn Rate",
+        "volunteer_growth_rate": "Volunteer growth rate",
+        "coverage_rate": "Volunteer Coverage Rate",
+        "time_to_fill": "Time-to-Fill",
+        "reliability_rate": "Volunteer Reliability (Attendance)",
+        "onboarding_completion_rate": "Onboarding Completion",
+        "social_impact_per_hour": "Social Impact per Volunteer Hour",
+        "volunteer_nps": "Volunteer Satisfaction (NPS)"
+      },
+      "kpiDesc": {
+        "coverage_rate": "The percentage of volunteer slots filled out of all slots needed.",
+        "reliability_rate": "The percentage of scheduled volunteer hours that were actually logged.",
+        "volunteer_churn_rate": "The percentage of active volunteers who stopped participating during the period.",
+        "volunteer_retention_rate": "The percentage of volunteers who stayed active from the start to the end of the period.",
+        "time_to_fill": "The average time it takes for an open volunteer slot to get booked.",
+        "onboarding_completion_rate": "The percentage of volunteers who finished onboarding after starting it.",
+        "social_impact_per_hour": "The number of people served for every hour volunteers contribute.",
+        "volunteer_nps": "How likely volunteers are to recommend the organization, on a promoters-minus-detractors basis.",
+        "volunteer_hours_total": "Total volunteer hours logged in the period.",
+        "people_served_estimated": "Estimated people served, based on volunteer hours.",
+        "community_satisfaction": "Average community satisfaction score, on a 1 to 5 scale.",
+        "volunteer_growth_rate": "Change in active volunteers versus the same period last year."
+      },
+      "unit": {
+        "hours": "hours",
+        "people": "people",
+        "perHour": "people/hour"
+      },
+      "estimateBadge": "Estimated",
+      "empty": "No impact data available.",
+      "kpiNoData": "No data yet",
+      "retry": "Retry",
+      "trend": {
+        "up": "Up",
+        "down": "Down",
+        "stable": "Stable"
+      },
+      "trendsTitle": "Impact trends",
+      "trendsEmpty": "No trend data available"
     }
   }
 }

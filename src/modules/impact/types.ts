@@ -6,17 +6,74 @@
 export type ImpactKpiKey =
   | "volunteer_hours_total"
   | "people_served_estimated"
-  | "volunteer_retention_rate"
   | "community_satisfaction"
-  | "volunteer_growth_rate";
+  | "volunteer_retention_rate"
+  | "volunteer_churn_rate"
+  | "volunteer_growth_rate"
+  | "coverage_rate"
+  | "time_to_fill"
+  | "reliability_rate"
+  | "onboarding_completion_rate"
+  | "social_impact_per_hour"
+  | "volunteer_nps";
 
 export const ALL_IMPACT_KPI_KEYS: readonly ImpactKpiKey[] = [
   "volunteer_hours_total",
   "people_served_estimated",
+  "community_satisfaction",
   "volunteer_retention_rate",
+  "volunteer_churn_rate",
+  "volunteer_growth_rate",
+  "coverage_rate",
+  "time_to_fill",
+  "reliability_rate",
+  "onboarding_completion_rate",
+  "social_impact_per_hour",
+  "volunteer_nps",
+] as const;
+
+/**
+ * The 8 coordinator KPIs shown in the admin dashboard top section, in order.
+ * Backend omits volunteer_nps while no 0-10 recommendation survey exists;
+ * the grid renders it as an empty-state card.
+ */
+export const COORDINATOR_KPI_ORDER: readonly ImpactKpiKey[] = [
+  "coverage_rate",
+  "reliability_rate",
+  "volunteer_churn_rate",
+  "volunteer_retention_rate",
+  "time_to_fill",
+  "onboarding_completion_rate",
+  "social_impact_per_hour",
+  "volunteer_nps",
+] as const;
+
+/** Raw operational stats kept visible below the coordinator KPIs. */
+export const SECONDARY_KPI_ORDER: readonly ImpactKpiKey[] = [
+  "volunteer_hours_total",
+  "people_served_estimated",
   "community_satisfaction",
   "volunteer_growth_rate",
 ] as const;
+
+/** Legacy public-dashboard order (unchanged public view). */
+export const PUBLIC_KPI_ORDER: readonly ImpactKpiKey[] = [
+  "volunteer_hours_total",
+  "people_served_estimated",
+  "community_satisfaction",
+  "volunteer_retention_rate",
+  "volunteer_churn_rate",
+  "volunteer_growth_rate",
+  "coverage_rate",
+  "time_to_fill",
+] as const;
+
+export type ImpactTrendDirection = "up" | "down" | "stable";
+
+export type ImpactTrendSummary = {
+  direction: ImpactTrendDirection;
+  percentChange: number;
+};
 
 export type ImpactKpi = {
   key: ImpactKpiKey;

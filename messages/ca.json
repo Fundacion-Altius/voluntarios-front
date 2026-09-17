@@ -281,6 +281,10 @@
     },
     "dashboard": {
       "titulo": "Dashboard",
+      "seccionOtrasMetricas": "Altres mètriques",
+      "signupsByMonth": "Altes de voluntaris per mes",
+      "signupsByLugar": "Altes de voluntaris per lloc",
+      "signupsSeries": "Altes",
       "totalContracts": "Contractes Totals",
       "activeVolunteers": "Voluntaris Actius",
       "surveyCompletionRate": "Taxa de Resposta",
@@ -1131,7 +1135,51 @@
       "subtitle": "Mètriques d'impacte de la Fundació Altius",
       "about": "Sobre aquestes dades",
       "description": "Aquest tauler mostra les mètriques d'impacte calculades a partir de les dades operatives de la plataforma. Els valors s'actualitzen automàticament.",
-      "dataNote": "Alguns valors són estimacions basades en factors configurables."
+      "dataNote": "Alguns valors són estimacions basades en factors configurables.",
+      "kpi": {
+        "volunteer_hours_total": "Hores de voluntariat",
+        "people_served_estimated": "Persones ateses (estimat)",
+        "community_satisfaction": "Satisfacció de la comunitat",
+        "volunteer_retention_rate": "Taxa de retenció del voluntariat",
+        "volunteer_churn_rate": "Taxa de baixa del voluntariat",
+        "volunteer_growth_rate": "Creixement de voluntaris",
+        "coverage_rate": "Taxa de cobertura del voluntariat",
+        "time_to_fill": "Temps de cobertura",
+        "reliability_rate": "Fiabilitat del voluntariat (Assistència)",
+        "onboarding_completion_rate": "Finalització de l'onboarding",
+        "social_impact_per_hour": "Impacte social per hora de voluntariat",
+        "volunteer_nps": "Satisfacció del voluntariat (NPS)"
+      },
+      "kpiDesc": {
+        "coverage_rate": "El percentatge de places de voluntariat cobertes sobre totes les necessàries.",
+        "reliability_rate": "El percentatge d'hores programades de voluntariat que es van registrar realment.",
+        "volunteer_churn_rate": "El percentatge de voluntaris actius que van deixar de participar durant el període.",
+        "volunteer_retention_rate": "El percentatge de voluntaris que es van mantenir actius des de l'inici fins al final del període.",
+        "time_to_fill": "El temps mitjà que triga a reservar-se una plaça de voluntariat disponible.",
+        "onboarding_completion_rate": "El percentatge de voluntaris que van finalitzar l'onboarding després d'haver-lo iniciat.",
+        "social_impact_per_hour": "El nombre de persones ateses per cada hora que aporten els voluntaris.",
+        "volunteer_nps": "La probabilitat que els voluntaris recomanin l'organització, sobre la base de promotors menys detractors.",
+        "volunteer_hours_total": "Total d'hores de voluntariat registrades en el període.",
+        "people_served_estimated": "Persones ateses estimades a partir de les hores de voluntariat.",
+        "community_satisfaction": "Satisfacció mitjana de la comunitat, en una escala d'1 a 5.",
+        "volunteer_growth_rate": "Variació de voluntaris actius respecte al mateix període de l'any anterior."
+      },
+      "unit": {
+        "hours": "hores",
+        "people": "persones",
+        "perHour": "persones/hora"
+      },
+      "estimateBadge": "Estimat",
+      "empty": "No hi ha dades d'impacte disponibles.",
+      "kpiNoData": "Sense dades encara",
+      "retry": "Torna-ho a provar",
+      "trend": {
+        "up": "Pujant",
+        "down": "Baixant",
+        "stable": "Estable"
+      },
+      "trendsTitle": "Tendències d'impacte",
+      "trendsEmpty": "No hi ha dades de tendències disponibles"
     }
   }
 }
