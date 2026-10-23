@@ -128,6 +128,9 @@ describe('LoginPage', () => {
     });
 
     it('renders divider with "O" text', () => {
+      // Divider only renders when at least one OAuth provider is enabled.
+      process.env.AZURE_AD_CLIENT_ID = 'test-azure-id';
+      process.env.AZURE_AD_CLIENT_SECRET = 'test-azure-secret';
       render(<TestProviders><LoginPage /></TestProviders>);
       expect(screen.getByText('O')).toBeInTheDocument();
     });
