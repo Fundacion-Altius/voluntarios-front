@@ -94,6 +94,9 @@ export function useContractForm() {
   };
 
   const handleSubmit = async () => {
+    if (!datosContrato.derechoDatos || !datosContrato.derechoConfidencialidad || !datosContrato.derechoImagen) {
+      throw new Error('Debes aceptar todos los consentimientos obligatorios para enviar el contrato.');
+    }
     const response = await apiPost('/api/contracts', datosContrato);
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));

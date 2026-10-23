@@ -2,7 +2,7 @@
 import { Link } from '@/i18n/navigation';
 import { usePathname } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
-import { Home, BookOpen, Calendar, Users, MessageSquare, MoreHorizontal } from 'lucide-react';
+import { Home, BookOpen, Calendar, Users, MessageSquare, MoreHorizontal, PackageSearch } from 'lucide-react';
 import { useState } from 'react';
 import { useSetRoutePending } from '@/components/navigation/RoutePending';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from '@/components/ui/sheet';
@@ -24,6 +24,7 @@ export default function BottomNav({ userName, userEmail, onLogout }: BottomNavPr
     { href: '/portal', label: t('inicio'), icon: Home },
     { href: '/portal/cursos', label: t('cursos'), icon: BookOpen },
     { href: '/portal/actividades', label: t('actividades'), icon: Calendar },
+    { href: '/portal/ayuda-alimentaria', label: t('ayudaAlimentaria'), icon: PackageSearch },
     { href: '/portal/proyectos', label: t('proyectos'), icon: Users },
     { href: '/portal/mensajes', label: t('mensajes'), icon: MessageSquare },
   ];

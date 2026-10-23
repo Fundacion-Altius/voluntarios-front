@@ -82,9 +82,19 @@ describe("StepThree Component", () => {
     expect(mockPrevStep).toHaveBeenCalledTimes(1);
   });
 
-  it("calls handleSubmit when Enviar contrato is clicked", async () => {
+  it("disables Enviar contrato until all three consents are accepted", () => {
+    setup();
+    expect(screen.getByText(/Enviar contrato/).closest("button")).toBeDisabled();
+  });
+
+  it("calls handleSubmit when Enviar contrato is clicked with all consents", async () => {
     mockHandleSubmit.mockResolvedValue(undefined);
-    const { user } = setup();
+    const { user } = setup({
+      ...defaultContractData,
+      derechoDatos: true,
+      derechoConfidencialidad: true,
+      derechoImagen: true,
+    });
     await user.click(screen.getByText(/Enviar contrato/));
     expect(mockHandleSubmit).toHaveBeenCalledTimes(1);
   });

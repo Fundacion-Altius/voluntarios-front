@@ -921,7 +921,8 @@
       "ranking": "Ranking",
       "notificaciones": "Notificacions",
       "mas": "Més",
-      "salir": "Surt"
+      "salir": "Surt",
+      "ayudaAlimentaria": "Ajuda alimentària"
     },
     "home": {
       "titulo": "El Meu Panell",
@@ -1127,6 +1128,81 @@
       "unirseSalaBtn": "Unir-se a la sala",
       "errorUnirse": "Error en unir-se a la sala",
       "debesIniciarSesion": "Has d'iniciar sessió per unir-te"
+    },
+    "foodAid": {
+      "title": "Ajuda alimentària",
+      "subtitle": "Lots d'ajuda alimentària: alta, traçabilitat i triatge de la mercaderia rebuda.",
+      "newRequest": "Nova sol·licitud",
+      "closeForm": "Tancar formulari",
+      "formTitle": "Registra una sol·licitud d'ajuda alimentària",
+      "refresh": "Actualitza",
+      "searchPlaceholder": "Cerca per títol, categoria o ubicació...",
+      "filterLabel": "Filtra per estat",
+      "filterAll": "Tots els estats",
+      "count": "{count, plural, =0 {Cap registre} one {# registre} other {# registres}}",
+      "clearFilters": "Neteja els filtres",
+      "emptyTitle": "Encara no hi ha sol·licituds d'ajuda alimentària",
+      "emptyDescription": "Registra la primera mercaderia rebuda per començar a controlar els lots, les caducitats i el seu triatge.",
+      "noMatchesTitle": "Cap registre coincideix amb el filtre",
+      "noMatchesDescription": "Prova una altra cerca o torna a veure tots els estats.",
+      "unknownItem": "Article eliminat",
+      "errorGeneric": "No s'ha pogut completar l'operació.",
+      "errorServiceUnavailable": "El servei d'ajuda alimentària no està disponible ara mateix. Torna-ho a provar d'aquí a uns minuts.",
+      "changeStatus": "Canvia l'estat de {title}",
+      "columnTitle": "Article",
+      "columnCategory": "Categoria",
+      "columnQuantity": "Quantitat",
+      "columnLocation": "Ubicació",
+      "columnExpiry": "Caducitat",
+      "columnStatus": "Estat",
+      "status": {
+        "accepted": "Acceptat",
+        "partial": "Parcial",
+        "rejected": "Rebutjat"
+      },
+      "category": {
+        "food": "Alimentació",
+        "hygiene": "Higiene",
+        "diapers": "Pampers",
+        "toys": "Jocs",
+        "kitchenware": "Parament de cuina"
+      },
+      "form": {
+        "titleLabel": "Títol",
+        "titlePlaceholder": "Llaunes de tomàquet",
+        "descriptionLabel": "Descripció",
+        "descriptionPlaceholder": "Detall de la mercaderia rebuda",
+        "categoryLabel": "Categoria",
+        "unitLabel": "Unitat de mesura",
+        "quantityLabel": "Quantitat",
+        "quantityPlaceholder": "0",
+        "eanLabel": "Codi EAN",
+        "eanPlaceholder": "Opcional",
+        "locationLabel": "Ubicació d'emmagatzematge",
+        "locationPlaceholder": "Magatzem A, prestatge 3",
+        "expiryLabel": "Data de caducitat",
+        "statusLabel": "Estat del triatge",
+        "submit": "Registra la sol·licitud",
+        "errorTitle": "Indica un títol per a la mercaderia.",
+        "errorQuantity": "Indica una quantitat major que zero.",
+        "errorLocation": "Indica on es desa la mercaderia.",
+        "errorGeneric": "No s'ha pogut completar l'operació."
+      },
+      "errors": {
+        "serviceUnavailable": "El servei d'ajuda alimentària no està disponible ara mateix. Torna-ho a provar d'aquí a uns minuts.",
+        "network": "No s'ha pogut contactar amb el servidor d'ajuda alimentària. Revisa la teva connexió.",
+        "invalidResponse": "El servei d'ajuda alimentària ha retornat una resposta que no s'entén. Torna-ho a provar.",
+        "generic": "No s'ha pogut completar l'operació."
+      },
+      "subtitleVolunteer": "Lots disponibles d'ajuda alimentària de la teva organització (només lectura).",
+      "confirmDelete": "Eliminar el lot «{title}»? S'ocultarà de la llista (baixa lògica).",
+      "deleteLot": "Eliminar lot {title}",
+      "expiryBannerTitle": "{count, plural, one {# lot caduca en els pròxims 5 dies} other {# lots caduquen en els pròxims 5 dies}}",
+      "notifyAdmins": "Avisar per correu",
+      "notifyDone": "Avís enviat ({count} lots).",
+      "prevPage": "Anterior",
+      "nextPage": "Següent",
+      "pageOf": "Pàgina {page} de {total}"
     }
   },
   "impact": {
