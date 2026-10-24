@@ -113,7 +113,7 @@ test.describe('Admin Activities CRUD', () => {
     await expect(link).toHaveAttribute('href', /\/admin\/actividades/);
     await link.click();
     await page.waitForURL(/\/(es|en)\/admin\/actividades/, { timeout: 15000 });
-    await expect(page.getByRole('heading', { name: 'Actividades' })).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('main').getByRole('heading', { name: 'Actividades', exact: true }).first()).toBeVisible({ timeout: 15000 });
   });
 });
 

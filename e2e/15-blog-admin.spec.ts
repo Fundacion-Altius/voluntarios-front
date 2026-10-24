@@ -25,7 +25,9 @@ test.describe('Admin Blog Editor', () => {
     await loginAsBrowser(page, 'admin@fundacionaltius.org', 'admin123');
     await page.goto('/es/admin/dashboard', { waitUntil: 'load' });
     await expect(page.locator('body')).toContainText('Panel de gestión', { timeout: 15000 });
-    await page.locator('a', { hasText: 'Blog' }).click();
+    // Grouped sidebar: Blog now lives under "Comunicación" as "Noticias".
+    await page.locator('aside').getByRole('button', { name: 'Comunicación' }).click();
+    await page.locator('aside a[href$="/admin/blog"]').click();
     await page.waitForURL('**/admin/blog', { timeout: 15000 });
     await expect(page.locator('body')).toContainText('Blog', { timeout: 15000 });
   });

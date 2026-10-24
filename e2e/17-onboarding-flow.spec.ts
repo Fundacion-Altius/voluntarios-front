@@ -32,7 +32,9 @@ test.describe('Onboarding Flow', () => {
     await page.goto('/es/admin/dashboard', { waitUntil: 'load' });
     await expect(page.locator('body')).toContainText('Panel de gestión', { timeout: 15000 });
 
-    await page.locator('a', { hasText: 'Onboarding' }).click();
+    // Grouped sidebar: Onboarding now lives under "Voluntariado" as "Acogida".
+    await page.locator('aside').getByRole('button', { name: 'Voluntariado' }).click();
+    await page.locator('aside a[href$="/admin/onboarding"]').click();
     await page.waitForURL('**/admin/onboarding', { timeout: 10000 });
     await expect(page.locator('body')).toContainText(TASK_TITLE, { timeout: 10000 });
   });
