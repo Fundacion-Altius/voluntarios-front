@@ -370,7 +370,8 @@
       "salir": "Sign out",
       "mas": "More",
       "integraciones": "Integrations",
-      "federacion": "Federation"
+      "federacion": "Federation",
+      "bienestar": "Wellbeing"
     },
     "contracts": {
       "noDisponibles": "No contracts available.",
@@ -1040,6 +1041,36 @@
       "colName": "Name",
       "colSlug": "Slug",
       "colStatus": "Status"
+    },
+    "bienestar": {
+      "title": "Wellbeing",
+      "subtitle": "Burnout alerts, absences, conflicts, and volunteer check-ins.",
+      "loading": "Loading…",
+      "error": "Could not load the wellbeing panel.",
+      "runDetect": "Run detection",
+      "alertsTitle": "Burnout alerts",
+      "alertsEmpty": "No open alerts.",
+      "absencesTitle": "Absence patterns",
+      "absencesEmpty": "No absences recorded.",
+      "conflictsTitle": "Conflicts",
+      "conflictsEmpty": "No conflicts yet.",
+      "conflictSubject": "Subject",
+      "conflictDescription": "Description",
+      "conflictCreate": "Open conflict",
+      "escalate": "Escalate",
+      "resolve": "Resolve",
+      "checkInsTitle": "Wellbeing check-ins",
+      "checkInsEmpty": "No check-ins yet.",
+      "colVolunteer": "Volunteer",
+      "colKind": "Kind",
+      "colDetail": "Detail",
+      "colCount": "Absences",
+      "colRecent": "Recent dates",
+      "colSubject": "Subject",
+      "colStatus": "Status",
+      "colActions": "Actions",
+      "colMood": "Mood",
+      "colNote": "Note"
     }
   },
   "portal": {

@@ -370,7 +370,8 @@
       "salir": "Salir",
       "mas": "Más",
       "integraciones": "Integraciones",
-      "federacion": "Federación"
+      "federacion": "Federación",
+      "bienestar": "Bienestar"
     },
     "contracts": {
       "noDisponibles": "No hay contratos disponibles.",
@@ -1040,6 +1041,36 @@
       "colName": "Nombre",
       "colSlug": "Slug",
       "colStatus": "Estado"
+    },
+    "bienestar": {
+      "title": "Bienestar",
+      "subtitle": "Alertas de burnout, ausencias, conflictos y check-ins de voluntarios.",
+      "loading": "Cargando…",
+      "error": "No se pudo cargar el panel de bienestar.",
+      "runDetect": "Ejecutar detección",
+      "alertsTitle": "Alertas de burnout",
+      "alertsEmpty": "No hay alertas abiertas.",
+      "absencesTitle": "Patrones de ausencia",
+      "absencesEmpty": "No hay ausencias registradas.",
+      "conflictsTitle": "Conflictos",
+      "conflictsEmpty": "No hay conflictos abiertos.",
+      "conflictSubject": "Asunto",
+      "conflictDescription": "Descripción",
+      "conflictCreate": "Abrir conflicto",
+      "escalate": "Escalar",
+      "resolve": "Resolver",
+      "checkInsTitle": "Check-ins de bienestar",
+      "checkInsEmpty": "Aún no hay check-ins.",
+      "colVolunteer": "Voluntario",
+      "colKind": "Tipo",
+      "colDetail": "Detalle",
+      "colCount": "Ausencias",
+      "colRecent": "Fechas recientes",
+      "colSubject": "Asunto",
+      "colStatus": "Estado",
+      "colActions": "Acciones",
+      "colMood": "Ánimo",
+      "colNote": "Nota"
     }
   },
   "portal": {

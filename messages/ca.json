@@ -370,7 +370,8 @@
       "salir": "Sortir",
       "mas": "Més",
       "integraciones": "Integracions",
-      "federacion": "Federació"
+      "federacion": "Federació",
+      "bienestar": "Benestar"
     },
     "contracts": {
       "noDisponibles": "No hi ha contractes disponibles.",
@@ -1040,6 +1041,36 @@
       "colName": "Nom",
       "colSlug": "Slug",
       "colStatus": "Estat"
+    },
+    "bienestar": {
+      "title": "Benestar",
+      "subtitle": "Alertes de burnout, absències, conflictes i check-ins de voluntaris.",
+      "loading": "Carregant…",
+      "error": "No s'ha pogut carregar el panell de benestar.",
+      "runDetect": "Executar detecció",
+      "alertsTitle": "Alertes de burnout",
+      "alertsEmpty": "No hi ha alertes obertes.",
+      "absencesTitle": "Patrons d'absència",
+      "absencesEmpty": "No hi ha absències registrades.",
+      "conflictsTitle": "Conflictes",
+      "conflictsEmpty": "Encara no hi ha conflictes.",
+      "conflictSubject": "Assumpte",
+      "conflictDescription": "Descripció",
+      "conflictCreate": "Obrir conflicte",
+      "escalate": "Escaladar",
+      "resolve": "Resoldre",
+      "checkInsTitle": "Check-ins de benestar",
+      "checkInsEmpty": "Encara no hi ha check-ins.",
+      "colVolunteer": "Voluntari",
+      "colKind": "Tipus",
+      "colDetail": "Detall",
+      "colCount": "Absències",
+      "colRecent": "Dates recents",
+      "colSubject": "Assumpte",
+      "colStatus": "Estat",
+      "colActions": "Accions",
+      "colMood": "Ànim",
+      "colNote": "Nota"
     }
   },
   "portal": {
