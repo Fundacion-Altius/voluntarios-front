@@ -368,7 +368,8 @@
       "mensajes": "Team chat",
       "exportaciones": "Exports",
       "salir": "Sign out",
-      "mas": "More"
+      "mas": "More",
+      "integraciones": "Integrations"
     },
     "contracts": {
       "noDisponibles": "No contracts available.",
@@ -1006,6 +1007,23 @@
       "overdueSectionDescription": "Grants requiring immediate attention",
       "andMore": "and {count} more",
       "errorLoadingEvents": "Error loading calendar events"
+    },
+    "integraciones": {
+      "title": "Integrations",
+      "subtitle": "Connect Notion and Airtable to sync members (KL-E-004).",
+      "status": "Status",
+      "connect": "Connect",
+      "disconnect": "Disconnect",
+      "notionDatabase": "Notion database ID",
+      "airtableBase": "Airtable base ID",
+      "airtableTable": "Airtable table ID",
+      "saveMapping": "Save mapping",
+      "runSync": "Sync Notion",
+      "runImport": "Import Airtable",
+      "runExport": "Export to Airtable",
+      "runsTitle": "Recent runs",
+      "noRuns": "No runs yet.",
+      "error": "Could not complete the operation."
     }
   },
   "portal": {

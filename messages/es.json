@@ -368,7 +368,8 @@
       "mensajes": "Chat interno",
       "exportaciones": "Exportaciones",
       "salir": "Salir",
-      "mas": "Más"
+      "mas": "Más",
+      "integraciones": "Integraciones"
     },
     "contracts": {
       "noDisponibles": "No hay contratos disponibles.",
@@ -1006,6 +1007,23 @@
       "overdueSectionDescription": "Subvenciones que requieren atención inmediata",
       "andMore": "y {count} más",
       "errorLoadingEvents": "Error al cargar los eventos del calendario"
+    },
+    "integraciones": {
+      "title": "Integraciones",
+      "subtitle": "Conecta Notion y Airtable para sincronizar miembros (KL-E-004).",
+      "status": "Estado",
+      "connect": "Conectar",
+      "disconnect": "Desconectar",
+      "notionDatabase": "ID de base de datos Notion",
+      "airtableBase": "ID de base Airtable",
+      "airtableTable": "ID de tabla Airtable",
+      "saveMapping": "Guardar mapeo",
+      "runSync": "Sincronizar Notion",
+      "runImport": "Importar Airtable",
+      "runExport": "Exportar a Airtable",
+      "runsTitle": "Últimas ejecuciones",
+      "noRuns": "Sin ejecuciones todavía.",
+      "error": "No se pudo completar la operación."
     }
   },
   "portal": {

@@ -368,7 +368,8 @@
       "mensajes": "Xat intern",
       "exportaciones": "Exportacions",
       "salir": "Sortir",
-      "mas": "Més"
+      "mas": "Més",
+      "integraciones": "Integracions"
     },
     "contracts": {
       "noDisponibles": "No hi ha contractes disponibles.",
@@ -1006,6 +1007,23 @@
       "overdueSectionDescription": "Subvencions que requereixen atenció immediata",
       "andMore": "i {count} més",
       "errorLoadingEvents": "Error en carregar els esdeveniments del calendari"
+    },
+    "integraciones": {
+      "title": "Integracions",
+      "subtitle": "Connecta Notion i Airtable per sincronitzar membres (KL-E-004).",
+      "status": "Estat",
+      "connect": "Connectar",
+      "disconnect": "Desconnectar",
+      "notionDatabase": "ID de base de dades Notion",
+      "airtableBase": "ID de base Airtable",
+      "airtableTable": "ID de taula Airtable",
+      "saveMapping": "Desar mapeig",
+      "runSync": "Sincronitzar Notion",
+      "runImport": "Importar Airtable",
+      "runExport": "Exportar a Airtable",
+      "runsTitle": "Darreres execucions",
+      "noRuns": "Encara no hi ha execucions.",
+      "error": "No s'ha pogut completar l'operació."
     }
   },
   "portal": {
