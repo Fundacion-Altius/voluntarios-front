@@ -373,7 +373,8 @@
       "federacion": "Federación",
       "bienestar": "Bienestar",
       "beneficiarios": "Beneficiarios",
-      "redesSociales": "Redes sociales"
+      "redesSociales": "Redes sociales",
+      "campanas": "Campañas"
     },
     "contracts": {
       "noDisponibles": "No hay contratos disponibles.",
@@ -1126,6 +1127,35 @@
         "twitter": "Twitter/X",
         "instagram": "Instagram",
         "facebook": "Facebook"
+      }
+    },
+    "campanas": {
+      "title": "Campañas",
+      "subtitle": "Crea campañas, envía notificaciones y mide el engagement.",
+      "loading": "Cargando…",
+      "error": "No se pudieron cargar las campañas.",
+      "metricsTitle": "Engagement total",
+      "delivered": "Entregados",
+      "opens": "Aperturas",
+      "clicks": "Clics",
+      "shares": "Compartidos",
+      "createTitle": "Nueva campaña",
+      "titlePlaceholder": "Título",
+      "bodyPlaceholder": "Mensaje",
+      "audiencePlaceholder": "Audiencia (ej. members)",
+      "create": "Crear",
+      "listTitle": "Campañas",
+      "empty": "No hay campañas.",
+      "colTitle": "Título",
+      "colChannels": "Canales",
+      "colStatus": "Estado",
+      "colEngagement": "Opens/Clicks/Shares",
+      "colActions": "Acciones",
+      "send": "Enviar",
+      "refreshEngagement": "Actualizar métricas",
+      "channel": {
+        "email": "Email",
+        "in_app": "In-app"
       }
     }
   },
