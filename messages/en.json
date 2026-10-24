@@ -1217,6 +1217,52 @@
         "vote": "Vote",
         "minutes": "Minutes"
       }
+    },
+    "sidebar": {
+      "title": "Management panel",
+      "groups": {
+        "inicio": "Home",
+        "voluntariado": "Volunteering",
+        "actividades": "Activities",
+        "personas": "People we support",
+        "comunicacion": "Communication",
+        "financiacion": "Funding",
+        "gobierno": "Governance and impact",
+        "datos": "Data and settings"
+      },
+      "items": {
+        "panel": "Dashboard",
+        "analitica": "Analytics",
+        "candidaturas": "Applications",
+        "personasVoluntarias": "Volunteers",
+        "acogida": "Onboarding",
+        "contratos": "Contracts and agreements",
+        "bienestar": "Wellbeing",
+        "reconocimientos": "Recognition",
+        "actividades": "Activities and shifts",
+        "asistencia": "Attendance",
+        "escaner": "QR scanner",
+        "cursos": "Courses",
+        "encuestas": "Surveys",
+        "beneficiarias": "Beneficiaries",
+        "chat": "Team chat",
+        "mensajeria": "WhatsApp and Telegram",
+        "redes": "Social media",
+        "noticias": "News",
+        "subvenciones": "Grants",
+        "fondos": "Funds",
+        "campanas": "Campaigns",
+        "gobernanza": "Governance",
+        "impacto": "Impact",
+        "salud": "Community health",
+        "federacion": "Federation",
+        "automatizaciones": "Automations",
+        "integraciones": "Integrations",
+        "exportaciones": "Exports"
+      },
+      "mobile": {
+        "actividades": "Activities"
+      }
     }
   },
   "portal": {
@@ -1541,6 +1587,27 @@
       "prevPage": "Previous",
       "nextPage": "Next",
       "pageOf": "Page {page} of {total}"
+    },
+    "sidebar": {
+      "groups": {
+        "miDia": "My day",
+        "participar": "Take part",
+        "comunidad": "Community",
+        "progreso": "My progress"
+      },
+      "items": {
+        "inicio": "Home",
+        "notificaciones": "Notifications",
+        "actividades": "Activities",
+        "proyectos": "Projects",
+        "ayudaAlimentaria": "Food aid",
+        "cursos": "Courses",
+        "chat": "Chat",
+        "video": "Video and live",
+        "noticias": "News",
+        "logros": "Achievements",
+        "ranking": "Ranking"
+      }
     }
   },
   "impact": {

@@ -1,93 +1,34 @@
 'use client';
 
-import { Link } from '@/i18n/navigation';
-import { usePathname } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
+import { LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SidebarPrefs } from '@/components/navigation/SidebarPrefs';
-import { useSetRoutePending } from '@/components/navigation/RoutePending';
-import {
-  LayoutDashboard, Users, FileText, ClipboardList, BarChart3, UserCheck, CalendarCheck,
-  Trophy, Scan, Newspaper, BookOpen, Coins, Bot, Download, MessageCircle, Wallet, LineChart, LogOut,
-  Plug, Network, HeartPulse, HandHeart, Share2, Megaphone, Activity, Scale,
-  type LucideIcon,
-} from 'lucide-react';
-
-interface NavLink {
-  href: string;
-  label: string;
-  icon: LucideIcon;
-}
+import { GroupedNav } from '@/components/navigation/GroupedNav';
+import { adminNavGroups } from './adminNav';
 
 interface AdminSidebarProps {
   userName?: string;
   userEmail?: string;
   onLogout: () => void;
   onNavigate?: () => void;
+  /** Group to open first (used by the mobile "Voluntariado" tab). */
+  initialGroup?: string;
 }
 
-export default function AdminSidebar({ userName, userEmail, onLogout, onNavigate }: AdminSidebarProps) {
-  const pathname = usePathname();
-  const t = useTranslations('admin.nav');
-  const tAutomation = useTranslations('admin.automation');
-  const setPending = useSetRoutePending();
-
-  const links: NavLink[] = [
-    { href: '/admin/dashboard', label: t('dashboard'), icon: LayoutDashboard },
-    { href: '/admin/contratos', label: t('contratos'), icon: FileText },
-    { href: '/admin/usuarios', label: t('usuarios'), icon: Users },
-    { href: '/admin/encuestas', label: t('encuestas'), icon: ClipboardList },
-    { href: '/admin/analytics', label: t('analytics'), icon: BarChart3 },
-    { href: '/admin/candidatos', label: t('candidatos'), icon: UserCheck },
-    { href: '/admin/actividades', label: t('actividades'), icon: CalendarCheck },
-    { href: '/admin/asistencia', label: t('asistencia'), icon: ClipboardList },
-    { href: '/admin/blog', label: t('blog'), icon: Newspaper },
-    { href: '/admin/cursos', label: t('cursos'), icon: BookOpen },
-    { href: '/admin/onboarding', label: t('onboarding'), icon: ClipboardList },
-    { href: '/admin/impacto', label: t('impacto'), icon: LineChart },
-    { href: '/admin/fondos', label: t('fondos'), icon: Coins },
-    { href: '/admin/grants', label: t('grants'), icon: Wallet },
-    { href: '/admin/automatizacion', label: tAutomation('navLabel'), icon: Bot },
-    { href: '/admin/mensajeria', label: t('mensajeria'), icon: MessageCircle },
-    { href: '/admin/mensajes', label: t('mensajes'), icon: MessageCircle },
-    { href: '/admin/exportaciones', label: t('exportaciones'), icon: Download },
-    { href: '/admin/integraciones', label: t('integraciones'), icon: Plug },
-    { href: '/admin/federacion', label: t('federacion'), icon: Network },
-    { href: '/admin/bienestar', label: t('bienestar'), icon: HeartPulse },
-    { href: '/admin/beneficiarios', label: t('beneficiarios'), icon: HandHeart },
-    { href: '/admin/redes-sociales', label: t('redesSociales'), icon: Share2 },
-    { href: '/admin/campanas', label: t('campanas'), icon: Megaphone },
-    { href: '/admin/metricas-comunidad', label: t('metricasComunidad'), icon: Activity },
-    { href: '/admin/gobernanza', label: t('gobernanza'), icon: Scale },
-    { href: '/admin/scanner', label: t('scanner'), icon: Scan },
-    { href: '/admin/ranking', label: t('ranking'), icon: Trophy },
-  ];
+export default function AdminSidebar({ userName, userEmail, onLogout, onNavigate, initialGroup }: AdminSidebarProps) {
+  const t = useTranslations('admin.sidebar');
+  const tNav = useTranslations('admin.nav');
+  const { pinned, groups } = adminNavGroups(t);
 
   return (
-    <aside className="flex h-full min-h-0 w-60 flex-col border-r bg-card lg:h-screen">
+    <aside className="flex h-full min-h-0 w-64 flex-col border-r bg-card lg:h-screen">
       <div className="flex items-center gap-2 border-b px-5 py-4">
-        <div className="flex size-8 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
-          A
-        </div>
-        <span className="font-heading text-lg font-bold">{t('panelAdmin')}</span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/klaruk/symbol.svg" alt="" aria-hidden="true" className="size-8" />
+        <span className="font-heading text-lg font-bold">{t('title')}</span>
       </div>
-      <nav className="flex-1 space-y-1 overflow-y-auto p-3">
-        {links.map((l) => {
-          const Icon = l.icon;
-          const isActive = pathname === l.href || pathname.startsWith(`${l.href}/`);
-          return (
-            <Link key={l.href} href={l.href} onClick={() => { setPending(true); onNavigate?.(); }}>
-              <Button
-                variant={isActive ? 'secondary' : 'ghost'}
-                className="w-full justify-start gap-3 text-sm"
-              >
-                <Icon className="size-4 shrink-0" />
-                {l.label}
-              </Button>
-            </Link>
-          );
-        })}
-      </nav>
+      <GroupedNav pinned={pinned} groups={groups} initialGroup={initialGroup} ariaLabel={t('title')} onNavigate={onNavigate} />
       <div className="border-t p-4">
         {userName && (
           <div className="mb-3 truncate">
@@ -97,8 +38,8 @@ export default function AdminSidebar({ userName, userEmail, onLogout, onNavigate
         )}
         <SidebarPrefs />
         <Button variant="ghost" className="w-full justify-start gap-3 text-sm text-muted-foreground" onClick={onLogout}>
-          <LogOut className="size-4" />
-          {t('salir')}
+          <LogOut className="size-4" aria-hidden="true" />
+          {tNav('salir')}
         </Button>
       </div>
     </aside>

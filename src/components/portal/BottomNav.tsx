@@ -1,10 +1,10 @@
 'use client';
-import { Link } from '@/i18n/navigation';
-import { usePathname } from '@/i18n/navigation';
+import { Link, usePathname } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
-import { Home, BookOpen, Calendar, Users, MessageSquare, MoreHorizontal, PackageSearch } from 'lucide-react';
+import { Home, Calendar, MessageSquare, BookOpen, Award, Bell, MoreHorizontal } from 'lucide-react';
 import { useState } from 'react';
 import { useSetRoutePending } from '@/components/navigation/RoutePending';
+import { isActivePath } from '@/components/navigation/GroupedNav';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from '@/components/ui/sheet';
 import Sidebar from './Sidebar';
 
@@ -14,61 +14,50 @@ interface BottomNavProps {
   onLogout: () => void;
 }
 
+const tabClass = (active: boolean) =>
+  `flex min-w-0 flex-1 flex-col items-center gap-0.5 px-1 py-2 text-[11px] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 sm:text-xs ${active ? 'text-primary font-semibold' : 'text-muted-foreground'}`;
+
 export default function BottomNav({ userName, userEmail, onLogout }: BottomNavProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const t = useTranslations('portal.nav');
+  const tSide = useTranslations('portal.sidebar');
   const setPending = useSetRoutePending();
 
-  const primaryTabs = [
-    { href: '/portal', label: t('inicio'), icon: Home },
-    { href: '/portal/cursos', label: t('cursos'), icon: BookOpen },
-    { href: '/portal/actividades', label: t('actividades'), icon: Calendar },
-    { href: '/portal/ayuda-alimentaria', label: t('ayudaAlimentaria'), icon: PackageSearch },
-    { href: '/portal/proyectos', label: t('proyectos'), icon: Users },
-    { href: '/portal/mensajes', label: t('mensajes'), icon: MessageSquare },
+  const tabs = [
+    { href: '/portal', label: tSide('items.inicio'), icon: Home, exact: true },
+    { href: '/portal/actividades', label: tSide('items.actividades'), icon: Calendar },
+    { href: '/portal/mensajes', label: tSide('items.chat'), icon: MessageSquare },
+    { href: '/portal/cursos', label: tSide('items.cursos'), icon: BookOpen },
+    { href: '/portal/logros', label: tSide('items.logros'), icon: Award },
+    { href: '/portal/notificaciones', label: tSide('items.notificaciones'), icon: Bell },
   ];
 
   return (
     <>
-      <nav className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-around border-t bg-card pb-safe">
-        {primaryTabs.map((tabs) => {
-          const Icon = tabs.icon;
-          const isActive = tabs.href === '/portal' ? pathname === '/portal' : pathname.startsWith(tabs.href);
+      <nav aria-label={t('miPortal')} className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-around border-t bg-card pb-safe">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const active = isActivePath(pathname, tab);
           return (
-            <Link
-              key={tabs.href}
-              href={tabs.href}
-              onClick={() => setPending(true)}
-              className={`flex flex-col items-center gap-0.5 px-3 py-2 text-xs ${
-                isActive ? 'text-primary' : 'text-muted-foreground'
-              }`}
-            >
-              <Icon className="size-5" />
-              {tabs.label}
+            <Link key={tab.href} href={tab.href} onClick={() => setPending(true)} aria-current={active ? 'page' : undefined} className={tabClass(active)}>
+              <Icon className="size-5" aria-hidden="true" />
+              <span className="truncate">{tab.label}</span>
             </Link>
           );
         })}
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <button
-              className="flex flex-col items-center gap-0.5 px-3 py-2 text-xs text-muted-foreground"
-              onClick={() => setOpen(true)}
-            >
-              <MoreHorizontal className="size-5" />
-              {t('mas')}
+            <button type="button" className={tabClass(false)}>
+              <MoreHorizontal className="size-5" aria-hidden="true" />
+              <span className="truncate">{t('mas')}</span>
             </button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-60 p-0 sm:max-w-sm">
+          <SheetContent side="left" className="w-64 p-0 sm:max-w-sm">
             <SheetHeader className="sr-only">
               <SheetTitle>{t('miPortal')}</SheetTitle>
             </SheetHeader>
-            <Sidebar
-              userName={userName}
-              userEmail={userEmail}
-              onLogout={onLogout}
-              onNavigate={() => setOpen(false)}
-            />
+            <Sidebar userName={userName} userEmail={userEmail} onLogout={onLogout} onNavigate={() => setOpen(false)} />
           </SheetContent>
         </Sheet>
       </nav>

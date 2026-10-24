@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import esMessages from '../../../../../messages/es.json';
 import caMessages from '../../../../../messages/ca.json';
@@ -27,9 +27,9 @@ jest.mock('@/components/LanguageSwitcher', () => ({
 }));
 
 const LOCALES = [
-  { locale: 'es', messages: esMessages, label: 'Ayuda alimentaria' },
-  { locale: 'ca', messages: caMessages, label: 'Ajuda alimentària' },
-  { locale: 'en', messages: enMessages, label: 'Food aid' },
+  { locale: 'es', messages: esMessages, label: 'Ayuda alimentaria', group: 'Participar', more: 'Más' },
+  { locale: 'ca', messages: caMessages, label: 'Ajuda alimentària', group: 'Participar', more: 'Més' },
+  { locale: 'en', messages: enMessages, label: 'Food aid', group: 'Take part', more: 'More' },
 ];
 
 describe('Food aid navigation', () => {
@@ -51,12 +51,15 @@ describe('Food aid navigation', () => {
 
   it.each(LOCALES)(
     'links to the food-aid page from the portal sidebar in $locale',
-    ({ locale, messages, label }) => {
+    ({ locale, messages, label, group }) => {
       render(
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Sidebar onLogout={() => undefined} />
         </NextIntlClientProvider>
       );
+
+      // Food aid sits in the collapsible "Participar" group.
+      fireEvent.click(screen.getByRole('button', { name: group }));
 
       const link = screen.getByRole('link', { name: label });
       expect(link.getAttribute('href')).toContain('/portal/ayuda-alimentaria');
@@ -64,13 +67,17 @@ describe('Food aid navigation', () => {
   );
 
   it.each(LOCALES)(
-    'links to the food-aid page from the mobile bottom nav in $locale',
-    ({ locale, messages, label }) => {
+    'links to the food-aid page from the mobile menu in $locale',
+    ({ locale, messages, label, group, more }) => {
       render(
         <NextIntlClientProvider locale={locale} messages={messages}>
           <BottomNav onLogout={() => undefined} />
         </NextIntlClientProvider>
       );
+
+      // Food aid is not a bottom tab: open "Más", then the "Participar" group.
+      fireEvent.click(screen.getByRole('button', { name: more }));
+      fireEvent.click(screen.getByRole('button', { name: group }));
 
       const link = screen.getByRole('link', { name: label });
       expect(link.getAttribute('href')).toContain('/portal/ayuda-alimentaria');

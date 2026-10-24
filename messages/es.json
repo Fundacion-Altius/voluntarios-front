@@ -1217,6 +1217,52 @@
         "vote": "Voto",
         "minutes": "Acta"
       }
+    },
+    "sidebar": {
+      "title": "Panel de gestión",
+      "groups": {
+        "inicio": "Inicio",
+        "voluntariado": "Voluntariado",
+        "actividades": "Actividades",
+        "personas": "Personas atendidas",
+        "comunicacion": "Comunicación",
+        "financiacion": "Financiación",
+        "gobierno": "Gobierno e impacto",
+        "datos": "Datos y ajustes"
+      },
+      "items": {
+        "panel": "Panel",
+        "analitica": "Analítica",
+        "candidaturas": "Candidaturas",
+        "personasVoluntarias": "Personas voluntarias",
+        "acogida": "Acogida",
+        "contratos": "Contratos y acuerdos",
+        "bienestar": "Bienestar",
+        "reconocimientos": "Reconocimientos",
+        "actividades": "Actividades y turnos",
+        "asistencia": "Asistencia",
+        "escaner": "Escáner QR",
+        "cursos": "Cursos",
+        "encuestas": "Encuestas",
+        "beneficiarias": "Personas beneficiarias",
+        "chat": "Chat interno",
+        "mensajeria": "WhatsApp y Telegram",
+        "redes": "Redes sociales",
+        "noticias": "Noticias",
+        "subvenciones": "Subvenciones",
+        "fondos": "Fondos",
+        "campanas": "Campañas",
+        "gobernanza": "Gobernanza",
+        "impacto": "Impacto",
+        "salud": "Salud de la comunidad",
+        "federacion": "Federación",
+        "automatizaciones": "Automatizaciones",
+        "integraciones": "Integraciones",
+        "exportaciones": "Exportaciones"
+      },
+      "mobile": {
+        "actividades": "Actividades"
+      }
     }
   },
   "portal": {
@@ -1541,6 +1587,27 @@
       "prevPage": "Anterior",
       "nextPage": "Siguiente",
       "pageOf": "Página {page} de {total}"
+    },
+    "sidebar": {
+      "groups": {
+        "miDia": "Mi día",
+        "participar": "Participar",
+        "comunidad": "Comunidad",
+        "progreso": "Mi progreso"
+      },
+      "items": {
+        "inicio": "Inicio",
+        "notificaciones": "Notificaciones",
+        "actividades": "Actividades",
+        "proyectos": "Proyectos",
+        "ayudaAlimentaria": "Ayuda alimentaria",
+        "cursos": "Cursos",
+        "chat": "Chat",
+        "video": "Vídeo y directos",
+        "noticias": "Noticias",
+        "logros": "Logros",
+        "ranking": "Ranking"
+      }
     }
   },
   "impact": {

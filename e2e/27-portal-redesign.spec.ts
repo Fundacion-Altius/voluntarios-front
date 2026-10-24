@@ -40,8 +40,8 @@ test.describe.serial('Portal Redesign', () => {
         // Page heading
         const h1 = page.locator('h1').first();
         await expect(h1).toBeVisible();
-        // Check sidebar links exist
-        const navLinks = sidebar.locator('a');
+        // Check sidebar entries exist (links plus collapsible group toggles)
+        const navLinks = sidebar.locator('a, button[aria-expanded]');
         const linkCount = await navLinks.count();
         expect(linkCount).toBeGreaterThanOrEqual(5);
       });

@@ -1,17 +1,10 @@
 'use client';
-import { Link } from '@/i18n/navigation';
-import { usePathname } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
+import { LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SidebarPrefs } from '@/components/navigation/SidebarPrefs';
-import { useSetRoutePending } from '@/components/navigation/RoutePending';
-import { Home, Calendar, Award, Trophy, Newspaper, BookOpen, Users, MessageSquare, Bell, LogOut, PackageSearch, Video, type LucideIcon } from 'lucide-react';
-
-interface NavLink {
-  href: string;
-  label: string;
-  icon: LucideIcon;
-}
+import { GroupedNav } from '@/components/navigation/GroupedNav';
+import { portalNavGroups } from './portalNav';
 
 interface SidebarProps {
   userName?: string;
@@ -21,49 +14,18 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ userName, userEmail, onLogout, onNavigate }: SidebarProps) {
-  const pathname = usePathname();
   const t = useTranslations('portal.nav');
-  const setPending = useSetRoutePending();
-
-  const links: NavLink[] = [
-    { href: '/portal', label: t('inicio'), icon: Home },
-    { href: '/portal/cursos', label: t('cursos'), icon: BookOpen },
-    { href: '/portal/actividades', label: t('actividades'), icon: Calendar },
-    { href: '/portal/ayuda-alimentaria', label: t('ayudaAlimentaria'), icon: PackageSearch },
-    { href: '/portal/proyectos', label: t('proyectos'), icon: Users },
-    { href: '/portal/mensajes', label: t('mensajes'), icon: MessageSquare },
-    { href: '/portal/video', label: t('video'), icon: Video },
-    { href: '/portal/noticias', label: t('noticias'), icon: Newspaper },
-    { href: '/portal/logros', label: t('logros'), icon: Award },
-    { href: '/portal/ranking', label: t('ranking'), icon: Trophy },
-    { href: '/portal/notificaciones', label: t('notificaciones'), icon: Bell },
-  ];
+  const tSide = useTranslations('portal.sidebar');
+  const { pinned, groups } = portalNavGroups(tSide);
 
   return (
-    <aside className="flex h-full min-h-0 w-60 flex-col border-r bg-card lg:h-screen">
+    <aside className="flex h-full min-h-0 w-64 flex-col border-r bg-card lg:h-screen">
       <div className="flex items-center gap-2 border-b px-5 py-4">
-        <div className="flex size-8 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
-          V
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/klaruk/symbol.svg" alt="" aria-hidden="true" className="size-8" />
         <span className="font-heading text-lg font-bold">{t('miPortal')}</span>
       </div>
-      <nav className="flex-1 space-y-1 overflow-y-auto p-3">
-        {links.map((l) => {
-          const Icon = l.icon;
-          const isActive = pathname === l.href || (l.href !== '/portal' && pathname.startsWith(l.href));
-          return (
-            <Link key={l.href} href={l.href} onClick={() => { setPending(true); onNavigate?.(); }}>
-              <Button
-                variant={isActive ? 'secondary' : 'ghost'}
-                className="w-full justify-start gap-3 text-sm"
-              >
-                <Icon className="size-4 shrink-0" />
-                {l.label}
-              </Button>
-            </Link>
-          );
-        })}
-      </nav>
+      <GroupedNav pinned={pinned} groups={groups} ariaLabel={t('miPortal')} onNavigate={onNavigate} />
       <div className="border-t p-4">
         {userName && (
           <div className="mb-3 truncate">
@@ -73,7 +35,7 @@ export default function Sidebar({ userName, userEmail, onLogout, onNavigate }: S
         )}
         <SidebarPrefs />
         <Button variant="ghost" className="w-full justify-start gap-3 text-sm text-muted-foreground" onClick={onLogout}>
-          <LogOut className="size-4" />
+          <LogOut className="size-4" aria-hidden="true" />
           {t('salir')}
         </Button>
       </div>

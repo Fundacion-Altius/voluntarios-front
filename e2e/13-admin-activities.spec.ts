@@ -4,7 +4,7 @@ import { adminLogin, loginAsBrowser, BACKEND_URL, randomId } from './helpers';
 async function loginAsAdmin(page: any) {
   await loginAsBrowser(page, 'admin@fundacionaltius.org', 'admin123');
   await page.goto('/es/admin/dashboard', { waitUntil: 'load' });
-  await page.getByText('Admin Panel').waitFor({ timeout: 15000 });
+  await page.getByText('Panel de gestión').waitFor({ timeout: 15000 });
 }
 
 test.describe('Admin Activities CRUD', () => {
@@ -107,7 +107,9 @@ test.describe('Admin Activities CRUD', () => {
   test('admin activities page renders', async ({ page }) => {
     await loginAsAdmin(page);
     // Sidebar Link href is /admin/actividades → /es/admin/actividades (not portal "Actividades")
-    const link = page.locator('aside').getByRole('link', { name: 'Actividades' });
+    // Grouped sidebar: open the "Actividades" accordion group first.
+    await page.locator('aside').getByRole('button', { name: 'Actividades' }).click();
+    const link = page.locator('aside').getByRole('link', { name: 'Actividades y turnos' });
     await expect(link).toHaveAttribute('href', /\/admin\/actividades/);
     await link.click();
     await page.waitForURL(/\/(es|en)\/admin\/actividades/, { timeout: 15000 });

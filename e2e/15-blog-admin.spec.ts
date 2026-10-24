@@ -24,7 +24,7 @@ test.describe('Admin Blog Editor', () => {
   test('blog page renders and lists posts', async ({ page }) => {
     await loginAsBrowser(page, 'admin@fundacionaltius.org', 'admin123');
     await page.goto('/es/admin/dashboard', { waitUntil: 'load' });
-    await expect(page.locator('body')).toContainText('Admin Panel', { timeout: 15000 });
+    await expect(page.locator('body')).toContainText('Panel de gestión', { timeout: 15000 });
     await page.locator('a', { hasText: 'Blog' }).click();
     await page.waitForURL('**/admin/blog', { timeout: 15000 });
     await expect(page.locator('body')).toContainText('Blog', { timeout: 15000 });

@@ -1,13 +1,14 @@
 'use client';
 
-import { Link } from '@/i18n/navigation';
-import { usePathname } from '@/i18n/navigation';
+import { Link, usePathname } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
-import { LayoutDashboard, FileText, Users, Wallet, MessageCircle, MoreHorizontal } from 'lucide-react';
+import { LayoutDashboard, CalendarCheck, Scan, MessageCircle, Users, MoreHorizontal } from 'lucide-react';
 import { useState } from 'react';
-import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle, SheetHeader } from '@/components/ui/sheet';
 import { useSetRoutePending } from '@/components/navigation/RoutePending';
+import { isActivePath, groupForPath } from '@/components/navigation/GroupedNav';
 import AdminSidebar from './AdminSidebar';
+import { adminNavGroups } from './adminNav';
 
 interface AdminBottomNavProps {
   userName?: string;
@@ -15,59 +16,58 @@ interface AdminBottomNavProps {
   onLogout: () => void;
 }
 
+const tabClass = (active: boolean) =>
+  `flex min-w-0 flex-1 flex-col items-center gap-0.5 px-1 py-2 text-[11px] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 sm:text-xs ${active ? 'text-primary font-semibold' : 'text-muted-foreground'}`;
+
 export default function AdminBottomNav({ userName, userEmail, onLogout }: AdminBottomNavProps) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-  const t = useTranslations('admin.nav');
+  const [sheetGroup, setSheetGroup] = useState<string | null>(null);
+  const t = useTranslations('admin.sidebar');
+  const tNav = useTranslations('admin.nav');
   const setPending = useSetRoutePending();
+  const { groups } = adminNavGroups(t);
+  const inVoluntariado = groupForPath(groups, pathname) === 'voluntariado';
 
-  const primaryTabs = [
-    { href: '/admin/dashboard', label: t('dashboard'), icon: LayoutDashboard },
-    { href: '/admin/contratos', label: t('contratos'), icon: FileText },
-    { href: '/admin/usuarios', label: t('usuarios'), icon: Users },
-    { href: '/admin/grants', label: t('grants'), icon: Wallet },
-    { href: '/admin/mensajeria', label: t('mensajeria'), icon: MessageCircle },
+  const tabs = [
+    { href: '/admin/dashboard', label: t('items.panel'), icon: LayoutDashboard },
+    { href: '/admin/actividades', label: t('mobile.actividades'), icon: CalendarCheck },
+    { href: '/admin/scanner', label: t('items.escaner'), icon: Scan },
+    { href: '/admin/mensajes', label: t('items.chat'), icon: MessageCircle },
   ];
 
   return (
     <>
-      <nav className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-around border-t bg-card pb-safe">
-        {primaryTabs.map((tabs) => {
-          const Icon = tabs.icon;
-          const isActive = pathname === tabs.href || pathname.startsWith(`${tabs.href}/`);
+      <nav aria-label={t('title')} className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-around border-t bg-card pb-safe">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const active = isActivePath(pathname, tab);
           return (
-            <Link
-              key={tabs.href}
-              href={tabs.href}
-              onClick={() => setPending(true)}
-              className={`flex flex-col items-center gap-0.5 px-2 py-2 text-[10px] sm:px-3 sm:text-xs ${
-                isActive ? 'text-primary' : 'text-muted-foreground'
-              }`}
-            >
-              <Icon className="size-5" />
-              {tabs.label}
+            <Link key={tab.href} href={tab.href} onClick={() => setPending(true)} aria-current={active ? 'page' : undefined} className={tabClass(active)}>
+              <Icon className="size-5" aria-hidden="true" />
+              <span className="truncate">{tab.label}</span>
             </Link>
           );
         })}
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild>
-            <button
-              className="flex flex-col items-center gap-0.5 px-2 py-2 text-[10px] text-muted-foreground sm:px-3 sm:text-xs"
-              onClick={() => setOpen(true)}
-            >
-              <MoreHorizontal className="size-5" />
-              {t('mas')}
-            </button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-60 p-0 sm:max-w-sm">
+        {/* Voluntariado opens the menu with its group expanded. */}
+        <button type="button" aria-haspopup="dialog" aria-expanded={sheetGroup === 'voluntariado'} className={tabClass(inVoluntariado)} onClick={() => setSheetGroup('voluntariado')}>
+          <Users className="size-5" aria-hidden="true" />
+          <span className="truncate">{t('groups.voluntariado')}</span>
+        </button>
+        <button type="button" aria-haspopup="dialog" aria-expanded={sheetGroup === 'all'} className={tabClass(false)} onClick={() => setSheetGroup('all')}>
+          <MoreHorizontal className="size-5" aria-hidden="true" />
+          <span className="truncate">{tNav('mas')}</span>
+        </button>
+        <Sheet open={sheetGroup !== null} onOpenChange={(o) => { if (!o) setSheetGroup(null); }}>
+          <SheetContent side="left" className="w-64 p-0 sm:max-w-sm">
             <SheetHeader className="sr-only">
-              <SheetTitle>{t('panelAdmin')}</SheetTitle>
+              <SheetTitle>{t('title')}</SheetTitle>
             </SheetHeader>
             <AdminSidebar
               userName={userName}
               userEmail={userEmail}
               onLogout={onLogout}
-              onNavigate={() => setOpen(false)}
+              onNavigate={() => setSheetGroup(null)}
+              initialGroup={sheetGroup === 'voluntariado' ? 'voluntariado' : undefined}
             />
           </SheetContent>
         </Sheet>

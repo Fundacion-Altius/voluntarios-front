@@ -1217,6 +1217,52 @@
         "vote": "Vot",
         "minutes": "Acta"
       }
+    },
+    "sidebar": {
+      "title": "Panell de gestió",
+      "groups": {
+        "inicio": "Inici",
+        "voluntariado": "Voluntariat",
+        "actividades": "Activitats",
+        "personas": "Persones ateses",
+        "comunicacion": "Comunicació",
+        "financiacion": "Finançament",
+        "gobierno": "Govern i impacte",
+        "datos": "Dades i configuració"
+      },
+      "items": {
+        "panel": "Panell",
+        "analitica": "Analítica",
+        "candidaturas": "Candidatures",
+        "personasVoluntarias": "Persones voluntàries",
+        "acogida": "Acollida",
+        "contratos": "Contractes i acords",
+        "bienestar": "Benestar",
+        "reconocimientos": "Reconeixements",
+        "actividades": "Activitats i torns",
+        "asistencia": "Assistència",
+        "escaner": "Escàner QR",
+        "cursos": "Cursos",
+        "encuestas": "Enquestes",
+        "beneficiarias": "Persones beneficiàries",
+        "chat": "Xat intern",
+        "mensajeria": "WhatsApp i Telegram",
+        "redes": "Xarxes socials",
+        "noticias": "Notícies",
+        "subvenciones": "Subvencions",
+        "fondos": "Fons",
+        "campanas": "Campanyes",
+        "gobernanza": "Governança",
+        "impacto": "Impacte",
+        "salud": "Salut de la comunitat",
+        "federacion": "Federació",
+        "automatizaciones": "Automatitzacions",
+        "integraciones": "Integracions",
+        "exportaciones": "Exportacions"
+      },
+      "mobile": {
+        "actividades": "Activitats"
+      }
     }
   },
   "portal": {
@@ -1541,6 +1587,27 @@
       "prevPage": "Anterior",
       "nextPage": "Següent",
       "pageOf": "Pàgina {page} de {total}"
+    },
+    "sidebar": {
+      "groups": {
+        "miDia": "El meu dia",
+        "participar": "Participar",
+        "comunidad": "Comunitat",
+        "progreso": "El meu progrés"
+      },
+      "items": {
+        "inicio": "Inici",
+        "notificaciones": "Notificacions",
+        "actividades": "Activitats",
+        "proyectos": "Projectes",
+        "ayudaAlimentaria": "Ajuda alimentària",
+        "cursos": "Cursos",
+        "chat": "Xat",
+        "video": "Vídeo i directes",
+        "noticias": "Notícies",
+        "logros": "Assoliments",
+        "ranking": "Rànquing"
+      }
     }
   },
   "impact": {

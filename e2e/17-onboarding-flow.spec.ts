@@ -30,7 +30,7 @@ test.describe('Onboarding Flow', () => {
   test('admin onboarding page lists tasks', async ({ page }) => {
     await loginAsBrowser(page, 'admin@fundacionaltius.org', 'admin123');
     await page.goto('/es/admin/dashboard', { waitUntil: 'load' });
-    await expect(page.locator('body')).toContainText('Admin Panel', { timeout: 15000 });
+    await expect(page.locator('body')).toContainText('Panel de gestión', { timeout: 15000 });
 
     await page.locator('a', { hasText: 'Onboarding' }).click();
     await page.waitForURL('**/admin/onboarding', { timeout: 10000 });

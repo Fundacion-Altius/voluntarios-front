@@ -5,7 +5,7 @@ test.describe('Login Routing Fix', () => {
   test('admin user redirects to /es/admin/dashboard', async ({ page }) => {
     await loginAsBrowser(page, 'admin@fundacionaltius.org', 'admin123');
     await page.goto('/es/admin/dashboard', { waitUntil: 'load' });
-    await expect(page.locator('body')).toContainText('Admin Panel', { timeout: 15000 });
+    await expect(page.locator('body')).toContainText('Panel de gestión', { timeout: 15000 });
   });
 
   test('general volunteer redirects to /es/portal', async ({ page }) => {
