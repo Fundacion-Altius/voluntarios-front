@@ -369,7 +369,8 @@
       "exportaciones": "Exportacions",
       "salir": "Sortir",
       "mas": "Més",
-      "integraciones": "Integracions"
+      "integraciones": "Integracions",
+      "federacion": "Federació"
     },
     "contracts": {
       "noDisponibles": "No hi ha contractes disponibles.",
@@ -1024,6 +1025,21 @@
       "runsTitle": "Darreres execucions",
       "noRuns": "Encara no hi ha execucions.",
       "error": "No s'ha pogut completar l'operació."
+    },
+    "federacion": {
+      "title": "Federació",
+      "subtitle": "Resum consolidat de les organitzacions membre (només agregats).",
+      "loading": "Carregant…",
+      "forbidden": "No tens permís d'administrador de federació.",
+      "error": "No s'ha pogut carregar el dashboard de federació.",
+      "memberTenants": "Organitzacions",
+      "contracts": "Contractes",
+      "activeVolunteers": "Voluntaris actius",
+      "tenantsTitle": "Desglossament per organització",
+      "empty": "No hi ha organitzacions en aquesta federació.",
+      "colName": "Nom",
+      "colSlug": "Slug",
+      "colStatus": "Estat"
     }
   },
   "portal": {
