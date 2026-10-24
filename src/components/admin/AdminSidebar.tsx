@@ -9,7 +9,7 @@ import { useSetRoutePending } from '@/components/navigation/RoutePending';
 import {
   LayoutDashboard, Users, FileText, ClipboardList, BarChart3, UserCheck, CalendarCheck,
   Trophy, Scan, Newspaper, BookOpen, Coins, Bot, Download, MessageCircle, Wallet, LineChart, LogOut,
-  Plug,
+  Plug, Network,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -52,6 +52,7 @@ export default function AdminSidebar({ userName, userEmail, onLogout, onNavigate
     { href: '/admin/mensajes', label: t('mensajes'), icon: MessageCircle },
     { href: '/admin/exportaciones', label: t('exportaciones'), icon: Download },
     { href: '/admin/integraciones', label: t('integraciones'), icon: Plug },
+    { href: '/admin/federacion', label: t('federacion'), icon: Network },
     { href: '/admin/scanner', label: t('scanner'), icon: Scan },
     { href: '/admin/ranking', label: t('ranking'), icon: Trophy },
   ];

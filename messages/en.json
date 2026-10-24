@@ -369,7 +369,8 @@
       "exportaciones": "Exports",
       "salir": "Sign out",
       "mas": "More",
-      "integraciones": "Integrations"
+      "integraciones": "Integrations",
+      "federacion": "Federation"
     },
     "contracts": {
       "noDisponibles": "No contracts available.",
@@ -1024,6 +1025,21 @@
       "runsTitle": "Recent runs",
       "noRuns": "No runs yet.",
       "error": "Could not complete the operation."
+    },
+    "federacion": {
+      "title": "Federation",
+      "subtitle": "Consolidated summary of member organizations (aggregates only).",
+      "loading": "Loading…",
+      "forbidden": "You do not have federation admin permission.",
+      "error": "Could not load the federation dashboard.",
+      "memberTenants": "Organizations",
+      "contracts": "Contracts",
+      "activeVolunteers": "Active volunteers",
+      "tenantsTitle": "Breakdown by organization",
+      "empty": "No organizations in this federation.",
+      "colName": "Name",
+      "colSlug": "Slug",
+      "colStatus": "Status"
     }
   },
   "portal": {
