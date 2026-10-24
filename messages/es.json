@@ -407,25 +407,25 @@
       }
     },
     "nav": {
-      "panelAdmin": "Panel de gestión",
-      "dashboard": "Panel",
+      "panelAdmin": "Admin Panel",
+      "dashboard": "Dashboard",
       "contratos": "Contratos",
       "usuarios": "Usuarios",
       "encuestas": "Encuestas",
-      "analytics": "Analítica",
-      "candidatos": "Candidaturas",
+      "analytics": "Analytics",
+      "candidatos": "Candidatos",
       "actividades": "Actividades",
       "blog": "Blog",
       "cursos": "Cursos",
-      "onboarding": "Acogida",
+      "onboarding": "Onboarding",
       "scanner": "Escáner",
-      "ranking": "Reconocimientos",
+      "ranking": "Ranking",
       "asistencia": "Asistencia",
       "impacto": "Impacto",
       "fondos": "Fondos",
       "grants": "Subvenciones",
-      "automatizacion": "Automatizaciones",
-      "mensajeria": "WhatsApp y Telegram",
+      "automatizacion": "Automatización",
+      "mensajeria": "WhatsApp / Telegram",
       "mensajes": "Chat interno",
       "exportaciones": "Exportaciones",
       "salir": "Salir",
@@ -440,7 +440,8 @@
       "gobernanza": "Gobernanza",
       "unKilo": "1 kilo",
       "citas": "Citas",
-      "ticketing": "Ticketing"
+      "ticketing": "Ticketing",
+      "mcp": "MCP / Agentes"
     },
     "contracts": {
       "noDisponibles": "No hay contratos disponibles.",
@@ -452,7 +453,7 @@
       "descargarPdf": "Descargar PDF"
     },
     "dashboard": {
-      "titulo": "Panel",
+      "titulo": "Dashboard",
       "seccionOtrasMetricas": "Otras métricas",
       "signupsByMonth": "Altas voluntarios por mes",
       "signupsByLugar": "Altas voluntarios por lugar",
@@ -504,8 +505,8 @@
     "automation": {
       "navLabel": "Automatización",
       "workloadTitle": "Carga de trabajo automatizada",
-      "metricsSummary": "{tasks} tareas automatizadas | ~{hours} horas ahorradas | Desglose: {memberComms} comunicaciones con socios, {churnAlerts} alertas de baja, {grantReminders} recordatorios de subvenciones",
-      "manualPending": "{count, plural, one {# tarea manual pendiente} other {# tareas manuales pendientes}}",
+      "metricsSummary": "{tasks} tareas automatizadas | ~{hours} horas ahorradas | Desglose: {memberComms} member comms, {churnAlerts} churn alerts, {grantReminders} grant reminders",
+      "manualPending": "{count} tareas manuales pendientes",
       "justificationLink": "Ir a justificaciones de subvenciones",
       "settingsTitle": "Flujos de comunicación",
       "enabled": "Activado",
@@ -612,7 +613,7 @@
       "eliminarEncuestaDesc": "Esta acción no se puede deshacer. Se eliminará la encuesta permanentemente."
     },
     "candidatos": {
-      "titulo": "Candidaturas",
+      "titulo": "Candidatos",
       "importarExcel": "Importar Excel",
       "candidatoAprobado": "Candidato aprobado",
       "errorAprobar": "Error al aprobar",
@@ -1328,6 +1329,7 @@
         "salud": "Salud de la comunidad",
         "federacion": "Federación",
         "automatizaciones": "Automatizaciones",
+        "mcp": "MCP / Agentes",
         "integraciones": "Integraciones",
         "exportaciones": "Exportaciones",
         "unKilo": "1 kilo",
@@ -1407,12 +1409,24 @@
       "colActions": "Acciones",
       "take": "Atender",
       "complete": "Completar"
+    },
+    "mcp": {
+      "title": "MCP / Agentes",
+      "subtitle": "Inventario de herramientas MCP disponibles para agentes de IA (KL-E-006).",
+      "loading": "Cargando…",
+      "error": "No se pudo cargar el inventario MCP.",
+      "toolsTitle": "Herramientas",
+      "empty": "No hay herramientas registradas.",
+      "colName": "Nombre",
+      "colEffect": "Efecto",
+      "colRoles": "Roles",
+      "colDescription": "Descripción"
     }
   },
   "portal": {
     "nav": {
       "inicio": "Inicio",
-      "miPortal": "Mi portal",
+      "miPortal": "Mi Portal",
       "cursos": "Cursos",
       "actividades": "Actividades",
       "proyectos": "Proyectos",
@@ -1445,7 +1459,7 @@
       "open": "Abrir"
     },
     "home": {
-      "titulo": "Mi portal",
+      "titulo": "Mi Panel",
       "subtitulo": "Bienvenido a tu portal de voluntariado",
       "miPerfil": "Mi Perfil",
       "nivel": "Nivel",
@@ -1783,7 +1797,7 @@
         "coverage_rate": "Tasa de cobertura del voluntariado",
         "time_to_fill": "Tiempo de cobertura",
         "reliability_rate": "Fiabilidad del voluntariado (Asistencia)",
-        "onboarding_completion_rate": "Acogida completada",
+        "onboarding_completion_rate": "Finalización del onboarding",
         "social_impact_per_hour": "Impacto social por hora de voluntariado",
         "volunteer_nps": "Satisfacción del voluntariado (NPS)"
       },
