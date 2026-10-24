@@ -375,7 +375,8 @@
       "beneficiarios": "Beneficiaris",
       "redesSociales": "Xarxes socials",
       "campanas": "Campanyes",
-      "metricasComunidad": "Mètriques comunitat"
+      "metricasComunidad": "Mètriques comunitat",
+      "gobernanza": "Governança"
     },
     "contracts": {
       "noDisponibles": "No hi ha contractes disponibles.",
@@ -1185,6 +1186,36 @@
         "low": "Baix",
         "medium": "Mitjà",
         "high": "Alt"
+      }
+    },
+    "gobernanza": {
+      "title": "Governança",
+      "subtitle": "Votacions, actes i portal de transparència.",
+      "loading": "Carregant…",
+      "error": "No s'ha pogut carregar la governança.",
+      "transparencyTitle": "Transparència",
+      "transparencyEmpty": "No hi ha decisions publicades.",
+      "votesTitle": "Votacions",
+      "voteTitlePlaceholder": "Títol de la votació",
+      "createVote": "Crear votació",
+      "minutesTitle": "Actes",
+      "minutesTitlePlaceholder": "Títol de l'acta",
+      "minutesBodyPlaceholder": "Contingut de l'acta",
+      "createMinutes": "Crear acta",
+      "colTitle": "Títol",
+      "colStatus": "Estat",
+      "colTally": "Sí/No/Abs",
+      "colDate": "Data",
+      "colActions": "Accions",
+      "yes": "Sí",
+      "no": "No",
+      "abstain": "Abs",
+      "close": "Tancar",
+      "approve": "Aprovar",
+      "publish": "Publicar",
+      "kind": {
+        "vote": "Vot",
+        "minutes": "Acta"
       }
     }
   },
