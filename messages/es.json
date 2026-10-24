@@ -374,7 +374,8 @@
       "bienestar": "Bienestar",
       "beneficiarios": "Beneficiarios",
       "redesSociales": "Redes sociales",
-      "campanas": "Campañas"
+      "campanas": "Campañas",
+      "metricasComunidad": "Métricas comunidad"
     },
     "contracts": {
       "noDisponibles": "No hay contratos disponibles.",
@@ -1156,6 +1157,34 @@
       "channel": {
         "email": "Email",
         "in_app": "In-app"
+      }
+    },
+    "metricasComunidad": {
+      "title": "Métricas de comunidad",
+      "subtitle": "Engagement, retención de voluntarios y detección de churn.",
+      "loading": "Cargando…",
+      "error": "No se pudieron cargar las métricas.",
+      "runDetection": "Ejecutar detección",
+      "kpisTitle": "Salud de la comunidad",
+      "activeVolunteers": "Voluntarios activos",
+      "activeDonors": "Donantes activos",
+      "engagementScore": "Engagement",
+      "retentionRate": "Retención",
+      "atRisk": "En riesgo",
+      "churnTitle": "Riesgo de churn",
+      "empty": "No hay riesgos detectados.",
+      "colName": "Nombre",
+      "colRole": "Rol",
+      "colRisk": "Riesgo",
+      "colDays": "Días inactivo",
+      "role": {
+        "volunteer": "Voluntario",
+        "donor": "Donante"
+      },
+      "risk": {
+        "low": "Bajo",
+        "medium": "Medio",
+        "high": "Alto"
       }
     }
   },
