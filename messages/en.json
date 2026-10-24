@@ -1087,7 +1087,26 @@
       "notificaciones": "Notifications",
       "mas": "More",
       "salir": "Log out",
-      "ayudaAlimentaria": "Food aid"
+      "ayudaAlimentaria": "Food aid",
+      "video": "Video / Live"
+    },
+    "video": {
+      "title": "Video and livestream",
+      "subtitle": "Create meetings or livestream broadcasts inside Klaruk.",
+      "createTitle": "New room",
+      "contextPlaceholder": "Context (e.g. community or event)",
+      "modeMeeting": "Meeting",
+      "modeLivestream": "Livestream",
+      "meetingHint": "Everyone can publish camera and microphone.",
+      "livestreamHint": "The host broadcasts; guests join as viewers.",
+      "create": "Create and join",
+      "creating": "Creating…",
+      "errorCreate": "Could not create the room.",
+      "listTitle": "Active rooms (same context)",
+      "refresh": "Refresh",
+      "loading": "Loading…",
+      "empty": "No active rooms for this context.",
+      "open": "Open"
     },
     "home": {
       "titulo": "My Dashboard",
@@ -1291,10 +1310,16 @@
       "salaId": "Room:",
       "unirseParticipante": "Join as participant",
       "unirseAnfitrion": "Join as host",
+      "unirseEspectador": "Join as viewer",
+      "unirseEmisor": "Join as broadcaster",
       "uniendose": "Joining...",
       "unirseSalaBtn": "Join the room",
       "errorUnirse": "Error joining the room",
-      "debesIniciarSesion": "You must sign in to join"
+      "debesIniciarSesion": "You must sign in to join",
+      "livestreamHint": "This room is a livestream: the host publishes and viewers only receive.",
+      "modoEspectador": "Viewer mode (no local camera)",
+      "modoEmision": "Broadcast mode (host)",
+      "salir": "Leave"
     },
     "foodAid": {
       "title": "Food aid",

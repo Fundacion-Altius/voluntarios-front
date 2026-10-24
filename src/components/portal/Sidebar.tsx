@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { SidebarPrefs } from '@/components/navigation/SidebarPrefs';
 import { useSetRoutePending } from '@/components/navigation/RoutePending';
-import { Home, Calendar, Award, Trophy, Newspaper, BookOpen, Users, MessageSquare, Bell, LogOut, PackageSearch, type LucideIcon } from 'lucide-react';
+import { Home, Calendar, Award, Trophy, Newspaper, BookOpen, Users, MessageSquare, Bell, LogOut, PackageSearch, Video, type LucideIcon } from 'lucide-react';
 
 interface NavLink {
   href: string;
@@ -32,6 +32,7 @@ export default function Sidebar({ userName, userEmail, onLogout, onNavigate }: S
     { href: '/portal/ayuda-alimentaria', label: t('ayudaAlimentaria'), icon: PackageSearch },
     { href: '/portal/proyectos', label: t('proyectos'), icon: Users },
     { href: '/portal/mensajes', label: t('mensajes'), icon: MessageSquare },
+    { href: '/portal/video', label: t('video'), icon: Video },
     { href: '/portal/noticias', label: t('noticias'), icon: Newspaper },
     { href: '/portal/logros', label: t('logros'), icon: Award },
     { href: '/portal/ranking', label: t('ranking'), icon: Trophy },
