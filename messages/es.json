@@ -371,7 +371,8 @@
       "mas": "Más",
       "integraciones": "Integraciones",
       "federacion": "Federación",
-      "bienestar": "Bienestar"
+      "bienestar": "Bienestar",
+      "beneficiarios": "Beneficiarios"
     },
     "contracts": {
       "noDisponibles": "No hay contratos disponibles.",
@@ -1071,6 +1072,30 @@
       "colActions": "Acciones",
       "colMood": "Ánimo",
       "colNote": "Nota"
+    },
+    "beneficiarios": {
+      "title": "Beneficiarios",
+      "subtitle": "Personas atendidas y matching de mentoría con voluntarios.",
+      "loading": "Cargando…",
+      "error": "No se pudo cargar beneficiarios.",
+      "createTitle": "Nuevo beneficiario",
+      "namePlaceholder": "Nombre",
+      "programPlaceholder": "Programa / actividad",
+      "create": "Crear",
+      "listTitle": "Listado",
+      "empty": "No hay beneficiarios.",
+      "matchTitle": "Mentoría",
+      "volunteerPlaceholder": "Nombre del voluntario mentor",
+      "assign": "Asignar",
+      "matchesEmpty": "No hay matches de mentoría.",
+      "endMatch": "Finalizar",
+      "colName": "Nombre",
+      "colProgram": "Programa",
+      "colNotes": "Notas",
+      "colVolunteer": "Voluntario",
+      "colBeneficiary": "Beneficiario",
+      "colStatus": "Estado",
+      "colActions": "Acciones"
     }
   },
   "portal": {

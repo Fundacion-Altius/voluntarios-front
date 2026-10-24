@@ -371,7 +371,8 @@
       "mas": "Més",
       "integraciones": "Integracions",
       "federacion": "Federació",
-      "bienestar": "Benestar"
+      "bienestar": "Benestar",
+      "beneficiarios": "Beneficiaris"
     },
     "contracts": {
       "noDisponibles": "No hi ha contractes disponibles.",
@@ -1071,6 +1072,30 @@
       "colActions": "Accions",
       "colMood": "Ànim",
       "colNote": "Nota"
+    },
+    "beneficiarios": {
+      "title": "Beneficiaris",
+      "subtitle": "Persones ateses i matching de mentoria amb voluntaris.",
+      "loading": "Carregant…",
+      "error": "No s'han pogut carregar els beneficiaris.",
+      "createTitle": "Nou beneficiari",
+      "namePlaceholder": "Nom",
+      "programPlaceholder": "Programa / activitat",
+      "create": "Crear",
+      "listTitle": "Llistat",
+      "empty": "No hi ha beneficiaris.",
+      "matchTitle": "Mentoria",
+      "volunteerPlaceholder": "Nom del voluntari mentor",
+      "assign": "Assignar",
+      "matchesEmpty": "No hi ha matches de mentoria.",
+      "endMatch": "Finalitzar",
+      "colName": "Nom",
+      "colProgram": "Programa",
+      "colNotes": "Notes",
+      "colVolunteer": "Voluntari",
+      "colBeneficiary": "Beneficiari",
+      "colStatus": "Estat",
+      "colActions": "Accions"
     }
   },
   "portal": {
