@@ -225,7 +225,8 @@
     "errorConexion": "Connection error. Please try again.",
     "statusCandidate": "Your volunteering application is still under review. We will notify you once it is approved.",
     "statusInactive": "Your account has been deactivated. Please contact the foundation for more information.",
-    "statusOnReserve": "You are on our waiting list. We will notify you when there is availability."
+    "statusOnReserve": "You are on our waiting list. We will notify you when there is availability.",
+    "conKlaruk": "with Klaruk"
   },
   "crearPassword": {
     "titulo": "Create password",

@@ -225,7 +225,8 @@
     "errorConexion": "Error de connexió. Torna-ho a intentar.",
     "statusCandidate": "La vostra sol·licitud de voluntariat encara està en revisió. Us notificarem quan sigui aprovada.",
     "statusInactive": "El vostre compte ha estat desactivat. Si us plau, contacteu amb la fundació per a més informació.",
-    "statusOnReserve": "Sou a la nostra llista d'espera. Us notificarem quan hi hagi disponibilitat."
+    "statusOnReserve": "Sou a la nostra llista d'espera. Us notificarem quan hi hagi disponibilitat.",
+    "conKlaruk": "amb Klaruk"
   },
   "crearPassword": {
     "titulo": "Crear contrasenya",

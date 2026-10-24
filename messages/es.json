@@ -225,7 +225,8 @@
     "errorConexion": "Error de conexión. Inténtalo de nuevo.",
     "statusCandidate": "Tu solicitud de voluntariado aún está en revisión. Te notificaremos cuando sea aprobada.",
     "statusInactive": "Tu cuenta ha sido desactivada. Por favor, contacta con la fundación para más información.",
-    "statusOnReserve": "Estás en nuestra lista de espera. Te notificaremos cuando haya disponibilidad."
+    "statusOnReserve": "Estás en nuestra lista de espera. Te notificaremos cuando haya disponibilidad.",
+    "conKlaruk": "con Klaruk"
   },
   "crearPassword": {
     "titulo": "Crear contraseña",

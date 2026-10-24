@@ -1,11 +1,11 @@
 {
-  "name": "Voluntarios Fundación Altius",
-  "short_name": "Voluntarios",
-  "description": "Portal de voluntariado de la Fundación Altius",
+  "name": "Klaruk",
+  "short_name": "Klaruk",
+  "description": "Klaruk: voluntariado, socios, actividades y subvenciones en un solo sitio.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#f6f5f1",
+  "theme_color": "#3d3fa8",
   "icons": [
     {
       "src": "/logo.png",

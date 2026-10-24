@@ -178,7 +178,7 @@ export function LoginForm({ hasGoogle, hasAzure }: { hasGoogle: boolean; hasAzur
                 {t('olvidasteContrasena')}
               </Link>
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" variant="cta" className="w-full" disabled={loading}>
               {loading ? t('iniciando') : t('iniciarSesion')}
             </Button>
           </form>
@@ -264,6 +264,13 @@ export function LoginForm({ hasGoogle, hasAzure }: { hasGoogle: boolean; hasAzur
           )}
         </CardContent>
       </Card>
+      <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/klaruk/symbol.svg" alt="" aria-hidden="true" className="size-4 dark:hidden" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/klaruk/symbol-dark.svg" alt="" aria-hidden="true" className="hidden size-4 dark:block" />
+        {t('conKlaruk')}
+      </p>
     </main>
   );
 }

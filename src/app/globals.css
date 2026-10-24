@@ -3,58 +3,70 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: hsl(40 29% 97%);
-  --foreground: hsl(24 6% 17%);
-  --card: hsl(40 29% 97%);
-  --card-foreground: hsl(24 6% 17%);
-  --popover: hsl(40 29% 97%);
-  --popover-foreground: hsl(24 6% 17%);
-  --primary: hsl(138 25% 39%);
-  --primary-foreground: hsl(40 29% 97%);
-  --secondary: hsl(36 25% 92%);
-  --secondary-foreground: hsl(24 6% 17%);
-  --muted: hsl(36 25% 92%);
-  --muted-foreground: hsl(0 0% 48%);
-  --accent: hsl(35 55% 62%);
-  --accent-foreground: hsl(24 6% 17%);
-  --destructive: hsl(9 47% 56%);
-  --destructive-foreground: hsl(40 29% 97%);
-  --border: hsl(38 19% 83%);
-  --input: hsl(38 19% 83%);
-  --ring: hsl(138 25% 39%);
-  --radius: 0.5rem;
-  --chart-1: hsl(138 25% 39%);
-  --chart-2: hsl(35 55% 62%);
-  --chart-3: hsl(24 6% 17%);
-  --chart-4: hsl(9 47% 56%);
-  --chart-5: hsl(36 25% 92%);
+  /* Klaruk brand tokens ("The Clear Desk"). Every text pair passes WCAG AA. */
+  --background: #f6f5f1;
+  --foreground: #1b1d2a;
+  --card: #ffffff;
+  --card-foreground: #1b1d2a;
+  --popover: #ffffff;
+  --popover-foreground: #1b1d2a;
+  --primary: #3d3fa8;
+  --primary-foreground: #ffffff;
+  --secondary: #ecebf8;
+  --secondary-foreground: #2a2c7a;
+  --muted: #ecebe6;
+  --muted-foreground: #545867;
+  --accent: #ecebf8;
+  --accent-foreground: #2a2c7a;
+  --destructive: #c0157a;
+  --destructive-foreground: #ffffff;
+  --success: #1b7a3d;
+  --success-foreground: #ffffff;
+  /* Gold is for the main call to action only, always with dark text. */
+  --cta: #e2bd7a;
+  --cta-hover: #e9ca92;
+  --cta-foreground: #1a1408;
+  --border: #dedcd5;
+  --input: #7a7f8c;
+  --ring: #3d3fa8;
+  --radius: 0.625rem;
+  --chart-1: #3d3fa8;
+  --chart-2: #a87b22;
+  --chart-3: #1b7a3d;
+  --chart-4: #c0157a;
+  --chart-5: #7a7f8c;
 }
 
 .dark {
-  --background: hsl(222.2 84% 4.9%);
-  --foreground: hsl(210 40% 98%);
-  --card: hsl(222.2 84% 4.9%);
-  --card-foreground: hsl(210 40% 98%);
-  --popover: hsl(222.2 84% 4.9%);
-  --popover-foreground: hsl(210 40% 98%);
-  --primary: hsl(210 40% 98%);
-  --primary-foreground: hsl(222.2 47.4% 11.2%);
-  --secondary: hsl(217.2 32.6% 17.5%);
-  --secondary-foreground: hsl(210 40% 98%);
-  --muted: hsl(217.2 32.6% 17.5%);
-  --muted-foreground: hsl(215 20.2% 65.1%);
-  --accent: hsl(217.2 32.6% 17.5%);
-  --accent-foreground: hsl(210 40% 98%);
-  --destructive: hsl(0 62.8% 30.6%);
-  --destructive-foreground: hsl(210 40% 98%);
-  --border: hsl(217.2 32.6% 17.5%);
-  --input: hsl(217.2 32.6% 17.5%);
-  --ring: hsl(212.7 26.8% 83.9%);
-  --chart-1: hsl(220 70% 50%);
-  --chart-2: hsl(160 60% 45%);
-  --chart-3: hsl(30 80% 55%);
-  --chart-4: hsl(280 65% 60%);
-  --chart-5: hsl(340 75% 55%);
+  --background: #12131c;
+  --foreground: #ecedf3;
+  --card: #1c1e2b;
+  --card-foreground: #ecedf3;
+  --popover: #1c1e2b;
+  --popover-foreground: #ecedf3;
+  --primary: #9fa2ff;
+  --primary-foreground: #12131c;
+  --secondary: #23254a;
+  --secondary-foreground: #c9cbff;
+  --muted: #181a25;
+  --muted-foreground: #a3a7b8;
+  --accent: #23254a;
+  --accent-foreground: #ecedf3;
+  --destructive: #d4317a;
+  --destructive-foreground: #ffffff;
+  --success: #5ecf7f;
+  --success-foreground: #12131c;
+  --cta: #e2bd7a;
+  --cta-hover: #e9ca92;
+  --cta-foreground: #1a1408;
+  --border: #2c2f40;
+  --input: #6b7084;
+  --ring: #9fa2ff;
+  --chart-1: #9fa2ff;
+  --chart-2: #e2bd7a;
+  --chart-3: #5ecf7f;
+  --chart-4: #ff6fb0;
+  --chart-5: #a3a7b8;
 }
 
 @theme inline {
@@ -74,6 +86,13 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-cta: var(--cta);
+  --color-cta-hover: var(--cta-hover);
+  --color-cta-foreground: var(--cta-foreground);
+  --font-sans: var(--font-body), Arial, Helvetica, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -100,15 +119,17 @@
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), Arial, Helvetica, sans-serif;
+  font-size: 1rem; /* body text at least 16px */
+  line-height: 1.5;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-sora), var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-heading), var(--font-body), Arial, Helvetica, sans-serif;
 }
 
 .font-heading {
-  font-family: var(--font-sora), var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-heading), var(--font-body), Arial, Helvetica, sans-serif;
 }
 
 .contract-wizard {

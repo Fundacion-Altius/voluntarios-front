@@ -25,7 +25,9 @@ export default function AdminSidebar({ userName, userEmail, onLogout, onNavigate
     <aside className="flex h-full min-h-0 w-64 flex-col border-r bg-card lg:h-screen">
       <div className="flex items-center gap-2 border-b px-5 py-4">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/klaruk/symbol.svg" alt="" aria-hidden="true" className="size-8" />
+        <img src="/klaruk/symbol.svg" alt="" aria-hidden="true" className="size-8 dark:hidden" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/klaruk/symbol-dark.svg" alt="" aria-hidden="true" className="hidden size-8 dark:block" />
         <span className="font-heading text-lg font-bold">{t('title')}</span>
       </div>
       <GroupedNav pinned={pinned} groups={groups} initialGroup={initialGroup} ariaLabel={t('title')} onNavigate={onNavigate} />
