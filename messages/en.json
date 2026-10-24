@@ -371,7 +371,8 @@
       "mas": "More",
       "integraciones": "Integrations",
       "federacion": "Federation",
-      "bienestar": "Wellbeing"
+      "bienestar": "Wellbeing",
+      "beneficiarios": "Beneficiaries"
     },
     "contracts": {
       "noDisponibles": "No contracts available.",
@@ -1071,6 +1072,30 @@
       "colActions": "Actions",
       "colMood": "Mood",
       "colNote": "Note"
+    },
+    "beneficiarios": {
+      "title": "Beneficiaries",
+      "subtitle": "People served and volunteer mentoring matches.",
+      "loading": "Loading…",
+      "error": "Could not load beneficiaries.",
+      "createTitle": "New beneficiary",
+      "namePlaceholder": "Name",
+      "programPlaceholder": "Program / activity",
+      "create": "Create",
+      "listTitle": "List",
+      "empty": "No beneficiaries yet.",
+      "matchTitle": "Mentoring",
+      "volunteerPlaceholder": "Mentor volunteer name",
+      "assign": "Assign",
+      "matchesEmpty": "No mentoring matches.",
+      "endMatch": "End",
+      "colName": "Name",
+      "colProgram": "Program",
+      "colNotes": "Notes",
+      "colVolunteer": "Volunteer",
+      "colBeneficiary": "Beneficiary",
+      "colStatus": "Status",
+      "colActions": "Actions"
     }
   },
   "portal": {
