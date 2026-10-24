@@ -389,7 +389,7 @@
       "descargarPdf": "Descarregar PDF"
     },
     "dashboard": {
-      "titulo": "Dashboard",
+      "titulo": "Tauler",
       "seccionOtrasMetricas": "Altres mètriques",
       "signupsByMonth": "Altes de voluntaris per mes",
       "signupsByLugar": "Altes de voluntaris per lloc",
@@ -441,7 +441,7 @@
     "automation": {
       "navLabel": "Automatització",
       "workloadTitle": "Càrrega de treball automatitzada",
-      "metricsSummary": "{tasks} tasques automatitzades | ~{hours} hores estalviades | Desglossament: {memberComms} member comms, {churnAlerts} churn alerts, {grantReminders} grant reminders",
+      "metricsSummary": "{tasks} tasques automatitzades | ~{hours} hores estalviades | Desglossament: {memberComms} comunicacions amb socis, {churnAlerts} alertes de baixa, {grantReminders} recordatoris de subvencions",
       "manualPending": "{count} tasques manuals pendents",
       "justificationLink": "Anar a justificacions de subvencions",
       "settingsTitle": "Fluxos de comunicació",
@@ -1262,14 +1262,16 @@
         "exportaciones": "Exportacions"
       },
       "mobile": {
-        "actividades": "Activitats"
+        "actividades": "Activitats",
+        "escaner": "Escàner",
+        "chat": "Xat"
       }
     }
   },
   "portal": {
     "nav": {
       "inicio": "Inici",
-      "miPortal": "El Meu Portal",
+      "miPortal": "El meu portal",
       "cursos": "Cursos",
       "actividades": "Activitats",
       "proyectos": "Projectes",
@@ -1302,7 +1304,7 @@
       "open": "Obrir"
     },
     "home": {
-      "titulo": "El Meu Panell",
+      "titulo": "El meu portal",
       "subtitulo": "Benvingut/da al teu portal de voluntariat",
       "miPerfil": "El Meu Perfil",
       "nivel": "Nivell",
@@ -1326,7 +1328,14 @@
       "bronce": "Bronze",
       "plata": "Plata",
       "oro": "Or",
-      "diamante": "Diamant"
+      "diamante": "Diamant",
+      "badgeNames": {
+        "first-activity": "Primera activitat",
+        "helper": "Col·laborador/a",
+        "activity": "Activitat",
+        "bronze": "Bronze",
+        "streak": "Ratxa"
+      }
     },
     "mensajes": {
       "titulo": "Xat intern",
@@ -1608,6 +1617,9 @@
         "noticias": "Notícies",
         "logros": "Assoliments",
         "ranking": "Rànquing"
+      },
+      "mobile": {
+        "notificaciones": "Avisos"
       }
     }
   },
@@ -1628,7 +1640,7 @@
         "coverage_rate": "Taxa de cobertura del voluntariat",
         "time_to_fill": "Temps de cobertura",
         "reliability_rate": "Fiabilitat del voluntariat (Assistència)",
-        "onboarding_completion_rate": "Finalització de l'onboarding",
+        "onboarding_completion_rate": "Acollida completada",
         "social_impact_per_hour": "Impacte social per hora de voluntariat",
         "volunteer_nps": "Satisfacció del voluntariat (NPS)"
       },

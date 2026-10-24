@@ -51,4 +51,12 @@ describe('AdminSidebar (grouped)', () => {
     renderSidebar({ initialGroup: 'voluntariado' });
     expect(screen.getByRole('link', { name: 'Personas voluntarias' })).toHaveAttribute('href', '/admin/usuarios');
   });
+
+  it('opens no collapsible group on a pinned route (Panel)', () => {
+    mockPath = '/admin/dashboard';
+    renderSidebar();
+    for (const name of ['Voluntariado', 'Actividades', 'Personas atendidas', 'Comunicación', 'Financiación', 'Gobierno e impacto', 'Datos y ajustes']) {
+      expect(screen.getByRole('button', { name })).toHaveAttribute('aria-expanded', 'false');
+    }
+  });
 });

@@ -389,7 +389,7 @@
       "descargarPdf": "Download PDF"
     },
     "dashboard": {
-      "titulo": "Dashboard",
+      "titulo": "Overview",
       "seccionOtrasMetricas": "Other metrics",
       "signupsByMonth": "Volunteer signups by month",
       "signupsByLugar": "Volunteer signups by location",
@@ -441,7 +441,7 @@
     "automation": {
       "navLabel": "Automation",
       "workloadTitle": "Automated workload",
-      "metricsSummary": "{tasks} tasks automated | ~{hours} hours saved | Breakdown: {memberComms} member comms, {churnAlerts} churn alerts, {grantReminders} grant reminders",
+      "metricsSummary": "{tasks} tasks automated | ~{hours} hours saved | Breakdown: {memberComms} member communications, {churnAlerts} churn alerts, {grantReminders} grant reminders",
       "manualPending": "{count} manual tasks pending",
       "justificationLink": "Go to grant justification page",
       "settingsTitle": "Communication workflows",
@@ -1262,14 +1262,16 @@
         "exportaciones": "Exports"
       },
       "mobile": {
-        "actividades": "Activities"
+        "actividades": "Activities",
+        "escaner": "Scanner",
+        "chat": "Chat"
       }
     }
   },
   "portal": {
     "nav": {
       "inicio": "Home",
-      "miPortal": "My Portal",
+      "miPortal": "My portal",
       "cursos": "Courses",
       "actividades": "Activities",
       "proyectos": "Projects",
@@ -1302,7 +1304,7 @@
       "open": "Open"
     },
     "home": {
-      "titulo": "My Dashboard",
+      "titulo": "My portal",
       "subtitulo": "Welcome to your volunteering portal",
       "miPerfil": "My Profile",
       "nivel": "Level",
@@ -1326,7 +1328,14 @@
       "bronce": "Bronze",
       "plata": "Silver",
       "oro": "Gold",
-      "diamante": "Diamond"
+      "diamante": "Diamond",
+      "badgeNames": {
+        "first-activity": "First activity",
+        "helper": "Helper",
+        "activity": "Activity",
+        "bronze": "Bronze",
+        "streak": "Streak"
+      }
     },
     "mensajes": {
       "titulo": "Team chat",
@@ -1608,6 +1617,9 @@
         "noticias": "News",
         "logros": "Achievements",
         "ranking": "Ranking"
+      },
+      "mobile": {
+        "notificaciones": "Alerts"
       }
     }
   },
@@ -1628,7 +1640,7 @@
         "coverage_rate": "Volunteer Coverage Rate",
         "time_to_fill": "Time-to-Fill",
         "reliability_rate": "Volunteer Reliability (Attendance)",
-        "onboarding_completion_rate": "Onboarding Completion",
+        "onboarding_completion_rate": "Onboarding completed",
         "social_impact_per_hour": "Social Impact per Volunteer Hour",
         "volunteer_nps": "Volunteer Satisfaction (NPS)"
       },

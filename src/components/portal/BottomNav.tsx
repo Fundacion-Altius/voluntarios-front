@@ -15,7 +15,7 @@ interface BottomNavProps {
 }
 
 const tabClass = (active: boolean) =>
-  `flex min-w-0 flex-1 flex-col items-center gap-0.5 px-1 py-2 text-[11px] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 sm:text-xs ${active ? 'text-primary font-semibold' : 'text-muted-foreground'}`;
+  `flex min-h-14 min-w-0 flex-1 basis-0 flex-col items-center justify-start gap-0.5 px-0.5 pt-2 pb-1.5 text-[11px] leading-tight outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 sm:text-xs ${active ? 'text-primary font-semibold' : 'text-muted-foreground'}`;
 
 export default function BottomNav({ userName, userEmail, onLogout }: BottomNavProps) {
   const pathname = usePathname();
@@ -30,19 +30,19 @@ export default function BottomNav({ userName, userEmail, onLogout }: BottomNavPr
     { href: '/portal/mensajes', label: tSide('items.chat'), icon: MessageSquare },
     { href: '/portal/cursos', label: tSide('items.cursos'), icon: BookOpen },
     { href: '/portal/logros', label: tSide('items.logros'), icon: Award },
-    { href: '/portal/notificaciones', label: tSide('items.notificaciones'), icon: Bell },
+    { href: '/portal/notificaciones', label: tSide('mobile.notificaciones'), icon: Bell },
   ];
 
   return (
     <>
-      <nav aria-label={t('miPortal')} className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-around border-t bg-card pb-safe">
+      <nav aria-label={t('miPortal')} className="fixed inset-x-0 bottom-0 z-50 flex items-stretch gap-1 border-t bg-card px-1 pb-safe">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const active = isActivePath(pathname, tab);
           return (
             <Link key={tab.href} href={tab.href} onClick={() => setPending(true)} aria-current={active ? 'page' : undefined} className={tabClass(active)}>
               <Icon className="size-5" aria-hidden="true" />
-              <span className="truncate">{tab.label}</span>
+              <span className="block w-full truncate text-center">{tab.label}</span>
             </Link>
           );
         })}
@@ -50,7 +50,7 @@ export default function BottomNav({ userName, userEmail, onLogout }: BottomNavPr
           <SheetTrigger asChild>
             <button type="button" className={tabClass(false)}>
               <MoreHorizontal className="size-5" aria-hidden="true" />
-              <span className="truncate">{t('mas')}</span>
+              <span className="block w-full truncate text-center">{t('mas')}</span>
             </button>
           </SheetTrigger>
           <SheetContent side="left" className="w-64 p-0 sm:max-w-sm">

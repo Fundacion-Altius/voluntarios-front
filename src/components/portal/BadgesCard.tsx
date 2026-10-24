@@ -19,7 +19,7 @@ export function BadgesCard({ badges }: BadgesCardProps) {
       <CardContent>
         <div className="flex flex-wrap gap-2">
           {badges.map((b) => (
-            <Badge key={b.id} variant="secondary">{b.badge_type.replace(/-/g, ' ')}</Badge>
+            <Badge key={b.id} variant="secondary">{t.has(`badgeNames.${b.badge_type}`) ? t(`badgeNames.${b.badge_type}`) : b.badge_type.replace(/-/g, ' ')}</Badge>
           ))}
         </div>
       </CardContent>

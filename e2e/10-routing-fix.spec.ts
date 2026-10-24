@@ -11,7 +11,7 @@ test.describe('Login Routing Fix', () => {
   test('general volunteer redirects to /es/portal', async ({ page }) => {
     await loginAsBrowser(page, 'general@fundacionaltius.org', 'general123');
     await page.goto('/es/portal', { waitUntil: 'load' });
-    await expect(page.locator('body')).toContainText('Mi Portal', { timeout: 15000 });
+    await expect(page.locator('body')).toContainText('Mi portal', { timeout: 15000 });
   });
 
   test('volunteer accessing /es/admin/dashboard gets redirected to /es/portal', async ({ page }) => {

@@ -389,7 +389,7 @@
       "descargarPdf": "Descargar PDF"
     },
     "dashboard": {
-      "titulo": "Dashboard",
+      "titulo": "Panel",
       "seccionOtrasMetricas": "Otras métricas",
       "signupsByMonth": "Altas voluntarios por mes",
       "signupsByLugar": "Altas voluntarios por lugar",
@@ -441,7 +441,7 @@
     "automation": {
       "navLabel": "Automatización",
       "workloadTitle": "Carga de trabajo automatizada",
-      "metricsSummary": "{tasks} tareas automatizadas | ~{hours} horas ahorradas | Desglose: {memberComms} member comms, {churnAlerts} churn alerts, {grantReminders} grant reminders",
+      "metricsSummary": "{tasks} tareas automatizadas | ~{hours} horas ahorradas | Desglose: {memberComms} comunicaciones con socios, {churnAlerts} alertas de baja, {grantReminders} recordatorios de subvenciones",
       "manualPending": "{count} tareas manuales pendientes",
       "justificationLink": "Ir a justificaciones de subvenciones",
       "settingsTitle": "Flujos de comunicación",
@@ -1262,14 +1262,16 @@
         "exportaciones": "Exportaciones"
       },
       "mobile": {
-        "actividades": "Actividades"
+        "actividades": "Actividades",
+        "escaner": "Escáner",
+        "chat": "Chat"
       }
     }
   },
   "portal": {
     "nav": {
       "inicio": "Inicio",
-      "miPortal": "Mi Portal",
+      "miPortal": "Mi portal",
       "cursos": "Cursos",
       "actividades": "Actividades",
       "proyectos": "Proyectos",
@@ -1302,7 +1304,7 @@
       "open": "Abrir"
     },
     "home": {
-      "titulo": "Mi Panel",
+      "titulo": "Mi portal",
       "subtitulo": "Bienvenido a tu portal de voluntariado",
       "miPerfil": "Mi Perfil",
       "nivel": "Nivel",
@@ -1326,7 +1328,14 @@
       "bronce": "Bronce",
       "plata": "Plata",
       "oro": "Oro",
-      "diamante": "Diamante"
+      "diamante": "Diamante",
+      "badgeNames": {
+        "first-activity": "Primera actividad",
+        "helper": "Colaborador/a",
+        "activity": "Actividad",
+        "bronze": "Bronce",
+        "streak": "Racha"
+      }
     },
     "mensajes": {
       "titulo": "Chat interno",
@@ -1608,6 +1617,9 @@
         "noticias": "Noticias",
         "logros": "Logros",
         "ranking": "Ranking"
+      },
+      "mobile": {
+        "notificaciones": "Avisos"
       }
     }
   },
@@ -1628,7 +1640,7 @@
         "coverage_rate": "Tasa de cobertura del voluntariado",
         "time_to_fill": "Tiempo de cobertura",
         "reliability_rate": "Fiabilidad del voluntariado (Asistencia)",
-        "onboarding_completion_rate": "Finalización del onboarding",
+        "onboarding_completion_rate": "Acogida completada",
         "social_impact_per_hour": "Impacto social por hora de voluntariado",
         "volunteer_nps": "Satisfacción del voluntariado (NPS)"
       },

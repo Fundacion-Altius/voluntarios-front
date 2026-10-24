@@ -83,7 +83,7 @@ export function GroupedNav({ pinned, groups, initialGroup, ariaLabel, onNavigate
       return;
     }
     const g = groupForPath(groups, pathname);
-    if (g) setOpen(g);
+    setOpen(g ?? '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
@@ -95,7 +95,7 @@ export function GroupedNav({ pinned, groups, initialGroup, ariaLabel, onNavigate
   return (
     <nav aria-label={ariaLabel} className="flex-1 overflow-y-auto p-3">
       <section aria-labelledby={`nav-group-${pinned.id}`} className="mb-2">
-        <h2 id={`nav-group-${pinned.id}`} className="px-3 pb-1 pt-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <h2 id={`nav-group-${pinned.id}`} className="flex min-h-10 items-center px-3 text-sm font-semibold text-foreground">
           {pinned.label}
         </h2>
         <NavLinks items={pinned.items} pathname={pathname} onClick={handleClick} />
@@ -103,7 +103,7 @@ export function GroupedNav({ pinned, groups, initialGroup, ariaLabel, onNavigate
       <Accordion type="single" collapsible value={open} onValueChange={setOpen}>
         {groups.map((g) => (
           <AccordionItem key={g.id} value={g.id} id={`nav-group-${g.id}`}>
-            <AccordionTrigger className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground">
+            <AccordionTrigger className="min-h-10 items-center px-3 py-2 text-sm font-semibold text-foreground hover:bg-accent hover:text-accent-foreground hover:no-underline">
               {g.label}
             </AccordionTrigger>
             <AccordionContent>

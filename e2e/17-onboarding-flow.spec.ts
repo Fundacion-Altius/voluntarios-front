@@ -43,7 +43,7 @@ test.describe('Onboarding Flow', () => {
     await loginAsBrowser(page, 'general@fundacionaltius.org', 'general123');
     await page.goto('/es/portal', { waitUntil: 'load' });
     await expect(page.locator('div[data-slot="card-title"]').filter({ hasText: 'Mi Perfil' }).first()).toBeVisible({ timeout: 30000 });
-    await expect(page.locator('body')).toContainText('Mi Panel', { timeout: 15000 });
+    await expect(page.locator('body')).toContainText('Mi portal', { timeout: 15000 });
     await expect(page.locator('body')).toContainText('Puntos', { timeout: 10000 });
   });
 

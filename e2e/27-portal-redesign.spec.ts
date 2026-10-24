@@ -12,7 +12,7 @@ async function loginAsVolunteer(page: any) {
 }
 
 const PORTAL_ROUTES = [
-  { path: '/es/portal', heading: /Mi Panel|Panel/i },
+  { path: '/es/portal', heading: /Mi portal|Panel/i },
   { path: '/es/portal/actividades', heading: /Actividades/i },
   { path: '/es/portal/cursos', heading: /Cursos/i },
   { path: '/es/portal/proyectos', heading: /Proyectos/i },
