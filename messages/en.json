@@ -373,7 +373,8 @@
       "federacion": "Federation",
       "bienestar": "Wellbeing",
       "beneficiarios": "Beneficiaries",
-      "redesSociales": "Social media"
+      "redesSociales": "Social media",
+      "campanas": "Campaigns"
     },
     "contracts": {
       "noDisponibles": "No contracts available.",
@@ -1126,6 +1127,35 @@
         "twitter": "Twitter/X",
         "instagram": "Instagram",
         "facebook": "Facebook"
+      }
+    },
+    "campanas": {
+      "title": "Campaigns",
+      "subtitle": "Create campaigns, send notifications, and track engagement.",
+      "loading": "Loading…",
+      "error": "Could not load campaigns.",
+      "metricsTitle": "Total engagement",
+      "delivered": "Delivered",
+      "opens": "Opens",
+      "clicks": "Clicks",
+      "shares": "Shares",
+      "createTitle": "New campaign",
+      "titlePlaceholder": "Title",
+      "bodyPlaceholder": "Message",
+      "audiencePlaceholder": "Audience (e.g. members)",
+      "create": "Create",
+      "listTitle": "Campaigns",
+      "empty": "No campaigns yet.",
+      "colTitle": "Title",
+      "colChannels": "Channels",
+      "colStatus": "Status",
+      "colEngagement": "Opens/Clicks/Shares",
+      "colActions": "Actions",
+      "send": "Send",
+      "refreshEngagement": "Refresh metrics",
+      "channel": {
+        "email": "Email",
+        "in_app": "In-app"
       }
     }
   },

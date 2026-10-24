@@ -373,7 +373,8 @@
       "federacion": "Federació",
       "bienestar": "Benestar",
       "beneficiarios": "Beneficiaris",
-      "redesSociales": "Xarxes socials"
+      "redesSociales": "Xarxes socials",
+      "campanas": "Campanyes"
     },
     "contracts": {
       "noDisponibles": "No hi ha contractes disponibles.",
@@ -1126,6 +1127,35 @@
         "twitter": "Twitter/X",
         "instagram": "Instagram",
         "facebook": "Facebook"
+      }
+    },
+    "campanas": {
+      "title": "Campanyes",
+      "subtitle": "Crea campanyes, envia notificacions i mesura l'engagement.",
+      "loading": "Carregant…",
+      "error": "No s'han pogut carregar les campanyes.",
+      "metricsTitle": "Engagement total",
+      "delivered": "Lliurats",
+      "opens": "Obertures",
+      "clicks": "Clics",
+      "shares": "Compartits",
+      "createTitle": "Nova campanya",
+      "titlePlaceholder": "Títol",
+      "bodyPlaceholder": "Missatge",
+      "audiencePlaceholder": "Audiència (p. ex. members)",
+      "create": "Crear",
+      "listTitle": "Campanyes",
+      "empty": "No hi ha campanyes.",
+      "colTitle": "Títol",
+      "colChannels": "Canals",
+      "colStatus": "Estat",
+      "colEngagement": "Opens/Clicks/Shares",
+      "colActions": "Accions",
+      "send": "Enviar",
+      "refreshEngagement": "Actualitzar mètriques",
+      "channel": {
+        "email": "Email",
+        "in_app": "In-app"
       }
     }
   },
