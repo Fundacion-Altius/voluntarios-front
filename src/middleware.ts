@@ -5,6 +5,21 @@ import { resolveTenantHost, isAuthHost } from '@/lib/tenantHost';
 
 const intlMiddleware = createMiddleware(routing);
 
+// Klaruk marketing pages ((marketing) route group) belong to the root Klaruk
+// host only. On tenant hosts, / and /planes go to the contract wizard instead.
+const MARKETING_PATH = /^\/(?:(es|ca|en)(?:\/|$))?(?:planes\/?)?$/;
+
+function tenantMarketingRedirect(request: NextRequest): NextResponse | null {
+  const match = MARKETING_PATH.exec(request.nextUrl.pathname);
+  if (!match) return null;
+  const cookieLocale = request.cookies.get('NEXT_LOCALE')?.value;
+  const locale = match[1]
+    ?? (cookieLocale && (routing.locales as readonly string[]).includes(cookieLocale) ? cookieLocale : routing.defaultLocale);
+  const url = request.nextUrl.clone();
+  url.pathname = `/${locale}/contrato`;
+  return NextResponse.redirect(url);
+}
+
 /**
  * Check if the request is for an auth host or handoff endpoint
  * These should bypass tenant validation
@@ -25,6 +40,22 @@ function shouldBypassTenantCheck(request: NextRequest): boolean {
   }
   
   return false;
+}
+
+function gateResponse(verdict: Awaited<ReturnType<typeof resolveTenantHost>>, request: NextRequest): NextResponse | null {
+  if (verdict.known === false) {
+    return new NextResponse('Not Found', { status: 404 });
+  }
+  if (verdict.known === true && !verdict.active) {
+    return new NextResponse(`Tenant ${verdict.status}`, { status: 403 });
+  }
+  if (verdict.known === null && verdict.failClosed) {
+    return new NextResponse('Service Unavailable', { status: 503 });
+  }
+  if (verdict.known === true) {
+    return tenantMarketingRedirect(request);
+  }
+  return null;
 }
 
 export default async function middleware(request: NextRequest) {
@@ -49,15 +80,8 @@ export default async function middleware(request: NextRequest) {
   // localhost) are not failures; they pass through with failClosed: false.
   const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host');
   const verdict = await resolveTenantHost(host);
-  if (verdict.known === false) {
-    return new NextResponse('Not Found', { status: 404 });
-  }
-  if (verdict.known === true && !verdict.active) {
-    return new NextResponse(`Tenant ${verdict.status}`, { status: 403 });
-  }
-  if (verdict.known === null && verdict.failClosed) {
-    return new NextResponse('Service Unavailable', { status: 503 });
-  }
+  const gated = gateResponse(verdict, request);
+  if (gated) return gated;
   return intlMiddleware(request);
 }
 
