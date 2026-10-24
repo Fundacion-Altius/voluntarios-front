@@ -1087,7 +1087,26 @@
       "notificaciones": "Notificacions",
       "mas": "Més",
       "salir": "Surt",
-      "ayudaAlimentaria": "Ajuda alimentària"
+      "ayudaAlimentaria": "Ajuda alimentària",
+      "video": "Vídeo / Directe"
+    },
+    "video": {
+      "title": "Vídeo i directe",
+      "subtitle": "Crea reunions o emissions en directe dins de Klaruk.",
+      "createTitle": "Nova sala",
+      "contextPlaceholder": "Context (p. ex. comunitat o esdeveniment)",
+      "modeMeeting": "Reunió",
+      "modeLivestream": "Directe",
+      "meetingHint": "Tothom pot publicar càmera i micròfon.",
+      "livestreamHint": "L'amfitrió emet; els convidats entren com a espectadors.",
+      "create": "Crear i entrar",
+      "creating": "Creant…",
+      "errorCreate": "No s'ha pogut crear la sala.",
+      "listTitle": "Sales actives (mateix context)",
+      "refresh": "Actualitzar",
+      "loading": "Carregant…",
+      "empty": "No hi ha sales actives per a aquest context.",
+      "open": "Obrir"
     },
     "home": {
       "titulo": "El Meu Panell",
@@ -1291,10 +1310,16 @@
       "salaId": "Sala:",
       "unirseParticipante": "Unir-se com a participant",
       "unirseAnfitrion": "Unir-se com a amfitrió",
+      "unirseEspectador": "Unir-se com a espectador",
+      "unirseEmisor": "Unir-se com a emissor",
       "uniendose": "Unint-se...",
       "unirseSalaBtn": "Unir-se a la sala",
       "errorUnirse": "Error en unir-se a la sala",
-      "debesIniciarSesion": "Has d'iniciar sessió per unir-te"
+      "debesIniciarSesion": "Has d'iniciar sessió per unir-te",
+      "livestreamHint": "Aquesta sala és un directe: l'emissor publica i els espectadors només reben.",
+      "modoEspectador": "Mode espectador (sense càmera local)",
+      "modoEmision": "Mode emissió (amfitrió)",
+      "salir": "Sortir"
     },
     "foodAid": {
       "title": "Ajuda alimentària",

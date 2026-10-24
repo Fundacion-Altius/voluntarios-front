@@ -1087,7 +1087,26 @@
       "notificaciones": "Notificaciones",
       "mas": "Más",
       "salir": "Salir",
-      "ayudaAlimentaria": "Ayuda alimentaria"
+      "ayudaAlimentaria": "Ayuda alimentaria",
+      "video": "Video / Directo"
+    },
+    "video": {
+      "title": "Video y directo",
+      "subtitle": "Crea reuniones o emisiones en directo integradas en Klaruk.",
+      "createTitle": "Nueva sala",
+      "contextPlaceholder": "Contexto (ej. comunidad o evento)",
+      "modeMeeting": "Reunión",
+      "modeLivestream": "Directo",
+      "meetingHint": "Todos pueden publicar cámara y micrófono.",
+      "livestreamHint": "El anfitrión emite; los invitados entran como espectadores.",
+      "create": "Crear y entrar",
+      "creating": "Creando…",
+      "errorCreate": "No se pudo crear la sala.",
+      "listTitle": "Salas activas (mismo contexto)",
+      "refresh": "Actualizar",
+      "loading": "Cargando…",
+      "empty": "No hay salas activas para este contexto.",
+      "open": "Abrir"
     },
     "home": {
       "titulo": "Mi Panel",
@@ -1291,10 +1310,16 @@
       "salaId": "Sala:",
       "unirseParticipante": "Unirse como participante",
       "unirseAnfitrion": "Unirse como anfitrión",
+      "unirseEspectador": "Unirse como espectador",
+      "unirseEmisor": "Unirse como emisor",
       "uniendose": "Uniéndose...",
       "unirseSalaBtn": "Unirse a la sala",
       "errorUnirse": "Error al unirse a la sala",
-      "debesIniciarSesion": "Debes iniciar sesión para unirte"
+      "debesIniciarSesion": "Debes iniciar sesión para unirte",
+      "livestreamHint": "Esta sala es un directo: el emisor publica y los espectadores solo reciben.",
+      "modoEspectador": "Modo espectador (sin cámara local)",
+      "modoEmision": "Modo emisión (anfitrión)",
+      "salir": "Salir"
     },
     "foodAid": {
       "title": "Ayuda alimentaria",
