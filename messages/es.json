@@ -370,7 +370,8 @@
       "salir": "Salir",
       "mas": "Más",
       "integraciones": "Integraciones",
-      "federacion": "Federación"
+      "federacion": "Federación",
+      "mcp": "MCP / Agentes"
     },
     "contracts": {
       "noDisponibles": "No hay contratos disponibles.",
@@ -1040,6 +1041,18 @@
       "colName": "Nombre",
       "colSlug": "Slug",
       "colStatus": "Estado"
+    },
+    "mcp": {
+      "title": "MCP / Agentes",
+      "subtitle": "Inventario de herramientas MCP disponibles para agentes de IA (KL-E-006).",
+      "loading": "Cargando…",
+      "error": "No se pudo cargar el inventario MCP.",
+      "toolsTitle": "Herramientas",
+      "empty": "No hay herramientas registradas.",
+      "colName": "Nombre",
+      "colEffect": "Efecto",
+      "colRoles": "Roles",
+      "colDescription": "Descripción"
     }
   },
   "portal": {

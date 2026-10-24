@@ -370,7 +370,8 @@
       "salir": "Sortir",
       "mas": "Més",
       "integraciones": "Integracions",
-      "federacion": "Federació"
+      "federacion": "Federació",
+      "mcp": "MCP / Agents"
     },
     "contracts": {
       "noDisponibles": "No hi ha contractes disponibles.",
@@ -1040,6 +1041,18 @@
       "colName": "Nom",
       "colSlug": "Slug",
       "colStatus": "Estat"
+    },
+    "mcp": {
+      "title": "MCP / Agents",
+      "subtitle": "Inventari d'eines MCP disponibles per a agents d'IA (KL-E-006).",
+      "loading": "Carregant…",
+      "error": "No s'ha pogut carregar l'inventari MCP.",
+      "toolsTitle": "Eines",
+      "empty": "No hi ha eines registrades.",
+      "colName": "Nom",
+      "colEffect": "Efecte",
+      "colRoles": "Rols",
+      "colDescription": "Descripció"
     }
   },
   "portal": {

@@ -370,7 +370,8 @@
       "salir": "Sign out",
       "mas": "More",
       "integraciones": "Integrations",
-      "federacion": "Federation"
+      "federacion": "Federation",
+      "mcp": "MCP / Agents"
     },
     "contracts": {
       "noDisponibles": "No contracts available.",
@@ -1040,6 +1041,18 @@
       "colName": "Name",
       "colSlug": "Slug",
       "colStatus": "Status"
+    },
+    "mcp": {
+      "title": "MCP / Agents",
+      "subtitle": "Inventory of MCP tools available to AI agents (KL-E-006).",
+      "loading": "Loading…",
+      "error": "Could not load the MCP inventory.",
+      "toolsTitle": "Tools",
+      "empty": "No tools registered.",
+      "colName": "Name",
+      "colEffect": "Effect",
+      "colRoles": "Roles",
+      "colDescription": "Description"
     }
   },
   "portal": {
