@@ -375,7 +375,8 @@
       "beneficiarios": "Beneficiarios",
       "redesSociales": "Redes sociales",
       "campanas": "Campañas",
-      "metricasComunidad": "Métricas comunidad"
+      "metricasComunidad": "Métricas comunidad",
+      "gobernanza": "Gobernanza"
     },
     "contracts": {
       "noDisponibles": "No hay contratos disponibles.",
@@ -1185,6 +1186,36 @@
         "low": "Bajo",
         "medium": "Medio",
         "high": "Alto"
+      }
+    },
+    "gobernanza": {
+      "title": "Gobernanza",
+      "subtitle": "Votaciones, actas y portal de transparencia.",
+      "loading": "Cargando…",
+      "error": "No se pudo cargar gobernanza.",
+      "transparencyTitle": "Transparencia",
+      "transparencyEmpty": "No hay decisiones publicadas.",
+      "votesTitle": "Votaciones",
+      "voteTitlePlaceholder": "Título de la votación",
+      "createVote": "Crear votación",
+      "minutesTitle": "Actas",
+      "minutesTitlePlaceholder": "Título del acta",
+      "minutesBodyPlaceholder": "Contenido del acta",
+      "createMinutes": "Crear acta",
+      "colTitle": "Título",
+      "colStatus": "Estado",
+      "colTally": "Sí/No/Abs",
+      "colDate": "Fecha",
+      "colActions": "Acciones",
+      "yes": "Sí",
+      "no": "No",
+      "abstain": "Abs",
+      "close": "Cerrar",
+      "approve": "Aprobar",
+      "publish": "Publicar",
+      "kind": {
+        "vote": "Voto",
+        "minutes": "Acta"
       }
     }
   },

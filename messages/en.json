@@ -375,7 +375,8 @@
       "beneficiarios": "Beneficiaries",
       "redesSociales": "Social media",
       "campanas": "Campaigns",
-      "metricasComunidad": "Community metrics"
+      "metricasComunidad": "Community metrics",
+      "gobernanza": "Governance"
     },
     "contracts": {
       "noDisponibles": "No contracts available.",
@@ -1185,6 +1186,36 @@
         "low": "Low",
         "medium": "Medium",
         "high": "High"
+      }
+    },
+    "gobernanza": {
+      "title": "Governance",
+      "subtitle": "Voting, meeting minutes, and transparency portal.",
+      "loading": "Loading…",
+      "error": "Could not load governance.",
+      "transparencyTitle": "Transparency",
+      "transparencyEmpty": "No published decisions yet.",
+      "votesTitle": "Votes",
+      "voteTitlePlaceholder": "Vote title",
+      "createVote": "Create vote",
+      "minutesTitle": "Minutes",
+      "minutesTitlePlaceholder": "Minutes title",
+      "minutesBodyPlaceholder": "Minutes body",
+      "createMinutes": "Create minutes",
+      "colTitle": "Title",
+      "colStatus": "Status",
+      "colTally": "Yes/No/Abs",
+      "colDate": "Date",
+      "colActions": "Actions",
+      "yes": "Yes",
+      "no": "No",
+      "abstain": "Abs",
+      "close": "Close",
+      "approve": "Approve",
+      "publish": "Publish",
+      "kind": {
+        "vote": "Vote",
+        "minutes": "Minutes"
       }
     }
   },
