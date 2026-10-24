@@ -371,7 +371,8 @@
       "mas": "Más",
       "integraciones": "Integraciones",
       "federacion": "Federación",
-      "bienestar": "Bienestar"
+      "bienestar": "Bienestar",
+      "mcp": "MCP / Agentes"
     },
     "contracts": {
       "noDisponibles": "No hay contratos disponibles.",
@@ -1071,6 +1072,18 @@
       "colActions": "Acciones",
       "colMood": "Ánimo",
       "colNote": "Nota"
+    },
+    "mcp": {
+      "title": "MCP / Agentes",
+      "subtitle": "Inventario de herramientas MCP disponibles para agentes de IA (KL-E-006).",
+      "loading": "Cargando…",
+      "error": "No se pudo cargar el inventario MCP.",
+      "toolsTitle": "Herramientas",
+      "empty": "No hay herramientas registradas.",
+      "colName": "Nombre",
+      "colEffect": "Efecto",
+      "colRoles": "Roles",
+      "colDescription": "Descripción"
     }
   },
   "portal": {
@@ -1142,7 +1155,9 @@
       "directo": "Directo",
       "grupal": "Grupal",
       "escribiendo": "Alguien está escribiendo…",
-      "miembros": "Miembros"
+      "miembros": "Miembros",
+      "tiempoReal": "En vivo",
+      "sincronizando": "Sincronizando…"
     },
     "actividades": {
       "titulo": "Actividades",

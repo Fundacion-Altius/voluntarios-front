@@ -371,7 +371,8 @@
       "mas": "Més",
       "integraciones": "Integracions",
       "federacion": "Federació",
-      "bienestar": "Benestar"
+      "bienestar": "Benestar",
+      "mcp": "MCP / Agents"
     },
     "contracts": {
       "noDisponibles": "No hi ha contractes disponibles.",
@@ -1071,6 +1072,18 @@
       "colActions": "Accions",
       "colMood": "Ànim",
       "colNote": "Nota"
+    },
+    "mcp": {
+      "title": "MCP / Agents",
+      "subtitle": "Inventari d'eines MCP disponibles per a agents d'IA (KL-E-006).",
+      "loading": "Carregant…",
+      "error": "No s'ha pogut carregar l'inventari MCP.",
+      "toolsTitle": "Eines",
+      "empty": "No hi ha eines registrades.",
+      "colName": "Nom",
+      "colEffect": "Efecte",
+      "colRoles": "Rols",
+      "colDescription": "Descripció"
     }
   },
   "portal": {
@@ -1142,7 +1155,9 @@
       "directo": "Directe",
       "grupal": "Grupal",
       "escribiendo": "Algú està escrivint…",
-      "miembros": "Membres"
+      "miembros": "Membres",
+      "tiempoReal": "En directe",
+      "sincronizando": "Sincronitzant…"
     },
     "actividades": {
       "titulo": "Activitats",

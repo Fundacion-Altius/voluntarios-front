@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { deriveWsUrl } from '@/lib/wsUrl';
 
 const POLL_MS = 3000;
-const RECONNECT_DELAY = 5000;
+const RECONNECT_BASE_MS = 2000;
+const RECONNECT_MAX_MS = 30000;
 
 export interface StaffChatEvent {
   type: string;
@@ -26,46 +27,82 @@ interface Options {
   onPoll?: () => void;
 }
 
+function nextDelay(attempt: number): number {
+  const exp = Math.min(RECONNECT_MAX_MS, RECONNECT_BASE_MS * 2 ** Math.max(0, attempt));
+  return exp;
+}
+
 export function useStaffChat({ channelId, authToken, onEvent, onPoll }: Options) {
   const [connected, setConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const reconnectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
+  const intentionalCloseRef = useRef(false);
+  const attemptRef = useRef(0);
+
+  const clearReconnect = useCallback(() => {
+    if (reconnectRef.current) {
+      clearTimeout(reconnectRef.current);
+      reconnectRef.current = null;
+    }
+  }, []);
 
   const connect = useCallback(() => {
-    if (!authToken || !channelId) return;
+    if (!authToken || !channelId || !mountedRef.current) return;
+    intentionalCloseRef.current = false;
+    clearReconnect();
+
     const ws = new WebSocket(`${deriveWsUrl()}?token=${encodeURIComponent(authToken)}`);
     ws.onopen = () => {
-      if (!mountedRef.current) { ws.close(); return; }
+      if (!mountedRef.current) {
+        intentionalCloseRef.current = true;
+        ws.close();
+        return;
+      }
+      attemptRef.current = 0;
       setConnected(true);
       ws.send(JSON.stringify({ type: 'staff.subscribe', channelId }));
     };
     ws.onmessage = (event) => {
-      try { onEvent(JSON.parse(event.data)); } catch { /* ignore */ }
+      try {
+        onEvent(JSON.parse(event.data));
+      } catch {
+        /* ignore */
+      }
     };
     ws.onclose = () => {
       if (!mountedRef.current) return;
       setConnected(false);
       wsRef.current = null;
-      reconnectRef.current = setTimeout(connect, RECONNECT_DELAY);
+      if (intentionalCloseRef.current) return;
+      const delay = nextDelay(attemptRef.current);
+      attemptRef.current += 1;
+      reconnectRef.current = setTimeout(connect, delay);
     };
     wsRef.current = ws;
-  }, [authToken, channelId, onEvent]);
+  }, [authToken, channelId, onEvent, clearReconnect]);
 
   useEffect(() => {
     mountedRef.current = true;
+    intentionalCloseRef.current = false;
+    attemptRef.current = 0;
     connect();
     return () => {
       mountedRef.current = false;
-      if (reconnectRef.current) clearTimeout(reconnectRef.current);
+      intentionalCloseRef.current = true;
+      clearReconnect();
       if (wsRef.current?.readyState === WebSocket.OPEN && channelId) {
-        wsRef.current.send(JSON.stringify({ type: 'staff.unsubscribe', channelId }));
+        try {
+          wsRef.current.send(JSON.stringify({ type: 'staff.unsubscribe', channelId }));
+        } catch {
+          /* ignore */
+        }
       }
       wsRef.current?.close();
       wsRef.current = null;
     };
-  }, [connect, channelId]);
+  }, [connect, channelId, clearReconnect]);
 
   useEffect(() => {
     if (connected || !channelId) {
@@ -73,18 +110,26 @@ export function useStaffChat({ channelId, authToken, onEvent, onPoll }: Options)
       return;
     }
     pollRef.current = setInterval(() => onPoll?.(), POLL_MS);
-    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
   }, [connected, channelId, onPoll]);
 
-  const sendTyping = useCallback((typing: boolean) => {
-    if (!channelId || wsRef.current?.readyState !== WebSocket.OPEN) return;
-    wsRef.current.send(JSON.stringify({ type: typing ? 'typing:start' : 'typing:stop', channelId }));
-  }, [channelId]);
+  const sendTyping = useCallback(
+    (typing: boolean) => {
+      if (!channelId || wsRef.current?.readyState !== WebSocket.OPEN) return;
+      wsRef.current.send(JSON.stringify({ type: typing ? 'typing:start' : 'typing:stop', channelId }));
+    },
+    [channelId],
+  );
 
-  const sendRead = useCallback((messageId: string) => {
-    if (!channelId || wsRef.current?.readyState !== WebSocket.OPEN) return;
-    wsRef.current.send(JSON.stringify({ type: 'message:read', channelId, messageId }));
-  }, [channelId]);
+  const sendRead = useCallback(
+    (messageId: string) => {
+      if (!channelId || wsRef.current?.readyState !== WebSocket.OPEN) return;
+      wsRef.current.send(JSON.stringify({ type: 'message:read', channelId, messageId }));
+    },
+    [channelId],
+  );
 
   return { connected, sendTyping, sendRead };
 }

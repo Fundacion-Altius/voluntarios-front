@@ -90,7 +90,7 @@ export function ChannelThread({ basePath }: { basePath: string }) {
     }
   }, [currentUserId]);
 
-  const { sendTyping, sendRead } = useStaffChat({
+  const { connected, sendTyping, sendRead } = useStaffChat({
     channelId: id,
     authToken,
     onEvent,
@@ -137,7 +137,15 @@ export function ChannelThread({ basePath }: { basePath: string }) {
           <Link href={basePath} className="mb-1 inline-flex items-center gap-1 text-xs text-muted-foreground md:hidden">
             <ArrowLeft className="size-3" /> {t('conversacion')}
           </Link>
-          <h2 className="font-heading font-semibold">{channel.name}</h2>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="font-heading font-semibold">{channel.name}</h2>
+            <span
+              className={`text-[10px] uppercase tracking-wide ${connected ? 'text-emerald-600' : 'text-amber-600'}`}
+              title={connected ? t('tiempoReal') : t('sincronizando')}
+            >
+              {connected ? t('tiempoReal') : t('sincronizando')}
+            </span>
+          </div>
           <p className="text-xs text-muted-foreground">{channel.type === 'direct' ? t('directo') : t('grupal')}</p>
         </div>
         <div ref={scrollRef} className="flex flex-1 flex-col gap-3 overflow-y-auto p-4">

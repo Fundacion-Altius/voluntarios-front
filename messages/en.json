@@ -371,7 +371,8 @@
       "mas": "More",
       "integraciones": "Integrations",
       "federacion": "Federation",
-      "bienestar": "Wellbeing"
+      "bienestar": "Wellbeing",
+      "mcp": "MCP / Agents"
     },
     "contracts": {
       "noDisponibles": "No contracts available.",
@@ -1071,6 +1072,18 @@
       "colActions": "Actions",
       "colMood": "Mood",
       "colNote": "Note"
+    },
+    "mcp": {
+      "title": "MCP / Agents",
+      "subtitle": "Inventory of MCP tools available to AI agents (KL-E-006).",
+      "loading": "Loading…",
+      "error": "Could not load the MCP inventory.",
+      "toolsTitle": "Tools",
+      "empty": "No tools registered.",
+      "colName": "Name",
+      "colEffect": "Effect",
+      "colRoles": "Roles",
+      "colDescription": "Description"
     }
   },
   "portal": {
@@ -1142,7 +1155,9 @@
       "directo": "Direct",
       "grupal": "Group",
       "escribiendo": "Someone is typing…",
-      "miembros": "Members"
+      "miembros": "Members",
+      "tiempoReal": "Live",
+      "sincronizando": "Syncing…"
     },
     "actividades": {
       "titulo": "Activities",
