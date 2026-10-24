@@ -374,7 +374,8 @@
       "bienestar": "Wellbeing",
       "beneficiarios": "Beneficiaries",
       "redesSociales": "Social media",
-      "campanas": "Campaigns"
+      "campanas": "Campaigns",
+      "metricasComunidad": "Community metrics"
     },
     "contracts": {
       "noDisponibles": "No contracts available.",
@@ -1156,6 +1157,34 @@
       "channel": {
         "email": "Email",
         "in_app": "In-app"
+      }
+    },
+    "metricasComunidad": {
+      "title": "Community metrics",
+      "subtitle": "Engagement, volunteer retention, and churn detection.",
+      "loading": "Loading…",
+      "error": "Could not load community metrics.",
+      "runDetection": "Run detection",
+      "kpisTitle": "Community health",
+      "activeVolunteers": "Active volunteers",
+      "activeDonors": "Active donors",
+      "engagementScore": "Engagement",
+      "retentionRate": "Retention",
+      "atRisk": "At risk",
+      "churnTitle": "Churn risk",
+      "empty": "No risks detected.",
+      "colName": "Name",
+      "colRole": "Role",
+      "colRisk": "Risk",
+      "colDays": "Days inactive",
+      "role": {
+        "volunteer": "Volunteer",
+        "donor": "Donor"
+      },
+      "risk": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
       }
     }
   },

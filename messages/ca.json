@@ -374,7 +374,8 @@
       "bienestar": "Benestar",
       "beneficiarios": "Beneficiaris",
       "redesSociales": "Xarxes socials",
-      "campanas": "Campanyes"
+      "campanas": "Campanyes",
+      "metricasComunidad": "Mètriques comunitat"
     },
     "contracts": {
       "noDisponibles": "No hi ha contractes disponibles.",
@@ -1156,6 +1157,34 @@
       "channel": {
         "email": "Email",
         "in_app": "In-app"
+      }
+    },
+    "metricasComunidad": {
+      "title": "Mètriques de comunitat",
+      "subtitle": "Engagement, retenció de voluntaris i detecció de churn.",
+      "loading": "Carregant…",
+      "error": "No s'han pogut carregar les mètriques.",
+      "runDetection": "Executar detecció",
+      "kpisTitle": "Salut de la comunitat",
+      "activeVolunteers": "Voluntaris actius",
+      "activeDonors": "Donants actius",
+      "engagementScore": "Engagement",
+      "retentionRate": "Retenció",
+      "atRisk": "En risc",
+      "churnTitle": "Risc de churn",
+      "empty": "No hi ha riscos detectats.",
+      "colName": "Nom",
+      "colRole": "Rol",
+      "colRisk": "Risc",
+      "colDays": "Dies inactiu",
+      "role": {
+        "volunteer": "Voluntari",
+        "donor": "Donant"
+      },
+      "risk": {
+        "low": "Baix",
+        "medium": "Mitjà",
+        "high": "Alt"
       }
     }
   },
