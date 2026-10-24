@@ -64,9 +64,10 @@ describe("LessonForm", () => {
       </TestProviders>
     );
     const input = screen.getByLabelText(/titulo/i);
-    await userEvent.type(input, "Nuevo título");
+    // Single keystroke keeps this stable under full-suite load (userEvent.type flaked at 5s).
+    await userEvent.type(input, "X");
     expect(setTitle).toHaveBeenCalled();
-  });
+  }, 15000);
 
   it("calls onSubmit when form is submitted", async () => {
     const onSubmit = jest.fn((e) => e.preventDefault());

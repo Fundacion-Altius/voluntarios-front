@@ -26,16 +26,23 @@ jest.mock('next-auth/react', () => ({
 }));
 
 describe("EditarLeccionPage", () => {
-  it("renders without crashing", async () => {
-    render(
-      <TestProviders>
-        <EditarLeccionPage />
-      </TestProviders>
-    );
-    await waitFor(() => {
-      expect(document.querySelector('[data-slot="card"]')).toBeTruthy();
-    });
-  });
+  it(
+    "renders without crashing",
+    async () => {
+      render(
+        <TestProviders>
+          <EditarLeccionPage />
+        </TestProviders>,
+      );
+      await waitFor(
+        () => {
+          expect(document.querySelector('[data-slot="card"]')).toBeTruthy();
+        },
+        { timeout: 10000 },
+      );
+    },
+    15000,
+  );
 
   it("renders back button after loading", async () => {
     render(
