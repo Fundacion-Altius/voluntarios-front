@@ -24,7 +24,16 @@ const StepThree: React.FC<StepThreeProps> = ({
   const t = useTranslations("wizard.stepThree");
   const tc = useTranslations("wizard.common");
 
+  const allConsentsAccepted =
+    Boolean(contractData.derechoDatos) &&
+    Boolean(contractData.derechoConfidencialidad) &&
+    Boolean(contractData.derechoImagen);
+
   const handleClick = async () => {
+    if (!allConsentsAccepted) {
+      alert(t("errorConsentimiento") || "Debes aceptar todos los consentimientos obligatorios para enviar el contrato.");
+      return;
+    }
     try {
       await handleSubmit();
     } catch (error) {
@@ -104,12 +113,15 @@ const StepThree: React.FC<StepThreeProps> = ({
             {t("aceptoImgPrefix")}{" "}
             <Link href="/imagen" target="_blank">
               {t("cesionImagen")}
-            </Link>
+            </Link>{" "}
+            <span style={{ color: "red" }}>*</span>
           </Label>
         </div>
         <div className="buttons">
           <Button variant="outline" onClick={prevStep}>{"<"} {tc("volver")}</Button>
-          <Button onClick={handleClick} type="button">{t("enviarContrato")}</Button>
+          <Button onClick={handleClick} type="button" disabled={!allConsentsAccepted}>
+            {t("enviarContrato")}
+          </Button>
         </div>
       </CardContent>
     </Card>
