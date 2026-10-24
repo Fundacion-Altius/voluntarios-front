@@ -1124,7 +1124,9 @@
       "directo": "Direct",
       "grupal": "Group",
       "escribiendo": "Someone is typing…",
-      "miembros": "Members"
+      "miembros": "Members",
+      "tiempoReal": "Live",
+      "sincronizando": "Syncing…"
     },
     "actividades": {
       "titulo": "Activities",

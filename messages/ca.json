@@ -1124,7 +1124,9 @@
       "directo": "Directe",
       "grupal": "Grupal",
       "escribiendo": "Algú està escrivint…",
-      "miembros": "Membres"
+      "miembros": "Membres",
+      "tiempoReal": "En directe",
+      "sincronizando": "Sincronitzant…"
     },
     "actividades": {
       "titulo": "Activitats",
