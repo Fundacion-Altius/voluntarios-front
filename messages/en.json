@@ -372,7 +372,8 @@
       "integraciones": "Integrations",
       "federacion": "Federation",
       "bienestar": "Wellbeing",
-      "beneficiarios": "Beneficiaries"
+      "beneficiarios": "Beneficiaries",
+      "redesSociales": "Social media"
     },
     "contracts": {
       "noDisponibles": "No contracts available.",
@@ -1096,6 +1097,36 @@
       "colBeneficiary": "Beneficiary",
       "colStatus": "Status",
       "colActions": "Actions"
+    },
+    "redesSociales": {
+      "title": "Social media",
+      "subtitle": "Publish, schedule, and analyze posts on LinkedIn, X, Instagram, and Facebook.",
+      "loading": "Loading…",
+      "error": "Could not load social media.",
+      "metricsTitle": "Total engagement",
+      "likes": "Likes",
+      "shares": "Shares",
+      "comments": "Comments",
+      "createTitle": "New post",
+      "bodyPlaceholder": "Post text",
+      "scheduleLabel": "Schedule for",
+      "publishNow": "Publish now",
+      "schedule": "Schedule",
+      "listTitle": "Posts",
+      "empty": "No posts yet.",
+      "colPlatform": "Platform",
+      "colBody": "Content",
+      "colStatus": "Status",
+      "colEngagement": "Likes/Shares/Comments",
+      "colActions": "Actions",
+      "publish": "Publish",
+      "refreshEngagement": "Refresh metrics",
+      "platform": {
+        "linkedin": "LinkedIn",
+        "twitter": "Twitter/X",
+        "instagram": "Instagram",
+        "facebook": "Facebook"
+      }
     }
   },
   "portal": {

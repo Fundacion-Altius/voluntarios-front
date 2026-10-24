@@ -372,7 +372,8 @@
       "integraciones": "Integracions",
       "federacion": "Federació",
       "bienestar": "Benestar",
-      "beneficiarios": "Beneficiaris"
+      "beneficiarios": "Beneficiaris",
+      "redesSociales": "Xarxes socials"
     },
     "contracts": {
       "noDisponibles": "No hi ha contractes disponibles.",
@@ -1096,6 +1097,36 @@
       "colBeneficiary": "Beneficiari",
       "colStatus": "Estat",
       "colActions": "Accions"
+    },
+    "redesSociales": {
+      "title": "Xarxes socials",
+      "subtitle": "Publica, programa i analitza posts a LinkedIn, X, Instagram i Facebook.",
+      "loading": "Carregant…",
+      "error": "No s'han pogut carregar les xarxes socials.",
+      "metricsTitle": "Engagement total",
+      "likes": "M'agrada",
+      "shares": "Compartits",
+      "comments": "Comentaris",
+      "createTitle": "Nou post",
+      "bodyPlaceholder": "Text del post",
+      "scheduleLabel": "Programar per a",
+      "publishNow": "Publicar ara",
+      "schedule": "Programar",
+      "listTitle": "Posts",
+      "empty": "No hi ha posts.",
+      "colPlatform": "Plataforma",
+      "colBody": "Contingut",
+      "colStatus": "Estat",
+      "colEngagement": "Likes/Shares/Comments",
+      "colActions": "Accions",
+      "publish": "Publicar",
+      "refreshEngagement": "Actualitzar mètriques",
+      "platform": {
+        "linkedin": "LinkedIn",
+        "twitter": "Twitter/X",
+        "instagram": "Instagram",
+        "facebook": "Facebook"
+      }
     }
   },
   "portal": {
