@@ -372,7 +372,8 @@
       "integraciones": "Integraciones",
       "federacion": "Federación",
       "bienestar": "Bienestar",
-      "beneficiarios": "Beneficiarios"
+      "beneficiarios": "Beneficiarios",
+      "redesSociales": "Redes sociales"
     },
     "contracts": {
       "noDisponibles": "No hay contratos disponibles.",
@@ -1096,6 +1097,36 @@
       "colBeneficiary": "Beneficiario",
       "colStatus": "Estado",
       "colActions": "Acciones"
+    },
+    "redesSociales": {
+      "title": "Redes sociales",
+      "subtitle": "Publica, programa y analiza posts en LinkedIn, X, Instagram y Facebook.",
+      "loading": "Cargando…",
+      "error": "No se pudo cargar redes sociales.",
+      "metricsTitle": "Engagement total",
+      "likes": "Me gusta",
+      "shares": "Compartidos",
+      "comments": "Comentarios",
+      "createTitle": "Nuevo post",
+      "bodyPlaceholder": "Texto del post",
+      "scheduleLabel": "Programar para",
+      "publishNow": "Publicar ahora",
+      "schedule": "Programar",
+      "listTitle": "Posts",
+      "empty": "No hay posts.",
+      "colPlatform": "Plataforma",
+      "colBody": "Contenido",
+      "colStatus": "Estado",
+      "colEngagement": "Likes/Shares/Comments",
+      "colActions": "Acciones",
+      "publish": "Publicar",
+      "refreshEngagement": "Actualizar métricas",
+      "platform": {
+        "linkedin": "LinkedIn",
+        "twitter": "Twitter/X",
+        "instagram": "Instagram",
+        "facebook": "Facebook"
+      }
     }
   },
   "portal": {
