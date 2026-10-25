@@ -236,8 +236,8 @@ export default function JuguetesPage() {
   if (api.status && !api.status.enabled) return <p data-testid="juguetes-denied">{t('apagado')}</p>;
 
   return (
-    <div className="flex flex-col gap-4 p-4" data-testid="juguetes-console">
-      <h1 className="text-2xl font-bold">{t('titulo')}</h1>
+    <div className="mx-auto flex w-full max-w-[1160px] flex-col gap-4 px-4 py-6 sm:px-6" data-testid="juguetes-console">
+      <h1 className="max-w-[65ch] text-2xl font-bold">{t('titulo')}</h1>
       <Input
         data-testid="juguetes-search"
         value={query}
