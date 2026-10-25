@@ -1,5 +1,10 @@
 {
   "juguetes": {
+    "paginacion": "Paginación del catálogo",
+    "anterior": "Anterior",
+    "siguiente": "Siguiente",
+    "paginaN": "Página {n}",
+    "paginaDe": "Página {n} de {total}",
     "catalogo": "Catálogo de juguetes",
     "cargando": "Cargando juguetes…",
     "vacio": "Ahora mismo no hay juguetes disponibles. Volved a mirar pronto.",

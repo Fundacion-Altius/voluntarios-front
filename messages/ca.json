@@ -1,5 +1,10 @@
 {
   "juguetes": {
+    "paginacion": "Paginació del catàleg",
+    "anterior": "Anterior",
+    "siguiente": "Següent",
+    "paginaN": "Pàgina {n}",
+    "paginaDe": "Pàgina {n} de {total}",
     "catalogo": "Catàleg de joguines",
     "cargando": "Carregant joguines…",
     "vacio": "Ara mateix no hi ha joguines disponibles. Torneu-hi a mirar aviat.",

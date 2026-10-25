@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -130,6 +130,34 @@ function ToyCard({ item, qty, inCart, t, setPick, addLine, removeLine, onZoom }:
 }
 
 const XMAS_COUNT = 10;
+const PAGE_SIZE = 12;
+
+function Pager({ page, pages, onGo, t }: { page: number; pages: number; onGo: (p: number) => void; t: (k: string, v?: Record<string, number>) => string }) {
+  if (pages < 2) return null;
+  return (
+    <nav aria-label={t('paginacion')} className="jug-pager" data-testid="juguetes-pager">
+      <button type="button" className="jug-page" disabled={page <= 1} onClick={() => onGo(page - 1)} data-testid="juguetes-page-prev">
+        ← <span className="max-sm:sr-only">{t('anterior')}</span>
+      </button>
+      {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
+        <button
+          key={n}
+          type="button"
+          className="jug-page"
+          aria-current={n === page ? 'page' : undefined}
+          aria-label={t('paginaN', { n })}
+          onClick={() => onGo(n)}
+          data-testid={`juguetes-page-${n}`}
+        >
+          {n}
+        </button>
+      ))}
+      <button type="button" className="jug-page" disabled={page >= pages} onClick={() => onGo(page + 1)} data-testid="juguetes-page-next">
+        <span className="max-sm:sr-only">{t('siguiente')}</span> →
+      </button>
+    </nav>
+  );
+}
 
 /** One of ten holiday messages, picked on the client after mount so SSR and hydration match. */
 function ChristmasFooter({ t }: { t: (k: string) => string }) {
@@ -187,6 +215,8 @@ export default function JuguetesPage() {
     setError(String(e ?? ''));
     setOut(`ERROR: ${e ?? ''}`);
   };
+  const [page, setPage] = useState(1);
+  const listTop = useRef<HTMLElement>(null);
   const cartCount = lines.reduce((n, l) => n + l.qty, 0);
 
   const browse = async (override?: string) => {
@@ -271,6 +301,18 @@ export default function JuguetesPage() {
             (item.title ?? item.article ?? '').toLowerCase().includes(debouncedQuery) || (item.description ?? '').toLowerCase().includes(debouncedQuery),
         );
 
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedQuery, ageFilter]);
+  const pages = Math.max(1, Math.ceil(visibleCatalog.length / PAGE_SIZE));
+  const curPage = Math.min(page, pages);
+  const pageItems = visibleCatalog.slice((curPage - 1) * PAGE_SIZE, curPage * PAGE_SIZE);
+  const goPage = (n: number) => {
+    setPage(n);
+    listTop.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+  const pt = (k: string, v?: Record<string, number>) => t(k, v);
+
   const agesPresent: string[] = [];
   catalog.forEach((item) => {
     const band = String(item.ageBand ?? '');
@@ -302,7 +344,7 @@ export default function JuguetesPage() {
         </div>
       </header>
       <main className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]" data-testid="juguetes-main">
-        <section aria-labelledby="juguetes-catalog-h" className="flex min-w-0 flex-col gap-4">
+        <section ref={listTop} aria-labelledby="juguetes-catalog-h" className="flex min-w-0 scroll-mt-4 flex-col gap-4">
           <h2 id="juguetes-catalog-h" className="sr-only">{t('catalogo')}</h2>
           <div className="jug-toolbar" data-testid="juguetes-toolbar">
             <label className="sr-only" htmlFor="juguetes-search">{t('buscar')}</label>
@@ -377,14 +419,14 @@ export default function JuguetesPage() {
           )}
           {visibleCatalog.length > 0 && ageFilter !== null && (
             <div data-testid="juguetes-grid" className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-              {visibleCatalog.map((item: any) => (
+              {pageItems.map((item: any) => (
                 <ToyCard key={item.id} {...cardProps(item)} />
               ))}
             </div>
           )}
           {visibleCatalog.length > 0 && ageFilter === null && (
             <div data-testid="juguetes-clusters" className="flex flex-col gap-4">
-              {clusterByAge(visibleCatalog).map((cluster) => (
+              {clusterByAge(pageItems).map((cluster) => (
                 <section key={cluster.band} data-testid={`juguetes-cluster-${cluster.band}`} aria-labelledby={`band-${cluster.band}`}>
                   <h3 id={`band-${cluster.band}`} className="jug-band mb-3 mt-4">
                     <Star />
@@ -399,6 +441,12 @@ export default function JuguetesPage() {
               ))}
             </div>
           )}
+          {visibleCatalog.length > 0 && (
+            <p className="text-center text-sm text-muted-foreground" data-testid="juguetes-page-status" aria-live="polite">
+              {t('paginaDe', { n: curPage, total: pages })}
+            </p>
+          )}
+          <Pager page={curPage} pages={pages} onGo={goPage} t={pt} />
         </section>
 
         <aside id="cesta" aria-labelledby="juguetes-cesta-h" className="jug-basket" data-testid="juguetes-checkout-card">

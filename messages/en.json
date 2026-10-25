@@ -1,5 +1,10 @@
 {
   "juguetes": {
+    "paginacion": "Catalogue pages",
+    "anterior": "Previous",
+    "siguiente": "Next",
+    "paginaN": "Page {n}",
+    "paginaDe": "Page {n} of {total}",
     "catalogo": "Toy catalogue",
     "cargando": "Loading toys…",
     "vacio": "There are no toys available right now. Please check back soon.",

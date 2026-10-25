@@ -215,3 +215,24 @@ describe('ChristmasFooter', () => {
     expect(p.textContent?.length).toBeGreaterThan(20);
   });
 });
+
+describe('Pagination', () => {
+  it('shows 12 per page and resets to page 1 on search', async () => {
+    Element.prototype.scrollIntoView = jest.fn();
+    const items = Array.from({ length: 30 }, (_, i) => ({ id: `p${i}`, title: `Toy ${i}`, description: 'd', ageBand: 'y5_7', quantity: 1, pictures: [] }));
+    setupFetch((url) => (url.endsWith('/status') ? { flag: 'toy_handout', enabled: true } : url.includes('/items') ? items : []));
+    render(
+      <TestProviders>
+        <JuguetesPage />
+      </TestProviders>,
+    );
+    await waitFor(() => expect(screen.getByTestId('juguetes-pager')).toBeInTheDocument());
+    expect(screen.getAllByTestId(/^juguetes-card-/)).toHaveLength(12);
+    expect(screen.getByTestId('juguetes-page-1')).toHaveAttribute('aria-current', 'page');
+    await userEvent.click(screen.getByTestId('juguetes-page-3'));
+    expect(screen.getAllByTestId(/^juguetes-card-/)).toHaveLength(6);
+    expect(screen.getByTestId('juguetes-page-status')).toHaveTextContent('Página 3 de 3');
+    await userEvent.type(screen.getByTestId('juguetes-search'), 'Toy');
+    await waitFor(() => expect(screen.getByTestId('juguetes-page-1')).toHaveAttribute('aria-current', 'page'));
+  });
+});
