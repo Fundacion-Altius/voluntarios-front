@@ -96,9 +96,9 @@ test.describe('December toys handout (browser)', () => {
     await expect(page.getByTestId('juguetes-clusters')).not.toContainText('Xilófono');
     await page.getByTestId('juguetes-search').fill('');
     await expect(page.getByTestId('juguetes-clusters')).toContainText('Xilófono');
-    await page.getByTestId('juguetes-agefilter').selectOption('y5_7');
+    await page.getByTestId('juguetes-age-y5_7').click();
     await expect(page.getByTestId('juguetes-grid')).toBeVisible();
-    await page.getByTestId('juguetes-agefilter').selectOption('');
+    await page.getByTestId('juguetes-age-all').click();
     await expect(page.getByTestId('juguetes-clusters')).toBeVisible();
     await expect(page.getByText(`Para niños de 5 años ${tag}`).first()).toBeVisible();
     await page.locator('[data-testid^="juguetes-zoom-"]').first().click();

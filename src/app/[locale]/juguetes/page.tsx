@@ -52,7 +52,7 @@ function ToyCard({ item, qty, inCart, t, setPick, addLine, removeLine, onZoom }:
 }) {
   const shown = item.cover ?? item.pictures?.[0] ?? null;
   return (
-    <Card data-testid={`juguetes-card-${item.id}`}>
+    <Card data-testid={`juguetes-card-${item.id}`} className="flex flex-col overflow-hidden">
       {shown ? (
         <button
           type="button"
@@ -88,34 +88,38 @@ function ToyCard({ item, qty, inCart, t, setPick, addLine, removeLine, onZoom }:
                       </p>
                     )}
         <p className="text-sm text-muted-foreground">{t('edadEtiqueta')}: {t(`bandas.${item.ageBand}`)} · {t('quedan')}: {item.quantity}</p>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-2">
             <Button
               data-testid={`juguetes-minus-${item.id}`}
               disabled={qty <= 0}
               onClick={() => setPick(item.id, Math.max(0, qty - 1))}
-              className="h-11 w-11"
+              variant="outline"
+              aria-label={t('menos')}
+              className="h-11 w-11 text-lg"
             >
               −
             </Button>
-            <span data-testid={`juguetes-qty-${item.id}`} className="min-w-6 text-center">{qty}</span>
+            <span data-testid={`juguetes-qty-${item.id}`} className="min-w-6 text-center font-semibold tabular-nums" aria-live="polite">{qty}</span>
             <Button
               data-testid={`juguetes-plus-${item.id}`}
               disabled={qty >= item.quantity}
               onClick={() => setPick(item.id, Math.min(item.quantity, qty + 1))}
-              className="h-11 w-11"
+              variant="outline"
+              aria-label={t('mas')}
+              className="h-11 w-11 text-lg"
             >
               +
             </Button>
           </div>
-          <Button data-testid={`juguetes-add-${item.id}`} disabled={qty <= 0} onClick={() => addLine(item.id)} className="min-h-[44px] flex-1">
+          <Button data-testid={`juguetes-add-${item.id}`} disabled={qty <= 0} onClick={() => addLine(item.id)} className="min-h-11 w-full">
             {t('anadir')}
           </Button>
         </div>
         {inCart > 0 && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between gap-2 rounded-md bg-[var(--gold-soft)] px-2 text-sm">
             <span data-testid={`juguetes-incart-${item.id}`}>{t('enCesta')}: {inCart}</span>
-            <Button data-testid={`juguetes-remove-${item.id}`} onClick={() => removeLine(item.id)}>
+            <Button variant="ghost" className="min-h-11" data-testid={`juguetes-remove-${item.id}`} onClick={() => removeLine(item.id)}>
               {t('quitar')}
             </Button>
           </div>
@@ -164,7 +168,7 @@ export default function JuguetesPage() {
   const [age, setAge] = useState('');
   const [ageFilter, setAgeFilter] = useState<string | null>(null);
   const [catalog, setCatalog] = useState<any[]>([]);
-  const [household, setHousehold] = useState(`hogar-${Date.now()}`);
+  const [household, setHousehold] = useState(() => `Familia ${String(Date.now()).slice(-4)}`);
   const [cartId, setCartId] = useState('');
   const [lines, setLines] = useState<{ toy_id: string; qty: number }[]>([]);
   const [pick, setPick] = useState<Record<string, number>>({});
@@ -177,15 +181,24 @@ export default function JuguetesPage() {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [autoLoaded, setAutoLoaded] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState('');
+  const fail = (e: unknown) => {
+    setError(String(e ?? ''));
+    setOut(`ERROR: ${e ?? ''}`);
+  };
+  const cartCount = lines.reduce((n, l) => n + l.qty, 0);
 
   const browse = async (override?: string) => {
     const trimmed = (override ?? age).trim();
     const filter = trimmed === '' ? null : trimmed;
-    if (filter !== null && !AGE_BANDS.includes(filter as (typeof AGE_BANDS)[number])) return setOut('ERROR');
+    if (filter !== null && !AGE_BANDS.includes(filter as (typeof AGE_BANDS)[number])) return fail('');
     if (override !== undefined) setAge(override);
     setAgeFilter(filter);
     const r = await api.listItems(filter ?? undefined);
-    if (!r.success) return setOut(`ERROR: ${r.error}`);
+    if (!r.success) return fail(r.error);
+    setError('');
+    setLoaded(true);
     setCatalog(r.data as any[]);
     setOut(`${(r.data as any[]).length} ${t('items')}`);
   };
@@ -196,12 +209,12 @@ export default function JuguetesPage() {
     let id = cartId;
     if (!id) {
       const c = await api.createCart(household);
-      if (!c.success) return setOut(`ERROR: ${c.error}`);
+      if (!c.success) return fail(c.error);
       id = c.data.id;
       setCartId(id);
     }
     const r = await api.addLine(id, toyId, qty);
-    if (!r.success) return setOut(`ERROR: ${r.error}`);
+    if (!r.success) return fail(r.error);
     setLines(r.data.lines as { toy_id: string; qty: number }[]);
     setPick((p) => ({ ...p, [toyId]: 0 }));
     setOut(`${t('enCesta')}: ${(r.data.lines as any[]).length}`);
@@ -210,15 +223,15 @@ export default function JuguetesPage() {
   const removeLine = async (toyId: string) => {
     if (!cartId) return;
     const r = await api.removeLine(cartId, toyId);
-    if (!r.success) return setOut(`ERROR: ${r.error}`);
+    if (!r.success) return fail(r.error);
     setLines(r.data.lines as { toy_id: string; qty: number }[]);
     setOut(`${t('enCesta')}: ${(r.data.lines as any[]).length}`);
   };
 
   const checkout = async () => {
-    if (!cartId) return setOut('ERROR');
+    if (!cartId) return fail('');
     const r = await api.checkout(cartId);
-    if (!r.success) return setOut(`ERROR: ${r.error}`);
+    if (!r.success) return fail(r.error);
     setQr(r.data.qr_token);
     setQrPng(`${getApiBaseUrl()}${r.data.qr_png_url}`);
     setOut(t('qrListo'));
@@ -226,14 +239,14 @@ export default function JuguetesPage() {
 
   const loadSlots = async () => {
     const r = await api.listSlots();
-    if (!r.success) return setOut(`ERROR: ${r.error}`);
+    if (!r.success) return fail(r.error);
     setSlots(r.data as any[]);
   };
 
   const book = async () => {
-    if (!slotId) return setOut('ERROR');
+    if (!slotId) return fail('');
     const r = await api.bookSlot(slotId, household);
-    if (!r.success) return setOut(`ERROR: ${r.error}`);
+    if (!r.success) return fail(r.error);
     setOut(`${t('reservado')}: ${t('avisoCanal')}`);
   };
 
@@ -279,7 +292,7 @@ export default function JuguetesPage() {
   if (api.status && !api.status.enabled) return <p data-testid="juguetes-denied">{t('apagado')}</p>;
 
   return (
-    <div className="jug mx-auto flex w-full max-w-[1160px] flex-col gap-4 px-4 py-6 sm:px-6" data-testid="juguetes-console">
+    <div className="jug mx-auto flex w-full max-w-[1160px] flex-col gap-6 px-4 pb-24 pt-6 sm:px-6 lg:pb-6" data-testid="juguetes-console">
       <header className="jug-hero" data-testid="juguetes-hero">
         <Garland />
         <div className="relative flex flex-col gap-3">
@@ -288,27 +301,37 @@ export default function JuguetesPage() {
           <p className="jug-lead">{t('intro')}</p>
         </div>
       </header>
-      <Input
-        data-testid="juguetes-search"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder={t('buscar')}
-        className="max-w-md"
-      />
-      {agesPresent.length > 0 && (
-        <select
-          data-testid="juguetes-agefilter"
-          value={ageFilter === null ? '' : ageFilter}
-          onChange={(e) => browse(e.target.value)}
-          className="h-10 w-52 rounded-md border border-input bg-background px-3 text-sm"
-          aria-label={t('filtrarEdad')}
-        >
-          <option value="">{t('todasEdadesCorto')}</option>
-          {agesPresent.map((b) => (
-            <option key={b} value={b}>{t(`bandas.${b}`)}</option>
-          ))}
-        </select>
-      )}
+      <main className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]" data-testid="juguetes-main">
+        <section aria-labelledby="juguetes-catalog-h" className="flex min-w-0 flex-col gap-4">
+          <h2 id="juguetes-catalog-h" className="sr-only">{t('catalogo')}</h2>
+          <div className="jug-toolbar" data-testid="juguetes-toolbar">
+            <label className="sr-only" htmlFor="juguetes-search">{t('buscar')}</label>
+            <Input
+              id="juguetes-search"
+              type="search"
+              data-testid="juguetes-search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t('buscar')}
+              className="h-11 bg-card"
+            />
+            {agesPresent.length > 0 && (
+              <div role="group" aria-label={t('filtrarEdad')} className="jug-chips" data-testid="juguetes-agefilter">
+                {['', ...agesPresent].map((b) => (
+                  <button
+                    key={b || 'all'}
+                    type="button"
+                    className="jug-chip"
+                    aria-pressed={(ageFilter ?? '') === b}
+                    data-testid={`juguetes-age-${b || 'all'}`}
+                    onClick={() => browse(b)}
+                  >
+                    {b ? t(`bandas.${b}`) : t('todasEdadesCorto')}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
       {/* PARKED 2026-09-24 (Carlos): "Todo es gratis" pill removed. */}
 
@@ -331,44 +354,75 @@ export default function JuguetesPage() {
           tabIndex={-1}
         />
       </div>
-      {visibleCatalog.length > 0 && ageFilter !== null && (
-        <div data-testid="juguetes-grid" className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {visibleCatalog.map((item: any) => (
-            <ToyCard key={item.id} {...cardProps(item)} />
-          ))}
-        </div>
-      )}
-      {visibleCatalog.length > 0 && ageFilter === null && (
-        <div data-testid="juguetes-clusters" className="flex flex-col gap-4">
-          {clusterByAge(visibleCatalog).map((cluster) => (
-            <div key={cluster.band} data-testid={`juguetes-cluster-${cluster.band}`}>
-              <h2 className="jug-band mb-3 mt-4">
-                <Star />
-                {t('edadEtiqueta')}: {t(`bandas.${cluster.band}`)}
-              </h2>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                {cluster.items.map((item: any) => (
-                  <ToyCard key={item.id} {...cardProps(item)} />
-                ))}
-              </div>
+          {!loaded && !error && (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3" data-testid="juguetes-loading" aria-busy="true">
+              <p className="sr-only" role="status">{t('cargando')}</p>
+              {Array.from({ length: 6 }, (_, i) => (
+                <div key={i} className="jug-skel" aria-hidden="true">
+                  <div className="jug-skel-img" />
+                  <div className="jug-skel-line w-3/4" />
+                  <div className="jug-skel-line w-1/2" />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
+          )}
+          {loaded && visibleCatalog.length === 0 && (
+            <div className="jug-empty" data-testid="juguetes-empty">
+              <Star size={28} />
+              <p className="font-semibold">{debouncedQuery ? t('vacioBusqueda') : t('vacio')}</p>
+              {debouncedQuery && (
+                <Button variant="outline" className="min-h-11" onClick={() => setQuery('')}>{t('limpiar')}</Button>
+              )}
+            </div>
+          )}
+          {visibleCatalog.length > 0 && ageFilter !== null && (
+            <div data-testid="juguetes-grid" className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+              {visibleCatalog.map((item: any) => (
+                <ToyCard key={item.id} {...cardProps(item)} />
+              ))}
+            </div>
+          )}
+          {visibleCatalog.length > 0 && ageFilter === null && (
+            <div data-testid="juguetes-clusters" className="flex flex-col gap-4">
+              {clusterByAge(visibleCatalog).map((cluster) => (
+                <section key={cluster.band} data-testid={`juguetes-cluster-${cluster.band}`} aria-labelledby={`band-${cluster.band}`}>
+                  <h3 id={`band-${cluster.band}`} className="jug-band mb-3 mt-4">
+                    <Star />
+                    {t('edadEtiqueta')}: {t(`bandas.${cluster.band}`)}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                    {cluster.items.map((item: any) => (
+                      <ToyCard key={item.id} {...cardProps(item)} />
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          )}
+        </section>
 
-      <Card data-testid="juguetes-checkout-card">
-        <CardHeader>
-          <CardTitle>{t('cesta')}</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <Input data-testid="juguetes-household" value={household} onChange={(e) => setHousehold(e.target.value)} />
-            <Button data-testid="juguetes-checkout" onClick={checkout}>{t('comprar')}</Button>
-            <Button data-testid="juguetes-slots" onClick={loadSlots}>{t('verTurnos')}</Button>
+        <aside id="cesta" aria-labelledby="juguetes-cesta-h" className="jug-basket" data-testid="juguetes-checkout-card">
+          <h2 id="juguetes-cesta-h" className="text-xl font-semibold">{t('cesta')}</h2>
+          <p className="text-sm text-muted-foreground" data-testid="juguetes-basket-count">
+            {cartCount > 0 ? `${cartCount} ${t('articulos')}` : t('cestaVacia')}
+          </p>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="juguetes-household" className="text-sm font-medium">{t('hogarEtiqueta')}</label>
+            <Input
+              id="juguetes-household"
+              data-testid="juguetes-household"
+              value={household}
+              onChange={(e) => setHousehold(e.target.value)}
+              aria-describedby="juguetes-household-help"
+              className="h-11"
+            />
+            <p id="juguetes-household-help" className="text-xs text-muted-foreground">{t('hogarAyuda')}</p>
           </div>
+          <Button data-testid="juguetes-checkout" onClick={checkout} className="min-h-11 w-full">{t('comprar')}</Button>
+          <Button data-testid="juguetes-slots" variant="outline" onClick={loadSlots} className="min-h-11 w-full">{t('verTurnos')}</Button>
           {slots.length > 0 && (
             <Select value={slotId} onValueChange={setSlotId}>
-              <SelectTrigger data-testid="juguetes-slot" className="w-64"><SelectValue placeholder={t('turno')} /></SelectTrigger>
+              <SelectTrigger data-testid="juguetes-slot" className="h-11 w-full" aria-label={t('turno')}><SelectValue placeholder={t('turno')} /></SelectTrigger>
               <SelectContent>
                 {slots.map((s: any) => (
                   <SelectItem key={s.id} value={s.id}>{s.date} — {s.label}</SelectItem>
@@ -376,13 +430,25 @@ export default function JuguetesPage() {
               </SelectContent>
             </Select>
           )}
-          {slotId && <Button data-testid="juguetes-book" onClick={book}>{t('reservar')}</Button>}
-          {qr && <p data-testid="juguetes-qr" className="break-all">QR: {qr}</p>}
-          {qrPng && <img src={qrPng} alt="QR" className="h-44 w-44" data-testid="juguetes-qr-img" />}
-        </CardContent>
-      </Card>
+          {slotId && <Button data-testid="juguetes-book" onClick={book} className="min-h-11 w-full">{t('reservar')}</Button>}
+          {qrPng && (
+            <figure className="flex flex-col items-center gap-2 rounded-lg bg-white p-3">
+              <img src={qrPng} alt={t('qrAlt')} className="h-44 w-44" data-testid="juguetes-qr-img" />
+              <figcaption className="text-center text-sm text-[#1b1d2a]">{t('qrListo')}</figcaption>
+            </figure>
+          )}
+          {qr && <p data-testid="juguetes-qr" className="break-all text-xs text-muted-foreground">QR: {qr}</p>}
+          {error && (
+            <p role="alert" className="jug-error" data-testid="juguetes-error">{t('errorGenerico')} ({error})</p>
+          )}
+          {out && <p data-testid="juguetes-out" role="status" className="text-sm">{out}</p>}
+        </aside>
+      </main>
 
-      {out && <p data-testid="juguetes-out">{out}</p>}
+      <a href="#cesta" className="jug-bottombar lg:hidden" data-testid="juguetes-bottombar">
+        <span>{t('cesta')} · {cartCount > 0 ? `${cartCount} ${t('articulos')}` : t('cestaVacia')}</span>
+        <span className="font-semibold">{t('verCesta')} →</span>
+      </a>
 
       <ChristmasFooter t={(k) => t(k)} />
 

@@ -86,15 +86,15 @@ describe('JuguetesPage', () => {
       </TestProviders>,
     );
     await waitFor(() => expect(screen.getByTestId('juguetes-agefilter')).toBeInTheDocument());
-    expect(screen.getByTestId('juguetes-agefilter')).toHaveDisplayValue('Todas');
+    expect(screen.getByTestId('juguetes-age-all')).toHaveAttribute('aria-pressed', 'true');
 
-    await userEvent.selectOptions(screen.getByTestId('juguetes-agefilter'), 'y5_7');
+    await userEvent.click(screen.getByTestId('juguetes-age-y5_7'));
     await waitFor(() => expect(seen.some((c) => c.includes('/items?ageBand=y5_7'))).toBe(true));
     await waitFor(() => expect(screen.getByTestId('juguetes-grid')).toBeInTheDocument());
-    console.log('DBG_DISPLAY:', (screen.getByTestId('juguetes-agefilter') as HTMLSelectElement).value);
+    expect(screen.getByTestId('juguetes-age-y5_7')).toHaveAttribute('aria-pressed', 'true');
     await waitFor(() => expect(screen.queryByTestId('juguetes-card-t2')).not.toBeInTheDocument());
 
-    await userEvent.selectOptions(screen.getByTestId('juguetes-agefilter'), '');
+    await userEvent.click(screen.getByTestId('juguetes-age-all'));
     await waitFor(() => expect(screen.getByTestId('juguetes-clusters')).toBeInTheDocument());
   });
 
