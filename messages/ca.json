@@ -1192,7 +1192,7 @@
     },
     "gobernanza": {
       "title": "Governança",
-      "subtitle": "Votacions, actes i portal de transparència.",
+      "subtitle": "Votacions, actes i decisions públiques.",
       "loading": "Carregant…",
       "error": "No s'ha pogut carregar la governança.",
       "transparencyTitle": "Transparència",
@@ -1206,19 +1206,24 @@
       "createMinutes": "Crear acta",
       "colTitle": "Títol",
       "colStatus": "Estat",
-      "colTally": "Sí/No/Abs",
+      "colTally": "Sí / No / Abst.",
       "colDate": "Data",
       "colActions": "Accions",
       "yes": "Sí",
       "no": "No",
-      "abstain": "Abs",
+      "abstain": "Abstenció",
       "close": "Tancar",
       "approve": "Aprovar",
       "publish": "Publicar",
       "kind": {
-        "vote": "Vot",
+        "vote": "Votació",
         "minutes": "Acta"
-      }
+      },
+      "voteStatus": {
+        "open": "Oberta",
+        "closed": "Tancada"
+      },
+      "tally": "Sí {yes} · No {no} · Abstenció {abstain}"
     },
     "sidebar": {
       "title": "Panell de gestió",

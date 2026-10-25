@@ -1,6 +1,7 @@
 'use client';
 
 import { apiGet, apiPatch, apiPost } from '@/app/lib/csrf';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -36,6 +37,13 @@ interface TransparencyItem {
   title: string;
   summary: string;
 }
+
+const TALLY_RE = /^yes=(\d+) no=(\d+) abstain=(\d+)$/;
+
+const VOTE_STATUS_CLASS: Record<string, string> = {
+  open: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  closed: 'bg-muted text-muted-foreground',
+};
 
 export default function GobernanzaPage() {
   const t = useTranslations('admin.gobernanza');
@@ -155,6 +163,14 @@ export default function GobernanzaPage() {
     }
   };
 
+  const formatSummary = (item: TransparencyItem) => {
+    const m = item.kind === 'vote' ? TALLY_RE.exec(item.summary.trim()) : null;
+    return m ? t('tally', { yes: m[1], no: m[2], abstain: m[3] }) : item.summary;
+  };
+
+  const voteStatusLabel = (status: string) =>
+    status === 'open' || status === 'closed' ? t(`voteStatus.${status}`) : status;
+
   if (loading) {
     return <p className="text-sm text-muted-foreground">{t('loading')}</p>;
   }
@@ -179,7 +195,7 @@ export default function GobernanzaPage() {
               {transparency.map((item) => (
                 <li key={`${item.kind}-${item.id}`}>
                   <span className="font-medium">{t(`kind.${item.kind}`)}</span>: {item.title} —{' '}
-                  {item.summary}
+                  {formatSummary(item)}
                 </li>
               ))}
             </ul>
@@ -215,9 +231,13 @@ export default function GobernanzaPage() {
               {votes.map((v) => (
                 <TableRow key={v.id}>
                   <TableCell>{v.title}</TableCell>
-                  <TableCell>{v.status}</TableCell>
                   <TableCell>
-                    {v.tally.yes}/{v.tally.no}/{v.tally.abstain}
+                    <Badge className={VOTE_STATUS_CLASS[v.status] ?? 'bg-muted text-muted-foreground'}>
+                      {voteStatusLabel(v.status)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {v.tally.yes} / {v.tally.no} / {v.tally.abstain}
                   </TableCell>
                   <TableCell className="space-x-1">
                     {v.status === 'open' ? (

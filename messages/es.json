@@ -1192,7 +1192,7 @@
     },
     "gobernanza": {
       "title": "Gobernanza",
-      "subtitle": "Votaciones, actas y portal de transparencia.",
+      "subtitle": "Votaciones, actas y decisiones públicas.",
       "loading": "Cargando…",
       "error": "No se pudo cargar gobernanza.",
       "transparencyTitle": "Transparencia",
@@ -1206,19 +1206,24 @@
       "createMinutes": "Crear acta",
       "colTitle": "Título",
       "colStatus": "Estado",
-      "colTally": "Sí/No/Abs",
+      "colTally": "Sí / No / Abst.",
       "colDate": "Fecha",
       "colActions": "Acciones",
       "yes": "Sí",
       "no": "No",
-      "abstain": "Abs",
+      "abstain": "Abstención",
       "close": "Cerrar",
       "approve": "Aprobar",
       "publish": "Publicar",
       "kind": {
-        "vote": "Voto",
+        "vote": "Votación",
         "minutes": "Acta"
-      }
+      },
+      "voteStatus": {
+        "open": "Abierta",
+        "closed": "Cerrada"
+      },
+      "tally": "Sí {yes} · No {no} · Abstención {abstain}"
     },
     "sidebar": {
       "title": "Panel de gestión",

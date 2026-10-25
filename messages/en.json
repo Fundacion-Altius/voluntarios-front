@@ -1192,7 +1192,7 @@
     },
     "gobernanza": {
       "title": "Governance",
-      "subtitle": "Voting, meeting minutes, and transparency portal.",
+      "subtitle": "Voting, meeting minutes and public decisions.",
       "loading": "Loading…",
       "error": "Could not load governance.",
       "transparencyTitle": "Transparency",
@@ -1206,19 +1206,24 @@
       "createMinutes": "Create minutes",
       "colTitle": "Title",
       "colStatus": "Status",
-      "colTally": "Yes/No/Abs",
+      "colTally": "Yes / No / Abst.",
       "colDate": "Date",
       "colActions": "Actions",
       "yes": "Yes",
       "no": "No",
-      "abstain": "Abs",
+      "abstain": "Abstain",
       "close": "Close",
       "approve": "Approve",
       "publish": "Publish",
       "kind": {
         "vote": "Vote",
         "minutes": "Minutes"
-      }
+      },
+      "voteStatus": {
+        "open": "Open",
+        "closed": "Closed"
+      },
+      "tally": "Yes {yes} · No {no} · Abstain {abstain}"
     },
     "sidebar": {
       "title": "Management panel",
