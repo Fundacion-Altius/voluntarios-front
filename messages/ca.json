@@ -1708,7 +1708,7 @@
     "home": {
       "heroTitle": "La teva ONG existeix per a les persones, no per a la paperassa.",
       "heroLead": "Klaruk és el sistema operatiu de la teva entitat: voluntariat, socis, activitats, subvencions i impacte en un sol lloc. Fes-ho amb clics o demana-ho a la IA amb les teves paraules.",
-      "seePlans": "Veure plans i preus",
+      "seePlans": "Mira els plans i preus",
       "pillsLabel": "Inclòs",
       "pills": {
         "users": "Usuaris il·limitats",
@@ -1719,7 +1719,7 @@
       "shotAlt": "Tauler de Klaruk amb indicadors de voluntariat: cobertura, fiabilitat, retenció i satisfacció.",
       "painsTitle": "Et sona?",
       "pain1": "Torns en un Excel, voluntaris en tres grups de WhatsApp, socis en un altre full i la justificació de la subvenció a última hora.",
-      "pain2": "Acabes la setmana esgotada, amb la sensació que la gestió es menja el temps que volies donar a la causa.",
+      "pain2": "Acabes la setmana sense forces, amb la sensació que la gestió es menja el temps que volies donar a la causa.",
       "pain3": "Qui dedica el seu temps als altres no l'hauria de perdre en fulls de càlcul.",
       "storyTitle": "Sabem què és, perquè ho hem viscut.",
       "storyLead": "Klaruk neix d'anys treballant amb ONG i voluntariat, veient equips directius sostenir-ho tot a base de bona voluntat i hores robades.",
@@ -1727,21 +1727,21 @@
       "hoursUnit": "h/mes",
       "hoursNote": "Exemple d'una entitat petita",
       "hoursTitle": "Més hores per a la teva missió.",
-      "hoursLead": "<b>Un exemple:</b> una entitat petita pot dedicar unes 10 hores al mes a gestió. Si Klaruk us en retorna bona part, la quota es paga sola.",
+      "hoursLead": "<b>Un exemple:</b> una entitat petita pot dedicar unes 10 hores al mes a gestió. Si Klaruk te'n retorna bona part, la quota es paga sola.",
       "stepsTitle": "Començar és fàcil",
       "step1": "Comença la teva prova gratuïta de 15 dies.",
       "step2": "Porta els teus socis i voluntaris. Si vols, t'ajudem amb la posada en marxa (opcional).",
       "step3": "Organitza la teva primera activitat i deixa que Klaruk faci la resta.",
       "withTitle": "Amb Klaruk",
-      "withText": "Torns coberts, voluntaris que repeteixen, subvencions justificades a temps i una junta o un patronat amb temps per pensar.",
+      "withText": "Torns coberts, voluntaris que repeteixen, subvencions justificades a temps i una junta o patronat amb temps per pensar.",
       "withoutTitle": "Sense Klaruk",
       "withoutText": "Més Excel, més WhatsApp, més justificacions de matinada, i el risc que la gent es cremi.",
       "faqTitle": "Preguntes freqüents",
       "faqCardTitle": "Vols veure què inclou cada pla?",
       "faqCardText": "Tots els plans inclouen usuaris il·limitats i IA.",
-      "faqCardLink": "Comparar plans",
+      "faqCardLink": "Compara els plans",
       "closingTitle": "La teva causa mereix el teu temps.",
-      "closingPlans": "Veure plans",
+      "closingPlans": "Mira els plans",
       "closingMeta": "Klaruk és un producte de ShiftCitizen."
     },
     "faq": {
@@ -1786,7 +1786,7 @@
           "items": {
             "1": "Activitats i torns: organitza i cobreix torns sense cadenes de missatges.",
             "2": "Portal del voluntari: cada persona veu els seus torns i s'hi apunta o se'n dona de baixa pel seu compte.",
-            "3": "Gamificació: reconeix la constància i ajuda que tornin.",
+            "3": "Reconeixements i insígnies: reconeix la constància i ajuda que tornin.",
             "4": "Benestar: avisos quan algú fa massa hores o deixa d'aparèixer, control d'absències, una manera senzilla de passar un conflicte a qui coordina i moments per preguntar com està cada voluntari."
           }
         },
@@ -1794,7 +1794,7 @@
           "title": "Les persones que acompanyes",
           "benefit": "Saps a qui atens, en quin programa és i qui l'acompanya.",
           "items": {
-            "1": "Persones beneficiàries: la seva fitxa i els programes on participen, tractada com a informació sensible.",
+            "1": "Persones beneficiàries: la seva fitxa i els programes on participen, tot tractat com a informació sensible.",
             "2": "Mentoria: assigna una persona voluntària com a mentora a cada beneficiari.",
             "3": "Banc d'aliments: registra lots donats i rep avisos dels que estan a punt de caducar, per repartir primer els més antics."
           }
@@ -1803,7 +1803,7 @@
           "title": "Comunicació i comunitat",
           "benefit": "Parla amb la teva gent on ja és, sense saltar entre deu aplicacions.",
           "items": {
-            "1": "Missatgeria a l'instant: els missatges arriben sense recarregar, amb xat intern per a l'equip.",
+            "1": "Missatgeria instantània: els missatges arriben sense recarregar, amb xat intern per a l'equip.",
             "2": "WhatsApp i Telegram: envia i rep missatges des de Klaruk.",
             "3": "Videotrucades i directes: reunions, formacions i esdeveniments al navegador, sense Zoom ni Teams.",
             "4": "Xarxes socials: publica i programa a LinkedIn, X, Instagram i Facebook, i mira com respon la teva comunitat."
@@ -1814,7 +1814,7 @@
           "benefit": "Més suport i justificacions a temps, amb tot reunit.",
           "items": {
             "1": "Socis i exportació: la teva base de socis al dia i exportable quan la necessitis.",
-            "2": "Campanyes: crea una campanya, envia-la per correu i avís a l'app a socis, voluntariat i donants, i mira qui l'obre i la comparteix.",
+            "2": "Campanyes: crea una campanya, envia-la per correu i amb un avís a l'app a socis, voluntariat i donants, i mira qui l'obre i la comparteix.",
             "3": "Subvencions: prepara i justifica amb tot a mà, en lloc de reconstruir-ho al final."
           }
         },
@@ -1835,7 +1835,7 @@
             "1": "Taulers d'impacte: mostra'l a la teva junta o patronat, a qui finança i a la teva comunitat.",
             "2": "Salut de la comunitat: participació, quant voluntariat es queda i avisos quan voluntaris o donants s'estan allunyant.",
             "3": "Notion i Airtable: connecta i sincronitza les teves dades, o importa-les i exporta-les.",
-            "4": "El teu assistent d'IA: pot fer el mateix que tu a l'app, amb els mateixos permisos, sense cost extra. Tot el que fas amb clics també l'hi pots demanar amb les teves paraules.",
+            "4": "El teu assistent d'IA: pot fer el mateix que tu a l'app, amb els mateixos permisos, sense cost extra. Tot el que fas amb clics també li ho pots demanar amb les teves paraules.",
             "5": "Castellà i català. Les dades són vostres i les podeu exportar quan vulgueu."
           }
         }
