@@ -209,3 +209,8 @@ html:has(.klaruk){scroll-padding-top:88px;color-scheme:light}
 .klaruk .closing-dark .meta{color:#d6d7f5}
 .klaruk .closing-dark :focus-visible{outline-color:#fff}
 .klaruk .closing-dark .meta a{color:#fff}
+
+/* v2 step 7: mobile order and reduced motion */
+@media (max-width:899px){.klaruk .hero{gap:0}.klaruk .hero-text{display:contents}
+.klaruk .hero .shot{order:1;margin:4px 0 24px}.klaruk .hero .pills{order:2;margin:0}}
+@media (prefers-reduced-motion:reduce){.klaruk .feature:hover{transform:none}}
