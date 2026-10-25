@@ -8,6 +8,24 @@ test.describe('Klaruk marketing pages + contrato route', () => {
     await expect(page.getByRole('link', { name: 'Ver planes y precios' })).toHaveAttribute('href', '/es/planes');
   });
 
+  test('landing in ca and en, language switcher keeps the page', async ({ page }) => {
+    await page.goto('/en', { waitUntil: 'load' });
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Your non-profit exists for people');
+    await expect(page.locator('.klaruk')).toHaveAttribute('lang', 'en');
+    await page.getByRole('navigation', { name: 'Language' }).getByRole('link', { name: 'Català' }).click();
+    await expect(page).toHaveURL(/\/ca$/);
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('La teva ONG existeix');
+  });
+
+  test('theme switch toggles dark mode', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.goto('/es', { waitUntil: 'load' });
+    await page.getByRole('button', { name: 'Activar tema oscuro' }).click();
+    await expect(page.locator('html')).toHaveClass(/dark/);
+    await page.getByRole('button', { name: 'Activar tema claro' }).click();
+    await expect(page.locator('html')).not.toHaveClass(/dark/);
+  });
+
   test('skip link hidden until Tab', async ({ page }) => {
     await page.goto('/es', { waitUntil: 'load' });
     const skip = page.locator('a.skip');

@@ -1,71 +1,71 @@
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import Faq from "@/components/klaruk/Faq";
 import FeatureCard from "@/components/klaruk/FeatureCard";
 import ScatterToOne from "@/components/klaruk/ScatterToOne";
-import { CTA, TRIAL_URL } from "@/components/klaruk/links";
-import { features, featuresTitle, featuresSubtitle } from "@/components/klaruk/features";
+import { TRIAL_URL } from "@/components/klaruk/links";
+import type { FeatureGroup } from "@/components/klaruk/features";
 
-const faq = [
-  { q: "¿Necesitamos saber de tecnología?", a: <p>No. Si sabéis usar WhatsApp, sabéis usar Klaruk. Y la IA os ayuda con lo que necesitéis.</p> },
-  { q: "¿Pagamos por cada usuario?", a: <p>No. Los usuarios son ilimitados en todos los planes.</p> },
-  { q: "¿Qué pasa con nuestros datos?", a: <p>Son vuestros y podéis exportarlos cuando queráis.</p> },
-  { q: "¿Hay permanencia?", a: <p>No. El pago es mensual, sin permanencia, y podéis cambiar de plan cuando queráis.</p> },
-  { q: "¿Qué pasa al acabar la prueba?", a: <p>Elegís plan si queréis seguir. No se pide tarjeta para empezar y nunca cobramos sin que lo elijáis.</p> },
-  { q: "¿La IA puede hacer cosas que una persona no podría?", a: <p>No. Tiene exactamente los mismos permisos que el usuario que la usa.</p> },
-  { q: "¿Funciona en catalán?", a: <p>Sí, la interfaz está en castellano y en catalán.</p> },
-];
-
-export default function Home() {
+// All copy: messages/*.json -> klaruk.home, klaruk.features, klaruk.faq, klaruk.cta.
+export default async function Home({ params }: { params: { locale: string } }) {
+  setRequestLocale(params.locale);
+  const t = await getTranslations("klaruk");
+  const h = (k: string) => t(`home.${k}`);
+  const CTA = t("cta");
+  // Lists are stored as objects keyed "1", "2"... (next-intl message types do not allow arrays).
+  const groups = Object.values(t.raw("features.groups") as Record<string, { title: string; benefit: string; items: Record<string, string> }>)
+    .map((g): FeatureGroup => ({ ...g, items: Object.values(g.items) }));
+  const faq = Object.values(t.raw("faq") as Record<string, { q: string; a: string }>).map((x) => ({ q: x.q, a: <p>{x.a}</p> }));
   return (
     <>
       <section className="hero-band">
         <div className="hero wrap">
         <div className="hero-text">
-          <h1 className="hero-title">Tu ONG existe para las personas, no para el papeleo.</h1>
-          <p className="lead">Klaruk es el sistema operativo de tu entidad: voluntariado, socios, actividades, subvenciones e impacto en un solo sitio. Hazlo con clics o pídeselo a la IA con tus palabras.</p>
+          <h1 className="hero-title">{h("heroTitle")}</h1>
+          <p className="lead">{h("heroLead")}</p>
           <div className="actions">
             <a className="btn btn-primary" href={TRIAL_URL}>{CTA}</a>
-            <Link className="btn btn-secondary" href="/planes">Ver planes y precios</Link>
+            <Link className="btn btn-secondary" href="/planes">{h("seePlans")}</Link>
           </div>
-          <ul className="pills" aria-label="Incluido">
-            <li>Usuarios ilimitados</li><li>IA incluida</li><li>En castellano y catalán</li><li>Tus datos son tuyos</li>
+          <ul className="pills" aria-label={h("pillsLabel")}>
+            <li>{h("pills.users")}</li><li>{h("pills.ai")}</li><li>{h("pills.lang")}</li><li>{h("pills.data")}</li>
           </ul>
         </div>
         <figure className="shot">
           <div className="shot-bar" aria-hidden="true"><span /><span /><span /></div>
           {/* Demo data only (Fundación Altius demo tenant). */}
           {/* eslint-disable-next-line @next/next/no-img-element -- static marketing asset, sized below */}
-          <img src="/klaruk/panel-demo.png" width={1440} height={900} alt="Panel de Klaruk con indicadores de voluntariado: cobertura, fiabilidad, retención y satisfacción." fetchPriority="high" />
+          <img src="/klaruk/panel-demo.png" width={1440} height={900} alt={h("shotAlt")} fetchPriority="high" />
         </figure>
         </div>
       </section>
 
       <section className="band">
         <div className="wrap">
-          <h2>¿Te suena?</h2>
+          <h2>{h("painsTitle")}</h2>
           <div className="grid3 pains">
-            <div className="card">Turnos en un Excel, voluntarios en tres grupos de WhatsApp, socios en otra hoja y la justificación de la subvención a última hora.</div>
-            <div className="card">Acabas la semana agotada, con la sensación de que la gestión se come el tiempo que querías dar a la causa.</div>
-            <div className="card card-accent">Quien dedica su tiempo a los demás no debería perderlo en hojas de cálculo.</div>
+            <div className="card">{h("pain1")}</div>
+            <div className="card">{h("pain2")}</div>
+            <div className="card card-accent">{h("pain3")}</div>
           </div>
         </div>
       </section>
 
       <section className="wrap section story">
         <div className="story-text">
-          <h2>Sabemos lo que es, porque lo hemos vivido.</h2>
-          <p className="lead">Klaruk nace de años trabajando con ONG y voluntariado, viendo a equipos directivos sostener todo a base de buena voluntad y horas robadas.</p>
-          <p>Hecho por ShiftCitizen, que forma y acompaña a entidades del tercer sector en digitalización e IA.</p>
+          <h2>{h("storyTitle")}</h2>
+          <p className="lead">{h("storyLead")}</p>
+          <p>{h("storyBy")}</p>
         </div>
         <ScatterToOne />
       </section>
 
       <section className="band band-tint" id="funcionalidades" aria-labelledby="features-title">
         <div className="wrap">
-        <h2 id="features-title">{featuresTitle}</h2>
-        <p className="lead features-sub">{featuresSubtitle}</p>
+        <h2 id="features-title">{t("features.title")}</h2>
+        <p className="lead features-sub">{t("features.subtitle")}</p>
         <div className="features-grid">
-          {features.map((f, i) => <FeatureCard key={f.title} f={f} index={i} />)}
+          {groups.map((f, i) => <FeatureCard key={f.title} f={f} index={i} />)}
         </div>
         </div>
       </section>
@@ -73,40 +73,40 @@ export default function Home() {
       <section className="band">
         <div className="wrap hours">
           <div className="hours-fig" aria-hidden="true">
-            <p className="hours-num"><span>10</span> h/mes</p>
-            <p className="hours-note">Ejemplo de una entidad pequeña</p>
+            <p className="hours-num"><span>10</span> {h("hoursUnit")}</p>
+            <p className="hours-note">{h("hoursNote")}</p>
           </div>
           <div className="hours-text">
-            <h2>Más horas para tu misión.</h2>
-            <p className="lead"><strong>Un ejemplo:</strong> una entidad pequeña puede dedicar unas 10 horas al mes a gestión. Si Klaruk os devuelve buena parte de ese tiempo, la cuota se paga sola.</p>
+            <h2>{h("hoursTitle")}</h2>
+            <p className="lead">{t.rich("home.hoursLead", { b: (c) => <strong>{c}</strong> })}</p>
           </div>
         </div>
       </section>
 
       <section className="wrap section">
-        <h2>Empezar es fácil</h2>
+        <h2>{h("stepsTitle")}</h2>
         <ol className="steps">
-          <li>Empieza tu prueba gratis de 15 días.</li>
-          <li>Trae tus socios y voluntarios. Si quieres, te ayudamos con la puesta en marcha (opcional).</li>
-          <li>Organiza tu primera actividad y deja que Klaruk haga el resto.</li>
+          <li>{h("step1")}</li>
+          <li>{h("step2")}</li>
+          <li>{h("step3")}</li>
         </ol>
         <a className="btn btn-primary" href={TRIAL_URL}>{CTA}</a>
       </section>
 
       <section className="wrap section">
         <div className="grid2">
-          <div className="card compare yes"><h3>Con Klaruk</h3><p>Turnos cubiertos, voluntarios que repiten, subvenciones justificadas a tiempo y una junta o un patronato con tiempo para pensar.</p></div>
-          <div className="card compare no"><h3>Sin Klaruk</h3><p>Más Excel, más WhatsApp, más justificaciones de madrugada, y el riesgo de que la gente se queme.</p></div>
+          <div className="card compare yes"><h3>{h("withTitle")}</h3><p>{h("withText")}</p></div>
+          <div className="card compare no"><h3>{h("withoutTitle")}</h3><p>{h("withoutText")}</p></div>
         </div>
       </section>
 
       <section className="wrap section faq-split">
         <div className="faq-side">
-          <h2>Preguntas frecuentes</h2>
+          <h2>{h("faqTitle")}</h2>
           <div className="card faq-card">
-            <p><strong>¿Quieres ver qué incluye cada plan?</strong></p>
-            <p>Todos los planes incluyen usuarios ilimitados e IA.</p>
-            <Link href="/planes">Comparar planes</Link>
+            <p><strong>{h("faqCardTitle")}</strong></p>
+            <p>{h("faqCardText")}</p>
+            <Link href="/planes">{h("faqCardLink")}</Link>
           </div>
         </div>
         <Faq items={faq} />
@@ -114,12 +114,12 @@ export default function Home() {
 
       <section className="closing closing-dark">
         <div className="wrap center">
-          <h2>Tu causa merece tu tiempo.</h2>
+          <h2>{h("closingTitle")}</h2>
           <div className="actions center">
             <a className="btn btn-primary" href={TRIAL_URL}>{CTA}</a>
-            <Link className="btn btn-secondary" href="/planes">Ver planes</Link>
+            <Link className="btn btn-secondary" href="/planes">{h("closingPlans")}</Link>
           </div>
-          <p className="meta">Klaruk es un producto de ShiftCitizen.</p>
+          <p className="meta">{h("closingMeta")}</p>
         </div>
       </section>
     </>

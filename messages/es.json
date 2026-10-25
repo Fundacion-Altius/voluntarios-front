@@ -1683,5 +1683,163 @@
       "trendsTitle": "Tendencias de Impacto",
       "trendsEmpty": "No hay datos de tendencias disponibles"
     }
+  },
+  "klaruk": {
+    "meta": {
+      "title": "Klaruk · El sistema operativo de tu entidad",
+      "description": "Socios, voluntariado, actividades y subvenciones en un solo sitio. Por ShiftCitizen."
+    },
+    "chrome": {
+      "skip": "Saltar al contenido",
+      "homeLabel": "Klaruk, inicio",
+      "by": "por ShiftCitizen",
+      "byPrefix": "por",
+      "navLabel": "Principal",
+      "navHome": "Inicio",
+      "navPlans": "Planes",
+      "headerCta": "Prueba 15 días gratis",
+      "themeDark": "Activar tema oscuro",
+      "themeLight": "Activar tema claro",
+      "langLabel": "Idioma",
+      "footerTitle": "El sistema operativo de tu entidad",
+      "footerLine": "Socios, voluntariado, actividades y subvenciones en un solo sitio."
+    },
+    "cta": "Prueba Klaruk 15 días gratis",
+    "home": {
+      "heroTitle": "Tu ONG existe para las personas, no para el papeleo.",
+      "heroLead": "Klaruk es el sistema operativo de tu entidad: voluntariado, socios, actividades, subvenciones e impacto en un solo sitio. Hazlo con clics o pídeselo a la IA con tus palabras.",
+      "seePlans": "Ver planes y precios",
+      "pillsLabel": "Incluido",
+      "pills": {
+        "users": "Usuarios ilimitados",
+        "ai": "IA incluida",
+        "lang": "En castellano y catalán",
+        "data": "Tus datos son tuyos"
+      },
+      "shotAlt": "Panel de Klaruk con indicadores de voluntariado: cobertura, fiabilidad, retención y satisfacción.",
+      "painsTitle": "¿Te suena?",
+      "pain1": "Turnos en un Excel, voluntarios en tres grupos de WhatsApp, socios en otra hoja y la justificación de la subvención a última hora.",
+      "pain2": "Acabas la semana agotada, con la sensación de que la gestión se come el tiempo que querías dar a la causa.",
+      "pain3": "Quien dedica su tiempo a los demás no debería perderlo en hojas de cálculo.",
+      "storyTitle": "Sabemos lo que es, porque lo hemos vivido.",
+      "storyLead": "Klaruk nace de años trabajando con ONG y voluntariado, viendo a equipos directivos sostener todo a base de buena voluntad y horas robadas.",
+      "storyBy": "Hecho por ShiftCitizen, que forma y acompaña a entidades del tercer sector en digitalización e IA.",
+      "hoursUnit": "h/mes",
+      "hoursNote": "Ejemplo de una entidad pequeña",
+      "hoursTitle": "Más horas para tu misión.",
+      "hoursLead": "<b>Un ejemplo:</b> una entidad pequeña puede dedicar unas 10 horas al mes a gestión. Si Klaruk os devuelve buena parte de ese tiempo, la cuota se paga sola.",
+      "stepsTitle": "Empezar es fácil",
+      "step1": "Empieza tu prueba gratis de 15 días.",
+      "step2": "Trae tus socios y voluntarios. Si quieres, te ayudamos con la puesta en marcha (opcional).",
+      "step3": "Organiza tu primera actividad y deja que Klaruk haga el resto.",
+      "withTitle": "Con Klaruk",
+      "withText": "Turnos cubiertos, voluntarios que repiten, subvenciones justificadas a tiempo y una junta o un patronato con tiempo para pensar.",
+      "withoutTitle": "Sin Klaruk",
+      "withoutText": "Más Excel, más WhatsApp, más justificaciones de madrugada, y el riesgo de que la gente se queme.",
+      "faqTitle": "Preguntas frecuentes",
+      "faqCardTitle": "¿Quieres ver qué incluye cada plan?",
+      "faqCardText": "Todos los planes incluyen usuarios ilimitados e IA.",
+      "faqCardLink": "Comparar planes",
+      "closingTitle": "Tu causa merece tu tiempo.",
+      "closingPlans": "Ver planes",
+      "closingMeta": "Klaruk es un producto de ShiftCitizen."
+    },
+    "faq": {
+      "1": {
+        "q": "¿Necesitamos saber de tecnología?",
+        "a": "No. Si sabéis usar WhatsApp, sabéis usar Klaruk. Y la IA os ayuda con lo que necesitéis."
+      },
+      "2": {
+        "q": "¿Pagamos por cada usuario?",
+        "a": "No. Los usuarios son ilimitados en todos los planes."
+      },
+      "3": {
+        "q": "¿Qué pasa con nuestros datos?",
+        "a": "Son vuestros y podéis exportarlos cuando queráis."
+      },
+      "4": {
+        "q": "¿Hay permanencia?",
+        "a": "No. El pago es mensual, sin permanencia, y podéis cambiar de plan cuando queráis."
+      },
+      "5": {
+        "q": "¿Qué pasa al acabar la prueba?",
+        "a": "Elegís plan si queréis seguir. No se pide tarjeta para empezar y nunca cobramos sin que lo elijáis."
+      },
+      "6": {
+        "q": "¿La IA puede hacer cosas que una persona no podría?",
+        "a": "No. Tiene exactamente los mismos permisos que el usuario que la usa."
+      },
+      "7": {
+        "q": "¿Funciona en catalán?",
+        "a": "Sí, la interfaz está en castellano y en catalán."
+      }
+    },
+    "features": {
+      "title": "Todo lo que tu entidad hace cada semana, en un solo lugar.",
+      "subtitle": "Tú sigues al frente de tu misión. Klaruk te quita la gestión de encima.",
+      "more": "Ver {count} más",
+      "less": "Ver menos",
+      "groups": {
+        "1": {
+          "title": "Un voluntariado que se queda",
+          "benefit": "Turnos cubiertos y voluntarios que repiten, sin quemarse.",
+          "items": {
+            "1": "Actividades y turnos: organiza y cubre turnos sin cadenas de mensajes.",
+            "2": "Portal del voluntario: cada persona ve sus turnos y se apunta o se da de baja por su cuenta.",
+            "3": "Gamificación: reconoce la constancia y ayuda a que vuelvan.",
+            "4": "Bienestar: avisos cuando alguien hace demasiadas horas o deja de aparecer, control de ausencias, forma sencilla de pasar un conflicto a quien coordina y momentos para preguntar cómo está cada voluntario."
+          }
+        },
+        "2": {
+          "title": "Las personas a las que acompañas",
+          "benefit": "Sabes a quién atiendes, en qué programa está y quién le acompaña.",
+          "items": {
+            "1": "Personas beneficiarias: su ficha y los programas en los que participan, tratada como información sensible.",
+            "2": "Mentoría: asigna una persona voluntaria como mentora a cada beneficiario.",
+            "3": "Banco de alimentos: registra lotes donados y recibe avisos de los que están a punto de caducar, para repartir primero lo más antiguo."
+          }
+        },
+        "3": {
+          "title": "Comunicación y comunidad",
+          "benefit": "Habla con tu gente donde ya está, sin saltar entre diez aplicaciones.",
+          "items": {
+            "1": "Mensajería al momento: los mensajes llegan sin recargar, con chat interno para el equipo.",
+            "2": "WhatsApp y Telegram: envía y recibe mensajes desde Klaruk.",
+            "3": "Videollamadas y directos: reuniones, formaciones y eventos en el navegador, sin Zoom ni Teams.",
+            "4": "Redes sociales: publica y programa en LinkedIn, X, Instagram y Facebook, y mira cómo responde tu comunidad."
+          }
+        },
+        "4": {
+          "title": "Socios, campañas y subvenciones",
+          "benefit": "Más apoyo y justificaciones a tiempo, con todo reunido.",
+          "items": {
+            "1": "Socios y exportación: tu base de socios al día y exportable cuando la necesites.",
+            "2": "Campañas: crea una campaña, envíala por email y aviso en la app a socios, voluntariado y donantes, y mira quién la abre y la comparte.",
+            "3": "Subvenciones: prepara y justifica con todo a mano, en vez de reconstruirlo al final."
+          }
+        },
+        "5": {
+          "title": "Buen gobierno y transparencia",
+          "benefit": "Decisiones claras para tu junta o patronato, y visibles para quien confía en vosotros.",
+          "items": {
+            "1": "Votaciones sencillas para la junta, el patronato o la asamblea.",
+            "2": "Actas: redáctalas, apruébalas y publícalas.",
+            "3": "Página pública de decisiones, para rendir cuentas.",
+            "4": "Panel de federación: si sois una red de entidades, ved informes, impacto y miembros en conjunto, y cada entidad mantiene sus datos separados."
+          }
+        },
+        "6": {
+          "title": "Impacto, datos e IA",
+          "benefit": "Enseña lo que consigues y deja que la IA te quite trabajo.",
+          "items": {
+            "1": "Paneles de impacto: muéstralo a tu junta o patronato, a quien financia y a tu comunidad.",
+            "2": "Salud de la comunidad: participación, cuánto voluntariado se queda y avisos cuando voluntarios o donantes se están alejando.",
+            "3": "Notion y Airtable: conecta y sincroniza tus datos, o impórtalos y expórtalos.",
+            "4": "Tu asistente de IA: puede hacer lo mismo que tú en la app, con los mismos permisos, sin coste extra. Todo lo que haces con clics también se lo puedes pedir con tus palabras.",
+            "5": "Castellano y catalán. Los datos son vuestros y podéis exportarlos cuando queráis."
+          }
+        }
+      }
+    }
   }
 }

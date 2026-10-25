@@ -1,13 +1,15 @@
+import { getTranslations } from "next-intl/server";
 import Logo from "./Logo";
-export default function Footer() {
+export default async function Footer() {
+  const t = await getTranslations("klaruk.chrome");
   return (
     <footer className="site-footer">
       <div className="wrap footer-row">
         <div>
           <Logo height={26} />
-          <p className="brandline"><strong>El sistema operativo de tu entidad</strong><br />Socios, voluntariado, actividades y subvenciones en un solo sitio.</p>
+          <p className="brandline"><strong>{t("footerTitle")}</strong><br />{t("footerLine")}</p>
         </div>
-        <p className="by sig">por <a href="https://shiftcitizen.com">ShiftCitizen</a></p>
+        <p className="by sig">{t("byPrefix")} <a href="https://shiftcitizen.com">ShiftCitizen</a></p>
       </div>
     </footer>
   );

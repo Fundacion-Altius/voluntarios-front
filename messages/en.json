@@ -1683,5 +1683,163 @@
       "trendsTitle": "Impact trends",
       "trendsEmpty": "No trend data available"
     }
+  },
+  "klaruk": {
+    "meta": {
+      "title": "Klaruk · The operating system for your organisation",
+      "description": "Members, volunteers, activities and grants in one place. By ShiftCitizen."
+    },
+    "chrome": {
+      "skip": "Skip to content",
+      "homeLabel": "Klaruk, home",
+      "by": "by ShiftCitizen",
+      "byPrefix": "by",
+      "navLabel": "Main",
+      "navHome": "Home",
+      "navPlans": "Plans",
+      "headerCta": "Try free for 15 days",
+      "themeDark": "Switch to dark theme",
+      "themeLight": "Switch to light theme",
+      "langLabel": "Language",
+      "footerTitle": "The operating system for your organisation",
+      "footerLine": "Members, volunteers, activities and grants in one place."
+    },
+    "cta": "Try Klaruk free for 15 days",
+    "home": {
+      "heroTitle": "Your non-profit exists for people, not for paperwork.",
+      "heroLead": "Klaruk is the operating system for your organisation: volunteers, members, activities, grants and impact in one place. Do it with clicks, or ask the AI in your own words.",
+      "seePlans": "See plans and pricing",
+      "pillsLabel": "Included",
+      "pills": {
+        "users": "Unlimited users",
+        "ai": "AI included",
+        "lang": "In Spanish and Catalan",
+        "data": "Your data is yours"
+      },
+      "shotAlt": "Klaruk dashboard with volunteering indicators: coverage, reliability, retention and satisfaction.",
+      "painsTitle": "Sound familiar?",
+      "pain1": "Shifts in a spreadsheet, volunteers in three WhatsApp groups, members in another sheet, and the grant report at the last minute.",
+      "pain2": "You end the week exhausted, feeling that admin eats the time you wanted to give to the cause.",
+      "pain3": "People who give their time to others shouldn't lose it in spreadsheets.",
+      "storyTitle": "We know what it's like, because we've lived it.",
+      "storyLead": "Klaruk comes from years of working with non-profits and volunteers, watching leadership teams hold everything together with goodwill and stolen hours.",
+      "storyBy": "Made by ShiftCitizen, which trains and supports third-sector organisations in digital skills and AI.",
+      "hoursUnit": "h/month",
+      "hoursNote": "Example of a small organisation",
+      "hoursTitle": "More hours for your mission.",
+      "hoursLead": "<b>An example:</b> a small organisation may spend about 10 hours a month on admin. If Klaruk gives you back a good part of that time, the fee pays for itself.",
+      "stepsTitle": "Getting started is easy",
+      "step1": "Start your 15-day free trial.",
+      "step2": "Bring your members and volunteers. If you like, we'll help you get set up (optional).",
+      "step3": "Organise your first activity and let Klaruk do the rest.",
+      "withTitle": "With Klaruk",
+      "withText": "Shifts covered, volunteers who come back, grants reported on time, and a board with time to think.",
+      "withoutTitle": "Without Klaruk",
+      "withoutText": "More spreadsheets, more WhatsApp, more late-night grant reports, and the risk of people burning out.",
+      "faqTitle": "Frequently asked questions",
+      "faqCardTitle": "Want to see what each plan includes?",
+      "faqCardText": "Every plan includes unlimited users and AI.",
+      "faqCardLink": "Compare plans",
+      "closingTitle": "Your cause deserves your time.",
+      "closingPlans": "See plans",
+      "closingMeta": "Klaruk is a ShiftCitizen product."
+    },
+    "faq": {
+      "1": {
+        "q": "Do we need to be tech-savvy?",
+        "a": "No. If you can use WhatsApp, you can use Klaruk. And the AI helps you with whatever you need."
+      },
+      "2": {
+        "q": "Do we pay per user?",
+        "a": "No. Users are unlimited on every plan."
+      },
+      "3": {
+        "q": "What happens to our data?",
+        "a": "It's yours, and you can export it whenever you want."
+      },
+      "4": {
+        "q": "Is there a minimum term?",
+        "a": "No. Billing is monthly, with no minimum term, and you can change plan whenever you want."
+      },
+      "5": {
+        "q": "What happens when the trial ends?",
+        "a": "You choose a plan if you want to continue. No card is needed to start, and we never charge you unless you choose to."
+      },
+      "6": {
+        "q": "Can the AI do things a person couldn't?",
+        "a": "No. It has exactly the same permissions as the user who is using it."
+      },
+      "7": {
+        "q": "Does it work in Catalan?",
+        "a": "Yes, the interface is available in Spanish and Catalan."
+      }
+    },
+    "features": {
+      "title": "Everything your organisation does each week, in one place.",
+      "subtitle": "You stay in charge of your mission. Klaruk takes the admin off your plate.",
+      "more": "Show {count} more",
+      "less": "Show less",
+      "groups": {
+        "1": {
+          "title": "Volunteers who stay",
+          "benefit": "Shifts covered and volunteers who come back, without burning out.",
+          "items": {
+            "1": "Activities and shifts: organise and fill shifts without message chains.",
+            "2": "Volunteer portal: everyone sees their own shifts and signs up or drops out on their own.",
+            "3": "Gamification: recognise commitment and help people come back.",
+            "4": "Wellbeing: alerts when someone does too many hours or stops showing up, absence tracking, an easy way to pass a conflict to the coordinator, and moments to ask how each volunteer is doing."
+          }
+        },
+        "2": {
+          "title": "The people you support",
+          "benefit": "You know who you support, which programme they're in and who is with them.",
+          "items": {
+            "1": "Beneficiaries: their record and the programmes they take part in, handled as sensitive information.",
+            "2": "Mentoring: assign a volunteer as mentor to each beneficiary.",
+            "3": "Food bank: log donated batches and get alerts for those about to expire, so the oldest go out first."
+          }
+        },
+        "3": {
+          "title": "Communication and community",
+          "benefit": "Talk to your people where they already are, without jumping between ten apps.",
+          "items": {
+            "1": "Instant messaging: messages arrive without reloading, with internal chat for the team.",
+            "2": "WhatsApp and Telegram: send and receive messages from Klaruk.",
+            "3": "Video calls and live streams: meetings, training and events in the browser, no Zoom or Teams.",
+            "4": "Social media: post and schedule on LinkedIn, X, Instagram and Facebook, and see how your community responds."
+          }
+        },
+        "4": {
+          "title": "Members, campaigns and grants",
+          "benefit": "More support and on-time reporting, with everything together.",
+          "items": {
+            "1": "Members and export: your member list up to date and exportable whenever you need it.",
+            "2": "Campaigns: create a campaign, send it by email and in-app notice to members, volunteers and donors, and see who opens and shares it.",
+            "3": "Grants: prepare and report with everything at hand, instead of rebuilding it at the end."
+          }
+        },
+        "5": {
+          "title": "Good governance and transparency",
+          "benefit": "Clear decisions for your board, visible to everyone who trusts you.",
+          "items": {
+            "1": "Simple voting for the board, trustees or general assembly.",
+            "2": "Minutes: draft, approve and publish them.",
+            "3": "Public decisions page, for accountability.",
+            "4": "Federation dashboard: if you're a network of organisations, see reports, impact and members together, while each organisation keeps its data separate."
+          }
+        },
+        "6": {
+          "title": "Impact, data and AI",
+          "benefit": "Show what you achieve and let the AI take work off your hands.",
+          "items": {
+            "1": "Impact dashboards: show it to your board, your funders and your community.",
+            "2": "Community health: participation, how many volunteers stay, and alerts when volunteers or donors are drifting away.",
+            "3": "Notion and Airtable: connect and sync your data, or import and export it.",
+            "4": "Your AI assistant: it can do anything you can in the app, with the same permissions, at no extra cost. Anything you do with clicks you can also ask for in your own words.",
+            "5": "Spanish and Catalan. Your data is yours and you can export it whenever you want."
+          }
+        }
+      }
+    }
   }
 }

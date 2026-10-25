@@ -1,5 +1,6 @@
 "use client";
 import { useId, useState } from "react";
+import { useTranslations } from "next-intl";
 import type { FeatureGroup } from "./features";
 
 // Line icons per feature group, in the order of `features`.
@@ -15,6 +16,7 @@ const TONES = ["brand", "leaf", "gold"] as const;
 const VISIBLE = 2;
 
 export default function FeatureCard({ f, index }: { f: FeatureGroup; index: number }) {
+  const t = useTranslations("klaruk.features");
   const [open, setOpen] = useState(false);
   const listId = useId();
   const extra = f.items.length - VISIBLE;
@@ -30,7 +32,7 @@ export default function FeatureCard({ f, index }: { f: FeatureGroup; index: numb
       </ul>
       {extra > 0 ? (
         <button type="button" className="more" aria-expanded={open} aria-controls={listId} onClick={() => setOpen((v) => !v)}>
-          {open ? "Ver menos" : `Ver ${extra} más`}
+          {open ? t("less") : t("more", { count: extra })}
         </button>
       ) : null}
     </article>

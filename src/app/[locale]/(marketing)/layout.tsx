@@ -1,20 +1,28 @@
 import type { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import Header from "@/components/klaruk/Header";
 import Footer from "@/components/klaruk/Footer";
 import "./klaruk.css";
 
-export const metadata: Metadata = {
-  title: "Klaruk · El sistema operativo de tu entidad",
-  description: "Socios, voluntariado, actividades y subvenciones en un solo sitio. Por ShiftCitizen.",
-  icons: { icon: "/klaruk/favicon.svg", apple: "/klaruk/apple-touch-icon.png" },
-};
+export async function generateMetadata({ params }: { params: { locale: string } }): Promise<Metadata> {
+  const t = await getTranslations({ locale: params.locale, namespace: "klaruk.meta" });
+  return {
+    title: t("title"),
+    description: t("description"),
+    icons: { icon: "/klaruk/favicon.svg", apple: "/klaruk/apple-touch-icon.png" },
+  };
+}
 
-// Klaruk marketing pages (Spanish only for now). Styles are scoped under .klaruk
-// so admin, portal and the contract wizard are unaffected. Light and dark themes follow the app ThemeProvider (html.dark). Fonts come from the root layout.
-export default function MarketingLayout({ children }: { children: React.ReactNode }) {
+// Klaruk marketing pages. Copy lives in messages/*.json under "klaruk" (es is the
+// source; ca and en are drafts pending review by Adela/Carlos). /planes is still
+// Spanish-only. Styles are scoped under .klaruk; light and dark follow the app
+// ThemeProvider (html.dark). Fonts come from the root layout.
+export default async function MarketingLayout({ children, params }: { children: React.ReactNode; params: { locale: string } }) {
+  setRequestLocale(params.locale);
+  const t = await getTranslations("klaruk.chrome");
   return (
-    <div className="klaruk" lang="es">
-      <a className="skip" href="#contenido">Saltar al contenido</a>
+    <div className="klaruk" lang={params.locale}>
+      <a className="skip" href="#contenido">{t("skip")}</a>
       <Header />
       <main id="contenido" tabIndex={-1}>{children}</main>
       <Footer />
