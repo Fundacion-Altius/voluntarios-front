@@ -4,6 +4,7 @@
   --link:#3437a0;--accent:#e2bd7a;--accent-edge:#c49a4c;--accent-hover:#e9ca92;--on-accent:#1a1408;--leaf:#1b7a3d;--error:#c0157a;
   --shadow:0 1px 2px rgb(27 29 42/.06),0 8px 24px rgb(27 29 42/.05);
   --r-btn:10px;--r-card:14px;--r-feature:20px;--r-show:24px;--gap:20px;--section:80px;--band:64px;--measure:36em;
+  --gold-ink:#7d5a12;--leaf-tint:#e4f1e8;--gold-tint:#f6ecd8;
   color-scheme:light;}
 .klaruk *,.klaruk *::before,.klaruk *::after{box-sizing:border-box}
 .klaruk{scroll-padding-top:88px;-webkit-text-size-adjust:100%}
@@ -153,8 +154,8 @@ html:has(.klaruk){scroll-padding-top:88px;color-scheme:light}
 
 /* v2 step 3: feature cards */
 .klaruk .feature{--tone:var(--brand);--tone-tint:var(--brand-tint);border-top:3px solid var(--tone);transition:transform .2s ease,box-shadow .2s ease}
-.klaruk .feature.tone-leaf{--tone:var(--leaf);--tone-tint:#e4f1e8}
-.klaruk .feature.tone-gold{--tone:#7d5a12;--tone-tint:#f6ecd8}
+.klaruk .feature.tone-leaf{--tone:var(--leaf);--tone-tint:var(--leaf-tint)}
+.klaruk .feature.tone-gold{--tone:var(--gold-ink);--tone-tint:var(--gold-tint)}
 .klaruk .feature .icon{width:44px;height:44px;border-radius:12px;background:var(--tone-tint);color:var(--tone)}
 .klaruk .feature:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
 .klaruk .feature .feature-list{flex:1}
@@ -180,7 +181,7 @@ html:has(.klaruk){scroll-padding-top:88px;color-scheme:light}
 
 /* v2 step 5: kickers, number moment, connected steps */
 .klaruk main{counter-reset:kick}
-.klaruk .kicker{counter-increment:kick;margin:0 0 10px;font:500 13px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:#7d5a12}
+.klaruk .kicker{counter-increment:kick;margin:0 0 10px;font:500 13px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-ink)}
 .klaruk .kicker::before{content:counter(kick,decimal-leading-zero) " · ";color:var(--brand)}
 .klaruk .center .kicker{text-align:center}
 .klaruk .hours{display:grid;gap:8px 48px;align-items:center}
@@ -214,3 +215,4 @@ html:has(.klaruk){scroll-padding-top:88px;color-scheme:light}
 @media (max-width:899px){.klaruk .hero{gap:0}.klaruk .hero-text{display:contents}
 .klaruk .hero .shot{order:1;margin:4px 0 24px}.klaruk .hero .pills{order:2;margin:0}}
 @media (prefers-reduced-motion:reduce){.klaruk .feature:hover{transform:none}}
+.klaruk .hours-note{margin:10px 0 0;font-size:15px;font-weight:600;color:var(--dim)}

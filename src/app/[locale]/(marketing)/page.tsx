@@ -54,7 +54,7 @@ export default function Home() {
 
       <section className="wrap section story">
         <div className="story-text">
-          <p className="kicker">Quiénes somos</p>
+          <p className="kicker">Por qué nosotros</p>
           <h2>Sabemos lo que es, porque lo hemos vivido.</h2>
           <p className="lead">Klaruk nace de años trabajando con ONG y voluntariado, viendo a equipos directivos sostener todo a base de buena voluntad y horas robadas.</p>
           <p>Hecho por ShiftCitizen, que forma y acompaña a entidades del tercer sector en digitalización e IA.</p>
@@ -75,9 +75,12 @@ export default function Home() {
 
       <section className="band">
         <div className="wrap hours">
-          <p className="hours-num" aria-hidden="true"><span>10</span> h/mes</p>
+          <div className="hours-fig" aria-hidden="true">
+            <p className="hours-num"><span>10</span> h/mes</p>
+            <p className="hours-note">Ejemplo de una entidad pequeña</p>
+          </div>
           <div className="hours-text">
-            <p className="kicker">El tiempo</p>
+            <p className="kicker">Tu tiempo</p>
             <h2>Más horas para tu misión.</h2>
             <p className="lead"><strong>Un ejemplo:</strong> una entidad pequeña puede dedicar unas 10 horas al mes a gestión. Si Klaruk os devuelve buena parte de ese tiempo, la cuota se paga sola.</p>
           </div>
@@ -108,8 +111,8 @@ export default function Home() {
           <h2>Preguntas frecuentes</h2>
           <div className="card faq-card">
             <p><strong>¿Quieres ver qué incluye cada plan?</strong></p>
-            <p>Todos los planes tienen usuarios ilimitados e IA incluida.</p>
-            <Link href="/planes">Comparar los planes</Link>
+            <p>Todos los planes incluyen usuarios ilimitados e IA.</p>
+            <Link href="/planes">Comparar planes</Link>
           </div>
         </div>
         <Faq items={faq} />

@@ -30,7 +30,7 @@ export default function FeatureCard({ f, index }: { f: FeatureGroup; index: numb
       </ul>
       {extra > 0 ? (
         <button type="button" className="more" aria-expanded={open} aria-controls={listId} onClick={() => setOpen((v) => !v)}>
-          {open ? "Ver menos" : `Ver todo (${extra} más)`}
+          {open ? "Ver menos" : `Ver ${extra} más`}
         </button>
       ) : null}
     </article>
