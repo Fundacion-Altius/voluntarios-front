@@ -7,7 +7,7 @@ const TENANT = process.env.E2E_TENANT_SLUG || 'fundacionaltius';
 const tenantOrigin = `${base.protocol}//${TENANT}.localhost:${base.port || '80'}`;
 
 test.describe('tenant host never shows Klaruk marketing', () => {
-  for (const [path, locale] of [['/', 'es'], ['/es', 'es'], ['/ca', 'ca'], ['/en', 'en'], ['/es/planes', 'es']] as const) {
+  for (const [path, locale] of [['/', 'es'], ['/es', 'es'], ['/es/', 'es'], ['/ca', 'ca'], ['/en/', 'en'], ['/planes', 'es'], ['/planes/', 'es'], ['/es/planes', 'es'], ['/es/planes/', 'es'], ['/en/planes', 'en']] as const) {
     test(`${path} → /${locale}/contrato`, async ({ page }) => {
       await page.goto(`${tenantOrigin}${path}`, { waitUntil: 'load' });
       await expect(page).toHaveURL(new RegExp(`/${locale}/contrato$`));

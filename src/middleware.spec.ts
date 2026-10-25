@@ -26,6 +26,11 @@ if (typeof globalThis.Response === 'undefined') {
   } as any;
 }
 
+jest.mock('next-intl/middleware', () => ({
+  __esModule: true,
+  default: () => () => ({ status: 200, intlPassthrough: true }),
+}));
+
 describe('middleware', () => {
   it('module exports default function', async () => {
     const mod = await import('@/middleware');
@@ -146,6 +151,107 @@ describe('middleware tenant host gate', () => {
     const mod = await import('@/middleware');
     const res = await mod.default(tenantRequest('ghost.klaruk.com', '/platform/dashboard'));
     expect(res.status).toBe(200);
+    expect(spy).not.toHaveBeenCalled();
+  });
+});
+
+describe('middleware: Klaruk marketing stays off tenant hosts', () => {
+  const realFetch = global.fetch;
+  afterEach(() => {
+    global.fetch = realFetch;
+  });
+
+  function mockTenant(status: string) {
+    global.fetch = jest.fn().mockResolvedValue({
+      status: 200,
+      ok: true,
+      json: () => Promise.resolve({ tenant: { id: '1', slug: 'ngo', name: 'NGO', status } }),
+    }) as any;
+  }
+
+  function req(host: string, pathname: string, cookieLocale?: string) {
+    return {
+      headers: { get: (name: string) => (name.toLowerCase() === 'host' ? host : null) },
+      cookies: { get: (n: string) => (n === 'NEXT_LOCALE' && cookieLocale ? { value: cookieLocale } : undefined) },
+      nextUrl: { pathname, clone: () => new URL(`http://${host}${pathname}`) },
+    } as any;
+  }
+
+  // The test Response polyfill drops Headers objects, so read the redirect
+  // target from NextResponse.redirect's argument instead of the Location header.
+  let redirectSpy: jest.SpyInstance;
+  beforeEach(async () => {
+    const { NextResponse } = await import('next/server');
+    redirectSpy = jest.spyOn(NextResponse, 'redirect');
+  });
+  afterEach(() => redirectSpy.mockRestore());
+  function locationPath(res: any): string {
+    expect(res.status).toBe(307);
+    const target = redirectSpy.mock.calls.at(-1)?.[0];
+    return new URL(String(target)).pathname;
+  }
+
+  async function run(r: any) {
+    const { resetTenantHostCache } = await import('@/lib/tenantHost');
+    resetTenantHostCache();
+    const mod = await import('@/middleware');
+    return mod.default(r);
+  }
+
+  it.each([
+    ['/', 'es'],
+    ['/es', 'es'],
+    ['/es/', 'es'],
+    ['/ca', 'ca'],
+    ['/en/', 'en'],
+    ['/planes', 'es'],
+    ['/planes/', 'es'],
+    ['/es/planes/', 'es'],
+    ['/en/planes', 'en'],
+  ])('tenant host %s redirects to /%s/contrato', async (path, locale) => {
+    mockTenant('active');
+    const res: any = await run(req('ngo.klaruk.com', path));
+    expect(res.status).toBe(307);
+    expect(locationPath(res)).toBe(`/${locale}/contrato`);
+  });
+
+  it.each(['/', '/planes/'])('no-locale path %s uses the NEXT_LOCALE cookie', async (path) => {
+    mockTenant('active');
+    const res: any = await run(req('ngo.klaruk.com', path, 'ca'));
+    expect(locationPath(res)).toBe('/ca/contrato');
+  });
+
+  it('ignores an unsupported NEXT_LOCALE cookie', async () => {
+    mockTenant('active');
+    const res: any = await run(req('ngo.klaruk.com', '/', 'fr'));
+    expect(locationPath(res)).toBe('/es/contrato');
+  });
+
+  it('does not redirect other tenant pages', async () => {
+    mockTenant('active');
+    const res: any = await run(req('ngo.klaruk.com', '/es/contrato'));
+    expect(res.intlPassthrough).toBe(true);
+  });
+
+  it('still 404s unknown tenant hosts on /', async () => {
+    global.fetch = jest.fn().mockResolvedValue({ status: 404, ok: false, json: () => Promise.resolve({}) }) as any;
+    const res: any = await run(req('ghost.klaruk.com', '/'));
+    expect(res.status).toBe(404);
+  });
+
+  it('still 403s inactive tenant hosts on /', async () => {
+    mockTenant('suspended');
+    const res: any = await run(req('old.klaruk.com', '/es'));
+    expect(res.status).toBe(403);
+  });
+
+  it.each(['localhost:3000', 'klaruk.com'])('root host %s passes / and /es/planes through to the marketing pages', async (host) => {
+    const spy = jest.fn();
+    global.fetch = spy as any;
+    for (const path of ['/', '/es', '/es/planes']) {
+      const res: any = await run(req(host, path));
+      expect(res.intlPassthrough).toBe(true);
+    }
     expect(spy).not.toHaveBeenCalled();
   });
 });

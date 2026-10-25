@@ -2,7 +2,7 @@
   "name": "Klaruk",
   "short_name": "Klaruk",
   "description": "Klaruk: voluntariado, socios, actividades y subvenciones en un solo sitio.",
-  "start_url": "/",
+  "start_url": "/es/login",
   "display": "standalone",
   "background_color": "#f6f5f1",
   "theme_color": "#3d3fa8",
