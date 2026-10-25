@@ -109,7 +109,7 @@ export default function Home() {
           <div className="card faq-card">
             <p><strong>¿Quieres ver qué incluye cada plan?</strong></p>
             <p>Todos los planes tienen usuarios ilimitados e IA incluida.</p>
-            <Link href="/planes">Ver planes y precios</Link>
+            <Link href="/planes">Comparar los planes</Link>
           </div>
         </div>
         <Faq items={faq} />
