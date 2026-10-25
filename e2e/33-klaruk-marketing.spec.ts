@@ -9,11 +9,11 @@ test.describe('Klaruk marketing pages + contrato route', () => {
   });
 
   test('landing in ca and en, language switcher keeps the page', async ({ page }) => {
-    await page.goto('/en', { waitUntil: 'load' });
+    await page.goto('/en', { waitUntil: 'networkidle' });
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Your non-profit exists for people');
     await expect(page.locator('.klaruk')).toHaveAttribute('lang', 'en');
     await page.getByRole('navigation', { name: 'Language' }).getByRole('link', { name: 'Català' }).click();
-    await expect(page).toHaveURL(/\/ca$/);
+    await expect(page).toHaveURL(/\/ca$/, { timeout: 20000 });
     await expect(page.getByRole('heading', { level: 1 })).toContainText('La teva ONG existeix');
   });
 

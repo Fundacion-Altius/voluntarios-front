@@ -288,3 +288,4 @@ html.dark .klaruk{--hero-bg:#0d0e1c;--glow-a:rgb(159 162 255/.30);--glow-b:rgb(2
 .klaruk .closing-dark::after{background:linear-gradient(rgb(255 255 255/.06) 1px,transparent 1px) 0 0/52px 52px,linear-gradient(90deg,rgb(255 255 255/.06) 1px,transparent 1px) 0 0/52px 52px;
   -webkit-mask-image:radial-gradient(60% 90% at 50% 40%,#000,transparent 80%);mask-image:radial-gradient(60% 90% at 50% 40%,#000,transparent 80%)}
 .klaruk{overflow-x:clip}
+.klaruk .meta a{color:var(--txt);text-decoration:underline;font-weight:600}
