@@ -177,3 +177,18 @@ html:has(.klaruk){scroll-padding-top:88px;color-scheme:light}
 .klaruk .sc-bar{fill:var(--line)}
 .klaruk .sc-glow{fill:color-mix(in srgb,var(--brand) 12%,transparent)}
 .klaruk .sc-hub{fill:var(--brand)}
+
+/* v2 step 5: kickers, number moment, connected steps */
+.klaruk main{counter-reset:kick}
+.klaruk .kicker{counter-increment:kick;margin:0 0 10px;font:500 13px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:#7d5a12}
+.klaruk .kicker::before{content:counter(kick,decimal-leading-zero) " · ";color:var(--brand)}
+.klaruk .center .kicker{text-align:center}
+.klaruk .hours{display:grid;gap:8px 48px;align-items:center}
+@media (min-width:800px){.klaruk .hours{grid-template-columns:auto 1fr}}
+.klaruk .hours-num{margin:0;font:700 22px/1 var(--font-heading);color:var(--brand)}
+.klaruk .hours-num span{display:inline-block;font-size:clamp(88px,12vw,150px);letter-spacing:-.05em;line-height:.9;margin-right:6px}
+.klaruk .steps{gap:0}
+.klaruk .steps li{position:relative;padding-bottom:24px;align-items:center;min-height:64px}
+.klaruk .steps li:not(:last-child)::after{content:"";position:absolute;left:19px;top:44px;bottom:-4px;width:2px;background:color-mix(in srgb,var(--brand) 30%,transparent)}
+.klaruk .steps li::before{box-shadow:0 0 0 6px var(--brand-tint)}
+.klaruk .band+.band{margin-top:0}

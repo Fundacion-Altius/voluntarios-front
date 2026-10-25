@@ -42,6 +42,7 @@ export default function Home() {
 
       <section className="band">
         <div className="wrap">
+          <p className="kicker">El problema</p>
           <h2>¿Te suena?</h2>
           <div className="grid3 pains">
             <div className="card">Turnos en un Excel, voluntarios en tres grupos de WhatsApp, socios en otra hoja y la justificación de la subvención a última hora.</div>
@@ -53,6 +54,7 @@ export default function Home() {
 
       <section className="wrap section story">
         <div className="story-text">
+          <p className="kicker">Quiénes somos</p>
           <h2>Sabemos lo que es, porque lo hemos vivido.</h2>
           <p className="lead">Klaruk nace de años trabajando con ONG y voluntariado, viendo a equipos directivos sostener todo a base de buena voluntad y horas robadas.</p>
           <p>Hecho por ShiftCitizen, que forma y acompaña a entidades del tercer sector en digitalización e IA.</p>
@@ -62,6 +64,7 @@ export default function Home() {
 
       <section className="band band-tint" id="funcionalidades" aria-labelledby="features-title">
         <div className="wrap">
+        <p className="kicker">Qué hace Klaruk</p>
         <h2 id="features-title">{featuresTitle}</h2>
         <p className="lead features-sub">{featuresSubtitle}</p>
         <div className="features-grid">
@@ -71,13 +74,18 @@ export default function Home() {
       </section>
 
       <section className="band">
-        <div className="wrap narrow">
-          <h2>Más horas para tu misión.</h2>
-          <p className="lead"><strong>Un ejemplo:</strong> una entidad pequeña puede dedicar unas 10 horas al mes a gestión. Si Klaruk os devuelve buena parte de ese tiempo, la cuota se paga sola.</p>
+        <div className="wrap hours">
+          <p className="hours-num" aria-hidden="true"><span>10</span> h/mes</p>
+          <div className="hours-text">
+            <p className="kicker">El tiempo</p>
+            <h2>Más horas para tu misión.</h2>
+            <p className="lead"><strong>Un ejemplo:</strong> una entidad pequeña puede dedicar unas 10 horas al mes a gestión. Si Klaruk os devuelve buena parte de ese tiempo, la cuota se paga sola.</p>
+          </div>
         </div>
       </section>
 
       <section className="wrap section">
+        <p className="kicker">Cómo empezar</p>
         <h2>Empezar es fácil</h2>
         <ol className="steps">
           <li>Empieza tu prueba gratis de 15 días.</li>
@@ -95,6 +103,7 @@ export default function Home() {
       </section>
 
       <section className="wrap section narrow">
+        <p className="kicker">Dudas</p>
         <h2>Preguntas frecuentes</h2>
         <Faq items={faq} />
       </section>
