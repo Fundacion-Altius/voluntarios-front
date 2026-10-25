@@ -90,16 +90,16 @@ test.describe('December toys handout (browser)', () => {
     await page.getByTestId('juguetes-console').waitFor({ timeout: 15000 });
 
     await expect(page.getByTestId('juguetes-out')).toContainText('elementos');
-    await expect(page.getByTestId('juguetes-clusters')).toBeVisible();
-    await page.getByTestId('juguetes-search').fill('cometa');
-    await expect(page.getByTestId('juguetes-clusters')).toContainText('Cometa');
-    await expect(page.getByTestId('juguetes-clusters')).not.toContainText('Xilófono');
-    await page.getByTestId('juguetes-search').fill('');
-    await expect(page.getByTestId('juguetes-clusters')).toContainText('Xilófono');
-    await page.getByTestId('juguetes-agefilter').selectOption('y5_7');
     await expect(page.getByTestId('juguetes-grid')).toBeVisible();
-    await page.getByTestId('juguetes-agefilter').selectOption('');
-    await expect(page.getByTestId('juguetes-clusters')).toBeVisible();
+    await page.getByTestId('juguetes-search').fill('cometa');
+    await expect(page.getByTestId('juguetes-grid')).toContainText('Cometa');
+    await expect(page.getByTestId('juguetes-grid')).not.toContainText('Xilófono');
+    await page.getByTestId('juguetes-search').fill('');
+    await expect(page.getByTestId('juguetes-grid')).toContainText('Xilófono');
+    await page.getByTestId('juguetes-age-y5_7').click();
+    await expect(page.getByTestId('juguetes-age-y5_7')).toHaveAttribute('aria-pressed', 'true');
+    await page.getByTestId('juguetes-age-all').click();
+    await expect(page.getByTestId('juguetes-age-all')).toHaveAttribute('aria-pressed', 'true');
     await expect(page.getByText(`Para niños de 5 años ${tag}`).first()).toBeVisible();
     await page.locator('[data-testid^="juguetes-zoom-"]').first().click();
     await expect(page.getByTestId('juguetes-modal')).toBeVisible();
@@ -175,7 +175,8 @@ test.describe('December toys handout (browser)', () => {
   test('casita lightbox walks all three pictures', async ({ page }) => {
     await page.goto('/es/juguetes', { waitUntil: 'load' });
     await page.getByTestId('juguetes-console').waitFor({ timeout: 15000 });
-    await expect(page.getByTestId('juguetes-clusters')).toBeVisible();
+    await expect(page.getByTestId('juguetes-grid')).toBeVisible();
+    await page.getByTestId('juguetes-search').fill('casita');
     const card = page.locator('[data-testid^="juguetes-card-"]', { hasText: 'Casita de muñecas' }).first();
     await card.locator('[data-testid^="juguetes-zoom-"]').click();
     await expect(page.getByTestId('juguetes-modal')).toBeVisible();

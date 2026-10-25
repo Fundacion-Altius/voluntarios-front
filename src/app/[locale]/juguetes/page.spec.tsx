@@ -18,7 +18,7 @@ describe('JuguetesPage', () => {
     jest.resetAllMocks();
   });
 
-  it('clusters all ages on auto-load', async () => {
+  it('shows all ages as one flat grid on auto-load', async () => {
     setupFetch((url, init) => {
       if (url.endsWith('/status')) return { flag: 'toy_handout', enabled: true };
       if (url.includes('/items') && !url.includes('ageBand='))
@@ -45,10 +45,10 @@ describe('JuguetesPage', () => {
     await waitFor(() => expect(screen.getByTestId('juguetes-console')).toBeInTheDocument());
 
     await waitFor(() => expect(screen.getByTestId('juguetes-out')).toHaveTextContent('2 elementos'));
-    expect(screen.getByTestId('juguetes-clusters')).toBeInTheDocument();
+    expect(screen.getByTestId('juguetes-grid')).toBeInTheDocument();
     expect(screen.getByTestId('juguetes-age')).not.toBeVisible();
-    expect(screen.getByTestId('juguetes-cluster-y3_4')).toHaveTextContent('Edad: 3-4 Años');
-    expect(screen.getByTestId('juguetes-cluster-y5_7')).toHaveTextContent('Edad: 5-7 Años');
+    expect(screen.getByTestId('juguetes-agebadge-t2')).toHaveTextContent('3-4 Años');
+    expect(screen.getByTestId('juguetes-agebadge-t1')).toHaveTextContent('5-7 Años');
     expect(screen.getByTestId('juguetes-title-t1')).toHaveTextContent('Muñeca');
     expect(screen.getByTestId('juguetes-desc-t1')).toHaveTextContent('Suave y grande');
 
@@ -86,16 +86,17 @@ describe('JuguetesPage', () => {
       </TestProviders>,
     );
     await waitFor(() => expect(screen.getByTestId('juguetes-agefilter')).toBeInTheDocument());
-    expect(screen.getByTestId('juguetes-agefilter')).toHaveDisplayValue('Todas');
+    expect(screen.getByTestId('juguetes-age-all')).toHaveAttribute('aria-pressed', 'true');
 
-    await userEvent.selectOptions(screen.getByTestId('juguetes-agefilter'), 'y5_7');
-    await waitFor(() => expect(seen.some((c) => c.includes('/items?ageBand=y5_7'))).toBe(true));
-    await waitFor(() => expect(screen.getByTestId('juguetes-grid')).toBeInTheDocument());
-    console.log('DBG_DISPLAY:', (screen.getByTestId('juguetes-agefilter') as HTMLSelectElement).value);
+    await userEvent.click(screen.getByTestId('juguetes-age-y5_7'));
+    expect(seen.some((c) => c.includes('/items?ageBand='))).toBe(false);
+    expect(screen.getByTestId('juguetes-age-y3_4')).toBeInTheDocument();
+    expect(screen.getByTestId('juguetes-age-y5_7')).toHaveAttribute('aria-pressed', 'true');
     await waitFor(() => expect(screen.queryByTestId('juguetes-card-t2')).not.toBeInTheDocument());
 
-    await userEvent.selectOptions(screen.getByTestId('juguetes-agefilter'), '');
-    await waitFor(() => expect(screen.getByTestId('juguetes-clusters')).toBeInTheDocument());
+    await userEvent.click(screen.getByTestId('juguetes-age-all'));
+    await waitFor(() => expect(screen.getByTestId('juguetes-card-t2')).toBeInTheDocument());
+    expect(screen.getByTestId('juguetes-age-all')).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('keeps the parked age filter hidden and disabled', async () => {    setupFetch((url, init) => {
@@ -112,7 +113,7 @@ describe('JuguetesPage', () => {
     const age = screen.getByTestId('juguetes-age');
     expect(age).not.toBeVisible();
     expect(age).toBeDisabled();
-    expect(screen.getByTestId('juguetes-clusters')).toBeInTheDocument();
+    expect(screen.getByTestId('juguetes-grid')).toBeInTheDocument();
   });
 
   it('opens the full image in a modal on click', async () => {
@@ -177,7 +178,7 @@ describe('JuguetesPage', () => {
         <JuguetesPage />
       </TestProviders>,
     );
-    await waitFor(() => expect(screen.getByTestId('juguetes-clusters')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('juguetes-grid')).toBeInTheDocument());
     expect(screen.getByTestId('juguetes-card-t1')).toBeInTheDocument();
     expect(screen.getByTestId('juguetes-card-t2')).toBeInTheDocument();
 
@@ -198,5 +199,57 @@ describe('JuguetesPage', () => {
       </TestProviders>,
     );
     await waitFor(() => expect(screen.getByTestId('juguetes-denied')).toBeInTheDocument());
+  });
+});
+
+describe('ChristmasFooter', () => {
+  it('shows one of the ten holiday messages after mount', async () => {
+    setupFetch((url) => (url.endsWith('/status') ? { flag: 'toy_handout', enabled: true } : []));
+    render(
+      <TestProviders>
+        <JuguetesPage />
+      </TestProviders>,
+    );
+    const p = await screen.findByTestId('juguetes-xmas');
+    await waitFor(() => expect(Number(p.getAttribute('data-n'))).toBeGreaterThan(0));
+    expect(Number(p.getAttribute('data-n'))).toBeLessThanOrEqual(15);
+    expect(p.textContent?.length).toBeGreaterThan(20);
+  });
+});
+
+describe('Pagination', () => {
+  it('shows 12 per page and resets to page 1 on search', async () => {
+    Element.prototype.scrollIntoView = jest.fn();
+    const items = Array.from({ length: 30 }, (_, i) => ({ id: `p${i}`, title: `Toy ${i}`, description: 'd', ageBand: 'y5_7', quantity: 1, pictures: [] }));
+    setupFetch((url) => (url.endsWith('/status') ? { flag: 'toy_handout', enabled: true } : url.includes('/items') ? items : []));
+    render(
+      <TestProviders>
+        <JuguetesPage />
+      </TestProviders>,
+    );
+    await waitFor(() => expect(screen.getByTestId('juguetes-pager')).toBeInTheDocument());
+    expect(screen.getAllByTestId(/^juguetes-card-/)).toHaveLength(12);
+    expect(screen.getByTestId('juguetes-page-1')).toHaveAttribute('aria-current', 'page');
+    await userEvent.click(screen.getByTestId('juguetes-page-3'));
+    expect(screen.getAllByTestId(/^juguetes-card-/)).toHaveLength(6);
+    expect(screen.getByTestId('juguetes-page-status')).toHaveTextContent('Página 3 de 3');
+    await userEvent.type(screen.getByTestId('juguetes-search'), 'Toy');
+    await waitFor(() => expect(screen.getByTestId('juguetes-page-1')).toHaveAttribute('aria-current', 'page'));
+  });
+});
+
+describe('Gospel messages', () => {
+  it('shows the verse with its reference', async () => {
+    jest.spyOn(Math, 'random').mockReturnValue(13 / 15);
+    setupFetch((url) => (url.endsWith('/status') ? { flag: 'toy_handout', enabled: true } : []));
+    render(
+      <TestProviders>
+        <JuguetesPage />
+      </TestProviders>,
+    );
+    await waitFor(() => expect(screen.getByTestId('juguetes-xmas')).toHaveAttribute('data-n', '14'));
+    expect(screen.getByTestId('juguetes-xmas')).toHaveTextContent('Verbo se hizo carne');
+    expect(screen.getByTestId('juguetes-xmas-ref')).toHaveTextContent('Juan 1,14');
+    jest.restoreAllMocks();
   });
 });
