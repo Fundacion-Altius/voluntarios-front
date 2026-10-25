@@ -18,7 +18,7 @@ describe('JuguetesPage', () => {
     jest.resetAllMocks();
   });
 
-  it('clusters all ages on auto-load', async () => {
+  it('shows all ages as one flat grid on auto-load', async () => {
     setupFetch((url, init) => {
       if (url.endsWith('/status')) return { flag: 'toy_handout', enabled: true };
       if (url.includes('/items') && !url.includes('ageBand='))
@@ -45,10 +45,10 @@ describe('JuguetesPage', () => {
     await waitFor(() => expect(screen.getByTestId('juguetes-console')).toBeInTheDocument());
 
     await waitFor(() => expect(screen.getByTestId('juguetes-out')).toHaveTextContent('2 elementos'));
-    expect(screen.getByTestId('juguetes-clusters')).toBeInTheDocument();
+    expect(screen.getByTestId('juguetes-grid')).toBeInTheDocument();
     expect(screen.getByTestId('juguetes-age')).not.toBeVisible();
-    expect(screen.getByTestId('juguetes-cluster-y3_4')).toHaveTextContent('Edad: 3-4 Años');
-    expect(screen.getByTestId('juguetes-cluster-y5_7')).toHaveTextContent('Edad: 5-7 Años');
+    expect(screen.getByTestId('juguetes-agebadge-t2')).toHaveTextContent('3-4 Años');
+    expect(screen.getByTestId('juguetes-agebadge-t1')).toHaveTextContent('5-7 Años');
     expect(screen.getByTestId('juguetes-title-t1')).toHaveTextContent('Muñeca');
     expect(screen.getByTestId('juguetes-desc-t1')).toHaveTextContent('Suave y grande');
 
@@ -89,13 +89,14 @@ describe('JuguetesPage', () => {
     expect(screen.getByTestId('juguetes-age-all')).toHaveAttribute('aria-pressed', 'true');
 
     await userEvent.click(screen.getByTestId('juguetes-age-y5_7'));
-    await waitFor(() => expect(seen.some((c) => c.includes('/items?ageBand=y5_7'))).toBe(true));
-    await waitFor(() => expect(screen.getByTestId('juguetes-grid')).toBeInTheDocument());
+    expect(seen.some((c) => c.includes('/items?ageBand='))).toBe(false);
+    expect(screen.getByTestId('juguetes-age-y3_4')).toBeInTheDocument();
     expect(screen.getByTestId('juguetes-age-y5_7')).toHaveAttribute('aria-pressed', 'true');
     await waitFor(() => expect(screen.queryByTestId('juguetes-card-t2')).not.toBeInTheDocument());
 
     await userEvent.click(screen.getByTestId('juguetes-age-all'));
-    await waitFor(() => expect(screen.getByTestId('juguetes-clusters')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('juguetes-card-t2')).toBeInTheDocument());
+    expect(screen.getByTestId('juguetes-age-all')).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('keeps the parked age filter hidden and disabled', async () => {    setupFetch((url, init) => {
@@ -112,7 +113,7 @@ describe('JuguetesPage', () => {
     const age = screen.getByTestId('juguetes-age');
     expect(age).not.toBeVisible();
     expect(age).toBeDisabled();
-    expect(screen.getByTestId('juguetes-clusters')).toBeInTheDocument();
+    expect(screen.getByTestId('juguetes-grid')).toBeInTheDocument();
   });
 
   it('opens the full image in a modal on click', async () => {
@@ -177,7 +178,7 @@ describe('JuguetesPage', () => {
         <JuguetesPage />
       </TestProviders>,
     );
-    await waitFor(() => expect(screen.getByTestId('juguetes-clusters')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('juguetes-grid')).toBeInTheDocument());
     expect(screen.getByTestId('juguetes-card-t1')).toBeInTheDocument();
     expect(screen.getByTestId('juguetes-card-t2')).toBeInTheDocument();
 

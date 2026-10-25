@@ -9,8 +9,7 @@ html.dark .jug{--festive:#f3a6a0;--festive-soft:#2d1c22;--gold:#e8c06a;--gold-so
 .jug-lead{color:var(--muted-foreground);font-size:1.0625rem;line-height:1.6;max-width:60ch}
 .jug-garland{position:absolute;inset:0 0 auto auto;width:min(42%,360px);height:100%;pointer-events:none;color:var(--gold);opacity:.55}
 @media (max-width:639px){.jug-garland{opacity:.25;width:60%}}
-.jug-band{display:flex;align-items:center;gap:.5rem;font-size:1.25rem;font-weight:650;color:var(--foreground)}
-.jug-band svg{color:var(--gold);flex:none}
+.jug-agebadge{display:inline-block;border-radius:999px;padding:.1rem .55rem;font-size:.75rem;font-weight:600;background:var(--muted);color:var(--foreground);border:1px solid var(--border)}
 .jug-footer{display:flex;align-items:center;justify-content:center;gap:.75rem;margin-top:2rem;padding:2rem 1rem;border-top:1px solid var(--border);text-align:center;color:var(--gold)}
 .jug-footer p{color:var(--foreground);font-size:1.0625rem;line-height:1.5;max-width:52ch;min-height:1.6em}
 .jug-toolbar{position:sticky;top:0;z-index:20;display:flex;flex-direction:column;gap:.75rem;padding:.75rem 0;background:var(--background);border-bottom:1px solid var(--border)}

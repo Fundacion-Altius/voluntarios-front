@@ -87,7 +87,10 @@ function ToyCard({ item, qty, inCart, t, setPick, addLine, removeLine, onZoom }:
                         {item.description}
                       </p>
                     )}
-        <p className="text-sm text-muted-foreground">{t('edadEtiqueta')}: {t(`bandas.${item.ageBand}`)} · {t('quedan')}: {item.quantity}</p>
+        <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <span className="jug-agebadge" data-testid={`juguetes-agebadge-${item.id}`}>{t(`bandas.${item.ageBand}`)}</span>
+          {t('quedan')}: {item.quantity}
+        </p>
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between gap-2">
             <Button
@@ -178,22 +181,6 @@ function ChristmasFooter({ t }: { t: (k: string) => string }) {
       <Star size={16} />
     </footer>
   );
-}
-
-function clusterByAge(catalog: any[]): { band: string; items: any[] }[] {
-  const groups = new Map<string, any[]>();
-  for (const item of catalog) {
-    const band = String(item.ageBand ?? 'y5_7');
-    const list = groups.get(band) ?? [];
-    list.push(item);
-    groups.set(band, list);
-  }
-  const clusters: { band: string; items: any[] }[] = [];
-  for (const band of AGE_BANDS) {
-    const items = groups.get(band);
-    if (items) clusters.push({ band, items });
-  }
-  return clusters;
 }
 
 export default function JuguetesPage() {
@@ -299,10 +286,11 @@ export default function JuguetesPage() {
     return () => clearTimeout(timer);
   }, [query]);
 
+  const byAge = ageFilter === null ? catalog : catalog.filter((item) => String(item.ageBand ?? '') === ageFilter);
   const visibleCatalog =
     debouncedQuery === ''
-      ? catalog
-      : catalog.filter(
+      ? byAge
+      : byAge.filter(
           (item) =>
             (item.title ?? item.article ?? '').toLowerCase().includes(debouncedQuery) || (item.description ?? '').toLowerCase().includes(debouncedQuery),
         );
@@ -372,7 +360,7 @@ export default function JuguetesPage() {
                     className="jug-chip"
                     aria-pressed={(ageFilter ?? '') === b}
                     data-testid={`juguetes-age-${b || 'all'}`}
-                    onClick={() => browse(b)}
+                    onClick={() => setAgeFilter(b || null)}
                   >
                     {b ? t(`bandas.${b}`) : t('todasEdadesCorto')}
                   </button>
@@ -386,7 +374,7 @@ export default function JuguetesPage() {
       {/*
         PARKED 2026-09-24 (Carlos): the whole "Explorar por edad" browse card
         (title, age filter, Ver button) is hidden — it did nothing useful and
-        the catalog auto-loads on open, always clustered by age. The household
+        the catalog auto-loads on open. 2026-10-25: flat paginated grid; age pills filter client-side. The household
         input moved to the basket card. TO REVERT: re-render the Card block
         below (kept commented in git history) and drop the auto-load effect;
         the `browse` age parsing already handles both (empty = all, number =
@@ -423,27 +411,10 @@ export default function JuguetesPage() {
               )}
             </div>
           )}
-          {visibleCatalog.length > 0 && ageFilter !== null && (
+          {visibleCatalog.length > 0 && (
             <div data-testid="juguetes-grid" className="grid grid-cols-2 gap-4 sm:grid-cols-3">
               {pageItems.map((item: any) => (
                 <ToyCard key={item.id} {...cardProps(item)} />
-              ))}
-            </div>
-          )}
-          {visibleCatalog.length > 0 && ageFilter === null && (
-            <div data-testid="juguetes-clusters" className="flex flex-col gap-4">
-              {clusterByAge(pageItems).map((cluster) => (
-                <section key={cluster.band} data-testid={`juguetes-cluster-${cluster.band}`} aria-labelledby={`band-${cluster.band}`}>
-                  <h3 id={`band-${cluster.band}`} className="jug-band mb-3 mt-4">
-                    <Star />
-                    {t('edadEtiqueta')}: {t(`bandas.${cluster.band}`)}
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                    {cluster.items.map((item: any) => (
-                      <ToyCard key={item.id} {...cardProps(item)} />
-                    ))}
-                  </div>
-                </section>
               ))}
             </div>
           )}
