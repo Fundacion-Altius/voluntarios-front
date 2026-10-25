@@ -1,5 +1,6 @@
 import { Link } from "@/i18n/navigation";
 import Faq from "@/components/klaruk/Faq";
+import FeatureCard from "@/components/klaruk/FeatureCard";
 import { CTA, TRIAL_URL } from "@/components/klaruk/links";
 import { features, featuresTitle, featuresSubtitle } from "@/components/klaruk/features";
 
@@ -59,16 +60,7 @@ export default function Home() {
         <h2 id="features-title">{featuresTitle}</h2>
         <p className="lead features-sub">{featuresSubtitle}</p>
         <div className="features-grid">
-          {features.map((f) => (
-            <article className="card feature" key={f.title}>
-              <span className="icon" aria-hidden="true">{f.icon}</span>
-              <h3>{f.title}</h3>
-              <p className="benefit">{f.benefit}</p>
-              <ul className="ticks feature-list">
-                {f.items.map((it) => <li key={it}>{it}</li>)}
-              </ul>
-            </article>
-          ))}
+          {features.map((f, i) => <FeatureCard key={f.title} f={f} index={i} />)}
         </div>
       </section>
 

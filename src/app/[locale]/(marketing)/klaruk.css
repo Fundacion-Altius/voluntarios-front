@@ -150,3 +150,15 @@ html:has(.klaruk){scroll-padding-top:88px;color-scheme:light}
 @media (min-width:900px){.klaruk .hero{grid-template-columns:1.1fr 1fr;padding-top:88px;padding-bottom:96px}}
 @media (min-width:1240px){.klaruk .hero .shot{margin-right:-96px}}
 .klaruk .hero-band+.band{margin-top:0}
+
+/* v2 step 3: feature cards */
+.klaruk .feature{--tone:var(--brand);--tone-tint:var(--brand-tint);border-top:3px solid var(--tone);transition:transform .2s ease,box-shadow .2s ease}
+.klaruk .feature.tone-leaf{--tone:var(--leaf);--tone-tint:#e4f1e8}
+.klaruk .feature.tone-gold{--tone:#7d5a12;--tone-tint:#f6ecd8}
+.klaruk .feature .icon{width:44px;height:44px;border-radius:12px;background:var(--tone-tint);color:var(--tone)}
+.klaruk .feature:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+.klaruk .feature .feature-list{flex:1}
+.klaruk .feature .more{align-self:flex-start;margin-top:16px;min-height:44px;padding:0 4px;background:none;border:0;color:var(--link);font:600 15px var(--font-body);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.klaruk .feature .more:hover{color:var(--brand-ink)}
+.klaruk .feature .benefit{font-weight:500}
+.klaruk .ticks li[hidden]{display:none}
