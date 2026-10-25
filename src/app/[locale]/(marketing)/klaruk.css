@@ -236,3 +236,27 @@ html.dark .klaruk .shot img{filter:brightness(.92)}
 .klaruk .lang a:hover{color:var(--brand);background:var(--brand-tint)}
 .klaruk .lang a[aria-current=true]{background:var(--brand);color:var(--on-brand)}
 @media (max-width:799px){.klaruk .nav{margin-left:0}.klaruk .header-tools{margin-left:auto}}
+
+/* v3: hero background with life, texture and depth (after shiftcitizen-website .home-hero:
+   masked line grid, layered colour glows, faint scanline texture). Klaruk indigo + gold. */
+.klaruk{--hero-bg:#f3f2fb;--glow-a:rgb(61 63 168/.30);--glow-b:rgb(226 189 122/.42);--glow-c:rgb(159 162 255/.30);--grid-line:rgb(61 63 168/.10);--texture:rgb(27 29 42/.035)}
+html.dark .klaruk{--hero-bg:#0d0e1c;--glow-a:rgb(159 162 255/.30);--glow-b:rgb(226 189 122/.20);--glow-c:rgb(91 94 230/.38);--grid-line:rgb(159 162 255/.09);--texture:rgb(255 255 255/.025)}
+.klaruk .hero-band{background:var(--hero-bg)}
+.klaruk .hero-band::before{inset:-12%;opacity:1;
+  background:
+    radial-gradient(ellipse 42% 58% at 80% 38%,var(--glow-a),transparent 62%),
+    radial-gradient(ellipse 30% 40% at 98% 4%,var(--glow-c),transparent 64%),
+    radial-gradient(ellipse 34% 44% at 12% 104%,var(--glow-b),transparent 64%),
+    radial-gradient(ellipse 24% 30% at 52% 96%,var(--glow-c),transparent 62%);
+  animation:k-drift 22s ease-in-out infinite alternate}
+.klaruk .hero-band::after{opacity:1;-webkit-mask-image:none;mask-image:none;
+  background:
+    repeating-linear-gradient(to bottom,transparent 0 3px,var(--texture) 3px 4px),
+    linear-gradient(var(--grid-line) 1px,transparent 1px) 0 0/52px 52px,
+    linear-gradient(90deg,var(--grid-line) 1px,transparent 1px) 0 0/52px 52px;
+  -webkit-mask-image:radial-gradient(90% 100% at 70% 30%,#000 30%,transparent 85%);mask-image:radial-gradient(90% 100% at 70% 30%,#000 30%,transparent 85%)}
+.klaruk .hero-band .shot{box-shadow:var(--shadow-lg),0 0 0 1px color-mix(in srgb,var(--brand) 18%,transparent),0 30px 120px -20px var(--glow-a)}
+@keyframes k-drift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(-2.5%,1.5%,0) scale(1.06)}}
+@media (prefers-reduced-motion:reduce){.klaruk .hero-band::before{animation:none}}
+/* On narrow screens the text sits over the glows, so keep them softer (dim text stays >= 4.5:1). */
+@media (max-width:899px){.klaruk{--glow-a:rgb(61 63 168/.18)}html.dark .klaruk{--glow-a:rgb(159 162 255/.20)}}
