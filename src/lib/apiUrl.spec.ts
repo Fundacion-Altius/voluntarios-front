@@ -15,11 +15,11 @@ describe('getApiBaseUrl', () => {
     expect(getApiBaseUrl()).toBe('https://fundacionaltius.klaruk.com');
   });
 
-  it('uses same-origin on local tenant hosts', () => {
+  it('uses NEXT_PUBLIC_API_URL on local tenant hosts', () => {
     Object.defineProperty(global, 'window', {
       value: { location: { hostname: 'homelessentrepreneur.localhost', protocol: 'http:', host: 'homelessentrepreneur.localhost:3000' } },
       writable: true,
     });
-    expect(getApiBaseUrl()).toBe('http://homelessentrepreneur.localhost:3000');
+    expect(getApiBaseUrl()).toBe(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001');
   });
 });
