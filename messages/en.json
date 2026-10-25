@@ -1,5 +1,7 @@
 {
   "juguetes": {
+    "navidadBorrador": "BORRADOR: pendiente de revisión de Adela",
+    "navidad": {"1": "May this Christmas fill your home with laughter, games and time together.", "2": "Every toy carries the care of many people. Happy holidays!", "3": "We wish you calm, warm holidays full of joy.", "4": "May there be plenty of hugs, surprises and time to play. Merry Christmas!", "5": "Thank you for letting us be part of your holidays. We celebrate them together.", "6": "May the new year bring you health, peace and many good days as a family.", "7": "The magic of the season is in what we share. Enjoy it!", "8": "A smile for every child, and happy holidays for every family.", "9": "However you celebrate, we wish you days full of light and joy.", "10": "With all our love: happy holidays and a happy new year."},
     "saludo": "Hello! Choose <em>this Christmas's toys</em>",
     "intro": "Here are the toys set aside for your family. Take your time browsing by age, add the ones you love most to your basket, and pick a time to collect them. It's free, and we do it with lots of care.",
     "titulo": "Toy handout — December",

@@ -11,3 +11,5 @@ html.dark .jug{--festive:#f3a6a0;--festive-soft:#2d1c22;--gold:#e8c06a;--gold-so
 @media (max-width:639px){.jug-garland{opacity:.25;width:60%}}
 .jug-band{display:flex;align-items:center;gap:.5rem;font-size:1.25rem;font-weight:650;color:var(--foreground)}
 .jug-band svg{color:var(--gold);flex:none}
+.jug-footer{display:flex;align-items:center;justify-content:center;gap:.75rem;margin-top:2rem;padding:2rem 1rem;border-top:1px solid var(--border);text-align:center;color:var(--gold)}
+.jug-footer p{color:var(--foreground);font-size:1.0625rem;line-height:1.5;max-width:52ch;min-height:1.6em}

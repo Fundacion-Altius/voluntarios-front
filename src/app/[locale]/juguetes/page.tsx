@@ -125,6 +125,23 @@ function ToyCard({ item, qty, inCart, t, setPick, addLine, removeLine, onZoom }:
   );
 }
 
+const XMAS_COUNT = 10;
+
+/** One of ten holiday messages, picked on the client after mount so SSR and hydration match. */
+function ChristmasFooter({ t }: { t: (k: string) => string }) {
+  const [n, setN] = useState<number | null>(null);
+  useEffect(() => {
+    setN(1 + Math.floor(Math.random() * XMAS_COUNT));
+  }, []);
+  return (
+    <footer className="jug-footer" data-testid="juguetes-footer">
+      <Star size={16} />
+      <p data-testid="juguetes-xmas" data-n={n ?? ''}>{n ? t(`navidad.${n}`) : '\u00a0'}</p>
+      <Star size={16} />
+    </footer>
+  );
+}
+
 function clusterByAge(catalog: any[]): { band: string; items: any[] }[] {
   const groups = new Map<string, any[]>();
   for (const item of catalog) {
@@ -366,6 +383,8 @@ export default function JuguetesPage() {
       </Card>
 
       {out && <p data-testid="juguetes-out">{out}</p>}
+
+      <ChristmasFooter t={(k) => t(k)} />
 
       <Dialog open={zoom !== null} onOpenChange={(open) => { if (!open) setZoom(null); }}>
         <DialogContent data-testid="juguetes-modal" className="max-w-3xl">

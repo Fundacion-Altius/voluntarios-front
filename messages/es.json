@@ -1,5 +1,7 @@
 {
   "juguetes": {
+    "navidadBorrador": "BORRADOR: pendiente de revisión de Adela",
+    "navidad": {"1": "Que esta Navidad llene vuestra casa de risas, juegos y momentos compartidos.", "2": "Cada juguete lleva dentro el cariño de muchas personas. ¡Felices fiestas!", "3": "Os deseamos unas fiestas tranquilas, cálidas y llenas de ilusión.", "4": "Que no falten los abrazos, las sorpresas ni las ganas de jugar. ¡Feliz Navidad!", "5": "Gracias por dejarnos formar parte de vuestras fiestas. Las hacemos juntos.", "6": "Que el nuevo año os traiga salud, calma y muchos días buenos en familia.", "7": "La magia de estas fiestas está en lo que compartimos. ¡Disfrutadla!", "8": "Para cada niña y cada niño, una sonrisa. Para cada familia, unas felices fiestas.", "9": "Celebréis como celebréis, os deseamos días de luz y de alegría.", "10": "Con todo nuestro cariño: felices fiestas y un próspero año nuevo."},
     "saludo": "¡Hola! Elegid los <em>juguetes de esta Navidad</em>",
     "intro": "Aquí tenéis los juguetes reservados para vuestra familia. Mirad con calma por edades, añadid a la cesta los que más ilusión os hagan y elegid un turno para recogerlos. Es gratis y lo hacemos con mucho cariño.",
     "titulo": "Reparto de juguetes — diciembre",

@@ -1,5 +1,7 @@
 {
   "juguetes": {
+    "navidadBorrador": "BORRADOR: pendiente de revisión de Adela",
+    "navidad": {"1": "Que aquest Nadal ompli casa vostra de rialles, jocs i moments compartits.", "2": "Cada joguina porta dins l'afecte de moltes persones. Bones festes!", "3": "Us desitgem unes festes tranquil·les, càlides i plenes d'il·lusió.", "4": "Que no faltin les abraçades, les sorpreses ni les ganes de jugar. Bon Nadal!", "5": "Gràcies per deixar-nos formar part de les vostres festes. Les fem junts.", "6": "Que l'any nou us porti salut, calma i molts bons dies en família.", "7": "La màgia d'aquestes festes és en el que compartim. Gaudiu-ne!", "8": "Per a cada nena i cada nen, un somriure. Per a cada família, unes bones festes.", "9": "Celebreu-ho com ho celebreu, us desitgem dies de llum i d'alegria.", "10": "Amb tot el nostre afecte: bones festes i feliç any nou."},
     "saludo": "Hola! Trieu les <em>joguines d'aquest Nadal</em>",
     "intro": "Aquí teniu les joguines reservades per a la vostra família. Mireu-les amb calma per edats, afegiu a la cistella les que més il·lusió us facin i trieu un torn per recollir-les. És gratuït i ho fem amb molt d'afecte.",
     "titulo": "Repartiment de joguines — desembre",

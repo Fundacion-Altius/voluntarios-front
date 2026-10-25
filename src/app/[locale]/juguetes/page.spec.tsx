@@ -200,3 +200,18 @@ describe('JuguetesPage', () => {
     await waitFor(() => expect(screen.getByTestId('juguetes-denied')).toBeInTheDocument());
   });
 });
+
+describe('ChristmasFooter', () => {
+  it('shows one of the ten holiday messages after mount', async () => {
+    setupFetch((url) => (url.endsWith('/status') ? { flag: 'toy_handout', enabled: true } : []));
+    render(
+      <TestProviders>
+        <JuguetesPage />
+      </TestProviders>,
+    );
+    const p = await screen.findByTestId('juguetes-xmas');
+    await waitFor(() => expect(Number(p.getAttribute('data-n'))).toBeGreaterThan(0));
+    expect(Number(p.getAttribute('data-n'))).toBeLessThanOrEqual(10);
+    expect(p.textContent?.length).toBeGreaterThan(20);
+  });
+});
