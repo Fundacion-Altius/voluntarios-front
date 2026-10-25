@@ -102,13 +102,20 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="wrap section narrow">
-        <p className="kicker">Dudas</p>
-        <h2>Preguntas frecuentes</h2>
+      <section className="wrap section faq-split">
+        <div className="faq-side">
+          <p className="kicker">Dudas</p>
+          <h2>Preguntas frecuentes</h2>
+          <div className="card faq-card">
+            <p><strong>¿Quieres ver qué incluye cada plan?</strong></p>
+            <p>Todos los planes tienen usuarios ilimitados e IA incluida.</p>
+            <Link href="/planes">Ver planes y precios</Link>
+          </div>
+        </div>
         <Faq items={faq} />
       </section>
 
-      <section className="closing">
+      <section className="closing closing-dark">
         <div className="wrap center">
           <h2>Tu causa merece tu tiempo.</h2>
           <div className="actions center">

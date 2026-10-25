@@ -192,3 +192,20 @@ html:has(.klaruk){scroll-padding-top:88px;color-scheme:light}
 .klaruk .steps li:not(:last-child)::after{content:"";position:absolute;left:19px;top:44px;bottom:-4px;width:2px;background:color-mix(in srgb,var(--brand) 30%,transparent)}
 .klaruk .steps li::before{box-shadow:0 0 0 6px var(--brand-tint)}
 .klaruk .band+.band{margin-top:0}
+
+/* v2 step 6: stronger ending */
+.klaruk .compare.yes{background:color-mix(in srgb,var(--leaf) 6%,var(--card));box-shadow:var(--shadow-lg)}
+.klaruk .compare.no{background:transparent;box-shadow:none;color:var(--dim)}
+.klaruk .faq-split{display:grid;gap:24px 56px}
+@media (min-width:900px){.klaruk .faq-split{grid-template-columns:minmax(260px,1fr) 1.6fr;align-items:start}.klaruk .faq-side{position:sticky;top:96px}}
+.klaruk .faq-card{margin-top:20px;background:var(--brand-tint);border-color:color-mix(in srgb,var(--brand) 25%,var(--bg));box-shadow:none}
+.klaruk .faq-card p{margin-bottom:.5em}
+.klaruk .faq-card a{font-weight:600}
+.klaruk .closing-dark{position:relative;isolation:isolate;overflow:hidden;background:var(--brand-ink);color:#fff;padding:96px 0}
+.klaruk .closing-dark::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(50% 80% at 50% 0%,rgb(159 162 255/.35),transparent 70%)}
+.klaruk .closing-dark h2{font-size:clamp(32px,4vw,48px);letter-spacing:-.02em}
+.klaruk .closing-dark .btn-secondary{background:transparent;color:#fff;border-color:rgb(255 255 255/.7)}
+.klaruk .closing-dark .btn-secondary:hover{background:rgb(255 255 255/.1)}
+.klaruk .closing-dark .meta{color:#d6d7f5}
+.klaruk .closing-dark :focus-visible{outline-color:#fff}
+.klaruk .closing-dark .meta a{color:#fff}
