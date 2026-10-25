@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from '@/i18n/navigation';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 
 export interface AutomationMetricsView {
   tasksAutomated: number;
@@ -32,10 +32,11 @@ export function AutomationWorkloadWidget({
   justificationHref = '/admin/grants',
 }: AutomationWorkloadWidgetProps) {
   const t = useTranslations('admin.automation');
+  const format = useFormatter();
   const { member_comms, churn_alerts, grant_reminders } = metrics.breakdown;
   const summary = t('metricsSummary', {
     tasks: metrics.tasksAutomated,
-    hours: metrics.hoursSaved,
+    hours: format.number(metrics.hoursSaved, { maximumFractionDigits: 1 }),
     memberComms: member_comms,
     churnAlerts: churn_alerts,
     grantReminders: grant_reminders,

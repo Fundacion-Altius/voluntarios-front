@@ -347,25 +347,25 @@
       }
     },
     "nav": {
-      "panelAdmin": "Panell d'Administració",
-      "dashboard": "Dashboard",
+      "panelAdmin": "Panell de gestió",
+      "dashboard": "Panell",
       "contratos": "Contractes",
       "usuarios": "Usuaris",
       "encuestas": "Enquestes",
       "analytics": "Analítica",
-      "candidatos": "Candidats",
+      "candidatos": "Candidatures",
       "actividades": "Activitats",
       "blog": "Blog",
       "cursos": "Cursos",
-      "onboarding": "Onboarding",
+      "onboarding": "Acollida",
       "scanner": "Escàner",
-      "ranking": "Ranking",
+      "ranking": "Reconeixements",
       "asistencia": "Assistència",
       "impacto": "Impacte",
       "fondos": "Fons",
       "grants": "Subvencions",
-      "automatizacion": "Automatització",
-      "mensajeria": "WhatsApp / Telegram",
+      "automatizacion": "Automatitzacions",
+      "mensajeria": "WhatsApp i Telegram",
       "mensajes": "Xat intern",
       "exportaciones": "Exportacions",
       "salir": "Sortir",
@@ -373,10 +373,10 @@
       "integraciones": "Integracions",
       "federacion": "Federació",
       "bienestar": "Benestar",
-      "beneficiarios": "Beneficiaris",
+      "beneficiarios": "Persones beneficiàries",
       "redesSociales": "Xarxes socials",
       "campanas": "Campanyes",
-      "metricasComunidad": "Mètriques comunitat",
+      "metricasComunidad": "Salut de la comunitat",
       "gobernanza": "Governança"
     },
     "contracts": {
@@ -442,7 +442,7 @@
       "navLabel": "Automatització",
       "workloadTitle": "Càrrega de treball automatitzada",
       "metricsSummary": "{tasks} tasques automatitzades | ~{hours} hores estalviades | Desglossament: {memberComms} comunicacions amb socis, {churnAlerts} alertes de baixa, {grantReminders} recordatoris de subvencions",
-      "manualPending": "{count} tasques manuals pendents",
+      "manualPending": "{count, plural, one {# tasca manual pendent} other {# tasques manuals pendents}}",
       "justificationLink": "Anar a justificacions de subvencions",
       "settingsTitle": "Fluxos de comunicació",
       "enabled": "Activat",
@@ -549,7 +549,7 @@
       "eliminarEncuestaDesc": "Aquesta acció no es pot desfer. S'eliminarà l'enquesta permanentment."
     },
     "candidatos": {
-      "titulo": "Candidats",
+      "titulo": "Candidatures",
       "importarExcel": "Importar Excel",
       "candidatoAprobado": "Candidat aprovat",
       "errorAprobar": "Error en aprovar",
@@ -709,7 +709,8 @@
     "onboarding": {
       "nuevaTarea": "Nova tasca",
       "noHayTareas": "No hi ha tasques d'onboarding.",
-      "eliminarTarea": "Eliminar aquesta tasca?"
+      "eliminarTarea": "Eliminar aquesta tasca?",
+      "titulo": "Acollida"
     },
     "ranking": {
       "historial": "Historial de Ranking Setmanal",
@@ -1079,7 +1080,7 @@
       "colNote": "Nota"
     },
     "beneficiarios": {
-      "title": "Beneficiaris",
+      "title": "Persones beneficiàries",
       "subtitle": "Persones ateses i matching de mentoria amb voluntaris.",
       "loading": "Carregant…",
       "error": "No s'han pogut carregar els beneficiaris.",
@@ -1162,7 +1163,7 @@
       }
     },
     "metricasComunidad": {
-      "title": "Mètriques de comunitat",
+      "title": "Salut de la comunitat",
       "subtitle": "Engagement, retenció de voluntaris i detecció de churn.",
       "loading": "Carregant…",
       "error": "No s'han pogut carregar les mètriques.",
@@ -1262,9 +1263,10 @@
         "exportaciones": "Exportacions"
       },
       "mobile": {
-        "actividades": "Activitats",
+        "actividades": "Torns",
         "escaner": "Escàner",
-        "chat": "Xat"
+        "chat": "Xat",
+        "voluntariado": "Equip"
       }
     }
   },
@@ -1278,12 +1280,12 @@
       "mensajes": "Xat intern",
       "noticias": "Notícies",
       "logros": "Assoliments",
-      "ranking": "Ranking",
+      "ranking": "Rànquing",
       "notificaciones": "Notificacions",
       "mas": "Més",
-      "salir": "Surt",
+      "salir": "Sortir",
       "ayudaAlimentaria": "Ajuda alimentària",
-      "video": "Vídeo / Directe"
+      "video": "Vídeo i directes"
     },
     "video": {
       "title": "Vídeo i directe",
@@ -1619,7 +1621,8 @@
         "ranking": "Rànquing"
       },
       "mobile": {
-        "notificaciones": "Avisos"
+        "notificaciones": "Avisos",
+        "actividades": "Agenda"
       }
     }
   },

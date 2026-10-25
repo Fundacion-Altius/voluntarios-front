@@ -84,7 +84,7 @@ export default function AdminOnboardingPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Onboarding</h1>
+        <h1 className="text-2xl font-bold">{t('titulo')}</h1>
         <Button onClick={() => { resetForm(); setNewTask(true); }}><Plus className="mr-1 size-4" /> {t('nuevaTarea')}</Button>
       </div>
 

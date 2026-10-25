@@ -26,7 +26,7 @@ export default function BottomNav({ userName, userEmail, onLogout }: BottomNavPr
 
   const tabs = [
     { href: '/portal', label: tSide('items.inicio'), icon: Home, exact: true },
-    { href: '/portal/actividades', label: tSide('items.actividades'), icon: Calendar },
+    { href: '/portal/actividades', label: tSide('mobile.actividades'), icon: Calendar },
     { href: '/portal/mensajes', label: tSide('items.chat'), icon: MessageSquare },
     { href: '/portal/cursos', label: tSide('items.cursos'), icon: BookOpen },
     { href: '/portal/logros', label: tSide('items.logros'), icon: Award },

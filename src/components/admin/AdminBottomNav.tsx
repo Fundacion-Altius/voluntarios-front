@@ -51,7 +51,7 @@ export default function AdminBottomNav({ userName, userEmail, onLogout }: AdminB
         {/* Voluntariado opens the menu with its group expanded. */}
         <button type="button" aria-haspopup="dialog" aria-expanded={sheetGroup === 'voluntariado'} className={tabClass(inVoluntariado)} onClick={() => setSheetGroup('voluntariado')}>
           <Users className="size-5" aria-hidden="true" />
-          <span className="block w-full truncate text-center">{t('groups.voluntariado')}</span>
+          <span className="block w-full truncate text-center">{t('mobile.voluntariado')}</span>
         </button>
         <button type="button" aria-haspopup="dialog" aria-expanded={sheetGroup === 'all'} className={tabClass(false)} onClick={() => setSheetGroup('all')}>
           <MoreHorizontal className="size-5" aria-hidden="true" />

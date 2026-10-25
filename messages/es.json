@@ -347,25 +347,25 @@
       }
     },
     "nav": {
-      "panelAdmin": "Admin Panel",
-      "dashboard": "Dashboard",
+      "panelAdmin": "Panel de gestión",
+      "dashboard": "Panel",
       "contratos": "Contratos",
       "usuarios": "Usuarios",
       "encuestas": "Encuestas",
-      "analytics": "Analytics",
-      "candidatos": "Candidatos",
+      "analytics": "Analítica",
+      "candidatos": "Candidaturas",
       "actividades": "Actividades",
       "blog": "Blog",
       "cursos": "Cursos",
-      "onboarding": "Onboarding",
+      "onboarding": "Acogida",
       "scanner": "Escáner",
-      "ranking": "Ranking",
+      "ranking": "Reconocimientos",
       "asistencia": "Asistencia",
       "impacto": "Impacto",
       "fondos": "Fondos",
       "grants": "Subvenciones",
-      "automatizacion": "Automatización",
-      "mensajeria": "WhatsApp / Telegram",
+      "automatizacion": "Automatizaciones",
+      "mensajeria": "WhatsApp y Telegram",
       "mensajes": "Chat interno",
       "exportaciones": "Exportaciones",
       "salir": "Salir",
@@ -373,10 +373,10 @@
       "integraciones": "Integraciones",
       "federacion": "Federación",
       "bienestar": "Bienestar",
-      "beneficiarios": "Beneficiarios",
+      "beneficiarios": "Personas beneficiarias",
       "redesSociales": "Redes sociales",
       "campanas": "Campañas",
-      "metricasComunidad": "Métricas comunidad",
+      "metricasComunidad": "Salud de la comunidad",
       "gobernanza": "Gobernanza"
     },
     "contracts": {
@@ -442,7 +442,7 @@
       "navLabel": "Automatización",
       "workloadTitle": "Carga de trabajo automatizada",
       "metricsSummary": "{tasks} tareas automatizadas | ~{hours} horas ahorradas | Desglose: {memberComms} comunicaciones con socios, {churnAlerts} alertas de baja, {grantReminders} recordatorios de subvenciones",
-      "manualPending": "{count} tareas manuales pendientes",
+      "manualPending": "{count, plural, one {# tarea manual pendiente} other {# tareas manuales pendientes}}",
       "justificationLink": "Ir a justificaciones de subvenciones",
       "settingsTitle": "Flujos de comunicación",
       "enabled": "Activado",
@@ -549,7 +549,7 @@
       "eliminarEncuestaDesc": "Esta acción no se puede deshacer. Se eliminará la encuesta permanentemente."
     },
     "candidatos": {
-      "titulo": "Candidatos",
+      "titulo": "Candidaturas",
       "importarExcel": "Importar Excel",
       "candidatoAprobado": "Candidato aprobado",
       "errorAprobar": "Error al aprobar",
@@ -709,7 +709,8 @@
     "onboarding": {
       "nuevaTarea": "Nueva tarea",
       "noHayTareas": "No hay tareas de onboarding.",
-      "eliminarTarea": "¿Eliminar esta tarea?"
+      "eliminarTarea": "¿Eliminar esta tarea?",
+      "titulo": "Acogida"
     },
     "ranking": {
       "historial": "Historial de Ranking Semanal",
@@ -1079,7 +1080,7 @@
       "colNote": "Nota"
     },
     "beneficiarios": {
-      "title": "Beneficiarios",
+      "title": "Personas beneficiarias",
       "subtitle": "Personas atendidas y matching de mentoría con voluntarios.",
       "loading": "Cargando…",
       "error": "No se pudo cargar beneficiarios.",
@@ -1162,7 +1163,7 @@
       }
     },
     "metricasComunidad": {
-      "title": "Métricas de comunidad",
+      "title": "Salud de la comunidad",
       "subtitle": "Engagement, retención de voluntarios y detección de churn.",
       "loading": "Cargando…",
       "error": "No se pudieron cargar las métricas.",
@@ -1262,9 +1263,10 @@
         "exportaciones": "Exportaciones"
       },
       "mobile": {
-        "actividades": "Actividades",
+        "actividades": "Turnos",
         "escaner": "Escáner",
-        "chat": "Chat"
+        "chat": "Chat",
+        "voluntariado": "Equipo"
       }
     }
   },
@@ -1283,7 +1285,7 @@
       "mas": "Más",
       "salir": "Salir",
       "ayudaAlimentaria": "Ayuda alimentaria",
-      "video": "Video / Directo"
+      "video": "Vídeo y directos"
     },
     "video": {
       "title": "Video y directo",
@@ -1619,7 +1621,8 @@
         "ranking": "Ranking"
       },
       "mobile": {
-        "notificaciones": "Avisos"
+        "notificaciones": "Avisos",
+        "actividades": "Agenda"
       }
     }
   },

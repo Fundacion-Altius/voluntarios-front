@@ -1,15 +1,17 @@
 import { isDevelopment } from '@/lib/utils'
 import { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
 
 export const metadata: Metadata = {
-  title: 'Analytics Dashboard',
+  title: 'Analítica',
   description: 'Performance and usage analytics',
 }
 
-export default function AnalyticsDashboard() {
+export default async function AnalyticsDashboard() {
+  const t = await getTranslations('admin.nav');
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Analytics Dashboard</h1>
+      <h1 className="text-3xl font-bold mb-6">{t('analytics')}</h1>
       
       {isDevelopment() ? (
         <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-6">

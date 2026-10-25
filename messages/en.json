@@ -347,25 +347,25 @@
       }
     },
     "nav": {
-      "panelAdmin": "Admin Panel",
-      "dashboard": "Dashboard",
+      "panelAdmin": "Management panel",
+      "dashboard": "Overview",
       "contratos": "Contracts",
       "usuarios": "Users",
       "encuestas": "Surveys",
       "analytics": "Analytics",
-      "candidatos": "Candidates",
+      "candidatos": "Applications",
       "actividades": "Activities",
       "blog": "Blog",
       "cursos": "Courses",
       "onboarding": "Onboarding",
       "scanner": "Scanner",
-      "ranking": "Ranking",
+      "ranking": "Recognition",
       "asistencia": "Attendance",
       "impacto": "Impact",
-      "fondos": "Funding",
+      "fondos": "Funds",
       "grants": "Grants",
-      "automatizacion": "Automation",
-      "mensajeria": "WhatsApp / Telegram",
+      "automatizacion": "Automations",
+      "mensajeria": "WhatsApp and Telegram",
       "mensajes": "Team chat",
       "exportaciones": "Exports",
       "salir": "Sign out",
@@ -376,7 +376,7 @@
       "beneficiarios": "Beneficiaries",
       "redesSociales": "Social media",
       "campanas": "Campaigns",
-      "metricasComunidad": "Community metrics",
+      "metricasComunidad": "Community health",
       "gobernanza": "Governance"
     },
     "contracts": {
@@ -442,7 +442,7 @@
       "navLabel": "Automation",
       "workloadTitle": "Automated workload",
       "metricsSummary": "{tasks} tasks automated | ~{hours} hours saved | Breakdown: {memberComms} member communications, {churnAlerts} churn alerts, {grantReminders} grant reminders",
-      "manualPending": "{count} manual tasks pending",
+      "manualPending": "{count, plural, one {# manual task pending} other {# manual tasks pending}}",
       "justificationLink": "Go to grant justification page",
       "settingsTitle": "Communication workflows",
       "enabled": "Enabled",
@@ -549,7 +549,7 @@
       "eliminarEncuestaDesc": "This action cannot be undone. The survey will be permanently deleted."
     },
     "candidatos": {
-      "titulo": "Candidates",
+      "titulo": "Applications",
       "importarExcel": "Import Excel",
       "candidatoAprobado": "Candidate approved",
       "errorAprobar": "Error approving",
@@ -709,7 +709,8 @@
     "onboarding": {
       "nuevaTarea": "New task",
       "noHayTareas": "No onboarding tasks.",
-      "eliminarTarea": "Delete this task?"
+      "eliminarTarea": "Delete this task?",
+      "titulo": "Onboarding"
     },
     "ranking": {
       "historial": "Weekly Ranking History",
@@ -1162,7 +1163,7 @@
       }
     },
     "metricasComunidad": {
-      "title": "Community metrics",
+      "title": "Community health",
       "subtitle": "Engagement, volunteer retention, and churn detection.",
       "loading": "Loading…",
       "error": "Could not load community metrics.",
@@ -1232,7 +1233,7 @@
         "datos": "Data and settings"
       },
       "items": {
-        "panel": "Dashboard",
+        "panel": "Overview",
         "analitica": "Analytics",
         "candidaturas": "Applications",
         "personasVoluntarias": "Volunteers",
@@ -1262,9 +1263,10 @@
         "exportaciones": "Exports"
       },
       "mobile": {
-        "actividades": "Activities",
+        "actividades": "Shifts",
         "escaner": "Scanner",
-        "chat": "Chat"
+        "chat": "Chat",
+        "voluntariado": "Team"
       }
     }
   },
@@ -1281,9 +1283,9 @@
       "ranking": "Ranking",
       "notificaciones": "Notifications",
       "mas": "More",
-      "salir": "Log out",
+      "salir": "Sign out",
       "ayudaAlimentaria": "Food aid",
-      "video": "Video / Live"
+      "video": "Video and live"
     },
     "video": {
       "title": "Video and livestream",
@@ -1619,7 +1621,8 @@
         "ranking": "Ranking"
       },
       "mobile": {
-        "notificaciones": "Alerts"
+        "notificaciones": "Alerts",
+        "actividades": "Agenda"
       }
     }
   },
