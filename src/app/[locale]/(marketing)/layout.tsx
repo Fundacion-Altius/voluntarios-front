@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 // Klaruk marketing pages (Spanish only for now). Styles are scoped under .klaruk
-// so admin, portal and the contract wizard are unaffected. Light theme is forced. Fonts come from the root layout.
+// so admin, portal and the contract wizard are unaffected. Light and dark themes follow the app ThemeProvider (html.dark). Fonts come from the root layout.
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="klaruk" lang="es">

@@ -1,4 +1,4 @@
-/* Klaruk marketing styles, ported from klaruk-site. Scoped to .klaruk; light theme only. */
+/* Klaruk marketing styles, ported from klaruk-site. Scoped to .klaruk; light and dark (html.dark). */
 .klaruk{--bg:#f6f5f1;--panel:#ecebe6;--card:#ffffff;--field:#ffffff;--line:#dedcd5;--line-strong:#7a7f8c;
   --txt:#1b1d2a;--dim:#545867;--brand:#3d3fa8;--brand-ink:#2a2c7a;--brand-tint:#ecebf8;--on-brand:#ffffff;
   --link:#3437a0;--accent:#e2bd7a;--accent-edge:#c49a4c;--accent-hover:#e9ca92;--on-accent:#1a1408;--leaf:#1b7a3d;--error:#c0157a;
@@ -131,7 +131,7 @@
 .klaruk .feature-list{margin:0;gap:10px;font-size:16px;line-height:1.5;color:var(--dim)}
 .klaruk .feature-list li::before{flex:none}
 .klaruk{min-height:100vh}
-html:has(.klaruk){scroll-padding-top:88px;color-scheme:light}
+html:has(.klaruk){scroll-padding-top:88px}
 
 /* v2 step 1: hero product shot */
 .klaruk{--shadow-lg:0 2px 4px rgb(42 44 122/.06),0 24px 48px -12px rgb(42 44 122/.22),0 48px 96px -24px rgb(42 44 122/.18)}
@@ -212,3 +212,21 @@ html:has(.klaruk){scroll-padding-top:88px;color-scheme:light}
 .klaruk .hero .shot{order:1;margin:4px 0 24px}.klaruk .hero .pills{order:2;margin:0}}
 @media (prefers-reduced-motion:reduce){.klaruk .feature:hover{transform:none}}
 .klaruk .hours-note{margin:10px 0 0;font-size:15px;font-weight:600;color:var(--dim)}
+
+/* Dark theme: app dark tokens (globals.css .dark) plus dark gold/leaf equivalents */
+html.dark .klaruk{--bg:#12131c;--panel:#181a25;--card:#1c1e2b;--field:#1c1e2b;--line:#2c2f40;--line-strong:#6b7084;
+  --txt:#ecedf3;--dim:#a3a7b8;--brand:#9fa2ff;--brand-ink:#c9cbff;--brand-tint:#23254a;--on-brand:#12131c;
+  --link:#9fa2ff;--accent:#e2bd7a;--accent-edge:#c49a4c;--accent-hover:#e9ca92;--on-accent:#1a1408;--leaf:#5ecf7f;--error:#ff6fb0;
+  --gold-ink:#e2bd7a;--leaf-tint:#15291d;--gold-tint:#2b2416;
+  --shadow:0 1px 2px rgb(0 0 0/.4),0 8px 24px rgb(0 0 0/.3);
+  --shadow-lg:0 2px 4px rgb(0 0 0/.4),0 24px 48px -12px rgb(0 0 0/.55),0 48px 96px -24px rgb(0 0 0/.45);
+  color-scheme:dark}
+.klaruk .logo{display:block}.klaruk .logo img{display:block}
+.klaruk .logo-dark,html.dark .klaruk .logo-light{display:none!important}
+html.dark .klaruk .logo-dark{display:block!important}
+html.dark .klaruk .closing-dark{background:#1d1f45}
+html.dark .klaruk .sc-hub+g rect{fill:var(--on-brand)}
+html.dark .klaruk .sc-hub+g path{stroke:var(--on-brand)}
+html.dark .klaruk .shot img{filter:brightness(.92)}
+.klaruk .theme-switch{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--txt);cursor:pointer}
+.klaruk .theme-switch:hover{background:var(--brand-tint);color:var(--brand)}
