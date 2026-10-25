@@ -1,6 +1,7 @@
 import { Link } from "@/i18n/navigation";
 import Faq from "@/components/klaruk/Faq";
 import FeatureCard from "@/components/klaruk/FeatureCard";
+import ScatterToOne from "@/components/klaruk/ScatterToOne";
 import { CTA, TRIAL_URL } from "@/components/klaruk/links";
 import { features, featuresTitle, featuresSubtitle } from "@/components/klaruk/features";
 
@@ -42,7 +43,7 @@ export default function Home() {
       <section className="band">
         <div className="wrap">
           <h2>¿Te suena?</h2>
-          <div className="grid3">
+          <div className="grid3 pains">
             <div className="card">Turnos en un Excel, voluntarios en tres grupos de WhatsApp, socios en otra hoja y la justificación de la subvención a última hora.</div>
             <div className="card">Acabas la semana agotada, con la sensación de que la gestión se come el tiempo que querías dar a la causa.</div>
             <div className="card card-accent">Quien dedica su tiempo a los demás no debería perderlo en hojas de cálculo.</div>
@@ -50,17 +51,22 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="wrap section narrow">
-        <h2>Sabemos lo que es, porque lo hemos vivido.</h2>
-        <p className="lead">Klaruk nace de años trabajando con ONG y voluntariado, viendo a equipos directivos sostener todo a base de buena voluntad y horas robadas.</p>
-        <p>Hecho por ShiftCitizen, que forma y acompaña a entidades del tercer sector en digitalización e IA.</p>
+      <section className="wrap section story">
+        <div className="story-text">
+          <h2>Sabemos lo que es, porque lo hemos vivido.</h2>
+          <p className="lead">Klaruk nace de años trabajando con ONG y voluntariado, viendo a equipos directivos sostener todo a base de buena voluntad y horas robadas.</p>
+          <p>Hecho por ShiftCitizen, que forma y acompaña a entidades del tercer sector en digitalización e IA.</p>
+        </div>
+        <ScatterToOne />
       </section>
 
-      <section className="wrap section" id="funcionalidades" aria-labelledby="features-title">
+      <section className="band band-tint" id="funcionalidades" aria-labelledby="features-title">
+        <div className="wrap">
         <h2 id="features-title">{featuresTitle}</h2>
         <p className="lead features-sub">{featuresSubtitle}</p>
         <div className="features-grid">
           {features.map((f, i) => <FeatureCard key={f.title} f={f} index={i} />)}
+        </div>
         </div>
       </section>
 

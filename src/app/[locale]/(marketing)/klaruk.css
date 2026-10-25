@@ -162,3 +162,18 @@ html:has(.klaruk){scroll-padding-top:88px;color-scheme:light}
 .klaruk .feature .more:hover{color:var(--brand-ink)}
 .klaruk .feature .benefit{font-weight:500}
 .klaruk .ticks li[hidden]{display:none}
+
+/* v2 step 4: section layouts and rhythm */
+.klaruk .band-tint{background:color-mix(in srgb,var(--brand) 6%,var(--bg));border-block:1px solid color-mix(in srgb,var(--brand) 12%,var(--bg))}
+.klaruk .pains .card{border-left:4px solid var(--line-strong);font-size:17px}
+.klaruk .pains .card-accent{border:0;background:var(--brand);color:var(--on-brand);font:700 21px/1.3 var(--font-heading);display:flex;align-items:center;box-shadow:var(--shadow-lg)}
+.klaruk .story{display:grid;gap:32px;align-items:center}
+@media (min-width:900px){.klaruk .story{grid-template-columns:1.1fr 1fr}}
+.klaruk .story-text>*{max-width:var(--measure)}
+.klaruk .scatter{width:100%;max-width:440px;height:auto;justify-self:center}
+.klaruk .sc-lines{stroke:color-mix(in srgb,var(--brand) 45%,transparent)}
+.klaruk .sc-card rect:first-child{fill:var(--card);stroke:var(--line-strong);stroke-width:1}
+.klaruk .sc-grid{stroke:var(--line);fill:none}
+.klaruk .sc-bar{fill:var(--line)}
+.klaruk .sc-glow{fill:color-mix(in srgb,var(--brand) 12%,transparent)}
+.klaruk .sc-hub{fill:var(--brand)}
