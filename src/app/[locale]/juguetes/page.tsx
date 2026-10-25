@@ -62,7 +62,7 @@ function ToyCard({ item, qty, inCart, t, setPick, addLine, removeLine, onZoom }:
           aria-label={t('verGrande')}
         >
           <img
-            src={`${getApiBaseUrl()}${shown}`}
+            src={`${getApiBaseUrl()}${shown}${shown.includes('?') ? '&' : '?'}v=${encodeURIComponent(String(item.ean ?? item.id))}`}
             alt={item.title ?? item.article}
             className="aspect-square w-full object-cover"
             data-testid={`juguetes-img-${item.id}`}
@@ -189,7 +189,9 @@ export default function JuguetesPage() {
   const [age, setAge] = useState('');
   const [ageFilter, setAgeFilter] = useState<string | null>(null);
   const [catalog, setCatalog] = useState<any[]>([]);
-  const [household, setHousehold] = useState(() => `Familia ${String(Date.now()).slice(-4)}`);
+  const [codeDraft, setCodeDraft] = useState('');
+  const [household, setHousehold] = useState('');
+  const [toyQuota, setToyQuota] = useState(0);
   const [cartId, setCartId] = useState('');
   const [lines, setLines] = useState<{ toy_id: string; qty: number }[]>([]);
   const [pick, setPick] = useState<Record<string, number>>({});
@@ -201,7 +203,6 @@ export default function JuguetesPage() {
   const [zoom, setZoom] = useState<{ images: string[]; index: number; alt: string; desc: string } | null>(null);
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [autoLoaded, setAutoLoaded] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState('');
   const fail = (e: unknown) => {
@@ -226,9 +227,27 @@ export default function JuguetesPage() {
     setOut(`${(r.data as any[]).length} ${t('items')}`);
   };
 
+  const enterCode = async () => {
+    const code = codeDraft.trim();
+    if (!code) return fail(t('codigoVacio'));
+    const r = await api.lookupHousehold(code);
+    if (!r.success) return fail(t('codigoInvalido'));
+    setHousehold(r.data.code);
+    setToyQuota(r.data.toy_quota);
+    setCartId('');
+    setLines([]);
+    setQr('');
+    setQrPng('');
+    setError('');
+    setOut(t('cupoMensaje', { n: r.data.toy_quota }));
+    await browse();
+  };
+
   const addLine = async (toyId: string) => {
     const qty = pick[toyId] ?? 0;
     if (qty <= 0) return;
+    if (!household) return fail(t('codigoVacio'));
+    if (cartCount + qty > toyQuota) return fail(t('cupoLleno', { n: toyQuota }));
     let id = cartId;
     if (!id) {
       const c = await api.createCart(household);
@@ -238,9 +257,10 @@ export default function JuguetesPage() {
     }
     const r = await api.addLine(id, toyId, qty);
     if (!r.success) return fail(r.error);
-    setLines(r.data.lines as { toy_id: string; qty: number }[]);
+    const next = r.data.lines as { toy_id: string; qty: number }[];
+    setLines(next);
     setPick((p) => ({ ...p, [toyId]: 0 }));
-    setOut(`${t('enCesta')}: ${(r.data.lines as any[]).length}`);
+    setOut(`${t('enCesta')}: ${next.reduce((n, l) => n + l.qty, 0)} / ${toyQuota}`);
   };
 
   const removeLine = async (toyId: string) => {
@@ -272,14 +292,6 @@ export default function JuguetesPage() {
     if (!r.success) return fail(r.error);
     setOut(`${t('reservado')}: ${t('avisoCanal')}`);
   };
-
-  useEffect(() => {
-    if (!autoLoaded && api.status?.enabled) {
-      setAutoLoaded(true);
-      void browse();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [api.status, autoLoaded]);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(query.trim().toLowerCase()), 300);
@@ -327,6 +339,42 @@ export default function JuguetesPage() {
 
   if (api.status && !api.status.enabled) return <p data-testid="juguetes-denied">{t('apagado')}</p>;
 
+  if (!household) {
+    return (
+      <div className="jug mx-auto flex w-full max-w-[560px] flex-col gap-6 px-4 pb-24 pt-6 sm:px-6" data-testid="juguetes-console">
+        <header className="jug-hero" data-testid="juguetes-hero">
+          <Garland />
+          <div className="relative flex flex-col gap-3">
+            <span className="jug-eyebrow self-start"><Star size={14} />{t('titulo')}</span>
+            <h1>{t('codigoTitulo')}</h1>
+            <p className="jug-lead">{t('codigoAyuda')}</p>
+          </div>
+        </header>
+        <div className="jug-basket flex flex-col gap-3" data-testid="juguetes-entry">
+          <label htmlFor="juguetes-code" className="text-sm font-medium">{t('codigoEtiqueta')}</label>
+          <Input
+            id="juguetes-code"
+            data-testid="juguetes-code"
+            value={codeDraft}
+            onChange={(e) => setCodeDraft(e.target.value)}
+            placeholder={t('codigoPlaceholder')}
+            className="h-11 font-mono uppercase"
+            autoComplete="off"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') void enterCode();
+            }}
+          />
+          <Button data-testid="juguetes-code-go" onClick={() => void enterCode()} className="min-h-11 w-full">
+            {t('codigoEntrar')}
+          </Button>
+          {error && <p role="alert" className="jug-error" data-testid="juguetes-error">{error}</p>}
+          {out && <p data-testid="juguetes-out" role="status" className="text-sm">{out}</p>}
+        </div>
+        <ChristmasFooter t={(k) => t(k)} />
+      </div>
+    );
+  }
+
   return (
     <div className="jug mx-auto flex w-full max-w-[1160px] flex-col gap-6 px-4 pb-24 pt-6 sm:px-6 lg:pb-6" data-testid="juguetes-console">
       <header className="jug-hero" data-testid="juguetes-hero">
@@ -335,6 +383,7 @@ export default function JuguetesPage() {
           <span className="jug-eyebrow self-start"><Star size={14} />{t('titulo')}</span>
           <h1>{t.rich('saludo', { em: (c) => <em>{c}</em> })}</h1>
           <p className="jug-lead">{t('intro')}</p>
+          <p className="text-sm font-medium" data-testid="juguetes-quota">{t('cupoMensaje', { n: toyQuota })}</p>
         </div>
       </header>
       <main className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]" data-testid="juguetes-main">
@@ -429,20 +478,8 @@ export default function JuguetesPage() {
         <aside id="cesta" aria-labelledby="juguetes-cesta-h" className="jug-basket" data-testid="juguetes-checkout-card">
           <h2 id="juguetes-cesta-h" className="text-xl font-semibold">{t('cesta')}</h2>
           <p className="text-sm text-muted-foreground" data-testid="juguetes-basket-count">
-            {cartCount > 0 ? `${cartCount} ${t('articulos')}` : t('cestaVacia')}
+            {cartCount > 0 ? `${cartCount} / ${toyQuota} ${t('articulos')}` : t('cestaVacia')}
           </p>
-          <div className="flex flex-col gap-1">
-            <label htmlFor="juguetes-household" className="text-sm font-medium">{t('hogarEtiqueta')}</label>
-            <Input
-              id="juguetes-household"
-              data-testid="juguetes-household"
-              value={household}
-              onChange={(e) => setHousehold(e.target.value)}
-              aria-describedby="juguetes-household-help"
-              className="h-11"
-            />
-            <p id="juguetes-household-help" className="text-xs text-muted-foreground">{t('hogarAyuda')}</p>
-          </div>
           <Button data-testid="juguetes-checkout" onClick={checkout} className="min-h-11 w-full">{t('comprar')}</Button>
           <Button data-testid="juguetes-slots" variant="outline" onClick={loadSlots} className="min-h-11 w-full">{t('verTurnos')}</Button>
           {slots.length > 0 && (
@@ -485,7 +522,7 @@ export default function JuguetesPage() {
           {zoom && zoom.images.length > 0 && (
             <div className="flex flex-col gap-2">
               <img
-                src={`${getApiBaseUrl()}${zoom.images[zoom.index]}`}
+                src={`${getApiBaseUrl()}${zoom.images[zoom.index]}${zoom.images[zoom.index].includes('?') ? '&' : '?'}v=${encodeURIComponent(zoom.alt)}`}
                 alt={zoom.alt}
                 className="max-h-[70vh] w-full object-contain"
                 data-testid="juguetes-modal-img"

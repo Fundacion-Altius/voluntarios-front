@@ -29,7 +29,7 @@
 .klaruk .skip{position:absolute;left:16px;top:-100px;z-index:100;background:var(--card);color:var(--txt);padding:10px 16px;border-radius:var(--r-btn);border:2px solid var(--link);font-family:var(--font-heading);text-decoration:none}
 .klaruk .skip:focus{top:12px}
 .klaruk .btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 20px;border-radius:var(--r-btn);font-weight:600;font-size:16px;text-decoration:none;line-height:1.2;text-align:center;transition:background .15s,transform .15s}
-.klaruk .btn-primary{background:var(--accent);color:var(--on-accent);border:1px solid var(--accent-edge)}
+.klaruk .hero .btn-primary, .klaruk .section .btn-primary {background:var(--cta);color:var(--cta-foreground);border:1px solid var(--cta);}
 .klaruk .btn-primary:hover{background:var(--accent-hover)}
 .klaruk .btn-secondary{background:var(--card);color:var(--brand);border:1.5px solid var(--brand)}
 .klaruk .btn-secondary:hover{background:var(--brand-tint)}
@@ -72,7 +72,7 @@
 .klaruk .compare.no{border-top:4px solid var(--line-strong)}
 .klaruk .compare.yes h3::before{content:"✓";color:var(--leaf)}
 .klaruk .compare.no h3::before{content:"✕";color:var(--dim)}
-.klaruk .steps{list-style:none;counter-reset:s;padding:0;margin:0 0 28px;display:grid;gap:16px;max-width:var(--measure)}
+.klaruk .steps{list-style:none;counter-reset:s;padding:0;margin:0 28px;display:grid;gap:16px;max-width:var(--measure)}
 .klaruk .steps li{counter-increment:s;display:flex;gap:16px;align-items:flex-start;font-size:17px}
 .klaruk .steps li::before{content:counter(s);flex:none;width:40px;height:40px;border-radius:50%;background:var(--brand);color:var(--on-brand);display:flex;align-items:center;justify-content:center;font:700 18px var(--font-heading)}
 .klaruk .faq details{border-bottom:1px solid var(--line)}
@@ -143,7 +143,7 @@ html:has(.klaruk){scroll-padding-top:88px}
 /* v2 step 2: hero depth and scale */
 .klaruk .hero-band{position:relative;isolation:isolate;overflow:hidden;border-bottom:1px solid var(--line)}
 .klaruk .hero-band::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
-  background:radial-gradient(60% 70% at 85% 30%,rgb(61 63 168/.14),transparent 70%),radial-gradient(40% 50% at 10% 100%,rgb(226 189 122/.18),transparent 70%)}
+  background:radial-gradient(60% 70% at 85% 30%,rgb(61 63 168/.14),transparent 70%),radial-gradient(40% 50% at 98% 4%,rgb(226 189 122/.18),transparent 70%)}
 .klaruk .hero-band::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.5;
   background-image:radial-gradient(rgb(61 63 168/.22) 1px,transparent 1.2px);background-size:22px 22px;
   -webkit-mask-image:radial-gradient(70% 80% at 70% 40%,#000,transparent 75%);mask-image:radial-gradient(70% 80% at 70% 40%,#000,transparent 75%)}
@@ -254,7 +254,7 @@ html.dark .klaruk{--hero-bg:#0d0e1c;--glow-a:rgb(159 162 255/.30);--glow-b:rgb(2
     repeating-linear-gradient(to bottom,transparent 0 3px,var(--texture) 3px 4px),
     linear-gradient(var(--grid-line) 1px,transparent 1px) 0 0/52px 52px,
     linear-gradient(90deg,var(--grid-line) 1px,transparent 1px) 0 0/52px 52px;
-  -webkit-mask-image:radial-gradient(90% 100% at 70% 30%,#000 30%,transparent 85%);mask-image:radial-gradient(90% 100% at 70% 30%,#000 30%,transparent 85%)}
+  -webkit-mask-image:radial-gradient(90% 100% at 70% 30%,#000 30%,transparent 85%)}
 .klaruk .hero-band .shot{box-shadow:var(--shadow-lg),0 0 0 1px color-mix(in srgb,var(--brand) 18%,transparent),0 30px 120px -20px var(--glow-a)}
 @keyframes k-drift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(-2.5%,1.5%,0) scale(1.06)}}
 @media (prefers-reduced-motion:reduce){.klaruk .hero-band::before{animation:none}}
@@ -289,3 +289,76 @@ html.dark .klaruk{--hero-bg:#0d0e1c;--glow-a:rgb(159 162 255/.30);--glow-b:rgb(2
   -webkit-mask-image:radial-gradient(60% 90% at 50% 40%,#000,transparent 80%);mask-image:radial-gradient(60% 90% at 50% 40%,#000,transparent 80%)}
 .klaruk{overflow-x:clip}
 .klaruk .meta a{color:var(--txt);text-decoration:underline;font-weight:600}
+
+/* ===== NUEVOS ESTILOS INSPIRADOS EN SHIFTCITIZEN ===== */
+
+/* Background del hero inspirado en ShiftCitizen.com */
+.klaruk .hero-background {
+    background-color: #0a0e12;
+    background-image: 
+        radial-gradient(circle at 50% 50%, rgba(226, 189, 122, 0.08) 0%, transparent 70%),
+        repeating-linear-gradient(0deg, transparent 0px, rgba(255, 255, 255, 0.03) 1px, transparent 2px),
+        repeating-linear-gradient(90deg, transparent 0px, rgba(255, 255, 255, 0.02) 1px, transparent 2px);
+    background-size: 40px 40px;
+    min-height: 600px;
+    position: relative;
+}
+
+/* Logo con mark >_ */
+.klaruk .logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.klaruk .mark {
+    font-size: 24px;
+    color: #17fd6c;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+}
+
+/* Trust signals */
+.klaruk .trust-signals {
+    background-color: rgba(26, 32, 42, 0.8);
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 40px;
+    border: 1px solid #2c3a42;
+}
+
+.klaruk .trust-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    color: #a3a7b8;
+}
+
+.klaruk .trust-item::before {
+    content: "✓";
+    color: #5ecf7f;
+    font-weight: bold;
+}
+
+/* Espaciado y grids */
+.klaruk .container {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.klaruk .gap-20 {
+    gap: 20px;
+}
+
+.klaruk .card {
+    background-color: #182024;
+    border: 1px solid #2c3a42;
+    border-radius: 10px;
+    padding: 24px;
+}
+
+.klaruk .section-spacing {
+    padding: 72px 0;
+}

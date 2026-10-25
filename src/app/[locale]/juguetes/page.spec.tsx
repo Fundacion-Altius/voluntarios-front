@@ -8,9 +8,20 @@ jest.mock('next-auth/react', () => ({
 }));
 
 function setupFetch(handler: (url: string, init?: RequestInit) => unknown) {
-  global.fetch = jest.fn((url: string, init?: RequestInit) =>
-    Promise.resolve({ ok: true, json: () => Promise.resolve(handler(String(url), init)) } as Response),
-  ) as jest.Mock;
+  global.fetch = jest.fn((url: string, init?: RequestInit) => {
+    const path = String(url);
+    if (path.includes('/csrf-token')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ csrfToken: 'test' }) } as Response);
+    if (path.includes('/households/')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ code: 'abcd1234', toy_quota: 5 }) } as Response);
+    const body = handler(path, init);
+    return Promise.resolve({ ok: true, json: () => Promise.resolve(body) } as Response);
+  }) as jest.Mock;
+}
+
+async function enterCode() {
+  await waitFor(() => expect(screen.getByTestId('juguetes-code')).toBeInTheDocument());
+  await userEvent.clear(screen.getByTestId('juguetes-code'));
+  await userEvent.type(screen.getByTestId('juguetes-code'), 'abcd1234');
+  await userEvent.click(screen.getByTestId('juguetes-code-go'));
 }
 
 describe('JuguetesPage', () => {
@@ -43,6 +54,7 @@ describe('JuguetesPage', () => {
       </TestProviders>,
     );
     await waitFor(() => expect(screen.getByTestId('juguetes-console')).toBeInTheDocument());
+    await enterCode();
 
     await waitFor(() => expect(screen.getByTestId('juguetes-out')).toHaveTextContent('2 elementos'));
     expect(screen.getByTestId('juguetes-grid')).toBeInTheDocument();
@@ -85,6 +97,7 @@ describe('JuguetesPage', () => {
         <JuguetesPage />
       </TestProviders>,
     );
+    await enterCode();
     await waitFor(() => expect(screen.getByTestId('juguetes-agefilter')).toBeInTheDocument());
     expect(screen.getByTestId('juguetes-age-all')).toHaveAttribute('aria-pressed', 'true');
 
@@ -109,6 +122,7 @@ describe('JuguetesPage', () => {
         <JuguetesPage />
       </TestProviders>,
     );
+    await enterCode();
     await waitFor(() => expect(screen.getByTestId('juguetes-out')).toHaveTextContent('1 elementos'));
     const age = screen.getByTestId('juguetes-age');
     expect(age).not.toBeVisible();
@@ -127,7 +141,7 @@ describe('JuguetesPage', () => {
         <JuguetesPage />
       </TestProviders>,
     );
-    await waitFor(() => expect(screen.getByTestId('juguetes-console')).toBeInTheDocument());
+    await enterCode();
     await waitFor(() => expect(screen.getByTestId('juguetes-zoom-t1')).toBeInTheDocument());
     await userEvent.click(screen.getByTestId('juguetes-zoom-t1'));
     await waitFor(() => expect(screen.getByTestId('juguetes-modal')).toBeInTheDocument());
@@ -145,7 +159,7 @@ describe('JuguetesPage', () => {
         <JuguetesPage />
       </TestProviders>,
     );
-    await waitFor(() => expect(screen.getByTestId('juguetes-console')).toBeInTheDocument());
+    await enterCode();
     await waitFor(() => expect(screen.getByTestId('juguetes-zoom-t1')).toBeInTheDocument());
     await userEvent.click(screen.getByTestId('juguetes-zoom-t1'));
     await waitFor(() => expect(screen.getByTestId('juguetes-modal')).toBeInTheDocument());
@@ -178,6 +192,7 @@ describe('JuguetesPage', () => {
         <JuguetesPage />
       </TestProviders>,
     );
+    await enterCode();
     await waitFor(() => expect(screen.getByTestId('juguetes-grid')).toBeInTheDocument());
     expect(screen.getByTestId('juguetes-card-t1')).toBeInTheDocument();
     expect(screen.getByTestId('juguetes-card-t2')).toBeInTheDocument();
@@ -227,6 +242,7 @@ describe('Pagination', () => {
         <JuguetesPage />
       </TestProviders>,
     );
+    await enterCode();
     await waitFor(() => expect(screen.getByTestId('juguetes-pager')).toBeInTheDocument());
     expect(screen.getAllByTestId(/^juguetes-card-/)).toHaveLength(12);
     expect(screen.getByTestId('juguetes-page-1')).toHaveAttribute('aria-current', 'page');

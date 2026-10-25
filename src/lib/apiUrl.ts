@@ -5,7 +5,7 @@ export function getApiBaseUrl(): string {
     return ENV_API;
   }
   const h = window.location.hostname;
-  if (h === 'localhost' || h === '127.0.0.1') {
+  if (h === 'localhost' || h === '127.0.0.1' || h.endsWith('.localhost')) {
     return ENV_API;
   }
   return `${window.location.protocol}//${window.location.host}`;

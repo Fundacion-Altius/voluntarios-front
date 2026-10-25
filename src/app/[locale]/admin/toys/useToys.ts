@@ -102,6 +102,7 @@ export function useToys() {
     deleteItem: (id: string) => call(session, `/items/${id}`, { method: 'DELETE' }),
     updateItem: (id: string, patch: Record<string, unknown>) =>
       call(session, `/items/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
+    lookupHousehold: (code: string) => pub(`/households/${encodeURIComponent(code.trim())}`),
     createCart: (household_id: string) => pub('/carts', { method: 'POST', body: JSON.stringify({ household_id }) }),
     addLine: (cartId: string, toy_id: string, qty: number) =>
       pub(`/carts/${cartId}/lines`, { method: 'POST', body: JSON.stringify({ toy_id, qty }) }),
