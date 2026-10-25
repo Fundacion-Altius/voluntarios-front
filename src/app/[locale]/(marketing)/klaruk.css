@@ -260,3 +260,31 @@ html.dark .klaruk{--hero-bg:#0d0e1c;--glow-a:rgb(159 162 255/.30);--glow-b:rgb(2
 @media (prefers-reduced-motion:reduce){.klaruk .hero-band::before{animation:none}}
 /* On narrow screens the text sits over the glows, so keep them softer (dim text stays >= 4.5:1). */
 @media (max-width:899px){.klaruk{--glow-a:rgb(61 63 168/.18)}html.dark .klaruk{--glow-a:rgb(159 162 255/.20)}}
+
+/* v3: section backgrounds with texture and depth (after shiftcitizen-website bands and
+   .close-band). Decorative layers only: z-index -1, pointer-events none, text keeps its tokens. */
+.klaruk .hero-band+.band,.klaruk .story,.klaruk #funcionalidades,.klaruk .band:has(.hours){position:relative;isolation:isolate}
+.klaruk .hero-band+.band,.klaruk #funcionalidades,.klaruk .band:has(.hours){overflow:hidden}
+.klaruk .hero-band+.band::before,.klaruk .story::before,.klaruk #funcionalidades::before,.klaruk .band:has(.hours)::before,.klaruk .closing-dark::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none}
+/* Pains: fine dot texture with a warm gold glow, fading out to the left */
+.klaruk .hero-band+.band::before{
+  background:radial-gradient(ellipse 40% 70% at 100% 0%,color-mix(in srgb,var(--accent) 22%,transparent),transparent 70%),
+    radial-gradient(color-mix(in srgb,var(--brand) 16%,transparent) 1px,transparent 1.3px) 0 0/18px 18px;
+  -webkit-mask-image:linear-gradient(90deg,rgb(0 0 0/.35),#000 70%);mask-image:linear-gradient(90deg,rgb(0 0 0/.35),#000 70%)}
+/* Story: soft indigo halo behind the illustration */
+.klaruk .story::before{inset:0 -10vw;background:radial-gradient(ellipse 30% 60% at 78% 55%,color-mix(in srgb,var(--brand) 14%,transparent),transparent 70%)}
+/* Features: line grid fading down from the title, indigo glow at the top */
+.klaruk #funcionalidades::before{
+  background:radial-gradient(ellipse 50% 40% at 50% 0%,color-mix(in srgb,var(--brand) 16%,transparent),transparent 70%),
+    linear-gradient(color-mix(in srgb,var(--brand) 9%,transparent) 1px,transparent 1px) 0 0/52px 52px,
+    linear-gradient(90deg,color-mix(in srgb,var(--brand) 9%,transparent) 1px,transparent 1px) 0 0/52px 52px;
+  -webkit-mask-image:linear-gradient(#000,transparent 55%);mask-image:linear-gradient(#000,transparent 55%)}
+/* Hours: depth behind the big number (indigo) with a gold counter-glow */
+.klaruk .band:has(.hours)::before{
+  background:radial-gradient(circle at 14% 50%,color-mix(in srgb,var(--brand) 18%,transparent),transparent 34%),
+    radial-gradient(ellipse 30% 80% at 100% 100%,color-mix(in srgb,var(--accent) 20%,transparent),transparent 70%)}
+/* Closing: dark band with a masked grid and a gold glow, like ShiftCitizen's close-band */
+.klaruk .closing-dark::before{background:radial-gradient(50% 80% at 50% 0%,rgb(159 162 255/.35),transparent 70%),radial-gradient(ellipse 40% 90% at 100% 110%,rgb(226 189 122/.28),transparent 70%),radial-gradient(ellipse 30% 70% at 0% 100%,rgb(159 162 255/.22),transparent 70%)}
+.klaruk .closing-dark::after{background:linear-gradient(rgb(255 255 255/.06) 1px,transparent 1px) 0 0/52px 52px,linear-gradient(90deg,rgb(255 255 255/.06) 1px,transparent 1px) 0 0/52px 52px;
+  -webkit-mask-image:radial-gradient(60% 90% at 50% 40%,#000,transparent 80%);mask-image:radial-gradient(60% 90% at 50% 40%,#000,transparent 80%)}
+.klaruk{overflow-x:clip}
