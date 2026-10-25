@@ -129,7 +129,8 @@ function ToyCard({ item, qty, inCart, t, setPick, addLine, removeLine, onZoom }:
   );
 }
 
-const XMAS_COUNT = 10;
+const XMAS_COUNT = 15;
+const GOSPEL_FROM = 11;
 const PAGE_SIZE = 12;
 
 function Pager({ page, pages, onGo, t }: { page: number; pages: number; onGo: (p: number) => void; t: (k: string, v?: Record<string, number>) => string }) {
@@ -159,7 +160,7 @@ function Pager({ page, pages, onGo, t }: { page: number; pages: number; onGo: (p
   );
 }
 
-/** One of ten holiday messages, picked on the client after mount so SSR and hydration match. */
+/** One of fifteen holiday messages (10 greetings + 5 Gospel verses with reference), picked on the client after mount so SSR and hydration match. */
 function ChristmasFooter({ t }: { t: (k: string) => string }) {
   const [n, setN] = useState<number | null>(null);
   useEffect(() => {
@@ -168,7 +169,12 @@ function ChristmasFooter({ t }: { t: (k: string) => string }) {
   return (
     <footer className="jug-footer" data-testid="juguetes-footer">
       <Star size={16} />
-      <p data-testid="juguetes-xmas" data-n={n ?? ''}>{n ? t(`navidad.${n}`) : '\u00a0'}</p>
+      <p data-testid="juguetes-xmas" data-n={n ?? ''}>
+        {n ? t(`navidad.${n}`) : '\u00a0'}
+        {n && n >= GOSPEL_FROM && (
+          <cite className="jug-ref" data-testid="juguetes-xmas-ref" title={t('navidadFuente')}>{t(`navidadRef.${n}`)}</cite>
+        )}
+      </p>
       <Star size={16} />
     </footer>
   );

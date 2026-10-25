@@ -211,7 +211,7 @@ describe('ChristmasFooter', () => {
     );
     const p = await screen.findByTestId('juguetes-xmas');
     await waitFor(() => expect(Number(p.getAttribute('data-n'))).toBeGreaterThan(0));
-    expect(Number(p.getAttribute('data-n'))).toBeLessThanOrEqual(10);
+    expect(Number(p.getAttribute('data-n'))).toBeLessThanOrEqual(15);
     expect(p.textContent?.length).toBeGreaterThan(20);
   });
 });
@@ -234,5 +234,21 @@ describe('Pagination', () => {
     expect(screen.getByTestId('juguetes-page-status')).toHaveTextContent('Página 3 de 3');
     await userEvent.type(screen.getByTestId('juguetes-search'), 'Toy');
     await waitFor(() => expect(screen.getByTestId('juguetes-page-1')).toHaveAttribute('aria-current', 'page'));
+  });
+});
+
+describe('Gospel messages', () => {
+  it('shows the verse with its reference', async () => {
+    jest.spyOn(Math, 'random').mockReturnValue(13 / 15);
+    setupFetch((url) => (url.endsWith('/status') ? { flag: 'toy_handout', enabled: true } : []));
+    render(
+      <TestProviders>
+        <JuguetesPage />
+      </TestProviders>,
+    );
+    await waitFor(() => expect(screen.getByTestId('juguetes-xmas')).toHaveAttribute('data-n', '14'));
+    expect(screen.getByTestId('juguetes-xmas')).toHaveTextContent('Verbo se hizo carne');
+    expect(screen.getByTestId('juguetes-xmas-ref')).toHaveTextContent('Juan 1,14');
+    jest.restoreAllMocks();
   });
 });

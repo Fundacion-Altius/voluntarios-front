@@ -37,3 +37,4 @@ html.dark .jug{--festive:#f3a6a0;--festive-soft:#2d1c22;--gold:#e8c06a;--gold-so
 .jug-page[aria-current=page]{background:var(--primary);border-color:var(--primary);color:var(--primary-foreground)}
 .jug-page:disabled{opacity:.45;cursor:not-allowed}
 .jug-page:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.jug-ref{display:block;margin-top:.25rem;font-style:normal;font-size:.875rem;color:var(--muted-foreground)}
