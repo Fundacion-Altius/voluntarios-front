@@ -9,6 +9,32 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToys } from '../admin/toys/useToys';
 import { getApiBaseUrl } from '@/lib/apiUrl';
 import { AGE_BANDS } from '@/lib/toyBands';
+import './juguetes.css';
+
+function Star({ size = 18 }: { size?: number }) {
+  return (
+    <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2.5l2.6 6.1 6.6.6-5 4.4 1.5 6.5L12 16.8l-5.7 3.3 1.5-6.5-5-4.4 6.6-.6z" />
+    </svg>
+  );
+}
+
+function Garland() {
+  return (
+    <svg className="jug-garland" aria-hidden="true" viewBox="0 0 360 220" preserveAspectRatio="xMaxYMin meet" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M10 18 Q 95 80 180 30 T 350 40" />
+      {[[40,38],[95,56],[150,42],[205,30],[260,44],[315,40]].map(([x, y], i) => (
+        <g key={i} transform={`translate(${x} ${y})`}>
+          <line x1="0" y1="0" x2="0" y2={18 + (i % 3) * 14} />
+          <circle cx="0" cy={26 + (i % 3) * 14} r={i % 2 ? 7 : 9} fill="currentColor" fillOpacity=".18" />
+        </g>
+      ))}
+      <g transform="translate(300 150)" strokeWidth="1.2">
+        {[0, 60, 120].map((a) => (<line key={a} x1="-22" y1="0" x2="22" y2="0" transform={`rotate(${a})`} />))}
+      </g>
+    </svg>
+  );
+}
 
 function lightboxImages(item: any): string[] {
   return item.cover ? [item.cover, ...(item.pictures ?? []).filter((p: string) => p !== item.cover)] : (item.pictures ?? []);
@@ -236,8 +262,15 @@ export default function JuguetesPage() {
   if (api.status && !api.status.enabled) return <p data-testid="juguetes-denied">{t('apagado')}</p>;
 
   return (
-    <div className="mx-auto flex w-full max-w-[1160px] flex-col gap-4 px-4 py-6 sm:px-6" data-testid="juguetes-console">
-      <h1 className="max-w-[65ch] text-2xl font-bold">{t('titulo')}</h1>
+    <div className="jug mx-auto flex w-full max-w-[1160px] flex-col gap-4 px-4 py-6 sm:px-6" data-testid="juguetes-console">
+      <header className="jug-hero" data-testid="juguetes-hero">
+        <Garland />
+        <div className="relative flex flex-col gap-3">
+          <span className="jug-eyebrow self-start"><Star size={14} />{t('titulo')}</span>
+          <h1>{t.rich('saludo', { em: (c) => <em>{c}</em> })}</h1>
+          <p className="jug-lead">{t('intro')}</p>
+        </div>
+      </header>
       <Input
         data-testid="juguetes-search"
         value={query}
@@ -292,7 +325,8 @@ export default function JuguetesPage() {
         <div data-testid="juguetes-clusters" className="flex flex-col gap-4">
           {clusterByAge(visibleCatalog).map((cluster) => (
             <div key={cluster.band} data-testid={`juguetes-cluster-${cluster.band}`}>
-              <h2 className="text-lg font-semibold">
+              <h2 className="jug-band mb-3 mt-4">
+                <Star />
                 {t('edadEtiqueta')}: {t(`bandas.${cluster.band}`)}
               </h2>
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">

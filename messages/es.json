@@ -1,5 +1,7 @@
 {
   "juguetes": {
+    "saludo": "¡Hola! Elegid los <em>juguetes de esta Navidad</em>",
+    "intro": "Aquí tenéis los juguetes reservados para vuestra familia. Mirad con calma por edades, añadid a la cesta los que más ilusión os hagan y elegid un turno para recogerlos. Es gratis y lo hacemos con mucho cariño.",
     "titulo": "Reparto de juguetes — diciembre",
     "apagado": "Reparto de juguetes apagado para este centro.",
     "costeCero": "Todo es gratis — coste cero",

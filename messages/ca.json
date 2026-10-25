@@ -1,5 +1,7 @@
 {
   "juguetes": {
+    "saludo": "Hola! Trieu les <em>joguines d'aquest Nadal</em>",
+    "intro": "Aquí teniu les joguines reservades per a la vostra família. Mireu-les amb calma per edats, afegiu a la cistella les que més il·lusió us facin i trieu un torn per recollir-les. És gratuït i ho fem amb molt d'afecte.",
     "titulo": "Repartiment de joguines — desembre",
     "apagado": "Repartiment de joguines apagat per a aquest centre.",
     "costeCero": "Tot és gratis — cost zero",

@@ -1,5 +1,7 @@
 {
   "juguetes": {
+    "saludo": "Hello! Choose <em>this Christmas's toys</em>",
+    "intro": "Here are the toys set aside for your family. Take your time browsing by age, add the ones you love most to your basket, and pick a time to collect them. It's free, and we do it with lots of care.",
     "titulo": "Toy handout — December",
     "apagado": "Toy handout is off for this tenant.",
     "costeCero": "Everything is free — zero cost",
