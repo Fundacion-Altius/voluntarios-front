@@ -138,3 +138,15 @@ html:has(.klaruk){scroll-padding-top:88px;color-scheme:light}
 .klaruk .shot-bar{display:flex;gap:6px;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--panel)}
 .klaruk .shot-bar span{width:10px;height:10px;border-radius:50%;background:var(--line-strong);opacity:.45}
 .klaruk .shot img{display:block;width:100%;height:auto}
+
+/* v2 step 2: hero depth and scale */
+.klaruk .hero-band{position:relative;isolation:isolate;overflow:hidden;border-bottom:1px solid var(--line)}
+.klaruk .hero-band::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(60% 70% at 85% 30%,rgb(61 63 168/.14),transparent 70%),radial-gradient(40% 50% at 10% 100%,rgb(226 189 122/.18),transparent 70%)}
+.klaruk .hero-band::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.5;
+  background-image:radial-gradient(rgb(61 63 168/.22) 1px,transparent 1.2px);background-size:22px 22px;
+  -webkit-mask-image:radial-gradient(70% 80% at 70% 40%,#000,transparent 75%);mask-image:radial-gradient(70% 80% at 70% 40%,#000,transparent 75%)}
+.klaruk .hero-title{font-size:clamp(42px,4.8vw,66px);line-height:1;letter-spacing:-.035em;max-width:15ch}
+@media (min-width:900px){.klaruk .hero{grid-template-columns:1.1fr 1fr;padding-top:88px;padding-bottom:96px}}
+@media (min-width:1240px){.klaruk .hero .shot{margin-right:-96px}}
+.klaruk .hero-band+.band{margin-top:0}

@@ -16,9 +16,10 @@ const faq = [
 export default function Home() {
   return (
     <>
-      <section className="hero wrap">
+      <section className="hero-band">
+        <div className="hero wrap">
         <div className="hero-text">
-          <h1>Tu ONG existe para las personas, no para el papeleo.</h1>
+          <h1 className="hero-title">Tu ONG existe para las personas, no para el papeleo.</h1>
           <p className="lead">Klaruk es el sistema operativo de tu entidad: voluntariado, socios, actividades, subvenciones e impacto en un solo sitio. Hazlo con clics o pídeselo a la IA con tus palabras.</p>
           <div className="actions">
             <a className="btn btn-primary" href={TRIAL_URL}>{CTA}</a>
@@ -34,6 +35,7 @@ export default function Home() {
           {/* eslint-disable-next-line @next/next/no-img-element -- static marketing asset, sized below */}
           <img src="/klaruk/panel-demo.png" width={1440} height={900} alt="Panel de Klaruk con indicadores de voluntariado: cobertura, fiabilidad, retención y satisfacción." fetchPriority="high" />
         </figure>
+        </div>
       </section>
 
       <section className="band">
