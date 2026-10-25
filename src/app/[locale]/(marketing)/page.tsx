@@ -28,9 +28,12 @@ export default function Home() {
             <li>Usuarios ilimitados</li><li>IA incluida</li><li>En castellano y catalán</li><li>Tus datos son tuyos</li>
           </ul>
         </div>
-        <div className="shot-placeholder" role="img" aria-label="Captura del panel de Klaruk (pendiente)">
-          <span>Captura del panel de Klaruk</span>
-        </div>
+        <figure className="shot">
+          <div className="shot-bar" aria-hidden="true"><span /><span /><span /></div>
+          {/* Demo data only (Fundación Altius demo tenant). */}
+          {/* eslint-disable-next-line @next/next/no-img-element -- static marketing asset, sized below */}
+          <img src="/klaruk/panel-demo.png" width={1440} height={900} alt="Panel de Klaruk con indicadores de voluntariado: cobertura, fiabilidad, retención y satisfacción." fetchPriority="high" />
+        </figure>
       </section>
 
       <section className="band">
