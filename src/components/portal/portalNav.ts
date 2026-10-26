@@ -1,4 +1,4 @@
-import { Home, Bell, Calendar, Users, PackageSearch, BookOpen, MessageSquare, Video, Newspaper, Award, Trophy } from 'lucide-react';
+import { Home, Bell, Calendar, Users, PackageSearch, BookOpen, MessageSquare, Video, Newspaper, Award, Trophy, CircleHelp } from 'lucide-react';
 import type { NavGroup } from '@/components/navigation/GroupedNav';
 
 type T = (key: string) => string;
@@ -11,6 +11,7 @@ export function portalNavGroups(t: T): { pinned: NavGroup; groups: NavGroup[] } 
     pinned: { id: 'miDia', label: g('miDia'), items: [
       { href: '/portal', label: i('inicio'), icon: Home, exact: true },
       { href: '/portal/notificaciones', label: i('notificaciones'), icon: Bell },
+      { href: '/docs', label: i('ayuda'), icon: CircleHelp },
     ] },
     groups: [
       { id: 'participar', label: g('participar'), items: [

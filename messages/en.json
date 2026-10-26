@@ -1297,6 +1297,7 @@
       "items": {
         "panel": "Overview",
         "analitica": "Analytics",
+        "ayuda": "Help",
         "candidaturas": "Applications",
         "personasVoluntarias": "Volunteers",
         "acogida": "Onboarding",
@@ -1742,6 +1743,7 @@
       "items": {
         "inicio": "Home",
         "notificaciones": "Notifications",
+        "ayuda": "Help",
         "actividades": "Activities",
         "proyectos": "Projects",
         "ayudaAlimentaria": "Food aid",

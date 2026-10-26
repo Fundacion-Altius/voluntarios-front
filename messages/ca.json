@@ -1297,6 +1297,7 @@
       "items": {
         "panel": "Panell",
         "analitica": "Analítica",
+        "ayuda": "Ajuda",
         "candidaturas": "Candidatures",
         "personasVoluntarias": "Persones voluntàries",
         "acogida": "Acollida",
@@ -1742,6 +1743,7 @@
       "items": {
         "inicio": "Inici",
         "notificaciones": "Notificacions",
+        "ayuda": "Ajuda",
         "actividades": "Activitats",
         "proyectos": "Projectes",
         "ayudaAlimentaria": "Ajuda alimentària",

@@ -2,7 +2,7 @@ import {
   LayoutDashboard, BarChart3, UserCheck, Users, ClipboardList, FileText, HeartPulse, Trophy,
   CalendarCheck, Scan, BookOpen, HandHeart, MessageCircle, Share2, Newspaper, Wallet, Coins,
   Megaphone, Scale, LineChart, Activity, Network, Bot, Plug, Download, ListChecks,
-  ShoppingBasket, Ticket, CalendarClock,
+  ShoppingBasket, Ticket, CalendarClock, CircleHelp,
 } from 'lucide-react';
 import type { NavGroup } from '@/components/navigation/GroupedNav';
 
@@ -17,6 +17,7 @@ export function adminNavGroups(t: T): { pinned: NavGroup; groups: NavGroup[] } {
       id: 'inicio', label: g('inicio'), items: [
         { href: '/admin/dashboard', label: i('panel'), icon: LayoutDashboard },
         { href: '/admin/analytics', label: i('analitica'), icon: BarChart3 },
+        { href: '/docs', label: i('ayuda'), icon: CircleHelp },
       ],
     },
     groups: [

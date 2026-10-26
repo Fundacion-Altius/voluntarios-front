@@ -1297,6 +1297,7 @@
       "items": {
         "panel": "Panel",
         "analitica": "Analítica",
+        "ayuda": "Ayuda",
         "candidaturas": "Candidaturas",
         "personasVoluntarias": "Personas voluntarias",
         "acogida": "Acogida",
@@ -1742,6 +1743,7 @@
       "items": {
         "inicio": "Inicio",
         "notificaciones": "Notificaciones",
+        "ayuda": "Ayuda",
         "actividades": "Actividades",
         "proyectos": "Proyectos",
         "ayudaAlimentaria": "Ayuda alimentaria",
