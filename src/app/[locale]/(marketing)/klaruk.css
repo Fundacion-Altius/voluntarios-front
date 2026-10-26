@@ -3,7 +3,7 @@
   --txt:#1b1d2a;--dim:#545867;--brand:#3d3fa8;--brand-ink:#2a2c7a;--brand-tint:#ecebf8;--on-brand:#ffffff;
   --link:#3437a0;--accent:#e2bd7a;--accent-edge:#c49a4c;--accent-hover:#e9ca92;--on-accent:#1a1408;--leaf:#1b7a3d;--error:#c0157a;
   --shadow:0 1px 2px rgb(27 29 42/.06),0 8px 24px rgb(27 29 42/.05);
-  --r-btn:10px;--r-card:14px;--r-feature:20px;--r-show:24px;--gap:20px;--section:80px;--band:64px;--measure:36em;
+  --r-btn:10px;--r-card:14px;--r-feature:20px;--r-show:24px;--gap:20px;--section:112px;--band:96px;--measure:36em;
   --gold-ink:#7d5a12;--leaf-tint:#e4f1e8;--gold-tint:#f6ecd8;
   color-scheme:light;}
 .klaruk *,.klaruk *::before,.klaruk *::after{box-sizing:border-box}
@@ -29,7 +29,7 @@
 .klaruk .skip{position:absolute;left:16px;top:-100px;z-index:100;background:var(--card);color:var(--txt);padding:10px 16px;border-radius:var(--r-btn);border:2px solid var(--link);font-family:var(--font-heading);text-decoration:none}
 .klaruk .skip:focus{top:12px}
 .klaruk .btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 20px;border-radius:var(--r-btn);font-weight:600;font-size:16px;text-decoration:none;line-height:1.2;text-align:center;transition:background .15s,transform .15s}
-.klaruk .hero .btn-primary, .klaruk .section .btn-primary {background:var(--cta);color:var(--cta-foreground);border:1px solid var(--cta);}
+.klaruk .btn-primary{background:var(--cta);color:var(--cta-foreground);border:1px solid var(--cta)}
 .klaruk .btn-primary:hover{background:var(--accent-hover)}
 .klaruk .btn-secondary{background:var(--card);color:var(--brand);border:1.5px solid var(--brand)}
 .klaruk .btn-secondary:hover{background:var(--brand-tint)}
@@ -192,13 +192,14 @@ html:has(.klaruk){scroll-padding-top:88px}
 
 /* v2 step 6: stronger ending */
 .klaruk .compare.yes{background:color-mix(in srgb,var(--leaf) 6%,var(--card));box-shadow:var(--shadow-lg)}
-.klaruk .compare.no{background:transparent;box-shadow:none;color:var(--dim)}
+.klaruk .compare.no{background:var(--panel);border-color:var(--line-strong);box-shadow:none;color:var(--txt)}
+.klaruk .compare.no p{color:var(--dim)}
 .klaruk .faq-split{display:grid;gap:24px 56px}
 @media (min-width:900px){.klaruk .faq-split{grid-template-columns:minmax(260px,1fr) 1.6fr;align-items:start}.klaruk .faq-side{position:sticky;top:96px}}
 .klaruk .faq-card{margin-top:20px;background:var(--brand-tint);border-color:color-mix(in srgb,var(--brand) 25%,var(--bg));box-shadow:none}
 .klaruk .faq-card p{margin-bottom:.5em}
 .klaruk .faq-card a{font-weight:600}
-.klaruk .closing-dark{position:relative;isolation:isolate;overflow:hidden;background:var(--brand-ink);color:#fff;padding:96px 0}
+.klaruk .closing-dark{position:relative;isolation:isolate;overflow:hidden;background:var(--brand-ink);color:#fff;padding:128px 0}
 .klaruk .closing-dark::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(50% 80% at 50% 0%,rgb(159 162 255/.35),transparent 70%)}
 .klaruk .closing-dark h2{font-size:clamp(32px,4vw,48px);letter-spacing:-.02em}
 .klaruk .closing-dark .btn-secondary{background:transparent;color:#fff;border-color:rgb(255 255 255/.7)}
@@ -352,13 +353,11 @@ html.dark .klaruk{--hero-bg:#0d0e1c;--glow-a:rgb(159 162 255/.30);--glow-b:rgb(2
     gap: 20px;
 }
 
-.klaruk .card {
-    background-color: #182024;
-    border: 1px solid #2c3a42;
-    border-radius: 10px;
-    padding: 24px;
-}
 
 .klaruk .section-spacing {
     padding: 72px 0;
 }
+/* Pains ("¿Te suena?"): more vertical breathing room */
+.klaruk .hero-band+.band{padding-block:clamp(72px,10vw,128px)}
+.klaruk .hero-band+.band h2{margin-bottom:clamp(28px,4vw,48px)}
+.klaruk .hero-band+.band{padding-bottom:clamp(112px,14vw,192px)}
