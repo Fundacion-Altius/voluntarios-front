@@ -23,3 +23,4 @@ Ask the Klaruk assistant for shortcuts when enabled.
 ## Common issues
 
 - If you do not see the menu, check your role and the organisation subscription.
+- New organisations get a 15-day Full plan trial (no card); see [Plans and billing](../cuenta/planes).

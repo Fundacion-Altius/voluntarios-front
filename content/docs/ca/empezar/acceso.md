@@ -23,3 +23,4 @@ Consulta l'assistent de Klaruk per a dreceres quan estiguin habilitades.
 ## Problemes comuns
 
 - Si no veus el menú, comprova el teu rol i la subscripció de l'entitat.
+- Les entitats noves tenen 15 dies de prova del pla Complet (sense targeta); vegeu [Plans i facturació](../cuenta/planes).
