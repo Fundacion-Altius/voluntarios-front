@@ -7,6 +7,12 @@ module.exports = {
   packageManager: 'pnpm',
   concurrency,
   testRunner: 'jest',
+  // Full suite dry-run: findRelatedTests + ignored i18n mutate paths left
+  // `navigation.ts` resolving `./routing` broken in the sandbox (MODULE_NOT_FOUND).
+  jest: {
+    configFile: 'jest.stryker.config.js',
+    enableFindRelatedTests: false,
+  },
   reporters: ['json', 'html', 'progress'],
   coverageAnalysis: 'perTest',
   checkers: ['typescript'],

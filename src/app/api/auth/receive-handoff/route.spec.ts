@@ -1,5 +1,5 @@
 /**
- * @jest-environment node
+ * @jest-environment @stryker-mutator/jest-runner/jest-env/node
  *
  * Unit tests for receive-handoff endpoint
  * Tests the session establishment on tenant hosts

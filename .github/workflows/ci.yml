@@ -31,11 +31,15 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Mirrors local `./scripts/check-done.sh --front` order: tests → typecheck → lint → build.
+      - name: Unit tests
+        run: pnpm exec jest --watchAll=false
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
       - name: Lint
         run: pnpm lint
-
-      - name: Unit tests
-        run: pnpm test
 
       # Verifies the production bundle that CD will ship. Build-time public
       # config is stubbed to localhost; real values come from build args in CD.

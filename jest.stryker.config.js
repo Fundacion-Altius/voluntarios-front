@@ -5,7 +5,8 @@ const createJestConfig = nextJest({
 });
 
 const customJestConfig = {
-  testEnvironment: 'jsdom',
+  // Stryker needs its instrumented jsdom env to collect per-test coverage.
+  testEnvironment: '@stryker-mutator/jest-runner/jest-env/jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   transform: {
     '^.+\\.tsx?$': ['ts-jest', {
@@ -15,9 +16,9 @@ const customJestConfig = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
-  testPathIgnorePatterns: ['<rootDir>/e2e/'],
+  testPathIgnorePatterns: ['<rootDir>/e2e/', '<rootDir>/coverage/', '<rootDir>/.stryker-tmp/', '<rootDir>/reports/'],
   testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.tsx?$',
-  collectCoverage: true,
+  collectCoverage: false,
   coverageReporters: ['json-summary', 'html', 'text'],
 };
 

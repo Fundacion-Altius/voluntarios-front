@@ -1,5 +1,5 @@
 /**
- * @jest-environment node
+ * @jest-environment @stryker-mutator/jest-runner/jest-env/node
  *
  * Unit tests for tenant-handoff endpoint
  * Tests the OAuth callback handler on the auth host
