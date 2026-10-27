@@ -336,6 +336,12 @@
     "imagenTitulo": "IMAGE USE INFORMATION AND CONSENT"
   },
   "admin": {
+    "trial": {
+      "daysLeft": "You have {n} trial days left.",
+      "seePlans": "See plans",
+      "readonlyNotice": "Your trial has ended. The account is read-only: you can export data and subscribe.",
+      "exportData": "Export data"
+    },
     "toys": {
       "titulo": "Toys — December",
       "activo": "ON",

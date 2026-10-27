@@ -336,6 +336,12 @@
     "imagenTitulo": "INFORMACIÓN Y CONSENTIMIENTO DE USO DE IMÁGENES"
   },
   "admin": {
+    "trial": {
+      "daysLeft": "Te quedan {n} días de prueba.",
+      "seePlans": "Ver planes",
+      "readonlyNotice": "Tu prueba ha terminado. La cuenta está en solo lectura: puedes exportar datos y suscribirte.",
+      "exportData": "Exportar datos"
+    },
     "toys": {
       "titulo": "Juguetes — diciembre",
       "activo": "ON",

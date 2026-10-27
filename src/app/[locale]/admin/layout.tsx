@@ -9,6 +9,7 @@ import AdminBottomNav from '@/components/admin/AdminBottomNav';
 import { NotificationBell } from '@/components/NotificationBell';
 import { ChatbotDrawer } from '@/components/chat/ChatbotDrawer';
 import { RoutePendingProvider } from '@/components/navigation/RoutePending';
+import { TrialBanner } from '@/components/admin/TrialBanner';
 
 export default function AdminLayout({
   children,
@@ -65,7 +66,10 @@ export default function AdminLayout({
       </div>
       <div className="flex min-w-0 flex-1 flex-col">
         <main className="min-w-0 flex-1 overflow-x-hidden p-4 pb-20 lg:p-6 lg:pb-6">
-          <div className="mx-auto min-w-0 max-w-[90rem]">{children}</div>
+          <div className="mx-auto min-w-0 max-w-[90rem]">
+            <TrialBanner />
+            {children}
+          </div>
         </main>
       </div>
       <div className="lg:hidden">

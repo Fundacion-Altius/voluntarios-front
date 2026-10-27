@@ -336,6 +336,12 @@
     "imagenTitulo": "INFORMACIÓ I CONSENTIMENT D'ÚS D'IMATGES"
   },
   "admin": {
+    "trial": {
+      "daysLeft": "Et queden {n} dies de prova.",
+      "seePlans": "Veure plans",
+      "readonlyNotice": "La prova ha acabat. El compte està en només lectura: pots exportar dades i subscriure't.",
+      "exportData": "Exportar dades"
+    },
     "toys": {
       "titulo": "Joguines — desembre",
       "activo": "ON",
