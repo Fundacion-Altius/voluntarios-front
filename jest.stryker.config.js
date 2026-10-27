@@ -18,6 +18,7 @@ const customJestConfig = {
   },
   testPathIgnorePatterns: ['<rootDir>/e2e/', '<rootDir>/coverage/', '<rootDir>/.stryker-tmp/', '<rootDir>/reports/'],
   testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.tsx?$',
+  testTimeout: 15000,
   collectCoverage: false,
   coverageReporters: ['json-summary', 'html', 'text'],
 };
