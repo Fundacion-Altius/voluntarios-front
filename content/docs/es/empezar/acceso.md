@@ -23,3 +23,4 @@ Consulta el asistente de Klaruk para atajos cuando estén habilitados.
 ## Problemas comunes
 
 - Si no ves el menú, comprueba tu rol y la suscripción de la entidad.
+- Las entidades nuevas tienen 15 días de prueba del plan Completo (sin tarjeta); ver [Planes y facturación](../cuenta/planes).
