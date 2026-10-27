@@ -88,7 +88,8 @@ describe('admin asistencia page', () => {
       expect(screen.getByText('Ana García')).toBeInTheDocument();
     });
     expect(screen.getByText('Confirmada')).toBeInTheDocument();
-    expect(screen.getByText(/\d{2}:05/)).toBeInTheDocument();
+    // Locale-safe: GitHub ubuntu (TZ=UTC, en-US) renders "9:05:00 AM"; es-ES often "09:05:00".
+    expect(screen.getByText(/\d{1,2}:05/)).toBeInTheDocument();
   });
 
   it('shows cancelled entries with a badge and offers walk-in form for free volunteers', async () => {
