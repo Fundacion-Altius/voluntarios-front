@@ -407,25 +407,25 @@
       }
     },
     "nav": {
-      "panelAdmin": "Management panel",
-      "dashboard": "Overview",
+      "panelAdmin": "Admin Panel",
+      "dashboard": "Dashboard",
       "contratos": "Contracts",
       "usuarios": "Users",
       "encuestas": "Surveys",
       "analytics": "Analytics",
-      "candidatos": "Applications",
+      "candidatos": "Candidates",
       "actividades": "Activities",
       "blog": "Blog",
       "cursos": "Courses",
       "onboarding": "Onboarding",
       "scanner": "Scanner",
-      "ranking": "Recognition",
+      "ranking": "Ranking",
       "asistencia": "Attendance",
       "impacto": "Impact",
-      "fondos": "Funds",
+      "fondos": "Funding",
       "grants": "Grants",
-      "automatizacion": "Automations",
-      "mensajeria": "WhatsApp and Telegram",
+      "automatizacion": "Automation",
+      "mensajeria": "WhatsApp / Telegram",
       "mensajes": "Team chat",
       "exportaciones": "Exports",
       "salir": "Sign out",
@@ -440,7 +440,8 @@
       "gobernanza": "Governance",
       "unKilo": "1 kilo",
       "citas": "Appointments",
-      "ticketing": "Ticketing"
+      "ticketing": "Ticketing",
+      "mcp": "MCP / Agents"
     },
     "contracts": {
       "noDisponibles": "No contracts available.",
@@ -452,7 +453,7 @@
       "descargarPdf": "Download PDF"
     },
     "dashboard": {
-      "titulo": "Overview",
+      "titulo": "Dashboard",
       "seccionOtrasMetricas": "Other metrics",
       "signupsByMonth": "Volunteer signups by month",
       "signupsByLugar": "Volunteer signups by location",
@@ -504,8 +505,8 @@
     "automation": {
       "navLabel": "Automation",
       "workloadTitle": "Automated workload",
-      "metricsSummary": "{tasks} tasks automated | ~{hours} hours saved | Breakdown: {memberComms} member communications, {churnAlerts} churn alerts, {grantReminders} grant reminders",
-      "manualPending": "{count, plural, one {# manual task pending} other {# manual tasks pending}}",
+      "metricsSummary": "{tasks} tasks automated | ~{hours} hours saved | Breakdown: {memberComms} member comms, {churnAlerts} churn alerts, {grantReminders} grant reminders",
+      "manualPending": "{count} manual tasks pending",
       "justificationLink": "Go to grant justification page",
       "settingsTitle": "Communication workflows",
       "enabled": "Enabled",
@@ -612,7 +613,7 @@
       "eliminarEncuestaDesc": "This action cannot be undone. The survey will be permanently deleted."
     },
     "candidatos": {
-      "titulo": "Applications",
+      "titulo": "Candidates",
       "importarExcel": "Import Excel",
       "candidatoAprobado": "Candidate approved",
       "errorAprobar": "Error approving",
@@ -1328,6 +1329,7 @@
         "salud": "Community health",
         "federacion": "Federation",
         "automatizaciones": "Automations",
+        "mcp": "MCP / Agents",
         "integraciones": "Integrations",
         "exportaciones": "Exports",
         "unKilo": "1 kilo",
@@ -1407,12 +1409,24 @@
       "colActions": "Actions",
       "take": "Take",
       "complete": "Complete"
+    },
+    "mcp": {
+      "title": "MCP / Agents",
+      "subtitle": "Inventory of MCP tools available to AI agents (KL-E-006).",
+      "loading": "Loading…",
+      "error": "Could not load the MCP inventory.",
+      "toolsTitle": "Tools",
+      "empty": "No tools registered.",
+      "colName": "Name",
+      "colEffect": "Effect",
+      "colRoles": "Roles",
+      "colDescription": "Description"
     }
   },
   "portal": {
     "nav": {
       "inicio": "Home",
-      "miPortal": "My portal",
+      "miPortal": "My Portal",
       "cursos": "Courses",
       "actividades": "Activities",
       "proyectos": "Projects",
@@ -1422,7 +1436,7 @@
       "ranking": "Ranking",
       "notificaciones": "Notifications",
       "mas": "More",
-      "salir": "Sign out",
+      "salir": "Log out",
       "ayudaAlimentaria": "Food aid",
       "video": "Video and live"
     },
@@ -1445,7 +1459,7 @@
       "open": "Open"
     },
     "home": {
-      "titulo": "My portal",
+      "titulo": "My Dashboard",
       "subtitulo": "Welcome to your volunteering portal",
       "miPerfil": "My Profile",
       "nivel": "Level",
@@ -1783,7 +1797,7 @@
         "coverage_rate": "Volunteer Coverage Rate",
         "time_to_fill": "Time-to-Fill",
         "reliability_rate": "Volunteer Reliability (Attendance)",
-        "onboarding_completion_rate": "Onboarding completed",
+        "onboarding_completion_rate": "Onboarding Completion",
         "social_impact_per_hour": "Social Impact per Volunteer Hour",
         "volunteer_nps": "Volunteer Satisfaction (NPS)"
       },

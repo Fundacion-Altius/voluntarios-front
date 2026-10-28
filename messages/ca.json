@@ -407,25 +407,25 @@
       }
     },
     "nav": {
-      "panelAdmin": "Panell de gestió",
-      "dashboard": "Panell",
+      "panelAdmin": "Panell d'Administració",
+      "dashboard": "Dashboard",
       "contratos": "Contractes",
       "usuarios": "Usuaris",
       "encuestas": "Enquestes",
       "analytics": "Analítica",
-      "candidatos": "Candidatures",
+      "candidatos": "Candidats",
       "actividades": "Activitats",
       "blog": "Blog",
       "cursos": "Cursos",
-      "onboarding": "Acollida",
+      "onboarding": "Onboarding",
       "scanner": "Escàner",
-      "ranking": "Reconeixements",
+      "ranking": "Ranking",
       "asistencia": "Assistència",
       "impacto": "Impacte",
       "fondos": "Fons",
       "grants": "Subvencions",
-      "automatizacion": "Automatitzacions",
-      "mensajeria": "WhatsApp i Telegram",
+      "automatizacion": "Automatització",
+      "mensajeria": "WhatsApp / Telegram",
       "mensajes": "Xat intern",
       "exportaciones": "Exportacions",
       "salir": "Sortir",
@@ -440,7 +440,8 @@
       "gobernanza": "Governança",
       "unKilo": "1 quilo",
       "citas": "Cites",
-      "ticketing": "Ticketing"
+      "ticketing": "Ticketing",
+      "mcp": "MCP / Agents"
     },
     "contracts": {
       "noDisponibles": "No hi ha contractes disponibles.",
@@ -452,7 +453,7 @@
       "descargarPdf": "Descarregar PDF"
     },
     "dashboard": {
-      "titulo": "Tauler",
+      "titulo": "Dashboard",
       "seccionOtrasMetricas": "Altres mètriques",
       "signupsByMonth": "Altes de voluntaris per mes",
       "signupsByLugar": "Altes de voluntaris per lloc",
@@ -504,8 +505,8 @@
     "automation": {
       "navLabel": "Automatització",
       "workloadTitle": "Càrrega de treball automatitzada",
-      "metricsSummary": "{tasks} tasques automatitzades | ~{hours} hores estalviades | Desglossament: {memberComms} comunicacions amb socis, {churnAlerts} alertes de baixa, {grantReminders} recordatoris de subvencions",
-      "manualPending": "{count, plural, one {# tasca manual pendent} other {# tasques manuals pendents}}",
+      "metricsSummary": "{tasks} tasques automatitzades | ~{hours} hores estalviades | Desglossament: {memberComms} member comms, {churnAlerts} churn alerts, {grantReminders} grant reminders",
+      "manualPending": "{count} tasques manuals pendents",
       "justificationLink": "Anar a justificacions de subvencions",
       "settingsTitle": "Fluxos de comunicació",
       "enabled": "Activat",
@@ -612,7 +613,7 @@
       "eliminarEncuestaDesc": "Aquesta acció no es pot desfer. S'eliminarà l'enquesta permanentment."
     },
     "candidatos": {
-      "titulo": "Candidatures",
+      "titulo": "Candidats",
       "importarExcel": "Importar Excel",
       "candidatoAprobado": "Candidat aprovat",
       "errorAprobar": "Error en aprovar",
@@ -1328,6 +1329,7 @@
         "salud": "Salut de la comunitat",
         "federacion": "Federació",
         "automatizaciones": "Automatitzacions",
+        "mcp": "MCP / Agents",
         "integraciones": "Integracions",
         "exportaciones": "Exportacions",
         "unKilo": "1 quilo",
@@ -1407,22 +1409,34 @@
       "colActions": "Accions",
       "take": "Atendre",
       "complete": "Completar"
+    },
+    "mcp": {
+      "title": "MCP / Agents",
+      "subtitle": "Inventari d'eines MCP disponibles per a agents d'IA (KL-E-006).",
+      "loading": "Carregant…",
+      "error": "No s'ha pogut carregar l'inventari MCP.",
+      "toolsTitle": "Eines",
+      "empty": "No hi ha eines registrades.",
+      "colName": "Nom",
+      "colEffect": "Efecte",
+      "colRoles": "Rols",
+      "colDescription": "Descripció"
     }
   },
   "portal": {
     "nav": {
       "inicio": "Inici",
-      "miPortal": "El meu portal",
+      "miPortal": "El Meu Portal",
       "cursos": "Cursos",
       "actividades": "Activitats",
       "proyectos": "Projectes",
       "mensajes": "Xat intern",
       "noticias": "Notícies",
       "logros": "Assoliments",
-      "ranking": "Rànquing",
+      "ranking": "Ranking",
       "notificaciones": "Notificacions",
       "mas": "Més",
-      "salir": "Sortir",
+      "salir": "Surt",
       "ayudaAlimentaria": "Ajuda alimentària",
       "video": "Vídeo i directes"
     },
@@ -1445,7 +1459,7 @@
       "open": "Obrir"
     },
     "home": {
-      "titulo": "El meu portal",
+      "titulo": "El Meu Panell",
       "subtitulo": "Benvingut/da al teu portal de voluntariat",
       "miPerfil": "El Meu Perfil",
       "nivel": "Nivell",
@@ -1783,7 +1797,7 @@
         "coverage_rate": "Taxa de cobertura del voluntariat",
         "time_to_fill": "Temps de cobertura",
         "reliability_rate": "Fiabilitat del voluntariat (Assistència)",
-        "onboarding_completion_rate": "Acollida completada",
+        "onboarding_completion_rate": "Finalització de l'onboarding",
         "social_impact_per_hour": "Impacte social per hora de voluntariat",
         "volunteer_nps": "Satisfacció del voluntariat (NPS)"
       },
