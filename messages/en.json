@@ -506,7 +506,7 @@
       "navLabel": "Automation",
       "workloadTitle": "Automated workload",
       "metricsSummary": "{tasks} tasks automated | ~{hours} hours saved | Breakdown: {memberComms} member comms, {churnAlerts} churn alerts, {grantReminders} grant reminders",
-      "manualPending": "{count} manual tasks pending",
+      "manualPending": "{count, plural, one {# manual task pending} other {# manual tasks pending}}",
       "justificationLink": "Go to grant justification page",
       "settingsTitle": "Communication workflows",
       "enabled": "Enabled",
