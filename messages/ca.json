@@ -506,7 +506,7 @@
       "navLabel": "Automatització",
       "workloadTitle": "Càrrega de treball automatitzada",
       "metricsSummary": "{tasks} tasques automatitzades | ~{hours} hores estalviades | Desglossament: {memberComms} member comms, {churnAlerts} churn alerts, {grantReminders} grant reminders",
-      "manualPending": "{count} tasques manuals pendents",
+      "manualPending": "{count, plural, one {# tasca manual pendent} other {# tasques manuals pendents}}",
       "justificationLink": "Anar a justificacions de subvencions",
       "settingsTitle": "Fluxos de comunicació",
       "enabled": "Activat",
