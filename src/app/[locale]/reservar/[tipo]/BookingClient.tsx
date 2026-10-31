@@ -19,6 +19,7 @@ export default function BookingClient({ tipo }: Props) {
   const [org, setOrg] = useState('');
   const [notes, setNotes] = useState('');
   const [consent, setConsent] = useState(false);
+  const [website, setWebsite] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle');
   const [message, setMessage] = useState('');
   const [hangoutLink, setHangoutLink] = useState('');
@@ -71,6 +72,7 @@ export default function BookingClient({ tipo }: Props) {
         visitorOrg: org || undefined,
         notes: notes || undefined,
         consent,
+        website,
       };
       const ref = searchParams.get('ref');
       if (ref) body.ref = ref;
@@ -174,6 +176,19 @@ export default function BookingClient({ tipo }: Props) {
             required
           />
           Consiento el tratamiento de mis datos para gestionar esta reunión.
+        </label>
+
+        {/* Honeypot — leave empty; bots often fill "website" */}
+        <label className="hidden" aria-hidden="true">
+          Website
+          <input
+            type="text"
+            name="website"
+            tabIndex={-1}
+            autoComplete="off"
+            value={website}
+            onChange={(e) => setWebsite(e.target.value)}
+          />
         </label>
 
         <button
