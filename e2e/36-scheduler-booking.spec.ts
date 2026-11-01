@@ -1,6 +1,7 @@
 /**
  * KL-E-018 Agendador — public booking e2e (Carlos functional gate).
- * Requires API on :3001 (local:memory or local:docker) with fake/GCal calendar.
+ * Requires: docker compose up + back `pnpm local:docker` on :3001
+ * (`BOOKING_RETURN_CANCEL_TOKEN=1` is set by that script for cancel-token e2e).
  */
 import { test, expect, request as playwrightRequest } from '@playwright/test';
 import { BACKEND_URL, randomId } from './helpers';
