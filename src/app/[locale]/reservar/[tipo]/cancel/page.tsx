@@ -33,7 +33,7 @@ function CancelInner() {
   }
 
   return (
-    <main className="mx-auto max-w-lg px-6 py-16">
+    <main className="mx-auto max-w-lg px-6 py-16" data-testid="booking-cancel-page">
       <h1 className="text-2xl font-semibold">Cancelar reserva</h1>
       <p className="mt-2 text-sm text-neutral-600">
         Confirma si quieres liberar este hueco. El enlace solo funciona una vez.
@@ -41,6 +41,7 @@ function CancelInner() {
       {status === 'idle' || status === 'loading' ? (
         <button
           type="button"
+          data-testid="booking-cancel-confirm"
           className="mt-6 rounded bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50"
           disabled={!token || status === 'loading'}
           onClick={onCancel}
@@ -48,7 +49,7 @@ function CancelInner() {
           {status === 'loading' ? 'Cancelando…' : 'Confirmar cancelación'}
         </button>
       ) : (
-        <p className="mt-6 text-sm" role="status">
+        <p className="mt-6 text-sm" role="status" data-testid="booking-cancel-message" data-status={status}>
           {message}
         </p>
       )}
