@@ -22,7 +22,7 @@ export default function AdminSidebar({ userName, userEmail, onLogout, onNavigate
   const { pinned, groups } = adminNavGroups(t);
 
   return (
-    <aside className="flex h-full min-h-0 w-64 flex-col border-r bg-card lg:h-screen">
+    <aside className="flex h-full min-h-0 w-64 shrink-0 flex-col border-r bg-card lg:sticky lg:top-0 lg:h-dvh">
       <div className="flex items-center gap-2 border-b px-5 py-4">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/klaruk/symbol.svg" alt="" aria-hidden="true" className="size-8 dark:hidden" />
