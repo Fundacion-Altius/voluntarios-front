@@ -7,27 +7,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { apiClient, apiUrl } from '@/lib/apiClient';
+import { fundOpportunityApi, type FundOpportunity } from '@/lib/api/fundOpportunityApi';
 import { useParams } from 'next/navigation';
 import { Link, useRouter } from '@/i18n/navigation';
 import { ArrowLeft, AlertTriangle, ExternalLink, FileText } from 'lucide-react';
-
-interface FundOpportunity {
-  id: string;
-  name: string;
-  funding_body: string;
-  type: string;
-  sector_tags: string;
-  amount_min: number | null;
-  amount_max: number | null;
-  deadline: string | null;
-  eligibility_criteria: string | null;
-  application_url: string | null;
-  description: string | null;
-  last_updated: string;
-  created_at: string;
-  outdated?: boolean;
-}
 
 const TYPE_LABELS: Record<string, string> = {
   EU: 'EU',
@@ -53,6 +36,7 @@ export default function FondoDetallePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [applySuccess, setApplySuccess] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
 
   useEffect(() => {
     if (id === 'grants') {
@@ -62,7 +46,8 @@ export default function FondoDetallePage() {
     if (!isAuthenticated || !id) return;
     setIsLoading(true);
     setError(null);
-    apiClient<FundOpportunity>(apiUrl(`/api/fund-opportunities/${id}`))
+    fundOpportunityApi
+      .getById(id)
       .then((result) => {
         if (result.success) setOpportunity(result.data);
         else setError(result.error);
@@ -77,12 +62,24 @@ export default function FondoDetallePage() {
 
   const handleApply = async () => {
     if (!id) return;
+    setIsApplying(true);
     try {
-      await apiClient(apiUrl(`/api/fund-opportunities/${id}/apply`), { method: 'POST' });
+      const result = await fundOpportunityApi.apply(id);
+      if (!result.success) {
+        setError(result.error || t('errorAplicar'));
+        return;
+      }
+      const grantId = result.data?.id;
+      if (grantId) {
+        router.push(`/admin/grants/${grantId}`);
+        return;
+      }
       setApplySuccess(true);
       setTimeout(() => setApplySuccess(false), 3000);
     } catch {
       setError(t('errorAplicar'));
+    } finally {
+      setIsApplying(false);
     }
   };
 
@@ -152,7 +149,7 @@ export default function FondoDetallePage() {
               </div>
               <p className="mt-1 text-muted-foreground">{opportunity.funding_body}</p>
             </div>
-            <Button onClick={handleApply}>
+            <Button onClick={handleApply} disabled={isApplying}>
               <FileText className="size-4" />
               {t('iniciarSolicitud')}
             </Button>

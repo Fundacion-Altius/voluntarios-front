@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Eye, Edit, Trash2, Clock, Calendar, Euro, Plus } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import type { Grant } from '@/types/grant';
-import { STATUS_COLORS, STATUS_LABELS } from '@/types/grant';
+import { GRANT_STATUSES, STATUS_COLORS, STATUS_LABELS } from '@/types/grant';
 
 interface GrantPipelineViewProps {
   grants: Grant[];
@@ -19,14 +19,11 @@ interface GrantPipelineViewProps {
 }
 
 // Status order for pipeline columns
-const STATUS_ORDER = [
-  { key: 'identified', label: 'Identificado', color: 'bg-blue-100 text-blue-800' },
-  { key: 'applied', label: 'Solicitado', color: 'bg-yellow-100 text-yellow-800' },
-  { key: 'approved', label: 'Aprobado', color: 'bg-green-100 text-green-800' },
-  { key: 'received', label: 'Recibido', color: 'bg-purple-100 text-purple-800' },
-  { key: 'justified', label: 'Justificado', color: 'bg-gray-100 text-gray-800' },
-  { key: 'rejected', label: 'Rechazado', color: 'bg-red-100 text-red-800' },
-];
+const STATUS_ORDER = GRANT_STATUSES.map((key) => ({
+  key,
+  label: STATUS_LABELS[key],
+  color: STATUS_COLORS[key],
+}));
 
 export function GrantPipelineView({ grants, isLoading, error, onRefresh }: GrantPipelineViewProps) {
   const t = useTranslations('admin.grantsPage');

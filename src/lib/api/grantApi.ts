@@ -1,4 +1,5 @@
 import { apiClient, apiUrl } from '@/lib/apiClient';
+import { getAuthToken } from '@/app/lib/csrf';
 import type {
   Grant,
   GrantDocument,
@@ -12,9 +13,20 @@ import type {
   PipelineStatsResponse,
   CalendarEventsResponse,
   FundingDiversification,
+  GrantStatusHistoryEntry,
+  GrantRequirement,
+  GrantRequirementsData,
+  GrantRequirementFormData,
+  GrantRequirementUpdate,
+  GrantExpense,
+  GrantExpensesData,
+  GrantExpenseFormData,
+  JustificationExportFormat,
 } from '@/types/grant';
 
 const GRANT_API_URL = apiUrl('/api/grants');
+
+type ApiResponse<T> = { success: boolean; data?: T; error?: string };
 
 async function grantRequest<T extends { success: boolean; error?: string }>(result: Awaited<ReturnType<typeof apiClient<T>>>): Promise<T> {
   if (!result.success) return { success: false, error: result.error } as T;
@@ -47,8 +59,57 @@ export const grantApi = {
     return grantRequest(await apiClient.delete<{ success: boolean; error?: string }>(`${GRANT_API_URL}/${id}`));
   },
 
-  updateStatus: async (id: string, status: GrantStatus): Promise<GrantResponse> => {
-    return grantRequest(await apiClient.patch<GrantResponse>(`${GRANT_API_URL}/${id}/status`, { status }));
+  updateStatus: async (id: string, status: GrantStatus, note?: string): Promise<GrantResponse> => {
+    return grantRequest(await apiClient.patch<GrantResponse>(`${GRANT_API_URL}/${id}/status`, note ? { status, note } : { status }));
+  },
+
+  getHistory: async (id: string): Promise<ApiResponse<GrantStatusHistoryEntry[]>> => {
+    return grantRequest(await apiClient.get<ApiResponse<GrantStatusHistoryEntry[]>>(`${GRANT_API_URL}/${id}/history`));
+  },
+
+  listRequirements: async (id: string): Promise<ApiResponse<GrantRequirementsData>> => {
+    return grantRequest(await apiClient.get<ApiResponse<GrantRequirementsData>>(`${GRANT_API_URL}/${id}/requirements`));
+  },
+
+  createRequirement: async (id: string, data: GrantRequirementFormData): Promise<ApiResponse<GrantRequirement>> => {
+    return grantRequest(await apiClient.post<ApiResponse<GrantRequirement>>(`${GRANT_API_URL}/${id}/requirements`, data));
+  },
+
+  updateRequirement: async (id: string, reqId: string, data: GrantRequirementUpdate): Promise<ApiResponse<GrantRequirement>> => {
+    const url = `${GRANT_API_URL}/${id}/requirements/${reqId}`;
+    const { file, ...fields } = data;
+    if (file) {
+      const formData = new FormData();
+      Object.entries(fields).forEach(([key, value]) => {
+        if (value !== undefined) formData.append(key, String(value));
+      });
+      formData.append('file', file);
+      return grantRequest(await apiClient<ApiResponse<GrantRequirement>>(url, { method: 'PATCH', body: formData }));
+    }
+    return grantRequest(await apiClient.patch<ApiResponse<GrantRequirement>>(url, fields));
+  },
+
+  listExpenses: async (id: string): Promise<ApiResponse<GrantExpensesData>> => {
+    return grantRequest(await apiClient.get<ApiResponse<GrantExpensesData>>(`${GRANT_API_URL}/${id}/expenses`));
+  },
+
+  createExpense: async (id: string, data: GrantExpenseFormData): Promise<ApiResponse<GrantExpense>> => {
+    return grantRequest(await apiClient.post<ApiResponse<GrantExpense>>(`${GRANT_API_URL}/${id}/expenses`, data));
+  },
+
+  exportJustification: async (id: string, format: JustificationExportFormat): Promise<Blob> => {
+    const headers: Record<string, string> = {};
+    const token = getAuthToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const response = await fetch(`${GRANT_API_URL}/${id}/justification/export?format=${format}`, {
+      credentials: 'include',
+      headers,
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body.error || body.message || 'Failed to export justification');
+    }
+    return response.blob();
   },
 
   getPipelineStats: async (): Promise<PipelineStatsResponse> => {

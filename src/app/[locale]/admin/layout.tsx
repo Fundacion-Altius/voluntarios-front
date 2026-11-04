@@ -57,7 +57,7 @@ export default function AdminLayout({
   return (
     <RoutePendingProvider>
     <div className="flex min-h-screen bg-background">
-      <div className="hidden lg:flex">
+      <div className="hidden shrink-0 lg:flex">
         <AdminSidebar
           userName={profile?.name}
           userEmail={profile?.email}

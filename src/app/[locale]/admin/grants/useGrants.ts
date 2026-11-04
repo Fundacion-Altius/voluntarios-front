@@ -104,16 +104,16 @@ export const useGrants = () => {
   // Get total pipeline value
   const getTotalPipelineValue = useCallback(() => {
     return grants
-      .filter(grant => grant.status === 'applied' || grant.status === 'approved')
+      .filter(grant => grant.status === 'applying' || grant.status === 'submitted' || grant.status === 'awarded')
       .reduce((sum, grant) => sum + grant.amount, 0);
   }, [grants]);
 
   // Get approval rate
   const getApprovalRate = useCallback(() => {
-    const decidedGrants = grants.filter(grant => grant.status === 'approved' || grant.status === 'rejected');
+    const decidedGrants = grants.filter(grant => grant.status === 'awarded' || grant.status === 'rejected');
     if (decidedGrants.length === 0) return 0;
     
-    const approvedGrants = decidedGrants.filter(grant => grant.status === 'approved');
+    const approvedGrants = decidedGrants.filter(grant => grant.status === 'awarded');
     return (approvedGrants.length / decidedGrants.length) * 100;
   }, [grants]);
 

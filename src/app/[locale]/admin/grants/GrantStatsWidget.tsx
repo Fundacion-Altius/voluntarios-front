@@ -4,7 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Euro, TrendingUp, TrendingDown, PieChart, Calendar, CheckCircle } from 'lucide-react';
-import type { Grant, GrantPipelineStats, FundingDiversification } from '@/types/grant';
+import type { Grant, GrantPipelineStats, FundingDiversification, GrantStatus } from '@/types/grant';
+
+const IN_PROCESS_STATUSES: GrantStatus[] = ['applying', 'submitted', 'awarded'];
 
 interface GrantStatsWidgetProps {
   pipelineStats?: GrantPipelineStats | null;
@@ -30,7 +32,7 @@ export function GrantStatsWidget({
   // Calculate stats from grants if pipelineStats is not available
   const totalGrants = pipelineStats?.total || grants.length;
   const totalPipelineValue = pipelineStats?.totalPipelineValue || 
-    grants.filter(g => g.status === 'applied' || g.status === 'approved')
+    grants.filter(g => IN_PROCESS_STATUSES.includes(g.status))
           .reduce((sum, g) => sum + g.amount, 0);
   const approvalRate = pipelineStats?.approvalRate || 0;
   
@@ -80,7 +82,7 @@ export function GrantStatsWidget({
           <div className="text-2xl font-bold">{totalGrants}</div>
           <p className="text-xs text-muted-foreground">
             {totalGrants > 0 
-              ? `${grants.filter((g) => g.status === 'applied' || g.status === 'approved').length} en proceso`
+              ? `${grants.filter((g) => IN_PROCESS_STATUSES.includes(g.status)).length} en proceso`
               : 'No hay subvenciones'}
           </p>
         </CardContent>
@@ -97,7 +99,7 @@ export function GrantStatsWidget({
         <CardContent>
           <div className="text-2xl font-bold">{formatCurrency(totalPipelineValue)}</div>
           <p className="text-xs text-muted-foreground">
-            en estado aplicado o aprobado
+            en aplicación, enviadas o concedidas
           </p>
         </CardContent>
       </Card>

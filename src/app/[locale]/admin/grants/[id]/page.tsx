@@ -14,9 +14,25 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowLeft, Calendar, DollarSign, FileText, CheckCircle, XCircle, Clock, Upload, Trash2, Edit, Eye, Download } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
-import type { Grant, GrantDocument, GrantDocumentType, GrantStatus, GrantType } from '@/types/grant';
+import type {
+  Grant,
+  GrantDocument,
+  GrantDocumentType,
+  GrantExpensesData,
+  GrantRequirementsData,
+  GrantStatus,
+  GrantStatusHistoryEntry,
+  GrantType,
+  JustificationExportFormat,
+} from '@/types/grant';
+import { GrantStatusHistoryCard } from './GrantStatusHistoryCard';
+import { GrantRequirementsCard } from './GrantRequirementsCard';
+import { GrantExpensesCard } from './GrantExpensesCard';
 import { grantApi, grantDocumentApi, grantJustificationApi } from '@/lib/api/grantApi';
 import { STATUS_COLORS, STATUS_LABELS, TYPE_LABELS, VALID_STATUS_TRANSITIONS } from '@/types/grant';
+
+const EXPENSE_EDITABLE_STATUSES: GrantStatus[] = ['awarded', 'in_execution'];
+const EXPENSE_VISIBLE_STATUSES: GrantStatus[] = ['awarded', 'in_execution', 'justified', 'closed'];
 
 export default function GrantDetailPage() {
   const t = useTranslations('admin.grantDetail');
@@ -41,6 +57,9 @@ export default function GrantDetailPage() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [history, setHistory] = useState<GrantStatusHistoryEntry[]>([]);
+  const [requirementsData, setRequirementsData] = useState<GrantRequirementsData | null>(null);
+  const [expensesData, setExpensesData] = useState<GrantExpensesData | null>(null);
 
   // Fetch grant details
   const fetchGrant = useCallback(async () => {
@@ -91,14 +110,44 @@ export default function GrantDetailPage() {
     }
   }, [grantId]);
 
+  const fetchHistory = useCallback(async () => {
+    try {
+      const response = await grantApi.getHistory(grantId);
+      if (response.success && response.data) setHistory(response.data);
+    } catch (err) {
+      console.error('Error fetching status history:', err);
+    }
+  }, [grantId]);
+
+  const fetchRequirements = useCallback(async () => {
+    try {
+      const response = await grantApi.listRequirements(grantId);
+      if (response.success && response.data) setRequirementsData(response.data);
+    } catch (err) {
+      console.error('Error fetching requirements:', err);
+    }
+  }, [grantId]);
+
+  const fetchExpenses = useCallback(async () => {
+    try {
+      const response = await grantApi.listExpenses(grantId);
+      if (response.success && response.data) setExpensesData(response.data);
+    } catch (err) {
+      console.error('Error fetching expenses:', err);
+    }
+  }, [grantId]);
+
   // Fetch all data
   const fetchAllData = useCallback(async () => {
     await Promise.all([
       fetchGrant(),
       fetchDocuments(),
       fetchJustificationStatus(),
+      fetchHistory(),
+      fetchRequirements(),
+      fetchExpenses(),
     ]);
-  }, [fetchGrant, fetchDocuments, fetchJustificationStatus]);
+  }, [fetchGrant, fetchDocuments, fetchJustificationStatus, fetchHistory, fetchRequirements, fetchExpenses]);
 
   // Initial data fetch
   useEffect(() => {
@@ -154,6 +203,7 @@ export default function GrantDetailPage() {
       
       if (response.success && response.data) {
         setGrant(response.data);
+        await Promise.all([fetchHistory(), fetchExpenses()]);
       } else {
         setError(response.error || t('errorUpdatingStatus'));
       }
@@ -162,7 +212,7 @@ export default function GrantDetailPage() {
     } finally {
       setActionLoading(null);
     }
-  }, [grantId, grant, t]);
+  }, [grantId, grant, t, fetchHistory, fetchExpenses]);
 
   // Handle mark as ready
   const handleMarkAsReady = useCallback(async () => {
@@ -224,6 +274,28 @@ export default function GrantDetailPage() {
       setError(err instanceof Error ? err.message : tCommon('error'));
     }
   }, [documents, tCommon]);
+
+  // Handle justification export (PDF / DOCX)
+  const handleExport = useCallback(async (format: JustificationExportFormat) => {
+    if (!grantId) return;
+    try {
+      setActionLoading(`export-${format}`);
+      setError(null);
+      const blob = await grantApi.exportJustification(grantId, format);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `justificacion-${grantId}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('errorExporting'));
+    } finally {
+      setActionLoading(null);
+    }
+  }, [grantId, t]);
 
   // Handle document delete
   const handleDeleteDocument = useCallback(async (documentId: string) => {
@@ -522,9 +594,47 @@ export default function GrantDetailPage() {
             ) : (
               <p className="text-sm text-muted-foreground">{tCommon('loading')}</p>
             )}
+
+            <div className="space-y-2 border-t pt-4">
+              <p className="text-sm font-medium text-muted-foreground">{t('exportJustification')}</p>
+              <div className="flex flex-wrap gap-2">
+                {(['pdf', 'docx'] as const).map((format) => (
+                  <Button
+                    key={format}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleExport(format)}
+                    disabled={actionLoading === `export-${format}`}
+                  >
+                    {actionLoading === `export-${format}` ? (
+                      <Clock className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Download className="h-4 w-4 mr-2" />
+                    )}
+                    {format === 'pdf' ? t('downloadPdf') : t('downloadDocx')}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Requirements checklist */}
+      <GrantRequirementsCard grantId={grantId} data={requirementsData} onChanged={fetchRequirements} />
+
+      {/* Expenses (awarded onwards) */}
+      {EXPENSE_VISIBLE_STATUSES.includes(grant.status as GrantStatus) && (
+        <GrantExpensesCard
+          grantId={grantId}
+          data={expensesData}
+          canAdd={EXPENSE_EDITABLE_STATUSES.includes(grant.status as GrantStatus)}
+          onChanged={fetchExpenses}
+        />
+      )}
+
+      {/* Status history */}
+      <GrantStatusHistoryCard history={history} />
 
       {/* Documents Section */}
       <Card>
