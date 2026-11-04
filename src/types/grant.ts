@@ -1,5 +1,24 @@
 // Grant types for frontend
-export type GrantStatus = "identified" | "applied" | "approved" | "rejected" | "received" | "justified";
+export type GrantStatus =
+  | "discovered"
+  | "applying"
+  | "submitted"
+  | "awarded"
+  | "rejected"
+  | "in_execution"
+  | "justified"
+  | "closed";
+
+export const GRANT_STATUSES: GrantStatus[] = [
+  "discovered",
+  "applying",
+  "submitted",
+  "awarded",
+  "rejected",
+  "in_execution",
+  "justified",
+  "closed",
+];
 export type GrantType = "public" | "private" | "EU";
 export type GrantDocumentType = "application" | "justification" | "report" | "receipt" | "other";
 
@@ -14,11 +33,96 @@ export interface Grant {
   deadline?: string;
   resolution_date?: string;
   justification_requirements?: string;
+  justification_deadline?: string;
+  discovered_via?: string;
+  source_opportunity_id?: string;
   deleted_at?: string;
   created_at: string;
   updated_at: string;
   tenant_id?: string;
 }
+
+export interface GrantStatusHistoryEntry {
+  id: string;
+  grant_id: string;
+  from_status: GrantStatus | null;
+  to_status: GrantStatus;
+  changed_by?: string;
+  note?: string;
+  changed_at: string;
+  tenant_id?: string;
+}
+
+export interface GrantRequirement {
+  id: string;
+  grant_id: string;
+  title: string;
+  description?: string;
+  required: boolean;
+  completed: boolean;
+  file_name?: string;
+  file_mime_type?: string;
+  file_size?: number;
+  completed_at?: string;
+  created_at: string;
+  updated_at: string;
+  tenant_id?: string;
+}
+
+export interface GrantRequirementsCompletion {
+  total: number;
+  completed: number;
+  required_total: number;
+  required_completed: number;
+  percent: number;
+  ready_to_submit: boolean;
+}
+
+export interface GrantRequirementsData {
+  requirements: GrantRequirement[];
+  completion: GrantRequirementsCompletion;
+}
+
+export interface GrantExpense {
+  id: string;
+  grant_id: string;
+  description: string;
+  amount: number;
+  category?: string;
+  expense_date: string;
+  receipt_document_id?: string;
+  created_at: string;
+  tenant_id?: string;
+}
+
+export interface GrantExpensesData {
+  expenses: GrantExpense[];
+  total_spent: number;
+  remaining: number;
+}
+
+export interface GrantExpenseFormData {
+  description: string;
+  amount: number;
+  category?: string;
+  expense_date?: string;
+}
+
+export interface GrantRequirementFormData {
+  title: string;
+  description?: string;
+  required?: boolean;
+}
+
+export interface GrantRequirementUpdate {
+  completed?: boolean;
+  title?: string;
+  description?: string;
+  required?: boolean;
+  file?: File;
+}
+
+export type JustificationExportFormat = "pdf" | "docx";
 
 export interface GrantDocument {
   id: string;
@@ -125,36 +229,45 @@ export interface GrantFormData {
   deadline?: string;
   resolution_date?: string;
   justification_requirements?: string;
+  justification_deadline?: string;
+  discovered_via?: string;
+  source_opportunity_id?: string;
 }
 
 // Valid status transitions
 export const VALID_STATUS_TRANSITIONS: Record<GrantStatus, GrantStatus[]> = {
-  identified: ["applied"],
-  applied: ["approved", "rejected"],
-  approved: ["received"],
+  discovered: ["applying"],
+  applying: ["submitted"],
+  submitted: ["awarded", "rejected"],
+  awarded: ["in_execution"],
   rejected: [],
-  received: ["justified"],
-  justified: [],
+  in_execution: ["justified"],
+  justified: ["closed"],
+  closed: [],
 };
 
 // Status colors for UI
 export const STATUS_COLORS: Record<GrantStatus, string> = {
-  identified: "bg-blue-100 text-blue-800",
-  applied: "bg-yellow-100 text-yellow-800",
-  approved: "bg-green-100 text-green-800",
+  discovered: "bg-blue-100 text-blue-800",
+  applying: "bg-yellow-100 text-yellow-800",
+  submitted: "bg-orange-100 text-orange-800",
+  awarded: "bg-green-100 text-green-800",
   rejected: "bg-red-100 text-red-800",
-  received: "bg-purple-100 text-purple-800",
-  justified: "bg-gray-100 text-gray-800",
+  in_execution: "bg-purple-100 text-purple-800",
+  justified: "bg-teal-100 text-teal-800",
+  closed: "bg-gray-100 text-gray-800",
 };
 
 // Status labels for UI
 export const STATUS_LABELS: Record<GrantStatus, string> = {
-  identified: "Identificado",
-  applied: "Solicitado",
-  approved: "Aprobado",
-  rejected: "Rechazado",
-  received: "Recibido",
-  justified: "Justificado",
+  discovered: "Descubierta",
+  applying: "Aplicando",
+  submitted: "Enviada",
+  awarded: "Concedida",
+  rejected: "Rechazada",
+  in_execution: "En ejecución",
+  justified: "Justificada",
+  closed: "Cerrada",
 };
 
 // Type labels for UI

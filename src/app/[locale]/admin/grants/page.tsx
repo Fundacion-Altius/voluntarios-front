@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Filter, Eye, Edit, Trash2, RefreshCw } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { useGrants } from './useGrants';
-import { STATUS_COLORS, STATUS_LABELS, type GrantStatus, type GrantType } from '@/types/grant';
+import { GRANT_STATUSES, STATUS_LABELS, type GrantStatus, type GrantType } from '@/types/grant';
 import { GrantPipelineView } from './GrantPipelineView';
 import { GrantStatsWidget } from './GrantStatsWidget';
 
@@ -37,7 +37,7 @@ export default function GrantsPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   // Status order for pipeline view
-  const statusOrder: GrantStatus[] = ['identified', 'applied', 'approved', 'received', 'justified', 'rejected'];
+  const statusOrder: GrantStatus[] = GRANT_STATUSES;
 
   // Filter grants by search query
   const filteredGrants = useMemo(() => {
@@ -144,7 +144,7 @@ export default function GrantsPage() {
             </div>
             
             <Select value={filters.status || 'all'} onValueChange={(value) => handleStatusFilter(value as GrantStatus | 'all')}>
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-40">
                 <SelectValue placeholder={t('filterByStatus')} />
               </SelectTrigger>
               <SelectContent>

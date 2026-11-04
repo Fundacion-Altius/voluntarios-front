@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/app/auth/useAuth';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -8,26 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { apiClient, apiUrl } from '@/lib/apiClient';
+import { fundOpportunityApi, type CallSyncResult, type FundOpportunity } from '@/lib/api/fundOpportunityApi';
 import { Link } from '@/i18n/navigation';
-import { Search, Filter, AlertTriangle, ExternalLink } from 'lucide-react';
-
-interface FundOpportunity {
-  id: string;
-  name: string;
-  funding_body: string;
-  type: string;
-  sector_tags: string;
-  amount_min: number | null;
-  amount_max: number | null;
-  deadline: string | null;
-  eligibility_criteria: string | null;
-  application_url: string | null;
-  description: string | null;
-  last_updated: string;
-  created_at: string;
-  outdated?: boolean;
-}
+import { Search, Filter, AlertTriangle, ExternalLink, RefreshCw } from 'lucide-react';
 
 const TYPE_LABELS: Record<string, string> = {
   EU: 'EU',
@@ -43,6 +26,8 @@ const TYPE_COLORS: Record<string, string> = {
   CSR: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
 };
 
+const SCOPE_SUGGESTIONS = ['Europeo', 'Estatal', 'Autonómico', 'Local'];
+
 export default function FondosPage() {
   const t = useTranslations('admin.fondos');
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -52,24 +37,74 @@ export default function FondosPage() {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('');
   const [sectorFilter, setSectorFilter] = useState<string>('');
+  const [scopeFilter, setScopeFilter] = useState<string>('');
+  const [deadlineFrom, setDeadlineFrom] = useState<string>('');
+  const [deadlineTo, setDeadlineTo] = useState<string>('');
+  const [includeExpired, setIncludeExpired] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<CallSyncResult | null>(null);
+  const [syncWarning, setSyncWarning] = useState<string | null>(null);
+  const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
+
+  const loadOpportunities = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await fundOpportunityApi.list({
+        q: search,
+        type: typeFilter,
+        sector: sectorFilter,
+        scope: scopeFilter,
+        deadlineFrom,
+        deadlineTo,
+        includeExpired,
+      });
+      if (result.success) setOpportunities(result.data);
+      else setError(result.error);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [search, typeFilter, sectorFilter, scopeFilter, deadlineFrom, deadlineTo, includeExpired]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
-    setIsLoading(true);
-    setError(null);
-    const params = new URLSearchParams();
-    if (search) params.set('q', search);
-    if (typeFilter) params.set('type', typeFilter);
-    if (sectorFilter) params.set('sector', sectorFilter);
+    loadOpportunities();
+  }, [isAuthenticated, loadOpportunities]);
 
-    apiClient<FundOpportunity[]>(apiUrl(`/api/fund-opportunities?${params.toString()}`))
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    fundOpportunityApi
+      .getSyncStatus()
       .then((result) => {
-        if (result.success) setOpportunities(result.data);
-        else setError(result.error);
+        if (!result.success) return;
+        setLastSyncAt(result.data.lastRunAt);
+        if (result.data.lastResult?.warning) setSyncWarning(result.data.lastResult.warning);
       })
-      .catch((e: any) => setError(e.message))
-      .finally(() => setIsLoading(false));
-  }, [isAuthenticated, search, typeFilter, sectorFilter]);
+      .catch(() => undefined);
+  }, [isAuthenticated]);
+
+  const handleSync = async () => {
+    setIsSyncing(true);
+    setError(null);
+    setSyncResult(null);
+    try {
+      const result = await fundOpportunityApi.sync();
+      if (result.success) {
+        setSyncResult(result.data);
+        setSyncWarning(result.data.warning ?? null);
+        setLastSyncAt(new Date().toISOString());
+        await loadOpportunities();
+      } else {
+        setError(result.error || t('errorSincronizar'));
+      }
+    } catch {
+      setError(t('errorSincronizar'));
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   if (authLoading) {
     return (
@@ -89,9 +124,13 @@ export default function FondosPage() {
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-xl font-semibold">{t('titulo')}</h2>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={handleSync} disabled={isSyncing}>
+            <RefreshCw className={`size-4 ${isSyncing ? 'animate-spin' : ''}`} />
+            {isSyncing ? t('sincronizando') : t('sincronizar')}
+          </Button>
           <Link href="/admin/fondos/calendario">
             <Button variant="outline">{t('calendario')}</Button>
           </Link>
@@ -103,6 +142,34 @@ export default function FondosPage() {
 
       {error && (
         <div className="mb-4 rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
+      )}
+
+      {syncWarning && (
+        <div
+          role="alert"
+          className="mb-4 flex items-start gap-2 rounded-md bg-amber-100 p-3 text-sm text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+          <span>
+            {t('avisoSincronizacion')}: {syncWarning}
+          </span>
+        </div>
+      )}
+
+      {syncResult && (
+        <div className="mb-4 rounded-md bg-green-100 p-3 text-sm text-green-800 dark:bg-green-900/30 dark:text-green-300">
+          {t('sincronizacionCompletada', {
+            imported: syncResult.imported,
+            skipped: syncResult.skipped,
+            expired: syncResult.expired,
+          })}
+        </div>
+      )}
+
+      {lastSyncAt && !syncResult && (
+        <p className="mb-4 text-xs text-muted-foreground">
+          {t('ultimaSincronizacion')}: {new Date(lastSyncAt).toLocaleString('es-ES')}
+        </p>
       )}
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -136,6 +203,50 @@ export default function FondosPage() {
         />
       </div>
 
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <Input
+          list="fondos-scope-options"
+          placeholder={t('ambitoPlaceholder')}
+          aria-label={t('ambito')}
+          value={scopeFilter}
+          onChange={(e) => setScopeFilter(e.target.value)}
+          className="max-w-xs"
+        />
+        <datalist id="fondos-scope-options">
+          {SCOPE_SUGGESTIONS.map((scope) => (
+            <option key={scope} value={scope} />
+          ))}
+        </datalist>
+        <label className="flex items-center gap-2 text-sm text-muted-foreground">
+          {t('plazoDesde')}
+          <Input
+            type="date"
+            value={deadlineFrom}
+            max={deadlineTo || undefined}
+            onChange={(e) => setDeadlineFrom(e.target.value)}
+            className="w-40"
+          />
+        </label>
+        <label className="flex items-center gap-2 text-sm text-muted-foreground">
+          {t('plazoHasta')}
+          <Input
+            type="date"
+            value={deadlineTo}
+            min={deadlineFrom || undefined}
+            onChange={(e) => setDeadlineTo(e.target.value)}
+            className="w-40"
+          />
+        </label>
+        <label className="flex items-center gap-2 text-sm text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={includeExpired}
+            onChange={(e) => setIncludeExpired(e.target.checked)}
+          />
+          {t('incluirCaducadas')}
+        </label>
+      </div>
+
       {isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -153,11 +264,15 @@ export default function FondosPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <CardTitle className="text-base">{opp.name}</CardTitle>
                       <Badge className={TYPE_COLORS[opp.type] || ''}>
                         {TYPE_LABELS[opp.type] || opp.type}
                       </Badge>
+                      {opp.scope && <Badge variant="secondary">{opp.scope}</Badge>}
+                      {opp.listing_status === 'expired' && (
+                        <Badge variant="outline">{t('caducada')}</Badge>
+                      )}
                       {opp.outdated && (
                         <Badge variant="outline" className="gap-1 text-amber-600 dark:text-amber-400">
                           <AlertTriangle className="size-3" />

@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { apiClient, apiUrl } from '@/lib/apiClient';
+import { grantReminderSettingsApi } from '@/lib/api/fundOpportunityApi';
 import { Link } from '@/i18n/navigation';
 import { ArrowLeft, Bell, BellRing } from 'lucide-react';
 
@@ -40,6 +41,9 @@ export default function FondosAlertasPage() {
   const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
   const [minScore, setMinScore] = useState(30);
   const [frequency, setFrequency] = useState<'immediate' | 'daily' | 'weekly'>('immediate');
+  const [leadDaysInput, setLeadDaysInput] = useState('');
+  const [leadDaysError, setLeadDaysError] = useState<string | null>(null);
+  const [isSavingLeadDays, setIsSavingLeadDays] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -63,6 +67,44 @@ export default function FondosAlertasPage() {
       .catch((e: any) => setError(e.message))
       .finally(() => setIsLoading(false));
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    grantReminderSettingsApi
+      .get()
+      .then((result) => {
+        if (result.success) setLeadDaysInput(result.data.leadDays.join(', '));
+      })
+      .catch(() => undefined);
+  }, [isAuthenticated]);
+
+  const handleSaveLeadDays = async () => {
+    const leadDays = leadDaysInput
+      .split(/[\s,;]+/)
+      .filter(Boolean)
+      .map(Number);
+    if (leadDays.length === 0 || leadDays.some((n) => !Number.isInteger(n) || n < 0)) {
+      setLeadDaysError(t('diasAvisoInvalidos'));
+      return;
+    }
+    const unique = Array.from(new Set(leadDays)).sort((a, b) => b - a);
+    setLeadDaysError(null);
+    setIsSavingLeadDays(true);
+    try {
+      const result = await grantReminderSettingsApi.update(unique);
+      if (result.success) {
+        setLeadDaysInput(result.data.leadDays.join(', '));
+        setSuccessMsg(t('diasAvisoGuardados'));
+        setTimeout(() => setSuccessMsg(''), 3000);
+      } else {
+        setLeadDaysError(result.error || t('errorGuardar'));
+      }
+    } catch {
+      setLeadDaysError(t('errorGuardar'));
+    } finally {
+      setIsSavingLeadDays(false);
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -174,6 +216,31 @@ export default function FondosAlertasPage() {
               </div>
 
               <Button onClick={handleSave}>{t('guardarConfig')}</Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('recordatoriosPlazo')}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-muted-foreground">{t('recordatoriosPlazoDescripcion')}</p>
+              <div>
+                <label htmlFor="grant-reminder-lead-days" className="mb-2 block text-sm font-medium">
+                  {t('diasAviso')}
+                </label>
+                <Input
+                  id="grant-reminder-lead-days"
+                  value={leadDaysInput}
+                  onChange={(e) => setLeadDaysInput(e.target.value)}
+                  placeholder="30, 14, 7, 1"
+                  className="max-w-xs"
+                />
+                {leadDaysError && <p className="mt-1 text-sm text-destructive">{leadDaysError}</p>}
+              </div>
+              <Button onClick={handleSaveLeadDays} disabled={isSavingLeadDays}>
+                {t('guardarDiasAviso')}
+              </Button>
             </CardContent>
           </Card>
 
