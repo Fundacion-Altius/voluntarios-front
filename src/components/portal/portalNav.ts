@@ -1,4 +1,4 @@
-import { Home, Bell, Calendar, Users, PackageSearch, BookOpen, MessageSquare, Video, Newspaper, Award, Trophy, CircleHelp } from 'lucide-react';
+import { Home, Bell, Calendar, Users, PackageSearch, BookOpen, MessageSquare, Video, Newspaper, Award, Trophy, CircleHelp, UtensilsCrossed } from 'lucide-react';
 import type { NavGroup } from '@/components/navigation/GroupedNav';
 
 type T = (key: string) => string;
@@ -19,6 +19,7 @@ export function portalNavGroups(t: T): { pinned: NavGroup; groups: NavGroup[] } 
         { href: '/portal/proyectos', label: i('proyectos'), icon: Users },
         { href: '/portal/ayuda-alimentaria', label: i('ayudaAlimentaria'), icon: PackageSearch },
         { href: '/portal/cursos', label: i('cursos'), icon: BookOpen },
+        { href: '/portal/comandero', label: i('comandero'), icon: UtensilsCrossed },
       ] },
       { id: 'comunidad', label: g('comunidad'), items: [
         { href: '/portal/mensajes', label: i('chat'), icon: MessageSquare },
