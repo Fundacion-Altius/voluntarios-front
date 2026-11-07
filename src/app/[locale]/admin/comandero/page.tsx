@@ -107,7 +107,7 @@ export default function ComanderoAdminPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1" data-testid="comandero-admin">
         <h1 className="font-heading text-2xl font-semibold text-foreground">Comandero</h1>
         <p className="text-sm text-muted-foreground">
           Simulación de servicio de restaurante para el aula de Servicios de Restaurante. No es un
@@ -124,7 +124,13 @@ export default function ComanderoAdminPage() {
           <form onSubmit={handleAddItem} className="flex flex-col gap-3 sm:flex-row sm:items-end">
             <div className="flex-1">
               <Label htmlFor="item-name">Nombre</Label>
-              <Input id="item-name" value={name} onChange={(e) => setName(e.target.value)} required />
+              <Input
+                id="item-name"
+                data-testid="comandero-item-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
             </div>
             <div className="w-full sm:w-40">
               <Label htmlFor="item-category">Categoría</Label>
@@ -142,6 +148,7 @@ export default function ComanderoAdminPage() {
               <Label htmlFor="item-price">Precio (€)</Label>
               <Input
                 id="item-price"
+                data-testid="comandero-item-price"
                 type="number"
                 min="0"
                 step="0.01"
@@ -149,7 +156,7 @@ export default function ComanderoAdminPage() {
                 onChange={(e) => setPrice(e.target.value)}
               />
             </div>
-            <Button type="submit">
+            <Button type="submit" data-testid="comandero-item-add">
               <Plus className="mr-1 size-4" />
               Añadir
             </Button>
@@ -164,7 +171,7 @@ export default function ComanderoAdminPage() {
           ) : menu.length === 0 ? (
             <p className="text-sm text-muted-foreground">La carta del aula está vacía. Añade platos y bebidas.</p>
           ) : (
-            <Table>
+            <Table data-testid="comandero-menu-table">
               <TableHeader>
                 <TableRow>
                   <TableHead>Ítem</TableHead>
@@ -175,7 +182,7 @@ export default function ComanderoAdminPage() {
               </TableHeader>
               <TableBody>
                 {menu.map((item) => (
-                  <TableRow key={item.id}>
+                  <TableRow key={item.id} data-testid="comandero-menu-row">
                     <TableCell className="font-medium">{item.name}</TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="gap-1">
@@ -219,12 +226,17 @@ export default function ComanderoAdminPage() {
                 <Label htmlFor="session-label">Nombre de la sesión</Label>
                 <Input
                   id="session-label"
+                  data-testid="comandero-session-label"
                   value={sessionLabel}
                   onChange={(e) => setSessionLabel(e.target.value)}
                   placeholder="Servicio mediodía 12-nov"
                 />
               </div>
-              <Button onClick={() => void startSession()} disabled={busy || !sessionLabel.trim()}>
+              <Button
+                data-testid="comandero-session-start"
+                onClick={() => void startSession()}
+                disabled={busy || !sessionLabel.trim()}
+              >
                 {busy ? <Loader2 className="mr-1 size-4 animate-spin" /> : <Plus className="mr-1 size-4" />}
                 Arrancar sesión
               </Button>
@@ -236,12 +248,18 @@ export default function ComanderoAdminPage() {
                   <Label htmlFor="table-label">Añadir mesa</Label>
                   <Input
                     id="table-label"
+                    data-testid="comandero-table-label"
                     value={tableLabel}
                     onChange={(e) => setTableLabel(e.target.value)}
                     placeholder="Mesa 1"
                   />
                 </div>
-                <Button variant="outline" onClick={() => void addTable()} disabled={!tableLabel.trim()}>
+                <Button
+                  variant="outline"
+                  data-testid="comandero-table-add"
+                  onClick={() => void addTable()}
+                  disabled={!tableLabel.trim()}
+                >
                   <Plus className="mr-1 size-4" />
                   Mesa
                 </Button>
@@ -251,9 +269,9 @@ export default function ComanderoAdminPage() {
               </div>
 
               {/* Vista de sala por polling */}
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="comandero-floor">
                 {(floor?.tables ?? []).map(({ table, open_order, lines }) => (
-                  <Card key={table.id} className="border-border">
+                  <Card key={table.id} className="border-border" data-testid="comandero-floor-table">
                     <CardHeader className="pb-2">
                       <CardTitle className="flex items-center justify-between text-base">
                         {table.label}
