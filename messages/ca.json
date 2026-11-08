@@ -1291,6 +1291,8 @@
     },
     "sidebar": {
       "title": "Panell de gestió",
+      "collapse": "Redueix el menú",
+      "expand": "Amplia el menú",
       "groups": {
         "inicio": "Inici",
         "voluntariado": "Voluntariat",

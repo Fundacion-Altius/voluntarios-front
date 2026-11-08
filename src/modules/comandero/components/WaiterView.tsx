@@ -66,9 +66,9 @@ export function WaiterView({ sessionId }: { sessionId: string }) {
   return (
     <div className="space-y-4">
       {actionError && <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{actionError}</p>}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="comandero-waiter-floor">
         {(floor?.tables ?? []).map(({ table, open_order, lines }) => (
-          <Card key={table.id} className="border-border">
+          <Card key={table.id} className="border-border" data-testid="comandero-waiter-table">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center justify-between text-base">
                 <span className="flex items-center gap-2">
@@ -82,6 +82,7 @@ export function WaiterView({ sessionId }: { sessionId: string }) {
               {!open_order ? (
                 <Button
                   size="sm"
+                  data-testid="comandero-open-order"
                   disabled={pending === table.id}
                   onClick={() => void run(table.id, () => comanderoApi.openOrder(table.id))}
                 >
@@ -103,6 +104,7 @@ export function WaiterView({ sessionId }: { sessionId: string }) {
                             <Button
                               size="sm"
                               variant="outline"
+                              data-testid="comandero-serve-line"
                               disabled={pending === l.id}
                               onClick={() => void run(l.id, () => comanderoApi.serveLine(l.id))}
                             >
@@ -120,7 +122,7 @@ export function WaiterView({ sessionId }: { sessionId: string }) {
                       value={selectedItem[open_order.id] ?? ''}
                       onValueChange={(v) => setSelectedItem((s) => ({ ...s, [open_order.id]: v }))}
                     >
-                      <SelectTrigger aria-label="Elegir ítem de la carta">
+                      <SelectTrigger aria-label="Elegir ítem de la carta" data-testid="comandero-item-select">
                         <SelectValue placeholder="Añadir de la carta…" />
                       </SelectTrigger>
                       <SelectContent>
@@ -132,6 +134,7 @@ export function WaiterView({ sessionId }: { sessionId: string }) {
                       </SelectContent>
                     </Select>
                     <Input
+                      data-testid="comandero-line-note"
                       value={note[open_order.id] ?? ''}
                       onChange={(e) => setNote((s) => ({ ...s, [open_order.id]: e.target.value }))}
                       placeholder="Nota (p. ej. sin gluten)"
@@ -139,6 +142,7 @@ export function WaiterView({ sessionId }: { sessionId: string }) {
                     <div className="flex gap-2">
                       <Button
                         size="sm"
+                        data-testid="comandero-add-line"
                         disabled={!selectedItem[open_order.id] || pending === open_order.id}
                         onClick={() =>
                           void run(open_order.id, async () => {
@@ -160,6 +164,7 @@ export function WaiterView({ sessionId }: { sessionId: string }) {
                       <Button
                         size="sm"
                         variant="outline"
+                        data-testid="comandero-close-bill"
                         disabled={pending === `close-${open_order.id}`}
                         onClick={() => void run(`close-${open_order.id}`, () => comanderoApi.closeBill(open_order.id))}
                       >

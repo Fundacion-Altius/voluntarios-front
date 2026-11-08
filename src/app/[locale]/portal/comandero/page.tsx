@@ -13,7 +13,7 @@ export default function ComanderoPortalPage() {
   const active = sessionId.trim();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="comandero-portal">
       <div className="flex flex-col gap-1">
         <h1 className="font-heading text-2xl font-semibold text-foreground">Comandero</h1>
         <p className="text-sm text-muted-foreground">
@@ -27,6 +27,7 @@ export default function ComanderoPortalPage() {
           <Label htmlFor="session-id">Sesión de práctica</Label>
           <Input
             id="session-id"
+            data-testid="comandero-portal-session"
             value={sessionId}
             onChange={(e) => setSessionId(e.target.value)}
             placeholder="Identificador de sesión"
@@ -38,9 +39,9 @@ export default function ComanderoPortalPage() {
       {active && (
         <Tabs defaultValue="camarero">
           <TabsList>
-            <TabsTrigger value="camarero">Camarero</TabsTrigger>
-            <TabsTrigger value="cocina">Cocina</TabsTrigger>
-            <TabsTrigger value="barra">Barra</TabsTrigger>
+            <TabsTrigger value="camarero" data-testid="comandero-tab-camarero">Camarero</TabsTrigger>
+            <TabsTrigger value="cocina" data-testid="comandero-tab-cocina">Cocina</TabsTrigger>
+            <TabsTrigger value="barra" data-testid="comandero-tab-barra">Barra</TabsTrigger>
           </TabsList>
           <TabsContent value="camarero" className="mt-4">
             <WaiterView sessionId={active} />

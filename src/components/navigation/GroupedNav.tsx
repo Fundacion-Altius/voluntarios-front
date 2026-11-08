@@ -5,6 +5,7 @@ import type { LucideIcon } from 'lucide-react';
 import { Link, usePathname } from '@/i18n/navigation';
 import { buttonVariants } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useSetRoutePending } from '@/components/navigation/RoutePending';
 import { cn } from '@/lib/utils';
 
@@ -40,29 +41,53 @@ interface GroupedNavProps {
   initialGroup?: string;
   ariaLabel: string;
   onNavigate?: () => void;
+  /** Render the nav as a narrow icon-only rail. Defaults to `false`. */
+  collapsed?: boolean;
 }
 
-function NavLinks({ items, pathname, onClick }: { items: NavItem[]; pathname: string; onClick: () => void }) {
+function NavLinks({
+  items,
+  pathname,
+  onClick,
+  collapsed,
+}: {
+  items: NavItem[];
+  pathname: string;
+  onClick: () => void;
+  collapsed: boolean;
+}) {
   return (
     <ul className="space-y-1">
       {items.map((item) => {
         const Icon = item.icon;
         const active = isActivePath(pathname, item);
+        const link = (
+          <Link
+            href={item.href}
+            aria-current={active ? 'page' : undefined}
+            aria-label={collapsed ? item.label : undefined}
+            onClick={onClick}
+            className={cn(
+              buttonVariants({ variant: active ? 'secondary' : 'ghost' }),
+              'w-full text-sm',
+              collapsed ? 'justify-center px-0' : 'justify-start gap-3',
+              active && 'font-semibold text-primary',
+            )}
+          >
+            <Icon className="size-4 shrink-0" aria-hidden="true" />
+            {!collapsed && item.label}
+          </Link>
+        );
         return (
           <li key={item.href}>
-            <Link
-              href={item.href}
-              aria-current={active ? 'page' : undefined}
-              onClick={onClick}
-              className={cn(
-                buttonVariants({ variant: active ? 'secondary' : 'ghost' }),
-                'w-full justify-start gap-3 text-sm',
-                active && 'font-semibold text-primary',
-              )}
-            >
-              <Icon className="size-4 shrink-0" aria-hidden="true" />
-              {item.label}
-            </Link>
+            {collapsed ? (
+              <Tooltip>
+                <TooltipTrigger asChild>{link}</TooltipTrigger>
+                <TooltipContent side="right">{item.label}</TooltipContent>
+              </Tooltip>
+            ) : (
+              link
+            )}
           </li>
         );
       })}
@@ -70,7 +95,7 @@ function NavLinks({ items, pathname, onClick }: { items: NavItem[]; pathname: st
   );
 }
 
-export function GroupedNav({ pinned, groups, initialGroup, ariaLabel, onNavigate }: GroupedNavProps) {
+export function GroupedNav({ pinned, groups, initialGroup, ariaLabel, onNavigate, collapsed = false }: GroupedNavProps) {
   const pathname = usePathname();
   const setPending = useSetRoutePending();
   const [open, setOpen] = useState<string>(initialGroup ?? groupForPath(groups, pathname) ?? '');
@@ -92,13 +117,22 @@ export function GroupedNav({ pinned, groups, initialGroup, ariaLabel, onNavigate
     onNavigate?.();
   };
 
+  if (collapsed) {
+    const flatItems = [...pinned.items, ...groups.flatMap((g) => g.items)];
+    return (
+      <nav aria-label={ariaLabel} className="flex-1 overflow-y-auto p-3">
+        <NavLinks items={flatItems} pathname={pathname} onClick={handleClick} collapsed={collapsed} />
+      </nav>
+    );
+  }
+
   return (
     <nav aria-label={ariaLabel} className="flex-1 overflow-y-auto p-3">
       <section aria-labelledby={`nav-group-${pinned.id}`} className="mb-2">
         <h2 id={`nav-group-${pinned.id}`} className="flex min-h-10 items-center px-3 text-sm font-semibold text-foreground">
           {pinned.label}
         </h2>
-        <NavLinks items={pinned.items} pathname={pathname} onClick={handleClick} />
+        <NavLinks items={pinned.items} pathname={pathname} onClick={handleClick} collapsed={collapsed} />
       </section>
       <Accordion type="single" collapsible value={open} onValueChange={setOpen}>
         {groups.map((g) => (
@@ -107,7 +141,7 @@ export function GroupedNav({ pinned, groups, initialGroup, ariaLabel, onNavigate
               {g.label}
             </AccordionTrigger>
             <AccordionContent>
-              <NavLinks items={g.items} pathname={pathname} onClick={handleClick} />
+              <NavLinks items={g.items} pathname={pathname} onClick={handleClick} collapsed={collapsed} />
             </AccordionContent>
           </AccordionItem>
         ))}

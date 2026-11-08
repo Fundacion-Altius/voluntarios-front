@@ -1291,6 +1291,8 @@
     },
     "sidebar": {
       "title": "Panel de gestión",
+      "collapse": "Contraer menú",
+      "expand": "Expandir menú",
       "groups": {
         "inicio": "Inicio",
         "voluntariado": "Voluntariado",

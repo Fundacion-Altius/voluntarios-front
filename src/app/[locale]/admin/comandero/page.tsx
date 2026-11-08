@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChefHat, Loader2, Plus, RefreshCw, Trash2, Wine } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,10 +22,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Textarea } from '@/components/ui/textarea';
 import { comanderoApi } from '@/modules/comandero/api';
 import type { ItemCategory, SessionSummary } from '@/modules/comandero/types';
 import { useComanderoFloor, useComanderoMenu } from '@/modules/comandero/useComandero';
+
+const MENU_PAGE_SIZE = 10;
 
 const LINE_LABEL: Record<string, string> = {
   pedido: 'Pedido',
@@ -51,6 +52,7 @@ export default function ComanderoAdminPage() {
   const [category, setCategory] = useState<ItemCategory>('plato');
   const [price, setPrice] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
+  const [menuPage, setMenuPage] = useState(0);
 
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionLabel, setSessionLabel] = useState('');
@@ -59,6 +61,14 @@ export default function ComanderoAdminPage() {
   const [busy, setBusy] = useState(false);
 
   const { floor, refresh: refreshFloor } = useComanderoFloor(sessionId);
+
+  const menuPageCount = Math.max(1, Math.ceil(menu.length / MENU_PAGE_SIZE));
+  const safeMenuPage = Math.min(menuPage, menuPageCount - 1);
+  const menuPageRows = menu.slice(safeMenuPage * MENU_PAGE_SIZE, safeMenuPage * MENU_PAGE_SIZE + MENU_PAGE_SIZE);
+
+  useEffect(() => {
+    if (menuPage > menuPageCount - 1) setMenuPage(Math.max(0, menuPageCount - 1));
+  }, [menu.length, menuPage, menuPageCount]);
 
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,6 +84,8 @@ export default function ComanderoAdminPage() {
     }
     setName('');
     setPrice('');
+    // New items append; jump to the last page so the row is visible.
+    setMenuPage(Math.floor(menu.length / MENU_PAGE_SIZE));
   };
 
   const startSession = async () => {
@@ -135,7 +147,7 @@ export default function ComanderoAdminPage() {
             <div className="w-full sm:w-40">
               <Label htmlFor="item-category">Categoría</Label>
               <Select value={category} onValueChange={(v) => setCategory(v as ItemCategory)}>
-                <SelectTrigger id="item-category">
+                <SelectTrigger id="item-category" data-testid="comandero-item-category">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -171,40 +183,67 @@ export default function ComanderoAdminPage() {
           ) : menu.length === 0 ? (
             <p className="text-sm text-muted-foreground">La carta del aula está vacía. Añade platos y bebidas.</p>
           ) : (
-            <Table data-testid="comandero-menu-table">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Ítem</TableHead>
-                  <TableHead>Estación</TableHead>
-                  <TableHead>Precio</TableHead>
-                  <TableHead className="w-12" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {menu.map((item) => (
-                  <TableRow key={item.id} data-testid="comandero-menu-row">
-                    <TableCell className="font-medium">{item.name}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="gap-1">
-                        {item.category === 'bebida' ? <Wine className="size-3" /> : <ChefHat className="size-3" />}
-                        {item.category === 'bebida' ? 'Barra' : 'Cocina'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{euros(item.price_cents)}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label={`Eliminar ${item.name}`}
-                        onClick={() => void removeItem(item.id)}
-                      >
-                        <Trash2 className="size-4 text-destructive" />
-                      </Button>
-                    </TableCell>
+            <div className="space-y-3">
+              <Table data-testid="comandero-menu-table">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Ítem</TableHead>
+                    <TableHead>Estación</TableHead>
+                    <TableHead>Precio</TableHead>
+                    <TableHead className="w-12" />
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {menuPageRows.map((item) => (
+                    <TableRow key={item.id} data-testid="comandero-menu-row">
+                      <TableCell className="font-medium" data-testid="comandero-menu-row-name">{item.name}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="gap-1">
+                          {item.category === 'bebida' ? <Wine className="size-3" /> : <ChefHat className="size-3" />}
+                          {item.category === 'bebida' ? 'Barra' : 'Cocina'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell data-testid="comandero-menu-row-price">{euros(item.price_cents)}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={`Eliminar ${item.name}`}
+                          onClick={() => void removeItem(item.id)}
+                        >
+                          <Trash2 className="size-4 text-destructive" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {menu.length > MENU_PAGE_SIZE && (
+                <div className="flex items-center gap-2" data-testid="comandero-menu-pagination">
+                  <Button
+                    data-testid="comandero-menu-prev"
+                    variant="outline"
+                    size="sm"
+                    disabled={safeMenuPage <= 0}
+                    onClick={() => setMenuPage(safeMenuPage - 1)}
+                  >
+                    Anterior
+                  </Button>
+                  <span data-testid="comandero-menu-page-info" className="text-sm text-muted-foreground">
+                    Página {safeMenuPage + 1} de {menuPageCount}
+                  </span>
+                  <Button
+                    data-testid="comandero-menu-next"
+                    variant="outline"
+                    size="sm"
+                    disabled={safeMenuPage >= menuPageCount - 1}
+                    onClick={() => setMenuPage(safeMenuPage + 1)}
+                  >
+                    Siguiente
+                  </Button>
+                </div>
+              )}
+            </div>
           )}
         </CardContent>
       </Card>
@@ -263,7 +302,12 @@ export default function ComanderoAdminPage() {
                   <Plus className="mr-1 size-4" />
                   Mesa
                 </Button>
-                <Button className="bg-cta text-cta-foreground hover:bg-cta-hover" onClick={() => void closeSession()} disabled={busy}>
+                <Button
+                  data-testid="comandero-session-close"
+                  className="bg-cta text-cta-foreground hover:bg-cta-hover"
+                  onClick={() => void closeSession()}
+                  disabled={busy}
+                >
                   Cerrar sesión y ver resumen
                 </Button>
               </div>
@@ -307,7 +351,7 @@ export default function ComanderoAdminPage() {
           )}
 
           {summary && (
-            <Card className="border-border bg-secondary">
+            <Card className="border-border bg-secondary" data-testid="comandero-session-summary">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base text-secondary-foreground">Resumen de la sesión</CardTitle>
               </CardHeader>

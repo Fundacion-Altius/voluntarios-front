@@ -34,12 +34,12 @@ export function StationView({ sessionId, station }: { sessionId: string; station
   const Icon = station === 'barra' ? Wine : ChefHat;
 
   return (
-    <Card className="border-border">
+    <Card className="border-border" data-testid={`comandero-station-${station}`}>
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-base">
           <Icon className="size-4 text-primary" />
           Cola de {STATION_LABEL[station]}
-          <Badge variant="secondary">{lines.length}</Badge>
+          <Badge variant="secondary" data-testid="comandero-station-count">{lines.length}</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
@@ -52,6 +52,7 @@ export function StationView({ sessionId, station }: { sessionId: string; station
             {lines.map((l) => (
               <li
                 key={l.id}
+                data-testid="comandero-station-line"
                 className="flex items-center justify-between gap-2 rounded-md border border-border p-2 text-sm"
               >
                 <span className="min-w-0">
@@ -61,7 +62,12 @@ export function StationView({ sessionId, station }: { sessionId: string; station
                     {STATUS_LABEL[l.status] ?? l.status}
                   </Badge>
                 </span>
-                <Button size="sm" disabled={pending === l.id} onClick={() => void onAdvance(l.id)}>
+                <Button
+                  size="sm"
+                  data-testid="comandero-advance-line"
+                  disabled={pending === l.id}
+                  onClick={() => void onAdvance(l.id)}
+                >
                   {NEXT_LABEL[l.status] ?? 'Avanzar'}
                 </Button>
               </li>

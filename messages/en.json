@@ -1291,6 +1291,8 @@
     },
     "sidebar": {
       "title": "Management panel",
+      "collapse": "Collapse sidebar",
+      "expand": "Expand sidebar",
       "groups": {
         "inicio": "Home",
         "voluntariado": "Volunteering",
