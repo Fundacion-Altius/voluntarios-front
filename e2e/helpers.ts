@@ -146,6 +146,53 @@ export async function loginAsBrowser(
   }
 }
 
+/**
+ * Same as loginAsBrowser, but authenticates against a specific tenant origin
+ * (e.g. http://fundacionaltius.localhost:3000) and pins the session cookies to
+ * that host. Use for tenant-scoped modules (comandero is Altius-only) so the
+ * browser's tenant matches the host under test, not the localhost fallback.
+ */
+export async function loginAsBrowserOnHost(
+  page: Page,
+  origin: string,
+  email: string,
+  password: string,
+): Promise<void> {
+  const host = new URL(origin).hostname; // e.g. "fundacionaltius.localhost"
+
+  const loginRes = await page.request.post(`${origin}/api/auth/login`, { data: { email, password } });
+  if (!loginRes.ok()) throw new Error(`login on ${host} failed: ${loginRes.status()}`);
+  const loginData = await loginRes.json();
+  if (!loginData?.authToken || !loginData.user) throw new Error(`login on ${host} returned no token/user`);
+
+  const csrfRes = await page.request.get(`${origin}/api/auth/csrf`);
+  const nextAuthCsrf = (await csrfRes.json()).csrfToken as string | undefined;
+  if (!nextAuthCsrf) throw new Error(`NextAuth CSRF fetch failed on ${host}`);
+
+  const user = loginData.user;
+  const authRes = await page.request.post(`${origin}/api/auth/callback/credentials`, {
+    form: {
+      csrfToken: nextAuthCsrf,
+      email: user.email || email,
+      name: user.display_name || user.name || email,
+      role: user.role || '',
+      user_type: user.user_type || '',
+      user_id: user.user_id || user.id || '',
+      authToken: loginData.authToken,
+      json: 'true',
+    },
+  });
+  const raw = setCookieValues(authRes);
+  const match = raw.match(/next-auth\.session-token=([^;]+)/);
+  if (!match) throw new Error(`No next-auth.session-token in Set-Cookie on ${host}: ${raw}`);
+
+  await page.context().addCookies([
+    { name: 'next-auth.session-token', value: match[1], domain: host, path: '/', httpOnly: true },
+    { name: 'auth_token', value: loginData.authToken, domain: host, path: '/', httpOnly: true },
+    ...(loginData.csrfToken ? [{ name: 'csrf_token', value: loginData.csrfToken, domain: host, path: '/' }] : []),
+  ]);
+}
+
 export async function loginAs(
   ctx: ReturnType<typeof playwrightRequest.newContext> extends Promise<infer T> ? T : never,
   email: string,

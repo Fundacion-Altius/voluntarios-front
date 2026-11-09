@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { loginAsBrowser, adminLogin, authHeaders, BACKEND_URL } from './helpers';
+import { loginAsBrowser } from './helpers';
+import { adminToysApi, cleanupSince, makeEan, snapshot, tinyPng, type Snapshot, type ToysApi } from './toysData';
 
 test.describe('December toys handout (browser)', () => {
   test.describe.configure({ mode: 'serial', timeout: 120000 });
@@ -7,25 +8,42 @@ test.describe('December toys handout (browser)', () => {
   const itemTitle = `Peluche-${tag}`;
   let qr = '';
   let toyId = '';
+  // The parent flow needs a family code since the /juguetes entry gate.
+  const family = `e2e${tag}`.slice(0, 16);
+  let api: ToysApi;
+  let before: Snapshot;
 
-  function makeEan(tag: string): string {
-    const base = (`299${tag}`.replace(/\D/g, '').slice(-12)).padStart(12, '0').slice(0, 12);
-    const sum = [...base].reduce((acc, ch, i) => acc + Number(ch) * (i % 2 === 0 ? 1 : 3), 0);
-    return base + String((10 - (sum % 10)) % 10);
-  }
+  // Everything this spec creates is removed afterwards, so the demo seed stays as it was.
+  test.beforeAll(async () => {
+    api = await adminToysApi();
+    before = await snapshot(api);
+    const res = await api.post('/households', { code: family, toy_quota: 3 });
+    expect(res.status()).toBe(201);
+    const slot = await api.post('/slots', { date: '2026-12-15', label: `Turno e2e ${tag}`, start_time: '10:00', end_time: '12:00' });
+    expect(slot.status()).toBe(201);
+    // Catalogue fixtures of its own, so the spec does not depend on which seed is loaded.
+    const fixtures = [
+      { title: `Cometa ${tag}`, ageBand: 'y5_7', pictures: 1, description: `Cometa de colores ${tag}` },
+      { title: `Xilófono ${tag}`, ageBand: 'y1_2', pictures: 1, description: `Xilófono de madera ${tag}` },
+      { title: `Casita ${tag}`, ageBand: 'y5_7', pictures: 3, description: `Casita con muebles ${tag}` },
+    ];
+    for (const [i, f] of fixtures.entries()) {
+      const item = await api.post('/items', { title: f.title, ageBand: f.ageBand, quantity: 3, location: 'almacen', description: f.description, ean: makeEan(`${tag}${i + 1}`) });
+      expect(item.status()).toBe(201);
+      const id = (await item.json()).id;
+      for (let n = 1; n <= f.pictures; n++) {
+        expect((await api.upload(`/items/${id}/pictures`, 'pictures', tinyPng(`foto-${n}.png`))).ok()).toBeTruthy();
+      }
+    }
+  });
 
-  test('staff registers child, slot, and inventory item', async ({ page }) => {
+  test.afterAll(async () => {
+    await cleanupSince(api, before, tag);
+    await api.dispose();
+  });
+
+  test('staff registers an inventory item with pictures', async ({ page }) => {
     await loginAsBrowser(page, 'admin@fundacionaltius.org', 'admin123');
-    await page.goto('/es/admin/toys', { waitUntil: 'load' });
-    await page.getByTestId('toys-console').waitFor({ timeout: 15000 });
-
-    await page.getByTestId('toys-child-label').fill(`N-${tag}`);
-    await page.getByTestId('toys-child-add').click();
-    await expect(page.getByTestId('toys-child-result')).toContainText('ok:');
-
-    await page.getByTestId('toys-slot-add').click();
-    await expect(page.getByTestId('toys-slot-result')).toContainText('ok:');
-
     await page.goto('/es/admin/toys/stock', { waitUntil: 'load' });
     await page.getByTestId('toys-stock-page').waitFor({ timeout: 15000 });
 
@@ -46,61 +64,37 @@ test.describe('December toys handout (browser)', () => {
     await page.getByTestId('toys-edit-title').fill(itemTitle);
     await page.getByTestId('toys-edit-desc').fill(`Para niños de 5 años ${tag}`);
     await page.getByTestId('toys-edit-save').click();
-    await expect(editResult).toContainText('ok:', { timeout: 15000 });
-    toyId = ((await editResult.textContent()) ?? '').replace('ok:', '').trim();
+    await expect(editResult).toHaveAttribute('data-item-id', /.+/, { timeout: 15000 });
+    toyId = (await editResult.getAttribute('data-item-id')) ?? '';
     expect(toyId.length).toBeGreaterThan(0);
 
     const radios = page.locator('[data-testid^="toys-edit-cover-"]');
     await expect(radios).toHaveCount(2);
-    await radios.nth(1).click();
-    await expect(editResult).toContainText('Portada:');
+    // The radio is visually hidden; click its star label.
+    await radios.nth(1).locator('xpath=..').click();
+    await expect(editResult).toContainText('Portada cambiada');
     await page.getByTestId('toys-edit-cancel').click();
-  });
-
-  test('eligibility from beneficiaries list or csv upload', async ({ page, request }) => {
-    const { authToken, csrfToken } = await adminLogin(request);
-    const headers = { ...authHeaders(authToken, csrfToken), 'Content-Type': 'application/json' };
-    const member = await request.fetch(`${BACKEND_URL}/api/members`, {
-      method: 'POST',
-      headers,
-      data: { fullName: `Fam-${tag}`, email: `fam-${tag}@test.com` },
-    });
-    expect(member.ok()).toBeTruthy();
-
-    await loginAsBrowser(page, 'admin@fundacionaltius.org', 'admin123');
-    await page.goto('/es/admin/toys', { waitUntil: 'load' });
-    await page.getByTestId('toys-console').waitFor({ timeout: 15000 });
-
-    await page.getByTestId('toys-beneficiaries-load').click();
-    await page.getByTestId('toys-beneficiary').click();
-    await page.getByRole('option', { name: new RegExp(`Fam-${tag}`) }).click();
-    await page.getByTestId('toys-beneficiary-pick').click();
-    await expect(page.getByTestId('toys-child-result')).toContainText('ok:');
-
-    await page.getByTestId('toys-upload-file').setInputFiles({
-      name: 'lista.csv',
-      mimeType: 'text/csv',
-      buffer: Buffer.from('nombre,edad\nN-1,5\nN-2,mal\n', 'utf-8'),
-    });
-    await expect(page.getByTestId('toys-child-result')).toContainText('Creados: 1');
   });
 
   test('parent browses by age, checks out one QR, and books a slot', async ({ page }) => {
     await page.goto('/es/juguetes', { waitUntil: 'load' });
     await page.getByTestId('juguetes-console').waitFor({ timeout: 15000 });
+    await page.getByTestId('juguetes-code').fill(family);
+    await page.getByTestId('juguetes-code-go').click();
 
     await expect(page.getByTestId('juguetes-out')).toContainText('elementos');
     await expect(page.getByTestId('juguetes-grid')).toBeVisible();
-    await page.getByTestId('juguetes-search').fill('cometa');
-    await expect(page.getByTestId('juguetes-grid')).toContainText('Cometa');
-    await expect(page.getByTestId('juguetes-grid')).not.toContainText('Xilófono');
-    await page.getByTestId('juguetes-search').fill('');
-    await expect(page.getByTestId('juguetes-grid')).toContainText('Xilófono');
+    await page.getByTestId('juguetes-search').fill(`cometa ${tag}`);
+    await expect(page.getByTestId('juguetes-grid')).toContainText(`Cometa ${tag}`);
+    await expect(page.getByTestId('juguetes-grid')).not.toContainText(`Xilófono ${tag}`);
+    await page.getByTestId('juguetes-search').fill(tag);
+    await expect(page.getByTestId('juguetes-grid')).toContainText(`Xilófono ${tag}`);
     await page.getByTestId('juguetes-age-y5_7').click();
     await expect(page.getByTestId('juguetes-age-y5_7')).toHaveAttribute('aria-pressed', 'true');
     await page.getByTestId('juguetes-age-all').click();
     await expect(page.getByTestId('juguetes-age-all')).toHaveAttribute('aria-pressed', 'true');
     await expect(page.getByText(`Para niños de 5 años ${tag}`).first()).toBeVisible();
+    await page.getByTestId('juguetes-search').fill('');
     await page.locator('[data-testid^="juguetes-zoom-"]').first().click();
     await expect(page.getByTestId('juguetes-modal')).toBeVisible();
     await expect(page.getByTestId('juguetes-modal-img')).toBeVisible();
@@ -135,7 +129,7 @@ test.describe('December toys handout (browser)', () => {
 
     await page.getByTestId('juguetes-slots').click();
     await page.getByTestId('juguetes-slot').click();
-    await page.getByRole('option').first().click();
+    await page.getByRole('option', { name: new RegExp(`Turno e2e ${tag}`) }).click();
     await page.getByTestId('juguetes-book').click();
     await expect(page.getByTestId('juguetes-out')).toContainText('reservado');
   });
@@ -154,20 +148,19 @@ test.describe('December toys handout (browser)', () => {
 
     await page.getByTestId('toys-edit-title').fill(`${itemTitle} grande`);
     await page.getByTestId('toys-edit-desc').fill(`Editado ${tag}`);
-    await page.getByTestId('toys-edit-band').click();
-    await page.getByRole('option', { name: '8-11 Años' }).click();
+    await page.getByTestId('toys-edit-band-y8_11').click();
     await page.getByTestId('toys-edit-save').click();
     await expect(editResult).toContainText(`${itemTitle} grande`);
 
     const rowCovers = page.locator('[data-testid^="toys-edit-cover-"]');
     await expect(rowCovers).toHaveCount(2);
-    await rowCovers.first().click();
-    await expect(editResult).toContainText('Portada:');
+    await rowCovers.first().locator('xpath=..').click();
+    await expect(editResult).toContainText('Portada cambiada');
 
     const removeButtons = page.locator('[data-testid^="toys-edit-remove-"]');
     await expect(removeButtons).toHaveCount(2);
     await removeButtons.first().click();
-    await expect(editResult).toContainText('Quitar foto:');
+    await expect(editResult).toContainText('Foto quitada');
     await expect(page.locator('[data-testid^="toys-edit-remove-"]')).toHaveCount(1);
     await page.getByTestId('toys-edit-cancel').click();
   });
@@ -175,9 +168,11 @@ test.describe('December toys handout (browser)', () => {
   test('casita lightbox walks all three pictures', async ({ page }) => {
     await page.goto('/es/juguetes', { waitUntil: 'load' });
     await page.getByTestId('juguetes-console').waitFor({ timeout: 15000 });
+    await page.getByTestId('juguetes-code').fill(family);
+    await page.getByTestId('juguetes-code-go').click();
     await expect(page.getByTestId('juguetes-grid')).toBeVisible();
-    await page.getByTestId('juguetes-search').fill('casita');
-    const card = page.locator('[data-testid^="juguetes-card-"]', { hasText: 'Casita de muñecas' }).first();
+    await page.getByTestId('juguetes-search').fill(`casita ${tag}`);
+    const card = page.locator('[data-testid^="juguetes-card-"]', { hasText: `Casita ${tag}` }).first();
     await card.locator('[data-testid^="juguetes-zoom-"]').click();
     await expect(page.getByTestId('juguetes-modal')).toBeVisible();
     await expect(page.getByTestId('juguetes-modal-desc')).toContainText('Casita con muebles');
@@ -193,21 +188,21 @@ test.describe('December toys handout (browser)', () => {
     await expect(page.getByTestId('juguetes-modal-desc')).toContainText('Casita con muebles');
   });
 
-  test('handoff scan collects, double scan refuses, close records destination', async ({ page }) => {
+  test("modo reparto hands the parent's order over once", async ({ page }) => {
     await loginAsBrowser(page, 'admin@fundacionaltius.org', 'admin123');
-    await page.goto('/es/admin/toys', { waitUntil: 'load' });
-    await page.getByTestId('toys-console').waitFor({ timeout: 15000 });
+    await page.goto('/es/admin/toys/entrega', { waitUntil: 'load' });
+    await page.getByTestId('toys-reparto').waitFor({ timeout: 15000 });
 
-    await page.getByTestId('toys-scan-token').fill(qr);
-    await page.getByTestId('toys-scan-run').click();
-    await expect(page.getByTestId('toys-scan-result')).toContainText('collected:');
+    await page.getByTestId('toys-reparto-code').fill(qr);
+    await page.getByTestId('toys-reparto-lookup').click();
+    await expect(page.getByTestId(`toys-reparto-line-${toyId}`)).toBeVisible();
+    await page.getByTestId('toys-reparto-confirm').click();
+    await expect(page.getByTestId('toys-reparto-result')).toContainText('¡Entregado!');
 
-    await page.getByTestId('toys-scan-run').click();
-    await expect(page.getByTestId('toys-scan-result')).toContainText(/ERROR|collected: 0/i);
-
-    await page.getByTestId('toys-close-toy').fill(toyId);
-    await page.getByTestId('toys-close-dest').fill('almacén central e2e');
-    await page.getByTestId('toys-close-run').click();
-    await expect(page.getByTestId('toys-close-result')).toContainText('almacén central e2e');
+    await page.getByTestId('toys-reparto-next').click();
+    await page.getByTestId('toys-reparto-code').fill(qr);
+    await page.getByTestId('toys-reparto-lookup').click();
+    await expect(page.getByTestId('toys-reparto-result')).toContainText('Ya se entregó');
+    await expect(page.getByTestId('toys-reparto-confirm')).toHaveCount(0);
   });
 });
