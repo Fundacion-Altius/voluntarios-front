@@ -2349,22 +2349,34 @@
           "pedido": "Comença a preparar",
           "en_preparacion": "Marca com a llest"
         },
-        "advance": "Avança"
+        "advance": "Avança",
+        "liveHint": "Cua en viu"
       },
       "waiter": {
         "loading": "Carregant sala…",
         "free": "Lliure",
-        "openOrder": "Obre comanda",
+        "openOrder": "+ Obrir",
         "noLines": "Encara sense línies",
         "serve": "Serveix",
         "pickAria": "Tria un ítem de la carta",
         "pickPlaceholder": "Afegeix de la carta…",
         "option": "{name} · {station} · {price}",
-        "notePlaceholder": "Nota (p. ex. sense gluten)",
+        "notePlaceholder": "Nota opcional (p. ex. sense gluten)",
         "add": "Afegeix",
         "closeBill": "Tanca el compte",
         "noTables": "El docent encara no ha afegit taules a aquesta sessió.",
-        "error": "Error"
+        "error": "Error",
+        "serveNamed": "Servir {name}",
+        "closeBlocked": "Tancar compte · falta servir",
+        "dishes": "Plats",
+        "drinks": "Begudes",
+        "sheetEyebrow": "Cambrer · servei",
+        "total": "Total",
+        "prepShort": "En prep.",
+        "readyOne": "Llest · {name}",
+        "readyMany": "Llest · {n} plats",
+        "inKitchen": "A la cuina",
+        "open": "Comanda"
       }
     },
     "status": {
@@ -2401,20 +2413,37 @@
         "refresh": "Actualitza la sala",
         "label": "Nom de la sessió",
         "labelPlaceholder": "Servei del migdia 12-nov",
-        "start": "Arrenca la sessió",
+        "start": "Arrencar sessió",
         "addTable": "Afegeix una taula",
         "tablePlaceholder": "Taula 1",
-        "tableButton": "Taula",
-        "close": "Tanca la sessió i mostra el resum",
+        "tableButton": "+ Taula",
+        "close": "Tancar servei",
         "free": "Lliure",
         "noLines": "Sense línies",
-        "noTables": "Afegeix taules per començar el servei."
+        "noTables": "Afegeix taules per començar el servei.",
+        "floorTitle": "Plànol de sala",
+        "floorSubtitle": "S’actualitza cada pocs segons · {n} taules amb menjar llest",
+        "readyHint": "Llest per servir · {n}",
+        "inKitchen": "A la cuina",
+        "newOrders": "Comandes noves",
+        "livePill": "En servei",
+        "liveTitle": "Sala en viu",
+        "liveHint": "Mira el plànol i tanca el servei quan toqui.",
+        "alreadyOpen": "Ja hi ha un servei obert: ves a Sala en viu.",
+        "newAfterClose": "Obrir un altre servei"
       },
       "summary": {
         "title": "Resum de la sessió",
         "waiting": "Línies en espera en tancar: {n}",
         "served": "Ítems servits: {n}",
         "phases": "Temps mitjà per fase (s): comanda {pedido} · preparació {preparacion} · llest {listo}"
+      },
+      "steps": {
+        "aria": "Flux de l’aula",
+        "carta": "Carta",
+        "abrir": "Obrir servei",
+        "sala": "Sala en viu",
+        "cierre": "Tancament"
       }
     }
   }

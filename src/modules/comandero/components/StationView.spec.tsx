@@ -26,6 +26,8 @@ const cocinaLine = {
   preparing_at: null,
   ready_at: null,
   served_at: null,
+  table_id: 't1',
+  table_label: 'Mesa 1',
 };
 
 const originalFetch = global.fetch;
@@ -57,7 +59,7 @@ describe('StationView (KL-S-050 cola de estación)', () => {
 
     // The line and its note show up.
     expect(await screen.findByText('Croquetas')).toBeInTheDocument();
-    expect(screen.getByText('sin gluten')).toBeInTheDocument();
+    expect(screen.getByText(/sin gluten/)).toBeInTheDocument();
 
     // Advancing calls the advance endpoint for this line.
     await userEvent.click(screen.getByRole('button', { name: /empezar a preparar/i }));

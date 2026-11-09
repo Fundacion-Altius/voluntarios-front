@@ -2349,22 +2349,34 @@
           "pedido": "Empezar a preparar",
           "en_preparacion": "Marcar listo"
         },
-        "advance": "Avanzar"
+        "advance": "Avanzar",
+        "liveHint": "Cola en vivo"
       },
       "waiter": {
         "loading": "Cargando sala…",
         "free": "Libre",
-        "openOrder": "Abrir comanda",
+        "openOrder": "+ Abrir",
         "noLines": "Sin líneas aún",
         "serve": "Servir",
         "pickAria": "Elegir ítem de la carta",
         "pickPlaceholder": "Añadir de la carta…",
         "option": "{name} · {station} · {price}",
-        "notePlaceholder": "Nota (p. ej. sin gluten)",
+        "notePlaceholder": "Nota opcional (p. ej. sin gluten)",
         "add": "Añadir",
         "closeBill": "Cerrar cuenta",
         "noTables": "El docente aún no ha añadido mesas a esta sesión.",
-        "error": "Error"
+        "error": "Error",
+        "serveNamed": "Servir {name}",
+        "closeBlocked": "Cerrar cuenta · falta servir",
+        "dishes": "Platos",
+        "drinks": "Bebidas",
+        "sheetEyebrow": "Camarero · servicio",
+        "total": "Total",
+        "prepShort": "En prep.",
+        "readyOne": "Listo · {name}",
+        "readyMany": "Listo · {n} platos",
+        "inKitchen": "En cocina",
+        "open": "Pedido"
       }
     },
     "status": {
@@ -2404,17 +2416,34 @@
         "start": "Arrancar sesión",
         "addTable": "Añadir mesa",
         "tablePlaceholder": "Mesa 1",
-        "tableButton": "Mesa",
-        "close": "Cerrar sesión y ver resumen",
+        "tableButton": "+ Mesa",
+        "close": "Cerrar servicio",
         "free": "Libre",
         "noLines": "Sin líneas",
-        "noTables": "Añade mesas para empezar el servicio."
+        "noTables": "Añade mesas para empezar el servicio.",
+        "floorTitle": "Plano de sala",
+        "floorSubtitle": "Actualiza cada pocos segundos · {n} mesas con comida lista",
+        "readyHint": "Listo para servir · {n}",
+        "inKitchen": "En cocina",
+        "newOrders": "Pedidos nuevos",
+        "livePill": "En servicio",
+        "liveTitle": "Sala en vivo",
+        "liveHint": "Mira el plano y cierra el servicio cuando toque.",
+        "alreadyOpen": "Ya hay un servicio abierto: ve a Sala en vivo.",
+        "newAfterClose": "Abrir otro servicio"
       },
       "summary": {
         "title": "Resumen de la sesión",
         "waiting": "Líneas en espera al cerrar: {n}",
         "served": "Ítems servidos: {n}",
         "phases": "Tiempo medio por fase (s): pedido {pedido} · preparación {preparacion} · listo {listo}"
+      },
+      "steps": {
+        "aria": "Flujo del aula",
+        "carta": "Carta",
+        "abrir": "Abrir servicio",
+        "sala": "Sala en vivo",
+        "cierre": "Cierre"
       }
     }
   }
