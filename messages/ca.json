@@ -1757,6 +1757,8 @@
       "pageOf": "Pàgina {page} de {total}"
     },
     "sidebar": {
+      "collapse": "Redueix el menú",
+      "expand": "Amplia el menú",
       "groups": {
         "miDia": "El meu dia",
         "participar": "Participar",

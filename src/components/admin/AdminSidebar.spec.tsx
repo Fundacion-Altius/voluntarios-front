@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import esMessages from '../../../messages/es.json';
 import AdminSidebar from './AdminSidebar';
 
@@ -10,11 +11,14 @@ jest.mock('@/i18n/navigation', () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
 }));
 jest.mock('@/components/LanguageSwitcher', () => ({ __esModule: true, default: () => null }));
+jest.mock('@/hooks/use-mobile', () => ({ useIsMobile: () => false }));
 
 const renderSidebar = (props: Partial<React.ComponentProps<typeof AdminSidebar>> = {}) =>
   render(
     <NextIntlClientProvider locale="es" messages={esMessages}>
-      <AdminSidebar onLogout={() => undefined} {...props} />
+      <SidebarProvider>
+        <AdminSidebar onLogout={() => undefined} {...props} />
+      </SidebarProvider>
     </NextIntlClientProvider>
   );
 
@@ -58,5 +62,16 @@ describe('AdminSidebar (grouped)', () => {
     for (const name of ['Voluntariado', 'Actividades', 'Personas atendidas', 'Comunicación', 'Financiación', 'Gobierno e impacto', 'Datos y ajustes']) {
       expect(screen.getByRole('button', { name })).toHaveAttribute('aria-expanded', 'false');
     }
+  });
+
+  it('collapses via the shadcn SidebarRail without a toggle next to the logo', () => {
+    mockPath = '/admin/dashboard';
+    const { container } = renderSidebar();
+    expect(screen.getByText('Panel de gestión')).toBeInTheDocument();
+    expect(container.querySelector('[data-slot="sidebar"][data-state="expanded"]')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Contraer menú' }));
+    expect(container.querySelector('[data-slot="sidebar"][data-state="collapsed"]')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Expandir menú' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Panel' })).toBeInTheDocument();
   });
 });

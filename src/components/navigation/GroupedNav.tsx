@@ -57,7 +57,8 @@ function NavLinks({
   collapsed: boolean;
 }) {
   return (
-    <ul className="space-y-1">
+    // Collapsed: flex + items-center — mx-auto does nothing on buttonVariants' inline-flex.
+    <ul className={cn('space-y-1', collapsed && 'flex flex-col items-center')}>
       {items.map((item) => {
         const Icon = item.icon;
         const active = isActivePath(pathname, item);
@@ -68,9 +69,12 @@ function NavLinks({
             aria-label={collapsed ? item.label : undefined}
             onClick={onClick}
             className={cn(
-              buttonVariants({ variant: active ? 'secondary' : 'ghost' }),
-              'w-full text-sm',
-              collapsed ? 'justify-center px-0' : 'justify-start gap-3',
+              buttonVariants({
+                variant: active ? 'secondary' : 'ghost',
+                size: collapsed ? 'icon-sm' : 'default',
+              }),
+              'text-sm',
+              collapsed ? 'size-8 shrink-0' : 'w-full justify-start gap-3',
               active && 'font-semibold text-primary',
             )}
           >
@@ -79,7 +83,7 @@ function NavLinks({
           </Link>
         );
         return (
-          <li key={item.href}>
+          <li key={item.href} className={cn(collapsed && 'flex w-full justify-center')}>
             {collapsed ? (
               <Tooltip>
                 <TooltipTrigger asChild>{link}</TooltipTrigger>
@@ -119,15 +123,19 @@ export function GroupedNav({ pinned, groups, initialGroup, ariaLabel, onNavigate
 
   if (collapsed) {
     const flatItems = [...pinned.items, ...groups.flatMap((g) => g.items)];
+    // One scroll container, no nested overflow; scrollbar-none kills track+thumb (not just the thumb).
     return (
-      <nav aria-label={ariaLabel} className="flex-1 overflow-y-auto p-3">
+      <nav
+        aria-label={ariaLabel}
+        className="flex min-h-0 flex-1 flex-col items-center overflow-x-hidden overflow-y-auto p-1.5 scrollbar-none"
+      >
         <NavLinks items={flatItems} pathname={pathname} onClick={handleClick} collapsed={collapsed} />
       </nav>
     );
   }
 
   return (
-    <nav aria-label={ariaLabel} className="flex-1 overflow-y-auto p-3">
+    <nav aria-label={ariaLabel} className="flex-1 overflow-y-auto overflow-x-hidden p-3">
       <section aria-labelledby={`nav-group-${pinned.id}`} className="mb-2">
         <h2 id={`nav-group-${pinned.id}`} className="flex min-h-10 items-center px-3 text-sm font-semibold text-foreground">
           {pinned.label}

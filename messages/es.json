@@ -1757,6 +1757,8 @@
       "pageOf": "Página {page} de {total}"
     },
     "sidebar": {
+      "collapse": "Contraer menú",
+      "expand": "Expandir menú",
       "groups": {
         "miDia": "Mi día",
         "participar": "Participar",

@@ -1757,6 +1757,8 @@
       "pageOf": "Page {page} of {total}"
     },
     "sidebar": {
+      "collapse": "Collapse sidebar",
+      "expand": "Expand sidebar",
       "groups": {
         "miDia": "My day",
         "participar": "Take part",
