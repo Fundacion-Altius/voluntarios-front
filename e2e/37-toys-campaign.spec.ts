@@ -8,7 +8,6 @@ import {
   itemQuantity,
   makeEan,
   snapshot,
-  toysApi,
   type Snapshot,
   type ToysApi,
 } from './toysData';
@@ -362,32 +361,9 @@ test.describe('Toys campaign redesign', () => {
       expect((await (await api.get('/dispositions')).json()).length).toBe(closures);
     });
 
-    test('stock never goes below zero', async () => {
-      const item = await api.post('/items', { title: `E2E cero ${tag}`, ageBand: 'y1_2', quantity: 1, location: 'almacen', ean: makeEan(`${tag}9`) });
-      const id = (await item.json()).id;
-      await api.post(`/items/${id}/adjust`, { delta: -1 });
-      const again = await api.post(`/items/${id}/adjust`, { delta: -1 });
-      expect(again.ok()).toBe(true);
-      expect(await itemQuantity(api, id)).toBe(0);
-    });
-
-    test('roles: a volunteer can hand out but not change stock; others are refused', async () => {
-      const volunteer = await toysApi('general@fundacionaltius.org', 'general123');
-      const user = await toysApi('nave@fundacionaltius.org', 'nave123');
-      const anonymous = await toysApi();
-      try {
-        expect((await volunteer.post('/scan/lookup', { token: famB })).status()).toBe(200);
-        expect((await volunteer.get('/handover/summary')).status()).toBe(200);
-        expect((await volunteer.post(`/items/${toyId}/adjust`, { delta: 1 })).status()).toBe(403);
-        expect((await volunteer.post('/households', { code: `e2ev-${tag}` })).status()).toBe(403);
-        expect((await user.post('/scan/lookup', { token: famB })).status()).toBe(403);
-        // Anonymous calls never get through (401 without a session, 403 once the CSRF guard has a cookie to compare).
-        expect([401, 403]).toContain((await anonymous.post('/scan/lookup', { token: famB })).status());
-        expect([401, 403]).toContain((await anonymous.post('/scan/confirm', { token: famB })).status());
-        expect((await familyRow(api, famB))?.status).not.toBe('recogido');
-      } finally {
-        await Promise.all([volunteer.dispose(), user.dispose(), anonymous.dispose()]);
-      }
-    });
+    // NOTE: "stock never goes below zero" and the role-matrix checks are pure API
+    // assertions (no UI). They live in the backend integration suite:
+    //   voluntarios-back/src/api/toysHandoverApi.spec.ts  ("adjusts stock atomically and never below zero")
+    //   voluntarios-back/src/api/toysRolesApi.spec.ts      (role matrix with BYPASS_AUTH off)
   });
 });

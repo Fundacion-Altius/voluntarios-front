@@ -188,7 +188,7 @@ test.describe('December toys handout (browser)', () => {
     await expect(page.getByTestId('juguetes-modal-desc')).toContainText('Casita con muebles');
   });
 
-  test('modo reparto hands the parent's order over once', async ({ page }) => {
+  test("modo reparto hands the parent's order over once", async ({ page }) => {
     await loginAsBrowser(page, 'admin@fundacionaltius.org', 'admin123');
     await page.goto('/es/admin/toys/entrega', { waitUntil: 'load' });
     await page.getByTestId('toys-reparto').waitFor({ timeout: 15000 });
