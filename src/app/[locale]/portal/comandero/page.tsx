@@ -177,7 +177,7 @@ export default function ComanderoPortalPage() {
             loaded={loaded}
             error={error}
             onPick={setSessionId}
-            onRefresh={() => void refresh()}
+            onRefresh={refresh}
           />
         </section>
       )}

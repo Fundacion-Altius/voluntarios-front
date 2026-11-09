@@ -2341,6 +2341,80 @@
         "camareroHint": "Tables and bills",
         "cocinaHint": "Dishes",
         "barraHint": "Drinks"
+      },
+      "station": {
+        "title": "{station} queue",
+        "empty": "No pending orders at the {station}.",
+        "next": {
+          "pedido": "Start preparing",
+          "en_preparacion": "Mark ready"
+        },
+        "advance": "Advance"
+      },
+      "waiter": {
+        "loading": "Loading floor…",
+        "free": "Free",
+        "openOrder": "Open order",
+        "noLines": "No lines yet",
+        "serve": "Serve",
+        "pickAria": "Choose a menu item",
+        "pickPlaceholder": "Add from the menu…",
+        "option": "{name} · {station} · {price}",
+        "notePlaceholder": "Note (e.g. gluten-free)",
+        "add": "Add",
+        "closeBill": "Close bill",
+        "noTables": "The teacher hasn't added tables to this session yet.",
+        "error": "Error"
+      }
+    },
+    "status": {
+      "pedido": "Ordered",
+      "en_preparacion": "Preparing",
+      "listo": "Ready",
+      "servido": "Served"
+    },
+    "admin": {
+      "title": "Comandero",
+      "subtitle": "Restaurant service simulation for the Restaurant Services classroom. It is not a POS: payment is simulated.",
+      "menu": {
+        "title": "Classroom menu",
+        "name": "Name",
+        "category": "Category",
+        "plato": "Dish (kitchen)",
+        "bebida": "Drink (bar)",
+        "price": "Price (€)",
+        "add": "Add",
+        "loading": "Loading menu…",
+        "empty": "The classroom menu is empty. Add dishes and drinks.",
+        "item": "Item",
+        "station": "Station",
+        "priceCol": "Price",
+        "remove": "Remove {name}",
+        "prev": "Previous",
+        "next": "Next",
+        "page": "Page {page} of {total}",
+        "cocina": "Kitchen",
+        "barra": "Bar"
+      },
+      "session": {
+        "title": "Practice session",
+        "refresh": "Refresh floor",
+        "label": "Session name",
+        "labelPlaceholder": "Lunch service 12 Nov",
+        "start": "Start session",
+        "addTable": "Add table",
+        "tablePlaceholder": "Table 1",
+        "tableButton": "Table",
+        "close": "Close session and see summary",
+        "free": "Free",
+        "noLines": "No lines",
+        "noTables": "Add tables to start the service."
+      },
+      "summary": {
+        "title": "Session summary",
+        "waiting": "Lines still waiting at close: {n}",
+        "served": "Items served: {n}",
+        "phases": "Average time per phase (s): ordered {pedido} · preparing {preparacion} · ready {listo}"
       }
     }
   }

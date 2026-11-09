@@ -2341,6 +2341,80 @@
         "camareroHint": "Mesas y cuentas",
         "cocinaHint": "Platos",
         "barraHint": "Bebidas"
+      },
+      "station": {
+        "title": "Cola de {station}",
+        "empty": "No hay comandas pendientes en {station}.",
+        "next": {
+          "pedido": "Empezar a preparar",
+          "en_preparacion": "Marcar listo"
+        },
+        "advance": "Avanzar"
+      },
+      "waiter": {
+        "loading": "Cargando sala…",
+        "free": "Libre",
+        "openOrder": "Abrir comanda",
+        "noLines": "Sin líneas aún",
+        "serve": "Servir",
+        "pickAria": "Elegir ítem de la carta",
+        "pickPlaceholder": "Añadir de la carta…",
+        "option": "{name} · {station} · {price}",
+        "notePlaceholder": "Nota (p. ej. sin gluten)",
+        "add": "Añadir",
+        "closeBill": "Cerrar cuenta",
+        "noTables": "El docente aún no ha añadido mesas a esta sesión.",
+        "error": "Error"
+      }
+    },
+    "status": {
+      "pedido": "Pedido",
+      "en_preparacion": "En preparación",
+      "listo": "Listo",
+      "servido": "Servido"
+    },
+    "admin": {
+      "title": "Comandero",
+      "subtitle": "Simulación de servicio de restaurante para el aula de Servicios de Restaurante. No es un TPV: el cobro es simulado.",
+      "menu": {
+        "title": "Carta del aula",
+        "name": "Nombre",
+        "category": "Categoría",
+        "plato": "Plato (cocina)",
+        "bebida": "Bebida (barra)",
+        "price": "Precio (€)",
+        "add": "Añadir",
+        "loading": "Cargando carta…",
+        "empty": "La carta del aula está vacía. Añade platos y bebidas.",
+        "item": "Ítem",
+        "station": "Estación",
+        "priceCol": "Precio",
+        "remove": "Eliminar {name}",
+        "prev": "Anterior",
+        "next": "Siguiente",
+        "page": "Página {page} de {total}",
+        "cocina": "Cocina",
+        "barra": "Barra"
+      },
+      "session": {
+        "title": "Sesión de práctica",
+        "refresh": "Actualizar sala",
+        "label": "Nombre de la sesión",
+        "labelPlaceholder": "Servicio mediodía 12-nov",
+        "start": "Arrancar sesión",
+        "addTable": "Añadir mesa",
+        "tablePlaceholder": "Mesa 1",
+        "tableButton": "Mesa",
+        "close": "Cerrar sesión y ver resumen",
+        "free": "Libre",
+        "noLines": "Sin líneas",
+        "noTables": "Añade mesas para empezar el servicio."
+      },
+      "summary": {
+        "title": "Resumen de la sesión",
+        "waiting": "Líneas en espera al cerrar: {n}",
+        "served": "Ítems servidos: {n}",
+        "phases": "Tiempo medio por fase (s): pedido {pedido} · preparación {preparacion} · listo {listo}"
       }
     }
   }
