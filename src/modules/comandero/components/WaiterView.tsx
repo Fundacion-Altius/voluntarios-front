@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Loader2, Plus, ReceiptText, Utensils } from 'lucide-react';
+import { useLocale } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { comanderoApi } from '@/modules/comandero/api';
+import { formatMoney } from '@/modules/comandero/money';
 import type { OrderLine } from '@/modules/comandero/types';
 import { useComanderoFloor, useComanderoSnapshot } from '@/modules/comandero/useComandero';
 
@@ -30,11 +32,9 @@ const LINE_VARIANT: Record<string, 'default' | 'secondary' | 'outline'> = {
   servido: 'secondary',
 };
 
-function euros(cents: number): string {
-  return `${(cents / 100).toFixed(2)} €`;
-}
-
 export function WaiterView({ sessionId }: { sessionId: string }) {
+  const locale = useLocale();
+  const euros = (cents: number) => formatMoney(cents, locale);
   const { floor, loading, error, refresh } = useComanderoFloor(sessionId);
   const { snapshot } = useComanderoSnapshot(sessionId);
 

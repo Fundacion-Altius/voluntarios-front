@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { ChefHat, Loader2, Plus, RefreshCw, Trash2, Wine } from 'lucide-react';
+import { useLocale } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,6 +24,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { comanderoApi } from '@/modules/comandero/api';
+import { formatMoney } from '@/modules/comandero/money';
 import type { ItemCategory, SessionSummary } from '@/modules/comandero/types';
 import { useComanderoFloor, useComanderoMenu } from '@/modules/comandero/useComandero';
 
@@ -41,11 +43,9 @@ const LINE_VARIANT: Record<string, 'default' | 'secondary' | 'outline'> = {
   servido: 'secondary',
 };
 
-function euros(cents: number): string {
-  return `${(cents / 100).toFixed(2)} €`;
-}
-
 export default function ComanderoAdminPage() {
+  const locale = useLocale();
+  const euros = (cents: number) => formatMoney(cents, locale);
   const { menu, loading, error, addItem, removeItem } = useComanderoMenu();
 
   const [name, setName] = useState('');
