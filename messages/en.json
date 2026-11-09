@@ -391,7 +391,7 @@
         "tabs": {
           "resumen": "Overview",
           "inventario": "Inventory",
-          "familias": "Families & children",
+          "familias": "Families",
           "turnos": "Slots",
           "entrega": "Handout mode",
           "cierre": "Closing"
@@ -614,16 +614,9 @@
         }
       },
       "familias": {
-        "titulo": "Families & children",
+        "titulo": "Families",
         "sub": "Who signed up, who booked and who already collected.",
-        "vistas": "Views",
-        "tab": {
-          "familias": "Families ({n})",
-          "ninos": "Children ({n})"
-        },
         "anadirFamilia": "Add family",
-        "anadirNino": "Add child",
-        "importar": "Import list",
         "buscarCodigo": "Search by code",
         "filtrar": "Filter by status",
         "todas": "All ({n})",
@@ -642,11 +635,6 @@
         "cupo": "{n, plural, one {# toy} other {# toys}}",
         "sinTurno": "No slot",
         "incidencia": "Issue",
-        "buscarNino": "Search by tag",
-        "privacidad": "Use tags like \"Child 1\", never the child's name.",
-        "vacioNinos": "No children signed up yet.",
-        "anos": "{n, plural, one {# year} other {# years}}",
-        "editarNino": "Edit {label}",
         "editarFamilia": "Edit family",
         "nuevaFamilia": "New family",
         "codigo": "Family code (optional)",
@@ -655,28 +643,16 @@
         "cupoAyuda": "Usually one per child.",
         "borrarFamilia": "Delete this family? Their slot booking and order will be deleted too.",
         "error": {
-          "existe": "That code already exists. Pick another.",
-          "nino": "Enter a tag and a valid age.",
-          "archivo": "We can't read that file: {error}"
+          "existe": "That code already exists. Pick another."
         },
         "guardada": "Family {code} saved",
         "creada": "Family {code} added",
         "borrada": "Family {code} deleted",
-        "editarNinoTitulo": "Edit child",
-        "nuevoNino": "New child",
-        "borrarNino": "Remove this child from the list?",
-        "etiqueta": "Tag",
-        "etiquetaAyuda": "E.g. Child 1. Never the name.",
-        "edad": "Age (years)",
-        "ninoGuardado": "{label} saved",
-        "ninoCreado": "{label} added",
-        "ninoBorrado": "{label} deleted",
-        "importarEyebrow": "Excel or CSV",
-        "importarAyuda": "The file needs a tag column (name, label) and an age column. You'll see what will be created before importing.",
-        "elegirArchivo": "Choose a .csv or .xlsx file",
-        "vistaPrevia": "{n, plural, one {# child} other {# children}} will be created{skipped, plural, =0 {} one { · # invalid row will be skipped} other { · # invalid rows will be skipped}}",
-        "importarN": "{n, plural, =0 {Import} one {Import # child} other {Import # children}}",
-        "importados": "Imported: {n}. Rows skipped: {skipped}."
+        "paginacion": "Family pages",
+        "rango": "{from}–{to} of {total} families",
+        "anterior": "Previous",
+        "siguiente": "Next",
+        "paginaN": "Page {page} of {pages}"
       },
       "cierreGuiado": {
         "titulo": "Campaign closing",

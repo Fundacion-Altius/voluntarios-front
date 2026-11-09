@@ -57,6 +57,14 @@ test.describe('Toys campaign redesign', () => {
     await page.getByTestId('toys-reparto-lookup').click();
   }
 
+  /** `n` families coded `<tag>-<prefix>01…`, so a search for `<tag>-<prefix>` finds exactly these. afterAll removes them. */
+  async function addTaggedFamilies(prefix: string, n: number) {
+    for (let i = 1; i <= n; i++) {
+      const res = await api.post('/households', { code: `${tag}-${prefix}${String(i).padStart(2, '0')}`, toy_quota: 1 });
+      expect(res.status(), await res.text()).toBe(201);
+    }
+  }
+
   async function shownWeekStart(page: Page): Promise<string> {
     const first = page.locator('[data-testid^="toys-day-"]').first();
     await first.waitFor();
@@ -184,48 +192,30 @@ test.describe('Toys campaign redesign', () => {
       expect(await familyRow(api, code)).toBeUndefined();
     });
 
-    test('niños adds, edits and deletes a child', async ({ page }) => {
-      const label = `E2E niño ${tag}`;
+    test('familias pages the list ten at a time, and the children view is gone', async ({ page }) => {
+      await addTaggedFamilies('p', 11);
       await asAdmin(page, '/es/admin/toys/familias', 'toys-familias');
-      await page.getByTestId('toys-fam-tab-ninos').click();
-      await page.getByTestId('toys-child-add').click();
-      await page.getByTestId('toys-child-label').fill(label);
-      await page.getByTestId('toys-child-age').fill('6');
-      await page.getByTestId('toys-child-save').click();
+      await expect(page.getByTestId('toys-fam-tab-ninos')).toHaveCount(0);
+      await expect(page.getByTestId('toys-child-add')).toHaveCount(0);
+      await expect(page.getByTestId('toys-tab-familias')).toHaveText('Familias');
 
-      await page.getByTestId('toys-child-search').fill(label);
-      const row = page.locator('[data-testid^="toys-child-row-"]', { hasText: label });
-      await expect(row).toContainText('6 años');
+      // Only this run's eleven "p" families match, whatever else the tenant has.
+      await page.getByTestId('toys-fam-search').fill(`${tag}-p`);
+      const rows = page.locator('[data-testid^="toys-fam-row-"]');
+      await expect(rows).toHaveCount(10);
+      await expect(page.getByTestId('toys-fam-range')).toHaveText('1–10 de 11 familias');
+      await expect(page.getByTestId('toys-fam-page')).toHaveText('Página 1 de 2');
+      await expect(page.getByTestId('toys-fam-prev')).toBeDisabled();
 
-      await row.locator('[data-testid^="toys-child-edit-"]').click();
-      await page.getByTestId('toys-child-age').fill('9');
-      await page.getByTestId('toys-child-save').click();
-      await expect(row).toContainText('9 años');
+      await page.getByTestId('toys-fam-next').click();
+      await expect(rows).toHaveCount(1);
+      await expect(page.getByTestId(`toys-fam-row-${tag}-p11`)).toBeVisible();
+      await expect(page.getByTestId('toys-fam-range')).toHaveText('11–11 de 11 familias');
+      await expect(page.getByTestId('toys-fam-next')).toBeDisabled();
 
-      await row.locator('[data-testid^="toys-child-edit-"]').click();
-      await page.getByTestId('toys-child-delete').click();
-      await page.getByTestId('toys-child-delete-confirm').click();
-      await expect(row).toHaveCount(0);
-    });
-
-    test('niños csv import shows a preview before anything is saved', async ({ page }) => {
-      await asAdmin(page, '/es/admin/toys/familias', 'toys-familias');
-      const childrenBefore = (await (await api.get('/children')).json()).length;
-      await page.getByTestId('toys-fam-tab-ninos').click();
-      await page.getByTestId('toys-child-import').click();
-      await page.getByTestId('toys-import-file').setInputFiles({
-        name: 'lista.csv',
-        mimeType: 'text/csv',
-        buffer: Buffer.from(`nombre,edad\nE2E csv ${tag},4\nE2E mal ${tag},mal\n`, 'utf-8'),
-      });
-      await expect(page.getByTestId('toys-import-preview')).toContainText('Se crearán 1 niño');
-      await expect(page.getByTestId('toys-import-preview')).toContainText(`E2E csv ${tag}`);
-      expect((await (await api.get('/children')).json()).length).toBe(childrenBefore);
-
-      await page.getByTestId('toys-import-confirm').click();
-      await expect(page.getByTestId('toys-fam-notice')).toContainText('Importados: 1');
-      await page.getByTestId('toys-child-search').fill(`E2E csv ${tag}`);
-      await expect(page.locator('[data-testid^="toys-child-row-"]')).toHaveCount(1);
+      await page.getByTestId('toys-fam-prev').click();
+      await expect(rows).toHaveCount(10);
+      await expect(page.getByTestId('toys-fam-page')).toHaveText('Página 1 de 2');
     });
 
     test('inventario + and − change stock by exactly one', async ({ page }) => {
@@ -327,19 +317,45 @@ test.describe('Toys campaign redesign', () => {
       expect(full.status()).toBe(409);
     });
 
-    test('familias refuses a duplicate code and a child without a valid age', async ({ page }) => {
+    test('familias refuses a duplicate code', async ({ page }) => {
       await asAdmin(page, '/es/admin/toys/familias', 'toys-familias');
       await page.getByTestId('toys-family-add').click();
       await page.getByTestId('toys-family-code').fill(famC);
       await page.getByTestId('toys-family-save').click();
       await expect(page.getByTestId('toys-family-error')).toContainText('Ese código ya existe');
       await page.getByTestId('toys-family-cancel').click();
+    });
 
-      await page.getByTestId('toys-fam-tab-ninos').click();
-      await page.getByTestId('toys-child-add').click();
-      await page.getByTestId('toys-child-label').fill(`E2E sin edad ${tag}`);
-      await page.getByTestId('toys-child-save').click();
-      await expect(page.getByTestId('toys-child-error')).toContainText('Escribe una etiqueta y una edad válida');
+    test('familias paging goes back to page 1 when the search or filter changes, and hides when one page is enough', async ({ page }) => {
+      await addTaggedFamilies('q', 11);
+      await asAdmin(page, '/es/admin/toys/familias', 'toys-familias');
+      const rows = page.locator('[data-testid^="toys-fam-row-"]');
+      const search = page.getByTestId('toys-fam-search');
+
+      // Nine of them (q01–q09) fit in one page: no pager at all.
+      await search.fill(`${tag}-q0`);
+      await expect(rows).toHaveCount(9);
+      await expect(page.getByTestId('toys-fam-pager')).toHaveCount(0);
+
+      // All eleven: two pages. Go to the second one.
+      await search.fill(`${tag}-q`);
+      await expect(page.getByTestId('toys-fam-page')).toHaveText('Página 1 de 2');
+      await page.getByTestId('toys-fam-next').click();
+      await expect(page.getByTestId('toys-fam-page')).toHaveText('Página 2 de 2');
+
+      // Narrowing the search from page 2 lands on page 1 with the match, never on an empty page.
+      await search.fill(`${tag}-q03`);
+      await expect(rows).toHaveCount(1);
+      await expect(page.getByTestId(`toys-fam-row-${tag}-q03`)).toBeVisible();
+      await expect(page.getByTestId('toys-fam-pager')).toHaveCount(0);
+
+      // Back to two pages, then a status filter from page 2: none of them is collected, so the
+      // "no results" message shows instead of an empty page.
+      await search.fill(`${tag}-q`);
+      await page.getByTestId('toys-fam-next').click();
+      await page.getByTestId('toys-fam-filter-recogido').click();
+      await expect(page.getByTestId('toys-fam-no-results')).toBeVisible();
+      await expect(rows).toHaveCount(0);
     });
 
     test('cierre records nothing without a destination or when the dialog is cancelled', async ({ page }) => {
