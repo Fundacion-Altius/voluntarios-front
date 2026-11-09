@@ -2,7 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { comanderoApi } from './api';
-import type { FloorState, MenuItem, OrderLine, SessionMenuItem, SessionSummary, Station } from './types';
+import type {
+  FloorState,
+  MenuItem,
+  OpenSession,
+  QueueLine,
+  SessionMenuItem,
+  SessionSummary,
+  Station,
+} from './types';
 
 /** Polling interval for the teacher floor view and station queues (ms). */
 export const POLL_INTERVAL_MS = 3000;
@@ -85,7 +93,7 @@ export function useComanderoFloor(sessionId: string | null) {
 
 /** Station queue with polling (estación: cocina/barra). */
 export function useComanderoStation(sessionId: string | null, station: Station) {
-  const [lines, setLines] = useState<OrderLine[]>([]);
+  const [lines, setLines] = useState<QueueLine[]>([]);
   const [error, setError] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -116,6 +124,35 @@ export function useComanderoStation(sessionId: string | null, station: Station) 
   };
 
   return { lines, error, advance, refresh: tick };
+}
+
+/**
+ * Services the student can join, by name. Polled so a service the teacher just opened shows up
+ * on its own, and one that was closed disappears.
+ */
+export function useComanderoOpenSessions() {
+  const [sessions, setSessions] = useState<OpenSession[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const refresh = useCallback(async () => {
+    const res = await comanderoApi.listOpenSessions();
+    if (res.success) {
+      setSessions(res.data);
+      setError(null);
+    } else {
+      setError(res.error);
+    }
+    setLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    void refresh();
+    const timer = setInterval(() => void refresh(), POLL_INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, [refresh]);
+
+  return { sessions, loaded, error, refresh };
 }
 
 /** Snapshot (carta frozen at session start) for the waiter to add items. */

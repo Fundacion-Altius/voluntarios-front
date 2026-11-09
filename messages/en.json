@@ -2313,5 +2313,35 @@
         }
       }
     }
+  },
+  "comandero": {
+    "portal": {
+      "title": "Comandero",
+      "intro": "Practise table service: take orders, send them to the kitchen and bar, serve and close the bill.",
+      "pick": {
+        "title": "Choose the service",
+        "hint": "Join the service your teacher has opened.",
+        "started": "Opened at {time}",
+        "empty": "There is no open service right now.",
+        "emptyHint": "Ask your teacher to open one; it will show up here by itself.",
+        "refresh": "Refresh",
+        "loading": "Looking for services…",
+        "loadError": "Couldn't load the services."
+      },
+      "session": {
+        "current": "Service",
+        "change": "Switch service",
+        "closed": "This service has been closed. Pick another when one is open."
+      },
+      "role": {
+        "title": "Which role are you playing?",
+        "camarero": "Waiter",
+        "cocina": "Kitchen",
+        "barra": "Bar",
+        "camareroHint": "Tables and bills",
+        "cocinaHint": "Dishes",
+        "barraHint": "Drinks"
+      }
+    }
   }
 }

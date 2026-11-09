@@ -2313,5 +2313,35 @@
         }
       }
     }
+  },
+  "comandero": {
+    "portal": {
+      "title": "Comandero",
+      "intro": "Practica el servicio: toma comandas, envíalas a cocina y barra, sirve y cierra la cuenta.",
+      "pick": {
+        "title": "Elige el servicio",
+        "hint": "Entra en el servicio que ha abierto tu docente.",
+        "started": "Abierto a las {time}",
+        "empty": "Ahora mismo no hay ningún servicio abierto.",
+        "emptyHint": "Pide a tu docente que abra uno; aparecerá aquí solo.",
+        "refresh": "Actualizar",
+        "loading": "Buscando servicios…",
+        "loadError": "No se han podido cargar los servicios."
+      },
+      "session": {
+        "current": "Servicio",
+        "change": "Cambiar de servicio",
+        "closed": "Este servicio se ha cerrado. Elige otro cuando haya uno abierto."
+      },
+      "role": {
+        "title": "¿Qué papel haces?",
+        "camarero": "Camarero",
+        "cocina": "Cocina",
+        "barra": "Barra",
+        "camareroHint": "Mesas y cuentas",
+        "cocinaHint": "Platos",
+        "barraHint": "Bebidas"
+      }
+    }
   }
 }

@@ -72,6 +72,20 @@ export interface OrderLine {
   served_at: string | null;
 }
 
+/** What a student sees of a running service: enough to pick it by name, nothing from the teacher. */
+export interface OpenSession {
+  id: string;
+  label: string;
+  status: SessionStatus;
+  started_at: string;
+}
+
+/** A line waiting at a station, with the table it belongs to (for tickets grouped by table). */
+export interface QueueLine extends OrderLine {
+  table_id: string;
+  table_label: string;
+}
+
 export interface FloorTable {
   table: Table;
   open_order: Order | null;

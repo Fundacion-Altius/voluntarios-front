@@ -2313,5 +2313,35 @@
         }
       }
     }
+  },
+  "comandero": {
+    "portal": {
+      "title": "Comandero",
+      "intro": "Practica el servei: pren comandes, envia-les a cuina i barra, serveix i tanca el compte.",
+      "pick": {
+        "title": "Tria el servei",
+        "hint": "Entra al servei que ha obert el teu docent.",
+        "started": "Obert a les {time}",
+        "empty": "Ara mateix no hi ha cap servei obert.",
+        "emptyHint": "Demana al teu docent que n'obri un; apareixerà aquí tot sol.",
+        "refresh": "Actualitza",
+        "loading": "Cercant serveis…",
+        "loadError": "No s'han pogut carregar els serveis."
+      },
+      "session": {
+        "current": "Servei",
+        "change": "Canvia de servei",
+        "closed": "Aquest servei s'ha tancat. Tria'n un altre quan n'hi hagi un d'obert."
+      },
+      "role": {
+        "title": "Quin paper fas?",
+        "camarero": "Cambrer",
+        "cocina": "Cuina",
+        "barra": "Barra",
+        "camareroHint": "Taules i comptes",
+        "cocinaHint": "Plats",
+        "barraHint": "Begudes"
+      }
+    }
   }
 }
