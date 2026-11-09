@@ -44,10 +44,33 @@ async function apiHeaders(request: Parameters<typeof adminLogin>[0]) {
 interface Seed {
   sessionId: string;
   sessionLabel: string;
+  platoId: string;
+  bebidaId: string;
   snapPlatoId: string;
   snapBebidaId: string;
   platoName: string;
   bebidaName: string;
+}
+
+interface Carta {
+  platoId: string;
+  bebidaId: string;
+  platoName: string;
+  bebidaName: string;
+}
+
+/** Create one uniquely-named plato (6,00) and bebida (2,50) in the tenant carta. */
+async function seedCarta(request: Parameters<typeof adminLogin>[0], tag: string): Promise<Carta> {
+  const headers = await apiHeaders(request);
+  const platoName = `Croquetas ${tag}`;
+  const bebidaName = `Cana ${tag}`;
+  const plato = await (
+    await request.fetch(`${api}/menu`, { method: 'POST', headers, data: { name: platoName, category: 'plato', price_cents: 600 } })
+  ).json();
+  const bebida = await (
+    await request.fetch(`${api}/menu`, { method: 'POST', headers, data: { name: bebidaName, category: 'bebida', price_cents: 250 } })
+  ).json();
+  return { platoId: plato.id, bebidaId: bebida.id, platoName, bebidaName };
 }
 
 /**
@@ -57,28 +80,28 @@ interface Seed {
  */
 async function seedSession(request: Parameters<typeof adminLogin>[0], tag: string): Promise<Seed> {
   const headers = await apiHeaders(request);
-  const platoName = `Croquetas ${tag}`;
-  const bebidaName = `Cana ${tag}`;
+  const carta = await seedCarta(request, tag);
   const sessionLabel = `E2E ${tag}`;
-  const plato = await (
-    await request.fetch(`${api}/menu`, { method: 'POST', headers, data: { name: platoName, category: 'plato', price_cents: 600 } })
-  ).json();
-  const bebida = await (
-    await request.fetch(`${api}/menu`, { method: 'POST', headers, data: { name: bebidaName, category: 'bebida', price_cents: 250 } })
-  ).json();
   const session = await (
     await request.fetch(`${api}/sessions`, { method: 'POST', headers, data: { label: sessionLabel } })
   ).json();
   const snapshot = await (await request.fetch(`${api}/sessions/${session.id}/snapshot`, { headers })).json();
   await request.fetch(`${api}/sessions/${session.id}/tables`, { method: 'POST', headers, data: { label: 'Mesa 1' } });
   return {
+    ...carta,
     sessionId: session.id,
     sessionLabel,
-    platoName,
-    bebidaName,
-    snapPlatoId: snapshot.find((s: { source_item_id: string }) => s.source_item_id === plato.id).id,
-    snapBebidaId: snapshot.find((s: { source_item_id: string }) => s.source_item_id === bebida.id).id,
+    snapPlatoId: snapshot.find((s: { source_item_id: string }) => s.source_item_id === carta.platoId).id,
+    snapBebidaId: snapshot.find((s: { source_item_id: string }) => s.source_item_id === carta.bebidaId).id,
   };
+}
+
+/** Close the seed's service and remove its carta items, so the shared tenant is left as found. */
+async function cleanupSeed(request: Parameters<typeof adminLogin>[0], seed: Carta & { sessionId?: string }) {
+  const headers = await apiHeaders(request);
+  if (seed.sessionId) await request.fetch(`${api}/sessions/${seed.sessionId}/close`, { method: 'POST', headers, data: {} });
+  await request.fetch(`${api}/menu/${seed.platoId}`, { method: 'DELETE', headers });
+  await request.fetch(`${api}/menu/${seed.bebidaId}`, { method: 'DELETE', headers });
 }
 
 /** Log in as the docente (admin) on the Altius host and open the admin comandero page. */
@@ -558,5 +581,142 @@ test.describe('KL-E-022 exception paths', () => {
     expect(second.ok()).toBeTruthy();
     const body = await second.json();
     expect(body.session_id).toBe(seed.sessionId);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Redesign: real running totals, joining a service by name, student permissions.
+// Every test creates its own data (unique tag) and removes it in `finally`, so the
+// shared Altius carta and the list of open services are left as found.
+// ---------------------------------------------------------------------------
+
+/** Money as the es locale prints it ("8,50 €", with a no-break space before the euro sign). */
+const money = (euros: string) => new RegExp(`${euros.replace('.', '[.,]')}\\s*€`);
+
+test.describe('Comandero redesign: primary course', () => {
+  test.describe.configure({ timeout: 120000 });
+
+  test('el camarero ve el total real de la mesa a medida que anade lineas (no 0,00)', async ({ page, request }) => {
+    const seed = await seedSession(request, `tot-${Date.now()}`);
+    try {
+      await openPortal(page, seed.sessionLabel, 'camarero');
+      const table = page.getByTestId('comandero-waiter-table').first();
+
+      await waiterAddLine(page, seed.platoName, '');
+      await expect(table).toContainText(money('6,00'), { timeout: 15000 });
+
+      await waiterAddLine(page, seed.bebidaName, '');
+      await expect(table).toContainText(money('8,50'), { timeout: 15000 });
+      await expect(table).not.toContainText(money('0,00'));
+    } finally {
+      await cleanupSeed(request, seed);
+    }
+  });
+
+  test('el docente ve el total real de la mesa en la sala en vivo y cierra con resumen', async ({ page, request }) => {
+    const tag = `flr-${Date.now()}`;
+    const carta = await seedCarta(request, tag);
+    const label = `Sala ${tag}`;
+    let sessionId = '';
+    try {
+      await openAdmin(page);
+      await page.getByTestId('comandero-session-label').fill(label);
+      await page.getByTestId('comandero-session-start').click();
+      await page.getByTestId('comandero-table-label').waitFor({ timeout: 15000 });
+      await page.getByTestId('comandero-table-label').fill('Mesa 1');
+      await page.getByTestId('comandero-table-add').click();
+      await expect(page.getByTestId('comandero-floor-table').first()).toBeVisible({ timeout: 15000 });
+
+      // A student takes an order on that table (set up through the API; the teacher only watches).
+      const headers = await apiHeaders(request);
+      const open = await (await request.fetch(`${api}/sessions`, { headers })).json();
+      sessionId = open.find((s: { label: string }) => s.label === label).id;
+      const floor = await (await request.fetch(`${api}/sessions/${sessionId}/floor`, { headers })).json();
+      const snapshot = await (await request.fetch(`${api}/sessions/${sessionId}/snapshot`, { headers })).json();
+      const order = await (
+        await request.fetch(`${api}/tables/${floor.tables[0].table.id}/order`, { method: 'POST', headers, data: {} })
+      ).json();
+      for (const name of [carta.platoName, carta.bebidaName]) {
+        const item = snapshot.find((s: { name: string }) => s.name === name);
+        await request.fetch(`${api}/orders/${order.id}/lines`, { method: 'POST', headers, data: { snapshot_item_id: item.id } });
+      }
+
+      // The floor polls: the table shows its real total and a line per item.
+      const tableCard = page.getByTestId('comandero-floor-table').first();
+      await expect(tableCard).toContainText(money('8,50'), { timeout: 20000 });
+      await expect(tableCard).toContainText(carta.platoName);
+      await expect(tableCard).toContainText(carta.bebidaName);
+
+      await page.getByTestId('comandero-session-close').click();
+      await expect(page.getByTestId('comandero-session-summary')).toBeVisible({ timeout: 15000 });
+    } finally {
+      await cleanupSeed(request, { ...carta, sessionId });
+    }
+  });
+});
+
+test.describe('Comandero redesign: exception course', () => {
+  test.describe.configure({ timeout: 120000 });
+
+  test('el alumno no ve los controles del docente: ni carta, ni arrancar o cerrar servicio, ni anadir mesas', async ({ page, request }) => {
+    const seed = await seedSession(request, `rol-${Date.now()}`);
+    try {
+      await openPortal(page, seed.sessionLabel, 'camarero');
+      await expect(page.getByTestId('comandero-waiter-table').first()).toBeVisible({ timeout: 15000 });
+
+      for (const teacherControl of [
+        'comandero-item-add',
+        'comandero-item-name',
+        'comandero-session-start',
+        'comandero-session-close',
+        'comandero-table-add',
+      ]) {
+        await expect(page.getByTestId(teacherControl), teacherControl).toHaveCount(0);
+      }
+    } finally {
+      await cleanupSeed(request, seed);
+    }
+  });
+
+  test('un servicio cerrado deja de ofrecerse al alumno, y uno abierto sigue ahi', async ({ page, request }) => {
+    const tag = `cls-${Date.now()}`;
+    const open = await seedSession(request, `${tag}-a`);
+    const closed = await seedSession(request, `${tag}-b`);
+    try {
+      const headers = await apiHeaders(request);
+      await request.fetch(`${api}/sessions/${closed.sessionId}/close`, { method: 'POST', headers, data: {} });
+
+      await loginAsBrowserOnHost(page, ALTIUS_ORIGIN, STUDENT.email, STUDENT.password);
+      await page.goto(`${ALTIUS_ORIGIN}/es/portal/comandero`, { waitUntil: 'load' });
+      const option = (label: string) =>
+        page.getByTestId('comandero-portal-session-option').filter({ hasText: rx(label) });
+
+      // The open service is listed (so the list has loaded) and the closed one is not.
+      await expect(option(open.sessionLabel)).toHaveCount(1, { timeout: 15000 });
+      await expect(option(closed.sessionLabel)).toHaveCount(0);
+    } finally {
+      await cleanupSeed(request, open);
+      await cleanupSeed(request, closed);
+    }
+  });
+
+  test('cerrar la cuenta con lineas sin servir muestra el motivo y la mesa conserva su total', async ({ page, request }) => {
+    const seed = await seedSession(request, `cta-${Date.now()}`);
+    try {
+      await openPortal(page, seed.sessionLabel, 'camarero');
+      await waiterAddLine(page, seed.platoName, '');
+      const table = page.getByTestId('comandero-waiter-table').first();
+      await expect(table).toContainText(money('6,00'), { timeout: 15000 });
+
+      // Nothing is ready, so there is no "Servir" and the bill cannot be closed.
+      await expect(page.getByTestId('comandero-serve-line')).toHaveCount(0);
+      await page.getByTestId('comandero-close-bill').first().click();
+
+      await expect(page.getByText('all lines must be served')).toBeVisible({ timeout: 15000 });
+      await expect(table).toContainText(money('6,00'));
+      await expect(table).not.toContainText('Libre');
+    } finally {
+      await cleanupSeed(request, seed);
+    }
   });
 });
