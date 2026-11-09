@@ -90,7 +90,7 @@ export default function ToysHandoverPage() {
   if (!api.status.enabled) return <p data-testid="toys-denied">{t('apagado')}</p>;
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-col gap-4 p-4 md:p-8" data-testid="toys-reparto">
+    <div className="mx-auto flex w-full max-w-xl flex-col gap-4 p-4 pb-24 md:p-8 md:pb-8" data-testid="toys-reparto">
       <ToysHeader active="entrega" title={t('reparto.titulo')} subtitle={t('reparto.sub')} />
 
       <section aria-label={t('reparto.contadores')} className="grid grid-cols-2 gap-3 rounded-2xl bg-[#2a2c7a] p-3 text-white dark:bg-[#23254a]">

@@ -70,7 +70,7 @@ export default function ToysSlotsPage() {
   const withoutSlot = families ? families.filter((f) => !f.slot_id).length : null;
 
   return (
-    <div className="flex flex-col gap-5 p-4 md:p-8" data-testid="toys-turnos">
+    <div className="flex flex-col gap-5 p-4 pb-24 md:p-8 md:pb-8" data-testid="toys-turnos">
       <ToysHeader
         active="turnos"
         title={t('agenda.titulo')}

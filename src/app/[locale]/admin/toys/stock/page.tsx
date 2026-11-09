@@ -94,7 +94,7 @@ export default function ToysStockPage() {
   );
 
   return (
-    <div className="flex flex-col gap-5 p-4 md:p-8" data-testid="toys-stock-page">
+    <div className="flex flex-col gap-5 p-4 pb-24 md:p-8 md:pb-8" data-testid="toys-stock-page">
       <ToysHeader
         active="inventario"
         title={t('inventario')}

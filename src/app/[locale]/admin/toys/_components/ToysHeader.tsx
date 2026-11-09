@@ -38,8 +38,8 @@ export function ToysHeader({
         </div>
         {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>
-      <nav aria-label={t('campana.navegacion')} className="-mx-1 overflow-x-auto">
-        <ul className="flex min-w-max gap-1 border-b px-1">
+      <nav aria-label={t('campana.navegacion')} className="-mx-1 border-b">
+        <ul className="flex flex-wrap gap-x-1 px-1">
           {TABS.map((tab) => {
             const on = tab.key === active;
             return (
@@ -49,7 +49,7 @@ export function ToysHeader({
                   data-testid={tab.testid}
                   aria-current={on ? 'page' : undefined}
                   className={cn(
-                    '-mb-px inline-flex min-h-11 items-center border-b-[3px] px-3 text-sm font-medium outline-none transition-colors focus-visible:rounded-md focus-visible:ring-[3px] focus-visible:ring-ring/50',
+                    '-mb-px inline-flex min-h-11 items-center border-b-[3px] px-2.5 text-sm font-medium outline-none transition-colors focus-visible:rounded-md focus-visible:ring-[3px] focus-visible:ring-ring/50',
                     on ? 'border-primary font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground',
                   )}
                 >
