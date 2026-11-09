@@ -404,6 +404,155 @@
       "ubicaciones": {
         "warehouse": "Warehouse",
         "store": "Store"
+      },
+      "campana": {
+        "eyebrow": "Toy campaign",
+        "titulo": "Christmas {year}",
+        "navegacion": "Campaign sections",
+        "tabs": {
+          "resumen": "Overview",
+          "inventario": "Inventory",
+          "consola": "All tools"
+        },
+        "activa": "Active",
+        "primerTurno": "First pickup slot: {date}",
+        "sinTurnos": "No pickup slots yet",
+        "consolaTitulo": "All tools",
+        "consolaSub": "Children, slots, QR handover and closing. Each will get its own screen soon.",
+        "loSiguiente": "Next up",
+        "fases": "Campaign phases",
+        "fase": "Phase {n}",
+        "estado": {
+          "done": "Done",
+          "now": "Now"
+        },
+        "fasesNombre": {
+          "preparar": {
+            "titulo": "Prepare",
+            "sub": "Toys and families"
+          },
+          "reservas": {
+            "titulo": "Bookings",
+            "sub": "Pickup slots"
+          },
+          "entrega": {
+            "titulo": "Handover",
+            "sub": "Pickup days"
+          },
+          "cierre": {
+            "titulo": "Close",
+            "sub": "What to do with what is left"
+          }
+        },
+        "n": {
+          "juguetes": "Toys in stock",
+          "ninos": "Children registered",
+          "turnos": "Slots created",
+          "reservas": "Bookings",
+          "porRecoger": "Orders to collect",
+          "cerrados": "Toys already closed"
+        },
+        "next": {
+          "anadeJuguetes": {
+            "titulo": "Add the first toys",
+            "texto": "With a photo and an age, families choose better.",
+            "boton": "Go to inventory"
+          },
+          "inscribeNinos": {
+            "titulo": "Register the children",
+            "texto": "Add them one by one, from the beneficiaries list or with a file.",
+            "boton": "Register children"
+          },
+          "anadeTurnos": {
+            "titulo": "Add the pickup slots",
+            "texto": "Families can book as soon as there are slots.",
+            "boton": "Add slots"
+          },
+          "familiasReservan": {
+            "titulo": "Families can now choose and book",
+            "texto": "Share the toys page with them. Bookings show up here.",
+            "boton": "See the families page"
+          },
+          "abreEscaner": {
+            "titulo": "It is pickup day: open the scanner",
+            "texto": "Scan each family’s QR code as you hand over their toys.",
+            "boton": "Open the scanner"
+          },
+          "revisaCierre": {
+            "titulo": "Review the campaign close",
+            "texto": "Record which toys are stored and which are passed on.",
+            "boton": "Go to closing"
+          }
+        },
+        "edad": {
+          "titulo": "Is there a toy for every child?",
+          "juguetes": "Toys",
+          "ninos": "Children",
+          "vacio": "Once there are toys and children, you will see here whether there are enough for each age.",
+          "aria": "{toys} toys and {kids} children",
+          "sinNinos": "No children",
+          "faltan": "{n} short",
+          "sobran": "{n} spare",
+          "justo": "Exact"
+        },
+        "herramientas": {
+          "titulo": "What you can do",
+          "texto": "Everything stays available while we redesign each screen.",
+          "inventario": "Manage the inventory",
+          "ninos": "Register children",
+          "turnos": "Add pickup slots",
+          "entrega": "Hand over with the QR scanner",
+          "cierre": "Close the campaign"
+        }
+      },
+      "inv": {
+        "resumen": "{types} kinds of toy · {units} units",
+        "vacioSub": "Still empty",
+        "vacioTitulo": "No toys yet",
+        "vacioTexto": "Add the first one with its photo and the age it is for. Families will see it on their page.",
+        "anadirPrimero": "Add the first toy",
+        "anadirJuguete": "Add toy",
+        "buscar": "Search by name, description or code",
+        "todasEdades": "All ages",
+        "mostrando": "Showing {n} of {total}",
+        "sinResultados": "No toys match that search",
+        "sinResultadosTexto": "Try another word or remove the age filter.",
+        "limpiarFiltros": "Clear filters",
+        "sinFoto": "No photo",
+        "editarAria": "Edit {title}",
+        "agotado": "Out of stock",
+        "quedan": "{n} left",
+        "enStock": "{n} in stock",
+        "quitarUna": "Remove one {title}",
+        "anadirUna": "Add one {title}",
+        "quitarUnaCorto": "Remove one",
+        "anadirUnaCorto": "Add one",
+        "unidadesAhora": "{title}: now {n}",
+        "errorCargar": "Could not load the inventory: {error}",
+        "errorGuardar": "Could not save: {error}",
+        "errorFotos": "Could not change the photos: {error}",
+        "errorBorrar": "Could not delete: {error}",
+        "creado": "Toy added. You can now pick the cover.",
+        "creadoSinFotos": "Toy added, but the photos were not uploaded: {error}",
+        "portadaCambiada": "Cover changed",
+        "fotoQuitada": "Photo removed",
+        "nuevoJuguete": "New toy",
+        "editarJuguete": "Edit toy",
+        "cerrarPanel": "Close panel",
+        "verFoto": "View photo {name}",
+        "usarPortada": "Use as cover",
+        "subirOArrastrar": "Upload or drop photos",
+        "seSubenAlGuardar": "they upload when you save",
+        "fotosAyuda": "Up to 5 photos. The starred one is what families see.",
+        "nombre": "Name",
+        "opcional": "optional",
+        "paraEdad": "Age",
+        "unidades": "Units",
+        "dondeEsta": "Where it is",
+        "codigoBarras": "Barcode",
+        "borrarTitulo": "Delete “{title}”?",
+        "borrarTexto": "It will be removed from the inventory and families can no longer choose it. This cannot be undone.",
+        "borrarSi": "Yes, delete"
       }
     },
     "nav": {

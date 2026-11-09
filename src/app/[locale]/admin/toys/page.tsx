@@ -1,226 +1,254 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
+import { ArrowRight, CalendarDays, Check, Flag, Gift, ScanLine, Users } from 'lucide-react';
 import { useAuth } from '@/app/auth/useAuth';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { startQrScanLoop } from '../scanner/qrCamera';
-import { useToys } from './useToys';
 import { Link } from '@/i18n/navigation';
+import { cn } from '@/lib/utils';
+import { useToys } from './useToys';
+import { ToysHeader } from './_components/ToysHeader';
+import {
+  PHASES,
+  ageMatch,
+  derivePhase,
+  firstSlotDate,
+  nextAction,
+  phaseState,
+  totals,
+  type CampaignData,
+  type Phase,
+} from './campaign';
 
-function Section({ title, testid, children }: { title: string; testid: string; children: React.ReactNode }) {
+const NEXT_ICON = { anadeJuguetes: Gift, inscribeNinos: Users, anadeTurnos: CalendarDays, familiasReservan: Users, abreEscaner: ScanLine, revisaCierre: Flag } as const;
+
+function todayIso(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function Num({ value, testid }: { value: number | null; testid?: string }) {
   return (
-    <Card data-testid={testid}>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-2">{children}</CardContent>
-    </Card>
+    <span data-testid={testid} className="font-heading text-xl font-bold tabular-nums">
+      {value ?? '—'}
+    </span>
   );
 }
 
-function Row({ children }: { children: React.ReactNode }) {
-  return <div className="flex flex-wrap items-center gap-2">{children}</div>;
-}
-
-export default function ToysAdminPage() {
+export default function ToysOverviewPage() {
   const t = useTranslations('admin.toys');
+  const locale = useLocale();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const api = useToys();
-  const [out, setOut] = useState<Record<string, string>>({});
-  const say = (k: string, v: string) => setOut((o) => ({ ...o, [k]: v }));
+  const [data, setData] = useState<CampaignData | null>(null);
+  const [requested, setRequested] = useState(false);
 
-  const [childLabel, setChildLabel] = useState('');
-  const [childAge, setChildAge] = useState('5');
-  const [beneficiaries, setBeneficiaries] = useState<any[]>([]);
-  const [beneficiaryId, setBeneficiaryId] = useState('');
-  const [beneficiaryAge, setBeneficiaryAge] = useState('5');
-  const [slotDate, setSlotDate] = useState('2026-12-20');
-  const [slotLabel, setSlotLabel] = useState('mañana');
-  const [scanToken, setScanToken] = useState('');
-  const [closeToy, setCloseToy] = useState('');
-  const [closeQty, setCloseQty] = useState('1');
-  const [closeKind, setCloseKind] = useState('stored');
-  const [closeDest, setCloseDest] = useState('');
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const stopLoopRef = useRef<(() => void) | null>(null);
-  const scanningRef = useRef(false);
-  const [scanning, setScanning] = useState(false);
-  const runScanRef = useRef<((token?: string) => Promise<void>) | null>(null);
-
-  const stopCamera = () => {
-    scanningRef.current = false;
-    stopLoopRef.current?.();
-    stopLoopRef.current = null;
-    const stream = videoRef.current?.srcObject as MediaStream | null;
-    stream?.getTracks().forEach((track) => track.stop());
-    if (videoRef.current) videoRef.current.srcObject = null;
-    setScanning(false);
-  };
-
-  useEffect(() => () => stopCamera(), []);
+  useEffect(() => {
+    if (requested || !api.status?.enabled) return;
+    setRequested(true);
+    const pick = <T,>(r: { success: boolean; data?: unknown }) => (r.success && Array.isArray(r.data) ? (r.data as T[]) : null);
+    void Promise.all([api.listItems(), api.listChildren(), api.listSlots(), api.listBookings(), api.pending(), api.listDispositions()]).then(
+      ([items, children, slots, bookings, pending, dispositions]) =>
+        setData({
+          items: pick(items),
+          children: pick(children),
+          slots: pick(slots),
+          bookings: pick(bookings),
+          pending: pick(pending),
+          dispositions: pick(dispositions),
+        }),
+    );
+  }, [api, requested]);
 
   if (authLoading || !api.status) return <Skeleton className="h-32 w-full" />;
   if (!isAuthenticated) return <p>{t('loginRequerido')}</p>;
   if (!api.status.enabled) return <p data-testid="toys-denied">{t('apagado')}</p>;
 
-  const runChild = async () => {
-    const r = await api.addChild(childLabel, Number(childAge));
-    say('child', r.success ? `ok: ${r.data.id}` : `ERROR: ${r.error}`);
-  };
+  const year = new Date().getFullYear();
+  const first = data ? firstSlotDate(data.slots) : null;
+  const firstLabel = first
+    ? new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long' }).format(new Date(`${first}T12:00:00`))
+    : null;
 
-  const runBeneficiaries = async () => {
-    const r = await api.listBeneficiaries();
-    if (!r.success) return say('child', `ERROR: ${r.error}`);
-    setBeneficiaries(r.data as any[]);
-    say('child', `${(r.data as any[]).length} ${t('beneficiarios')}`);
-  };
+  return (
+    <div className="flex flex-col gap-6 p-4 md:p-8" data-testid="toys-overview">
+      <ToysHeader
+        active="resumen"
+        title={t('campana.titulo', { year })}
+        subtitle={
+          <span className="inline-flex flex-wrap items-center gap-2">
+            <span data-testid="toys-status" className="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-0.5 text-sm font-semibold text-success">
+              <span className="size-2 rounded-full bg-success" aria-hidden="true" />
+              {t('campana.activa')}
+            </span>
+            <span>{firstLabel ? t('campana.primerTurno', { date: firstLabel }) : t('campana.sinTurnos')}</span>
+          </span>
+        }
+      />
+      {!data ? <Skeleton className="h-64 w-full" /> : <Overview data={data} />}
+    </div>
+  );
+}
 
-  const runPick = async () => {
-    if (!beneficiaryId) return say('child', 'ERROR');
-    const r = await api.addChildFromMember(beneficiaryId, Number(beneficiaryAge));
-    say('child', r.success ? `ok: ${r.data.id}` : `ERROR: ${r.error}`);
-  };
+function Overview({ data }: { data: CampaignData }) {
+  const t = useTranslations('admin.toys');
+  const phase = derivePhase(data, todayIso());
+  const n = totals(data);
+  const next = nextAction(phase, data);
+  const NextIcon = NEXT_ICON[next.key];
+  const rows = ageMatch(data.items, data.children);
+  const max = Math.max(1, ...rows.flatMap((r) => [r.toys, r.kids]));
 
-  const runUpload = async (files: FileList | null) => {
-    const file = files?.[0];
-    if (!file) return;
-    const r = await api.uploadChildren(file);
-    say('child', r.success ? `${t('creados')}: ${r.data.created} / ${t('omitidos')}: ${r.data.skipped}` : `ERROR: ${r.error}`);
-  };
-
-  const runSlot = async () => {
-    const r = await api.addSlot(slotDate, slotLabel);
-    say('slot', r.success ? `ok: ${r.data.id}` : `ERROR: ${r.error}`);
-  };
-
-  const runScan = async (token?: string) => {
-    const code = (token ?? scanToken).trim();
-    if (!code) return;
-    const r = await api.scan(code);
-    say('scan', r.success ? `collected: ${r.data.decremented.length}` : `ERROR: ${r.error}`);
-  };
-  runScanRef.current = runScan;
-
-  const startCamera = async () => {
-    if (scanningRef.current) {
-      stopCamera();
-      return;
-    }
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    if (!video || !canvas) return;
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-      video.srcObject = stream;
-      video.muted = true;
-      await video.play();
-      scanningRef.current = true;
-      setScanning(true);
-      stopLoopRef.current = startQrScanLoop({
-        video,
-        canvas,
-        isActive: () => scanningRef.current,
-        onCode: (code) => {
-          setScanToken(code);
-          void runScanRef.current?.(code);
-        },
-      });
-    } catch {
-      say('scan', `ERROR: ${t('errorCamara')}`);
-    }
-  };
-
-  const runClose = async () => {
-    const r = await api.closeItem(closeToy, Number(closeQty), closeKind, closeDest);
-    say('close', r.success ? `ok: ${r.data.destination}` : `ERROR: ${r.error}`);
+  const numbers: Record<Phase, { label: string; value: number | null; testid: string }[]> = {
+    preparar: [
+      { label: t('campana.n.juguetes'), value: n.toyUnits, testid: 'toys-n-units' },
+      { label: t('campana.n.ninos'), value: n.children, testid: 'toys-n-children' },
+    ],
+    reservas: [
+      { label: t('campana.n.turnos'), value: n.slots, testid: 'toys-n-slots' },
+      { label: t('campana.n.reservas'), value: n.bookings, testid: 'toys-n-bookings' },
+    ],
+    entrega: [{ label: t('campana.n.porRecoger'), value: n.toCollect, testid: 'toys-n-tocollect' }],
+    cierre: [{ label: t('campana.n.cerrados'), value: n.closedUnits, testid: 'toys-n-closed' }],
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4" data-testid="toys-console">
-      <h1 className="text-2xl font-bold">{t('titulo')}</h1>
-      <div className="flex items-center gap-2">
-        <Badge data-testid="toys-status">{t('activo')}</Badge>
-        <Link href="/admin/toys/stock" data-testid="toys-stock-link">
-          <Button variant="outline">{t('verStock')}</Button>
-        </Link>
-      </div>
+    <>
+      <section
+        aria-labelledby="toys-next-title"
+        data-testid="toys-next"
+        className="flex flex-col gap-4 rounded-2xl bg-[#2a2c7a] p-5 text-white sm:flex-row sm:items-center sm:gap-6 sm:p-7 dark:bg-[#23254a]"
+      >
+        <span className="hidden size-14 shrink-0 items-center justify-center rounded-xl bg-white/10 sm:flex" aria-hidden="true">
+          <NextIcon className="size-7 text-cta" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-bold uppercase tracking-wider text-cta">{t('campana.loSiguiente')}</p>
+          <h2 id="toys-next-title" className="font-heading text-2xl font-bold">{t(`campana.next.${next.key}.titulo`)}</h2>
+          <p className="mt-1 text-[#d9daf2]">{t(`campana.next.${next.key}.texto`)}</p>
+        </div>
+        <Button asChild variant="cta" className="h-12 px-6 text-base">
+          <Link href={next.href} data-testid="toys-next-action">
+            {t(`campana.next.${next.key}.boton`)}
+            <ArrowRight aria-hidden="true" />
+          </Link>
+        </Button>
+      </section>
 
-      <Section title={t('elegibles')} testid="toys-children">
-        <Row>
-          <Input data-testid="toys-child-label" value={childLabel} onChange={(e) => setChildLabel(e.target.value)} placeholder={t('etiqueta')} />
-          <Input data-testid="toys-child-age" value={childAge} onChange={(e) => setChildAge(e.target.value)} className="w-20" />
-          <Button data-testid="toys-child-add" onClick={runChild}>{t('anadir')}</Button>
-        </Row>
-        <Row>
-          <Button data-testid="toys-beneficiaries-load" onClick={runBeneficiaries}>{t('verBeneficiarios')}</Button>
-          <Select value={beneficiaryId} onValueChange={setBeneficiaryId}>
-            <SelectTrigger data-testid="toys-beneficiary" className="w-64"><SelectValue placeholder={t('beneficiario')} /></SelectTrigger>
-            <SelectContent>
-              {beneficiaries.map((b: any) => (
-                <SelectItem key={b.member_id} value={b.member_id}>{b.name} — {b.email}</SelectItem>
+      <ol aria-label={t('campana.fases')} className="grid grid-cols-1 gap-3 md:grid-cols-4 md:gap-4">
+        {PHASES.map((p, i) => {
+          const state = phaseState(p, phase);
+          return (
+            <li key={p} data-testid={`toys-phase-${p}`} data-state={state} aria-current={state === 'now' ? 'step' : undefined} className="flex gap-3 md:flex-col md:gap-3">
+              <div className="flex items-center md:w-full">
+                <span
+                  className={cn(
+                    'flex size-11 shrink-0 items-center justify-center rounded-full border-2 font-heading text-lg font-bold',
+                    state === 'done' && 'border-success bg-success text-success-foreground',
+                    state === 'now' && 'border-primary bg-primary text-primary-foreground ring-[6px] ring-accent',
+                    state === 'later' && 'border-border bg-card text-muted-foreground',
+                  )}
+                >
+                  {state === 'done' ? <Check className="size-5" aria-hidden="true" /> : i + 1}
+                </span>
+                {i < PHASES.length - 1 && (
+                  <span aria-hidden="true" className={cn('ml-3 hidden h-1 flex-1 rounded-full md:block', state === 'done' ? 'bg-success' : 'bg-border')} />
+                )}
+              </div>
+              <div
+                className={cn(
+                  'flex-1 rounded-xl border bg-card p-4 shadow-xs',
+                  state === 'now' && 'border-2 border-primary',
+                  state === 'later' && 'bg-muted/40 shadow-none',
+                )}
+              >
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <span className="text-xs text-muted-foreground">{t('campana.fase', { n: i + 1 })}</span>
+                  {state !== 'later' && (
+                    <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-semibold', state === 'done' ? 'bg-success/10 text-success' : 'bg-accent text-primary')}>
+                      {t(`campana.estado.${state}`)}
+                    </span>
+                  )}
+                </div>
+                <h3 className="font-heading text-lg font-semibold">{t(`campana.fasesNombre.${p}.titulo`)}</h3>
+                <p className="mb-3 text-sm text-muted-foreground">{t(`campana.fasesNombre.${p}.sub`)}</p>
+                <dl className="flex flex-col gap-1.5">
+                  {numbers[p].map((row) => (
+                    <div key={row.testid} className="flex items-baseline justify-between gap-2 text-sm">
+                      <dt>{row.label}</dt>
+                      <dd><Num value={row.value} testid={row.testid} /></dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.3fr_1fr]">
+        <section aria-labelledby="toys-age-title" data-testid="toys-age-match" className="rounded-xl border bg-card p-5 shadow-xs">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h2 id="toys-age-title" className="font-heading text-xl font-bold">{t('campana.edad.titulo')}</h2>
+            <div className="flex gap-4 text-xs text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5"><span className="h-1.5 w-3 rounded-full bg-primary" aria-hidden="true" />{t('campana.edad.juguetes')}</span>
+              <span className="inline-flex items-center gap-1.5"><span className="h-1.5 w-3 rounded-full bg-[#a9abe0]" aria-hidden="true" />{t('campana.edad.ninos')}</span>
+            </div>
+          </div>
+          {rows.length === 0 ? (
+            <p className="text-muted-foreground" data-testid="toys-age-empty">{t('campana.edad.vacio')}</p>
+          ) : (
+            <ul className="divide-y">
+              {rows.map((r) => (
+                <li key={r.band} data-testid={`toys-age-${r.band}`} className="grid grid-cols-[5.5rem_1fr_auto] items-center gap-3 py-2.5 text-sm sm:grid-cols-[7rem_1fr_auto]">
+                  <span className="font-semibold">{t(`bandas.${r.band}`)}</span>
+                  <span className="flex flex-col gap-1" aria-label={t('campana.edad.aria', { toys: r.toys, kids: r.kids })}>
+                    <span className="h-2 overflow-hidden rounded-full bg-muted"><span className="block h-full rounded-full bg-primary" style={{ width: `${(r.toys / max) * 100}%` }} /></span>
+                    <span className="h-2 overflow-hidden rounded-full bg-muted"><span className="block h-full rounded-full bg-[#a9abe0]" style={{ width: `${(r.kids / max) * 100}%` }} /></span>
+                  </span>
+                  <span
+                    className={cn(
+                      'whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold',
+                      r.kids === 0 ? 'bg-muted text-muted-foreground' : r.diff < 0 ? 'bg-destructive/10 text-destructive' : 'bg-success/10 text-success',
+                    )}
+                  >
+                    {r.kids === 0 ? t('campana.edad.sinNinos') : r.diff < 0 ? t('campana.edad.faltan', { n: -r.diff }) : r.diff === 0 ? t('campana.edad.justo') : t('campana.edad.sobran', { n: r.diff })}
+                  </span>
+                </li>
               ))}
-            </SelectContent>
-          </Select>
-          <Input data-testid="toys-beneficiary-age" value={beneficiaryAge} onChange={(e) => setBeneficiaryAge(e.target.value)} className="w-20" />
-          <Button data-testid="toys-beneficiary-pick" onClick={runPick}>{t('elegir')}</Button>
-        </Row>
-        <Row>
-          <Input data-testid="toys-upload-file" type="file" accept=".csv,.xlsx,.xls" onChange={(e) => runUpload(e.target.files)} className="w-64" />
-        </Row>
-        {out.child && <p data-testid="toys-child-result">{out.child}</p>}
-      </Section>
+            </ul>
+          )}
+        </section>
 
-      <Section title={t('turnos')} testid="toys-slots">
-        <Row>
-          <Input data-testid="toys-slot-date" value={slotDate} onChange={(e) => setSlotDate(e.target.value)} className="w-40" />
-          <Input data-testid="toys-slot-label" value={slotLabel} onChange={(e) => setSlotLabel(e.target.value)} />
-          <Button data-testid="toys-slot-add" onClick={runSlot}>{t('anadir')}</Button>
-        </Row>
-        {out.slot && <p data-testid="toys-slot-result">{out.slot}</p>}
-      </Section>
-
-      <Section title={t('entrega')} testid="toys-scan">
-        <Row>
-          <Input data-testid="toys-scan-token" value={scanToken} onChange={(e) => setScanToken(e.target.value)} placeholder="QR" />
-          <Button data-testid="toys-scan-run" onClick={() => runScan()}>{t('escanear')}</Button>
-          <Button data-testid="toys-scan-camera" onClick={startCamera}>{scanning ? t('detener') : t('camara')}</Button>
-        </Row>
-        {scanning ? (
-          <div className="flex flex-col gap-2">
-            <video ref={videoRef} data-testid="toys-scan-video" muted playsInline className="max-h-64 w-full bg-black" />
-            <canvas ref={canvasRef} className="hidden" />
-          </div>
-        ) : (
-          <div className="hidden" aria-hidden="true">
-            <video ref={videoRef} muted playsInline />
-            <canvas ref={canvasRef} />
-          </div>
-        )}
-        {out.scan && <p data-testid="toys-scan-result">{out.scan}</p>}
-      </Section>
-
-      <Section title={t('cierre')} testid="toys-close">
-        <Row>
-          <Input data-testid="toys-close-toy" value={closeToy} onChange={(e) => setCloseToy(e.target.value)} placeholder={t('itemId')} />
-          <Input data-testid="toys-close-qty" value={closeQty} onChange={(e) => setCloseQty(e.target.value)} className="w-20" />
-          <Select value={closeKind} onValueChange={setCloseKind}>
-            <SelectTrigger data-testid="toys-close-kind" className="w-44"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="stored">{t('guardar')}</SelectItem>
-              <SelectItem value="redistributed">{t('redistribuir')}</SelectItem>
-            </SelectContent>
-          </Select>
-          <Input data-testid="toys-close-dest" value={closeDest} onChange={(e) => setCloseDest(e.target.value)} placeholder={t('destino')} />
-          <Button data-testid="toys-close-run" onClick={runClose}>{t('cerrar')}</Button>
-        </Row>
-        {out.close && <p data-testid="toys-close-result">{out.close}</p>}
-      </Section>
-    </div>
+        <section aria-labelledby="toys-tools-title" className="rounded-xl border bg-card p-5 shadow-xs">
+          <h2 id="toys-tools-title" className="mb-1 font-heading text-xl font-bold">{t('campana.herramientas.titulo')}</h2>
+          <p className="mb-3 text-sm text-muted-foreground">{t('campana.herramientas.texto')}</p>
+          <ul className="divide-y">
+            {(
+              [
+                ['inventario', '/admin/toys/stock', Gift],
+                ['ninos', '/admin/toys/consola#toys-children', Users],
+                ['turnos', '/admin/toys/consola#toys-slots', CalendarDays],
+                ['entrega', '/admin/toys/consola#toys-scan', ScanLine],
+                ['cierre', '/admin/toys/consola#toys-close', Flag],
+              ] as const
+            ).map(([key, href, Icon]) => (
+              <li key={key}>
+                <Link
+                  href={href}
+                  data-testid={`toys-tool-${key}`}
+                  className="flex min-h-12 items-center gap-3 rounded-md py-2 outline-none hover:text-primary focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                >
+                  <span className="flex size-8 items-center justify-center rounded-full bg-accent text-primary" aria-hidden="true"><Icon className="size-4" /></span>
+                  <span className="flex-1 font-medium">{t(`campana.herramientas.${key}`)}</span>
+                  <ArrowRight className="size-4 text-muted-foreground" aria-hidden="true" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
+    </>
   );
 }

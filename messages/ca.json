@@ -404,6 +404,155 @@
       "ubicaciones": {
         "warehouse": "Magatzem",
         "store": "Botiga"
+      },
+      "campana": {
+        "eyebrow": "Campanya de joguines",
+        "titulo": "Nadal {year}",
+        "navegacion": "Seccions de la campanya",
+        "tabs": {
+          "resumen": "Resum",
+          "inventario": "Inventari",
+          "consola": "Totes les eines"
+        },
+        "activa": "Activa",
+        "primerTurno": "Primer torn de recollida: {date}",
+        "sinTurnos": "Encara no hi ha torns de recollida",
+        "consolaTitulo": "Totes les eines",
+        "consolaSub": "Infants, torns, lliurament amb QR i tancament. Aviat tindran la seva pròpia pantalla.",
+        "loSiguiente": "El següent",
+        "fases": "Fases de la campanya",
+        "fase": "Fase {n}",
+        "estado": {
+          "done": "Fet",
+          "now": "Ara"
+        },
+        "fasesNombre": {
+          "preparar": {
+            "titulo": "Preparar",
+            "sub": "Joguines i famílies"
+          },
+          "reservas": {
+            "titulo": "Reserves",
+            "sub": "Torns de recollida"
+          },
+          "entrega": {
+            "titulo": "Lliurament",
+            "sub": "Dies de repartiment"
+          },
+          "cierre": {
+            "titulo": "Tancament",
+            "sub": "Què fem amb el que sobra"
+          }
+        },
+        "n": {
+          "juguetes": "Joguines en estoc",
+          "ninos": "Infants inscrits",
+          "turnos": "Torns creats",
+          "reservas": "Reserves",
+          "porRecoger": "Comandes per recollir",
+          "cerrados": "Joguines ja tancades"
+        },
+        "next": {
+          "anadeJuguetes": {
+            "titulo": "Afegeix les primeres joguines",
+            "texto": "Amb foto i edat, les famílies trien millor.",
+            "boton": "Anar a l'inventari"
+          },
+          "inscribeNinos": {
+            "titulo": "Inscriu els infants",
+            "texto": "Afegeix-los un per un, des de la llista de persones ateses o amb un fitxer.",
+            "boton": "Inscriure infants"
+          },
+          "anadeTurnos": {
+            "titulo": "Afegeix els torns de recollida",
+            "texto": "Les famílies podran reservar tan bon punt hi hagi torns.",
+            "boton": "Afegir torns"
+          },
+          "familiasReservan": {
+            "titulo": "Les famílies ja poden triar i reservar",
+            "texto": "Comparteix-hi la pàgina de joguines. Aquí veuràs les reserves.",
+            "boton": "Veure la pàgina de les famílies"
+          },
+          "abreEscaner": {
+            "titulo": "És dia de repartiment: obre l'escàner",
+            "texto": "Escaneja el codi QR de cada família en lliurar-li les joguines.",
+            "boton": "Obrir l'escàner"
+          },
+          "revisaCierre": {
+            "titulo": "Revisa el tancament de la campanya",
+            "texto": "Registra quines joguines es guarden i quines es redistribueixen.",
+            "boton": "Anar al tancament"
+          }
+        },
+        "edad": {
+          "titulo": "Hi ha joguina per a cada infant?",
+          "juguetes": "Joguines",
+          "ninos": "Infants",
+          "vacio": "Quan hi hagi joguines i infants inscrits, aquí veuràs si n’hi ha prou per a cada edat.",
+          "aria": "{toys} joguines i {kids} infants",
+          "sinNinos": "Sense infants",
+          "faltan": "En falten {n}",
+          "sobran": "En sobren {n}",
+          "justo": "Just"
+        },
+        "herramientas": {
+          "titulo": "Què pots fer",
+          "texto": "Tot continua disponible mentre redissenyem cada pantalla.",
+          "inventario": "Gestionar l'inventari",
+          "ninos": "Inscriure infants",
+          "turnos": "Afegir torns de recollida",
+          "entrega": "Lliurar amb l'escàner QR",
+          "cierre": "Tancar la campanya"
+        }
+      },
+      "inv": {
+        "resumen": "{types} tipus de joguina · {units} unitats",
+        "vacioSub": "Encara buit",
+        "vacioTitulo": "Encara no hi ha joguines",
+        "vacioTexto": "Afegeix la primera amb la seva foto i l’edat per a la qual és. Les famílies la veuran a la seva pàgina.",
+        "anadirPrimero": "Afegir la primera joguina",
+        "anadirJuguete": "Afegir joguina",
+        "buscar": "Cerca per nom, descripció o codi",
+        "todasEdades": "Totes les edats",
+        "mostrando": "Es mostren {n} de {total}",
+        "sinResultados": "No hi ha joguines amb aquesta cerca",
+        "sinResultadosTexto": "Prova amb una altra paraula o treu el filtre d'edat.",
+        "limpiarFiltros": "Treure filtres",
+        "sinFoto": "Sense foto",
+        "editarAria": "Editar {title}",
+        "agotado": "Esgotat",
+        "quedan": "En queden {n}",
+        "enStock": "{n} en estoc",
+        "quitarUna": "Treure una unitat de {title}",
+        "anadirUna": "Afegir una unitat de {title}",
+        "quitarUnaCorto": "Treure una unitat",
+        "anadirUnaCorto": "Afegir una unitat",
+        "unidadesAhora": "{title}: ara n’hi ha {n}",
+        "errorCargar": "No s'ha pogut carregar l'inventari: {error}",
+        "errorGuardar": "No s'ha pogut desar: {error}",
+        "errorFotos": "No s'han pogut canviar les fotos: {error}",
+        "errorBorrar": "No s'ha pogut eliminar: {error}",
+        "creado": "Joguina afegida. Ja pots triar la portada.",
+        "creadoSinFotos": "Joguina afegida, però les fotos no s'han pujat: {error}",
+        "portadaCambiada": "Portada canviada",
+        "fotoQuitada": "Foto treta",
+        "nuevoJuguete": "Joguina nova",
+        "editarJuguete": "Editar joguina",
+        "cerrarPanel": "Tancar el panell",
+        "verFoto": "Veure la foto {name}",
+        "usarPortada": "Fer servir com a portada",
+        "subirOArrastrar": "Puja o arrossega fotos",
+        "seSubenAlGuardar": "es pujaran en desar",
+        "fotosAyuda": "Fins a 5 fotos. La de l'estrella és la que veuen les famílies.",
+        "nombre": "Nom",
+        "opcional": "opcional",
+        "paraEdad": "Per a quina edat",
+        "unidades": "Unitats",
+        "dondeEsta": "On és",
+        "codigoBarras": "Codi de barres",
+        "borrarTitulo": "Eliminar «{title}»?",
+        "borrarTexto": "Es traurà de l'inventari i les famílies ja no la podran triar. No es pot desfer.",
+        "borrarSi": "Sí, eliminar"
       }
     },
     "nav": {

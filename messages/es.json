@@ -404,6 +404,155 @@
       "ubicaciones": {
         "warehouse": "Almacén",
         "store": "Tienda"
+      },
+      "campana": {
+        "eyebrow": "Campaña de juguetes",
+        "titulo": "Navidad {year}",
+        "navegacion": "Secciones de la campaña",
+        "tabs": {
+          "resumen": "Resumen",
+          "inventario": "Inventario",
+          "consola": "Todas las herramientas"
+        },
+        "activa": "Activa",
+        "primerTurno": "Primer turno de recogida: {date}",
+        "sinTurnos": "Aún no hay turnos de recogida",
+        "consolaTitulo": "Todas las herramientas",
+        "consolaSub": "Niños, turnos, entrega con QR y cierre. Pronto tendrán su propia pantalla.",
+        "loSiguiente": "Lo siguiente",
+        "fases": "Fases de la campaña",
+        "fase": "Fase {n}",
+        "estado": {
+          "done": "Hecho",
+          "now": "Ahora"
+        },
+        "fasesNombre": {
+          "preparar": {
+            "titulo": "Preparar",
+            "sub": "Juguetes y familias"
+          },
+          "reservas": {
+            "titulo": "Reservas",
+            "sub": "Turnos de recogida"
+          },
+          "entrega": {
+            "titulo": "Entrega",
+            "sub": "Días de reparto"
+          },
+          "cierre": {
+            "titulo": "Cierre",
+            "sub": "Qué hacemos con lo que sobra"
+          }
+        },
+        "n": {
+          "juguetes": "Juguetes en stock",
+          "ninos": "Niños inscritos",
+          "turnos": "Turnos creados",
+          "reservas": "Reservas",
+          "porRecoger": "Pedidos por recoger",
+          "cerrados": "Juguetes ya cerrados"
+        },
+        "next": {
+          "anadeJuguetes": {
+            "titulo": "Añade los primeros juguetes",
+            "texto": "Con foto y edad, las familias eligen mejor.",
+            "boton": "Ir al inventario"
+          },
+          "inscribeNinos": {
+            "titulo": "Inscribe a los niños",
+            "texto": "Añádelos uno a uno, desde la lista de personas atendidas o con un archivo.",
+            "boton": "Inscribir niños"
+          },
+          "anadeTurnos": {
+            "titulo": "Añade los turnos de recogida",
+            "texto": "Las familias podrán reservar en cuanto haya turnos.",
+            "boton": "Añadir turnos"
+          },
+          "familiasReservan": {
+            "titulo": "Las familias ya pueden elegir y reservar",
+            "texto": "Comparte la página de juguetes con ellas. Aquí verás las reservas.",
+            "boton": "Ver la página de las familias"
+          },
+          "abreEscaner": {
+            "titulo": "Es día de reparto: abre el escáner",
+            "texto": "Escanea el código QR de cada familia al entregar sus juguetes.",
+            "boton": "Abrir el escáner"
+          },
+          "revisaCierre": {
+            "titulo": "Revisa el cierre de la campaña",
+            "texto": "Registra qué juguetes se guardan y cuáles se redistribuyen.",
+            "boton": "Ir al cierre"
+          }
+        },
+        "edad": {
+          "titulo": "¿Hay juguete para cada niño?",
+          "juguetes": "Juguetes",
+          "ninos": "Niños",
+          "vacio": "Cuando haya juguetes y niños inscritos, aquí verás si hay suficientes para cada edad.",
+          "aria": "{toys} juguetes y {kids} niños",
+          "sinNinos": "Sin niños",
+          "faltan": "Faltan {n}",
+          "sobran": "Sobran {n}",
+          "justo": "Justo"
+        },
+        "herramientas": {
+          "titulo": "Qué puedes hacer",
+          "texto": "Todo sigue disponible mientras rediseñamos cada pantalla.",
+          "inventario": "Gestionar el inventario",
+          "ninos": "Inscribir niños",
+          "turnos": "Añadir turnos de recogida",
+          "entrega": "Entregar con el escáner QR",
+          "cierre": "Cerrar la campaña"
+        }
+      },
+      "inv": {
+        "resumen": "{types} tipos de juguete · {units} unidades",
+        "vacioSub": "Todavía vacío",
+        "vacioTitulo": "Aún no hay juguetes",
+        "vacioTexto": "Añade el primero con su foto y la edad para la que es. Las familias lo verán en su página.",
+        "anadirPrimero": "Añadir el primer juguete",
+        "anadirJuguete": "Añadir juguete",
+        "buscar": "Busca por nombre, descripción o código",
+        "todasEdades": "Todas las edades",
+        "mostrando": "Mostrando {n} de {total}",
+        "sinResultados": "No hay juguetes con esa búsqueda",
+        "sinResultadosTexto": "Prueba con otra palabra o quita el filtro de edad.",
+        "limpiarFiltros": "Quitar filtros",
+        "sinFoto": "Sin foto",
+        "editarAria": "Editar {title}",
+        "agotado": "Agotado",
+        "quedan": "Quedan {n}",
+        "enStock": "{n} en stock",
+        "quitarUna": "Quitar una unidad de {title}",
+        "anadirUna": "Añadir una unidad de {title}",
+        "quitarUnaCorto": "Quitar una unidad",
+        "anadirUnaCorto": "Añadir una unidad",
+        "unidadesAhora": "{title}: ahora hay {n}",
+        "errorCargar": "No se pudo cargar el inventario: {error}",
+        "errorGuardar": "No se pudo guardar: {error}",
+        "errorFotos": "No se pudieron cambiar las fotos: {error}",
+        "errorBorrar": "No se pudo eliminar: {error}",
+        "creado": "Juguete añadido. Ya puedes elegir la portada.",
+        "creadoSinFotos": "Juguete añadido, pero las fotos no se subieron: {error}",
+        "portadaCambiada": "Portada cambiada",
+        "fotoQuitada": "Foto quitada",
+        "nuevoJuguete": "Nuevo juguete",
+        "editarJuguete": "Editar juguete",
+        "cerrarPanel": "Cerrar panel",
+        "verFoto": "Ver foto {name}",
+        "usarPortada": "Usar como portada",
+        "subirOArrastrar": "Sube o arrastra fotos",
+        "seSubenAlGuardar": "se subirán al guardar",
+        "fotosAyuda": "Hasta 5 fotos. La de la estrella es la que ven las familias.",
+        "nombre": "Nombre",
+        "opcional": "opcional",
+        "paraEdad": "Para qué edad",
+        "unidades": "Unidades",
+        "dondeEsta": "Dónde está",
+        "codigoBarras": "Código de barras",
+        "borrarTitulo": "¿Eliminar «{title}»?",
+        "borrarTexto": "Se quitará del inventario y las familias ya no podrán elegirlo. No se puede deshacer.",
+        "borrarSi": "Sí, eliminar"
       }
     },
     "nav": {

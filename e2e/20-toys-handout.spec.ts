@@ -16,7 +16,7 @@ test.describe('December toys handout (browser)', () => {
 
   test('staff registers child, slot, and inventory item', async ({ page }) => {
     await loginAsBrowser(page, 'admin@fundacionaltius.org', 'admin123');
-    await page.goto('/es/admin/toys', { waitUntil: 'load' });
+    await page.goto('/es/admin/toys/consola', { waitUntil: 'load' });
     await page.getByTestId('toys-console').waitFor({ timeout: 15000 });
 
     await page.getByTestId('toys-child-label').fill(`N-${tag}`);
@@ -46,14 +46,15 @@ test.describe('December toys handout (browser)', () => {
     await page.getByTestId('toys-edit-title').fill(itemTitle);
     await page.getByTestId('toys-edit-desc').fill(`Para niños de 5 años ${tag}`);
     await page.getByTestId('toys-edit-save').click();
-    await expect(editResult).toContainText('ok:', { timeout: 15000 });
-    toyId = ((await editResult.textContent()) ?? '').replace('ok:', '').trim();
+    await expect(editResult).toHaveAttribute('data-item-id', /.+/, { timeout: 15000 });
+    toyId = (await editResult.getAttribute('data-item-id')) ?? '';
     expect(toyId.length).toBeGreaterThan(0);
 
     const radios = page.locator('[data-testid^="toys-edit-cover-"]');
     await expect(radios).toHaveCount(2);
-    await radios.nth(1).click();
-    await expect(editResult).toContainText('Portada:');
+    // The radio is visually hidden; click its star label.
+    await radios.nth(1).locator('xpath=..').click();
+    await expect(editResult).toContainText('Portada cambiada');
     await page.getByTestId('toys-edit-cancel').click();
   });
 
@@ -68,7 +69,7 @@ test.describe('December toys handout (browser)', () => {
     expect(member.ok()).toBeTruthy();
 
     await loginAsBrowser(page, 'admin@fundacionaltius.org', 'admin123');
-    await page.goto('/es/admin/toys', { waitUntil: 'load' });
+    await page.goto('/es/admin/toys/consola', { waitUntil: 'load' });
     await page.getByTestId('toys-console').waitFor({ timeout: 15000 });
 
     await page.getByTestId('toys-beneficiaries-load').click();
@@ -154,20 +155,19 @@ test.describe('December toys handout (browser)', () => {
 
     await page.getByTestId('toys-edit-title').fill(`${itemTitle} grande`);
     await page.getByTestId('toys-edit-desc').fill(`Editado ${tag}`);
-    await page.getByTestId('toys-edit-band').click();
-    await page.getByRole('option', { name: '8-11 Años' }).click();
+    await page.getByTestId('toys-edit-band-y8_11').click();
     await page.getByTestId('toys-edit-save').click();
     await expect(editResult).toContainText(`${itemTitle} grande`);
 
     const rowCovers = page.locator('[data-testid^="toys-edit-cover-"]');
     await expect(rowCovers).toHaveCount(2);
-    await rowCovers.first().click();
-    await expect(editResult).toContainText('Portada:');
+    await rowCovers.first().locator('xpath=..').click();
+    await expect(editResult).toContainText('Portada cambiada');
 
     const removeButtons = page.locator('[data-testid^="toys-edit-remove-"]');
     await expect(removeButtons).toHaveCount(2);
     await removeButtons.first().click();
-    await expect(editResult).toContainText('Quitar foto:');
+    await expect(editResult).toContainText('Foto quitada');
     await expect(page.locator('[data-testid^="toys-edit-remove-"]')).toHaveCount(1);
     await page.getByTestId('toys-edit-cancel').click();
   });
@@ -195,7 +195,7 @@ test.describe('December toys handout (browser)', () => {
 
   test('handoff scan collects, double scan refuses, close records destination', async ({ page }) => {
     await loginAsBrowser(page, 'admin@fundacionaltius.org', 'admin123');
-    await page.goto('/es/admin/toys', { waitUntil: 'load' });
+    await page.goto('/es/admin/toys/consola', { waitUntil: 'load' });
     await page.getByTestId('toys-console').waitFor({ timeout: 15000 });
 
     await page.getByTestId('toys-scan-token').fill(qr);
