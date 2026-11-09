@@ -9,9 +9,11 @@ import type {
   FloorState,
   LineStatus,
   MenuItem,
+  OpenSession,
   Order,
   OrderLine,
   PracticeSession,
+  QueueLine,
   SessionMenuItem,
   SessionSummary,
   Station,
@@ -28,6 +30,7 @@ export const comanderoApi = {
   deleteMenuItem: (id: string) => apiClient.delete<void>(base(`/menu/${id}`)),
 
   // Sessions (docente)
+  listOpenSessions: () => apiClient.get<OpenSession[]>(base('/sessions')),
   startSession: (input: { label: string; activity_type_id?: string | null }) =>
     apiClient.post<PracticeSession>(base('/sessions'), input),
   getSnapshot: (sessionId: string) => apiClient.get<SessionMenuItem[]>(base(`/sessions/${sessionId}/snapshot`)),
@@ -37,7 +40,7 @@ export const comanderoApi = {
   addTable: (sessionId: string, label: string) =>
     apiClient.post<Table>(base(`/sessions/${sessionId}/tables`), { label }),
   stationQueue: (sessionId: string, station: Station) =>
-    apiClient.get<OrderLine[]>(base(`/sessions/${sessionId}/stations/${station}`)),
+    apiClient.get<QueueLine[]>(base(`/sessions/${sessionId}/stations/${station}`)),
 
   // Orders & lines (camarero / estación)
   openOrder: (tableId: string) => apiClient.post<Order>(base(`/tables/${tableId}/order`), {}),

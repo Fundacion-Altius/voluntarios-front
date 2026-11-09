@@ -2313,5 +2313,109 @@
         }
       }
     }
+  },
+  "comandero": {
+    "portal": {
+      "title": "Comandero",
+      "intro": "Practica el servei: pren comandes, envia-les a cuina i barra, serveix i tanca el compte.",
+      "pick": {
+        "title": "Tria el servei",
+        "hint": "Entra al servei que ha obert el teu docent.",
+        "started": "Obert a les {time}",
+        "empty": "Ara mateix no hi ha cap servei obert.",
+        "emptyHint": "Demana al teu docent que n'obri un; apareixerà aquí tot sol.",
+        "refresh": "Actualitza",
+        "loading": "Cercant serveis…",
+        "loadError": "No s'han pogut carregar els serveis."
+      },
+      "session": {
+        "current": "Servei",
+        "change": "Canvia de servei",
+        "closed": "Aquest servei s'ha tancat. Tria'n un altre quan n'hi hagi un d'obert."
+      },
+      "role": {
+        "title": "Quin paper fas?",
+        "camarero": "Cambrer",
+        "cocina": "Cuina",
+        "barra": "Barra",
+        "camareroHint": "Taules i comptes",
+        "cocinaHint": "Plats",
+        "barraHint": "Begudes"
+      },
+      "station": {
+        "title": "Cua de {station}",
+        "empty": "No hi ha comandes pendents a {station}.",
+        "next": {
+          "pedido": "Comença a preparar",
+          "en_preparacion": "Marca com a llest"
+        },
+        "advance": "Avança"
+      },
+      "waiter": {
+        "loading": "Carregant sala…",
+        "free": "Lliure",
+        "openOrder": "Obre comanda",
+        "noLines": "Encara sense línies",
+        "serve": "Serveix",
+        "pickAria": "Tria un ítem de la carta",
+        "pickPlaceholder": "Afegeix de la carta…",
+        "option": "{name} · {station} · {price}",
+        "notePlaceholder": "Nota (p. ex. sense gluten)",
+        "add": "Afegeix",
+        "closeBill": "Tanca el compte",
+        "noTables": "El docent encara no ha afegit taules a aquesta sessió.",
+        "error": "Error"
+      }
+    },
+    "status": {
+      "pedido": "Comanda",
+      "en_preparacion": "En preparació",
+      "listo": "Llest",
+      "servido": "Servit"
+    },
+    "admin": {
+      "title": "Comandero",
+      "subtitle": "Simulació de servei de restaurant per a l'aula de Serveis de Restaurant. No és un TPV: el cobrament és simulat.",
+      "menu": {
+        "title": "Carta de l'aula",
+        "name": "Nom",
+        "category": "Categoria",
+        "plato": "Plat (cuina)",
+        "bebida": "Beguda (barra)",
+        "price": "Preu (€)",
+        "add": "Afegeix",
+        "loading": "Carregant carta…",
+        "empty": "La carta de l'aula és buida. Afegeix plats i begudes.",
+        "item": "Ítem",
+        "station": "Estació",
+        "priceCol": "Preu",
+        "remove": "Elimina {name}",
+        "prev": "Anterior",
+        "next": "Següent",
+        "page": "Pàgina {page} de {total}",
+        "cocina": "Cuina",
+        "barra": "Barra"
+      },
+      "session": {
+        "title": "Sessió de pràctica",
+        "refresh": "Actualitza la sala",
+        "label": "Nom de la sessió",
+        "labelPlaceholder": "Servei del migdia 12-nov",
+        "start": "Arrenca la sessió",
+        "addTable": "Afegeix una taula",
+        "tablePlaceholder": "Taula 1",
+        "tableButton": "Taula",
+        "close": "Tanca la sessió i mostra el resum",
+        "free": "Lliure",
+        "noLines": "Sense línies",
+        "noTables": "Afegeix taules per començar el servei."
+      },
+      "summary": {
+        "title": "Resum de la sessió",
+        "waiting": "Línies en espera en tancar: {n}",
+        "served": "Ítems servits: {n}",
+        "phases": "Temps mitjà per fase (s): comanda {pedido} · preparació {preparacion} · llest {listo}"
+      }
+    }
   }
 }

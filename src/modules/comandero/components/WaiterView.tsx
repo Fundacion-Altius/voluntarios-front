@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Loader2, Plus, ReceiptText, Utensils } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,15 +15,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { comanderoApi } from '@/modules/comandero/api';
+import { formatMoney } from '@/modules/comandero/money';
 import type { OrderLine } from '@/modules/comandero/types';
 import { useComanderoFloor, useComanderoSnapshot } from '@/modules/comandero/useComandero';
 
-const LINE_LABEL: Record<string, string> = {
-  pedido: 'Pedido',
-  en_preparacion: 'En preparación',
-  listo: 'Listo',
-  servido: 'Servido',
-};
 const LINE_VARIANT: Record<string, 'default' | 'secondary' | 'outline'> = {
   pedido: 'outline',
   en_preparacion: 'secondary',
@@ -30,11 +26,11 @@ const LINE_VARIANT: Record<string, 'default' | 'secondary' | 'outline'> = {
   servido: 'secondary',
 };
 
-function euros(cents: number): string {
-  return `${(cents / 100).toFixed(2)} €`;
-}
-
 export function WaiterView({ sessionId }: { sessionId: string }) {
+  const locale = useLocale();
+  const t = useTranslations('comandero.portal');
+  const tStatus = useTranslations('comandero.status');
+  const euros = (cents: number) => formatMoney(cents, locale);
   const { floor, loading, error, refresh } = useComanderoFloor(sessionId);
   const { snapshot } = useComanderoSnapshot(sessionId);
 
@@ -47,7 +43,7 @@ export function WaiterView({ sessionId }: { sessionId: string }) {
     setActionError(null);
     setPending(key);
     const res = await fn();
-    if (!res.success) setActionError(res.error ?? 'Error');
+    if (!res.success) setActionError(res.error ?? t('waiter.error'));
     await refresh();
     setPending(null);
   };
@@ -55,7 +51,7 @@ export function WaiterView({ sessionId }: { sessionId: string }) {
   if (loading && !floor) {
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Loader2 className="size-4 animate-spin" /> Cargando sala…
+        <Loader2 className="size-4 animate-spin" /> {t('waiter.loading')}
       </div>
     );
   }
@@ -75,7 +71,7 @@ export function WaiterView({ sessionId }: { sessionId: string }) {
                   <Utensils className="size-4 text-primary" />
                   {table.label}
                 </span>
-                {open_order ? <Badge>{euros(open_order.subtotal_cents)}</Badge> : <Badge variant="outline">Libre</Badge>}
+                {open_order ? <Badge>{euros(open_order.subtotal_cents)}</Badge> : <Badge variant="outline">{t('waiter.free')}</Badge>}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -87,7 +83,7 @@ export function WaiterView({ sessionId }: { sessionId: string }) {
                   onClick={() => void run(table.id, () => comanderoApi.openOrder(table.id))}
                 >
                   <Plus className="mr-1 size-4" />
-                  Abrir comanda
+                  {t('waiter.openOrder')}
                 </Button>
               ) : (
                 <>
@@ -99,7 +95,7 @@ export function WaiterView({ sessionId }: { sessionId: string }) {
                           {l.note && <span className="text-muted-foreground"> · {l.note}</span>}
                         </span>
                         <span className="flex items-center gap-2">
-                          <Badge variant={LINE_VARIANT[l.status] ?? 'outline'}>{LINE_LABEL[l.status]}</Badge>
+                          <Badge variant={LINE_VARIANT[l.status] ?? 'outline'}>{tStatus(l.status)}</Badge>
                           {l.status === 'listo' && (
                             <Button
                               size="sm"
@@ -108,13 +104,13 @@ export function WaiterView({ sessionId }: { sessionId: string }) {
                               disabled={pending === l.id}
                               onClick={() => void run(l.id, () => comanderoApi.serveLine(l.id))}
                             >
-                              Servir
+                              {t('waiter.serve')}
                             </Button>
                           )}
                         </span>
                       </li>
                     ))}
-                    {lines.length === 0 && <li className="text-xs text-muted-foreground">Sin líneas aún</li>}
+                    {lines.length === 0 && <li className="text-xs text-muted-foreground">{t('waiter.noLines')}</li>}
                   </ul>
 
                   <div className="flex flex-col gap-2 border-t border-border pt-3">
@@ -122,13 +118,17 @@ export function WaiterView({ sessionId }: { sessionId: string }) {
                       value={selectedItem[open_order.id] ?? ''}
                       onValueChange={(v) => setSelectedItem((s) => ({ ...s, [open_order.id]: v }))}
                     >
-                      <SelectTrigger aria-label="Elegir ítem de la carta" data-testid="comandero-item-select">
-                        <SelectValue placeholder="Añadir de la carta…" />
+                      <SelectTrigger aria-label={t('waiter.pickAria')} data-testid="comandero-item-select">
+                        <SelectValue placeholder={t('waiter.pickPlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
                         {snapshot.map((item) => (
                           <SelectItem key={item.id} value={item.id}>
-                            {item.name} · {item.station} · {euros(item.price_cents)}
+                            {t('waiter.option', {
+                              name: item.name,
+                              station: t(`role.${item.station}`),
+                              price: euros(item.price_cents),
+                            })}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -137,7 +137,7 @@ export function WaiterView({ sessionId }: { sessionId: string }) {
                       data-testid="comandero-line-note"
                       value={note[open_order.id] ?? ''}
                       onChange={(e) => setNote((s) => ({ ...s, [open_order.id]: e.target.value }))}
-                      placeholder="Nota (p. ej. sin gluten)"
+                      placeholder={t('waiter.notePlaceholder')}
                     />
                     <div className="flex gap-2">
                       <Button
@@ -159,7 +159,7 @@ export function WaiterView({ sessionId }: { sessionId: string }) {
                         }
                       >
                         <Plus className="mr-1 size-4" />
-                        Añadir
+                        {t('waiter.add')}
                       </Button>
                       <Button
                         size="sm"
@@ -169,7 +169,7 @@ export function WaiterView({ sessionId }: { sessionId: string }) {
                         onClick={() => void run(`close-${open_order.id}`, () => comanderoApi.closeBill(open_order.id))}
                       >
                         <ReceiptText className="mr-1 size-4" />
-                        Cerrar cuenta
+                        {t('waiter.closeBill')}
                       </Button>
                     </div>
                   </div>
@@ -179,7 +179,7 @@ export function WaiterView({ sessionId }: { sessionId: string }) {
           </Card>
         ))}
         {(floor?.tables.length ?? 0) === 0 && (
-          <p className="text-sm text-muted-foreground">El docente aún no ha añadido mesas a esta sesión.</p>
+          <p className="text-sm text-muted-foreground">{t('waiter.noTables')}</p>
         )}
       </div>
     </div>

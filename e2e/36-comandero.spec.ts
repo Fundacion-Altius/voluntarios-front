@@ -43,18 +43,24 @@ async function apiHeaders(request: Parameters<typeof adminLogin>[0]) {
 
 interface Seed {
   sessionId: string;
+  sessionLabel: string;
+  platoId: string;
+  bebidaId: string;
   snapPlatoId: string;
   snapBebidaId: string;
   platoName: string;
   bebidaName: string;
 }
 
-/**
- * Seed a session with a uniquely-named plato + bebida and one table.
- * Names carry the per-test `tag` so UI option selectors are unambiguous even
- * though the tenant carta is shared per tenant and accumulates across tests.
- */
-async function seedSession(request: Parameters<typeof adminLogin>[0], tag: string): Promise<Seed> {
+interface Carta {
+  platoId: string;
+  bebidaId: string;
+  platoName: string;
+  bebidaName: string;
+}
+
+/** Create one uniquely-named plato (6,00) and bebida (2,50) in the tenant carta. */
+async function seedCarta(request: Parameters<typeof adminLogin>[0], tag: string): Promise<Carta> {
   const headers = await apiHeaders(request);
   const platoName = `Croquetas ${tag}`;
   const bebidaName = `Cana ${tag}`;
@@ -64,18 +70,38 @@ async function seedSession(request: Parameters<typeof adminLogin>[0], tag: strin
   const bebida = await (
     await request.fetch(`${api}/menu`, { method: 'POST', headers, data: { name: bebidaName, category: 'bebida', price_cents: 250 } })
   ).json();
+  return { platoId: plato.id, bebidaId: bebida.id, platoName, bebidaName };
+}
+
+/**
+ * Seed a session with a uniquely-named plato + bebida and one table.
+ * Names carry the per-test `tag` so UI option selectors are unambiguous even
+ * though the tenant carta is shared per tenant and accumulates across tests.
+ */
+async function seedSession(request: Parameters<typeof adminLogin>[0], tag: string): Promise<Seed> {
+  const headers = await apiHeaders(request);
+  const carta = await seedCarta(request, tag);
+  const sessionLabel = `E2E ${tag}`;
   const session = await (
-    await request.fetch(`${api}/sessions`, { method: 'POST', headers, data: { label: `E2E ${tag}` } })
+    await request.fetch(`${api}/sessions`, { method: 'POST', headers, data: { label: sessionLabel } })
   ).json();
   const snapshot = await (await request.fetch(`${api}/sessions/${session.id}/snapshot`, { headers })).json();
   await request.fetch(`${api}/sessions/${session.id}/tables`, { method: 'POST', headers, data: { label: 'Mesa 1' } });
   return {
+    ...carta,
     sessionId: session.id,
-    platoName,
-    bebidaName,
-    snapPlatoId: snapshot.find((s: { source_item_id: string }) => s.source_item_id === plato.id).id,
-    snapBebidaId: snapshot.find((s: { source_item_id: string }) => s.source_item_id === bebida.id).id,
+    sessionLabel,
+    snapPlatoId: snapshot.find((s: { source_item_id: string }) => s.source_item_id === carta.platoId).id,
+    snapBebidaId: snapshot.find((s: { source_item_id: string }) => s.source_item_id === carta.bebidaId).id,
   };
+}
+
+/** Close the seed's service and remove its carta items, so the shared tenant is left as found. */
+async function cleanupSeed(request: Parameters<typeof adminLogin>[0], seed: Carta & { sessionId?: string }) {
+  const headers = await apiHeaders(request);
+  if (seed.sessionId) await request.fetch(`${api}/sessions/${seed.sessionId}/close`, { method: 'POST', headers, data: {} });
+  await request.fetch(`${api}/menu/${seed.platoId}`, { method: 'DELETE', headers });
+  await request.fetch(`${api}/menu/${seed.bebidaId}`, { method: 'DELETE', headers });
 }
 
 /** Log in as the docente (admin) on the Altius host and open the admin comandero page. */
@@ -85,12 +111,15 @@ async function openAdmin(page: Page) {
   await page.getByTestId('comandero-admin').waitFor({ timeout: 15000 });
 }
 
-/** Open the student portal (general/alumno) on the Altius host, on a session, and switch tab. */
-async function openPortal(page: Page, sessionId: string, tab: 'camarero' | 'cocina' | 'barra') {
+/**
+ * Open the student portal (general/alumno) on the Altius host, join a service BY NAME (the student
+ * never types or sees an id), and switch to a role.
+ */
+async function openPortal(page: Page, sessionLabel: string, tab: 'camarero' | 'cocina' | 'barra') {
   await loginAsBrowserOnHost(page, ALTIUS_ORIGIN, STUDENT.email, STUDENT.password);
   await page.goto(`${ALTIUS_ORIGIN}/es/portal/comandero`, { waitUntil: 'load' });
   await page.getByTestId('comandero-portal').waitFor({ timeout: 15000 });
-  await page.getByTestId('comandero-portal-session').fill(sessionId);
+  await page.getByTestId('comandero-portal-session-option').filter({ hasText: rx(sessionLabel) }).click();
   await page.getByTestId(`comandero-tab-${tab}`).click();
 }
 
@@ -179,14 +208,14 @@ test.describe('KL-US-037 carta del aula + snapshot inmutable', () => {
 test.describe('KL-US-038 mesas y apertura de comanda', () => {
   test.describe.configure({ mode: 'serial', timeout: 120000 });
   const tag = `s38-${Date.now()}`;
-  let sessionId = '';
+  let sessionLabel = '';
 
   test('seed', async ({ request }) => {
-    ({ sessionId } = await seedSession(request, tag));
+    ({ sessionLabel } = await seedSession(request, tag));
   });
 
   test('camarero abre comanda en mesa libre; la 2a abierta se bloquea', async ({ page }) => {
-    await openPortal(page, sessionId, 'camarero');
+    await openPortal(page, sessionLabel, 'camarero');
     await page.getByTestId('comandero-waiter-table').first().waitFor({ timeout: 15000 });
 
     await page.getByTestId('comandero-open-order').first().click();
@@ -204,7 +233,7 @@ test.describe('KL-US-039 anadir items y ruteo cocina/barra', () => {
     const seed = await seedSession(request, tag);
     const { platoName, bebidaName } = seed;
 
-    await openPortal(page, seed.sessionId, 'camarero');
+    await openPortal(page, seed.sessionLabel, 'camarero');
     await waiterAddLine(page, platoName, 'sin gluten');
     await expect(page.getByText('sin gluten')).toBeVisible({ timeout: 15000 });
 
@@ -229,7 +258,7 @@ test.describe('KL-US-040 colas de estacion y transiciones', () => {
     const seed = await seedSession(request, tag);
 
     // Add the dish line through the waiter UI so the whole flow is browser-driven.
-    await openPortal(page, seed.sessionId, 'camarero');
+    await openPortal(page, seed.sessionLabel, 'camarero');
     await waiterAddLine(page, seed.platoName, '');
 
     // Bar queue is empty (the only line is a dish).
@@ -254,7 +283,7 @@ test.describe('KL-US-041 servir y cerrar cuenta', () => {
 
   test('servir el listo y cerrar cuenta (subtotal, sin pago real)', async ({ page, request }) => {
     const seed = await seedSession(request, tag);
-    await openPortal(page, seed.sessionId, 'camarero');
+    await openPortal(page, seed.sessionLabel, 'camarero');
     await waiterAddLine(page, seed.platoName, '');
 
     // Advance in the kitchen to 'listo'.
@@ -278,7 +307,7 @@ test.describe('KL-US-042 nota de linea visible en estacion', () => {
 
   test('la nota del camarero viaja a la cola de cocina', async ({ page, request }) => {
     const seed = await seedSession(request, tag);
-    await openPortal(page, seed.sessionId, 'camarero');
+    await openPortal(page, seed.sessionLabel, 'camarero');
     await waiterAddLine(page, seed.platoName, 'sin sal');
 
     await page.getByTestId('comandero-tab-cocina').click();
@@ -396,17 +425,27 @@ test.describe('KL-E-022 el comandero es exclusivo de Altius', () => {
 test.describe('Comandero edge cases (browser)', () => {
   test.describe.configure({ timeout: 120000 });
 
-  test('portal con sesion desconocida no rompe la pagina', async ({ page }) => {
-    await openPortal(page, '00000000-0000-0000-0000-0000000000ff', 'camarero');
+  test('el alumno entra por nombre, nunca ve el identificador, y se le avisa si el docente cierra el servicio', async ({ page, request }) => {
+    const seed = await seedSession(request, `edge-${Date.now()}`);
+    await openPortal(page, seed.sessionLabel, 'camarero');
 
-    // Page stays alive; no tables to open an order on.
+    // The student sees the service name, never its id.
+    await expect(page.getByTestId('comandero-portal-current')).toHaveText(rx(seed.sessionLabel));
+    await expect(page.locator('body')).not.toContainText(seed.sessionId);
+
+    // The teacher closes the service while the student is inside (cleans up the session too).
+    const headers = await apiHeaders(request);
+    const closed = await request.fetch(`${api}/sessions/${seed.sessionId}/close`, { method: 'POST', headers, data: {} });
+    expect(closed.ok()).toBeTruthy();
+
+    // The next poll tells the student, instead of leaving a dead screen.
+    await expect(page.getByTestId('comandero-portal-closed')).toBeVisible({ timeout: 15000 });
     await expect(page.getByRole('heading', { name: 'Comandero' })).toBeVisible();
     await expect(page.getByTestId('comandero-open-order')).toHaveCount(0);
   });
 });
 
 test.describe('KL-E-022 exception paths', () => {
-  // Serial: the empty-carta case temporarily wipes the shared tenant menu.
   test.describe.configure({ mode: 'serial', timeout: 120000 });
   const tag = `ex-${Date.now()}`;
 
@@ -501,28 +540,8 @@ test.describe('KL-E-022 exception paths', () => {
     expect(session.status()).toBe(403);
   });
 
-  test('arrancar sesion con carta vacia deja snapshot vacio', async ({ request }) => {
-    const headers = await apiHeaders(request);
-    // Wipe classroom menu for this tenant so the next snapshot is empty.
-    // Shared PG: do this last among exception tests that need a menu, and keep serial-ish via unique tag.
-    const menu = await (await request.fetch(`${api}/menu`, { headers })).json();
-    for (const item of menu as { id: string }[]) {
-      await request.fetch(`${api}/menu/${item.id}`, { method: 'DELETE', headers });
-    }
-
-    const session = await (
-      await request.fetch(`${api}/sessions`, { method: 'POST', headers, data: { label: `Empty ${tag}` } })
-    ).json();
-    const snapshot = await (await request.fetch(`${api}/sessions/${session.id}/snapshot`, { headers })).json();
-    expect(snapshot).toEqual([]);
-
-    // Restore a minimal carta so later parallel workers / re-runs still have seed material.
-    await request.fetch(`${api}/menu`, {
-      method: 'POST',
-      headers,
-      data: { name: `Restore ${tag}`, category: 'plato', price_cents: 500 },
-    });
-  });
+  // "Empty carta -> empty snapshot" lives in voluntarios-back comandero.integration.test.ts: checking it here
+  // meant wiping the shared Altius carta, which broke tests running in parallel and lost the demo carta.
 
   test('cerrar una sesion ya cerrada sigue devolviendo resumen', async ({ request }) => {
     const headers = await apiHeaders(request);
@@ -541,5 +560,142 @@ test.describe('KL-E-022 exception paths', () => {
     expect(second.ok()).toBeTruthy();
     const body = await second.json();
     expect(body.session_id).toBe(seed.sessionId);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Redesign: real running totals, joining a service by name, student permissions.
+// Every test creates its own data (unique tag) and removes it in `finally`, so the
+// shared Altius carta and the list of open services are left as found.
+// ---------------------------------------------------------------------------
+
+/** Money as the es locale prints it ("8,50 €", with a no-break space before the euro sign). */
+const money = (euros: string) => new RegExp(`${euros.replace('.', '[.,]')}\\s*€`);
+
+test.describe('Comandero redesign: primary course', () => {
+  test.describe.configure({ timeout: 120000 });
+
+  test('el camarero ve el total real de la mesa a medida que anade lineas (no 0,00)', async ({ page, request }) => {
+    const seed = await seedSession(request, `tot-${Date.now()}`);
+    try {
+      await openPortal(page, seed.sessionLabel, 'camarero');
+      const table = page.getByTestId('comandero-waiter-table').first();
+
+      await waiterAddLine(page, seed.platoName, '');
+      await expect(table).toContainText(money('6,00'), { timeout: 15000 });
+
+      await waiterAddLine(page, seed.bebidaName, '');
+      await expect(table).toContainText(money('8,50'), { timeout: 15000 });
+      await expect(table).not.toContainText(money('0,00'));
+    } finally {
+      await cleanupSeed(request, seed);
+    }
+  });
+
+  test('el docente ve el total real de la mesa en la sala en vivo y cierra con resumen', async ({ page, request }) => {
+    const tag = `flr-${Date.now()}`;
+    const carta = await seedCarta(request, tag);
+    const label = `Sala ${tag}`;
+    let sessionId = '';
+    try {
+      await openAdmin(page);
+      await page.getByTestId('comandero-session-label').fill(label);
+      await page.getByTestId('comandero-session-start').click();
+      await page.getByTestId('comandero-table-label').waitFor({ timeout: 15000 });
+      await page.getByTestId('comandero-table-label').fill('Mesa 1');
+      await page.getByTestId('comandero-table-add').click();
+      await expect(page.getByTestId('comandero-floor-table').first()).toBeVisible({ timeout: 15000 });
+
+      // A student takes an order on that table (set up through the API; the teacher only watches).
+      const headers = await apiHeaders(request);
+      const open = await (await request.fetch(`${api}/sessions`, { headers })).json();
+      sessionId = open.find((s: { label: string }) => s.label === label).id;
+      const floor = await (await request.fetch(`${api}/sessions/${sessionId}/floor`, { headers })).json();
+      const snapshot = await (await request.fetch(`${api}/sessions/${sessionId}/snapshot`, { headers })).json();
+      const order = await (
+        await request.fetch(`${api}/tables/${floor.tables[0].table.id}/order`, { method: 'POST', headers, data: {} })
+      ).json();
+      for (const name of [carta.platoName, carta.bebidaName]) {
+        const item = snapshot.find((s: { name: string }) => s.name === name);
+        await request.fetch(`${api}/orders/${order.id}/lines`, { method: 'POST', headers, data: { snapshot_item_id: item.id } });
+      }
+
+      // The floor polls: the table shows its real total and a line per item.
+      const tableCard = page.getByTestId('comandero-floor-table').first();
+      await expect(tableCard).toContainText(money('8,50'), { timeout: 20000 });
+      await expect(tableCard).toContainText(carta.platoName);
+      await expect(tableCard).toContainText(carta.bebidaName);
+
+      await page.getByTestId('comandero-session-close').click();
+      await expect(page.getByTestId('comandero-session-summary')).toBeVisible({ timeout: 15000 });
+    } finally {
+      await cleanupSeed(request, { ...carta, sessionId });
+    }
+  });
+});
+
+test.describe('Comandero redesign: exception course', () => {
+  test.describe.configure({ timeout: 120000 });
+
+  test('el alumno no ve los controles del docente: ni carta, ni arrancar o cerrar servicio, ni anadir mesas', async ({ page, request }) => {
+    const seed = await seedSession(request, `rol-${Date.now()}`);
+    try {
+      await openPortal(page, seed.sessionLabel, 'camarero');
+      await expect(page.getByTestId('comandero-waiter-table').first()).toBeVisible({ timeout: 15000 });
+
+      for (const teacherControl of [
+        'comandero-item-add',
+        'comandero-item-name',
+        'comandero-session-start',
+        'comandero-session-close',
+        'comandero-table-add',
+      ]) {
+        await expect(page.getByTestId(teacherControl), teacherControl).toHaveCount(0);
+      }
+    } finally {
+      await cleanupSeed(request, seed);
+    }
+  });
+
+  test('un servicio cerrado deja de ofrecerse al alumno, y uno abierto sigue ahi', async ({ page, request }) => {
+    const tag = `cls-${Date.now()}`;
+    const open = await seedSession(request, `${tag}-a`);
+    const closed = await seedSession(request, `${tag}-b`);
+    try {
+      const headers = await apiHeaders(request);
+      await request.fetch(`${api}/sessions/${closed.sessionId}/close`, { method: 'POST', headers, data: {} });
+
+      await loginAsBrowserOnHost(page, ALTIUS_ORIGIN, STUDENT.email, STUDENT.password);
+      await page.goto(`${ALTIUS_ORIGIN}/es/portal/comandero`, { waitUntil: 'load' });
+      const option = (label: string) =>
+        page.getByTestId('comandero-portal-session-option').filter({ hasText: rx(label) });
+
+      // The open service is listed (so the list has loaded) and the closed one is not.
+      await expect(option(open.sessionLabel)).toHaveCount(1, { timeout: 15000 });
+      await expect(option(closed.sessionLabel)).toHaveCount(0);
+    } finally {
+      await cleanupSeed(request, open);
+      await cleanupSeed(request, closed);
+    }
+  });
+
+  test('cerrar la cuenta con lineas sin servir muestra el motivo y la mesa conserva su total', async ({ page, request }) => {
+    const seed = await seedSession(request, `cta-${Date.now()}`);
+    try {
+      await openPortal(page, seed.sessionLabel, 'camarero');
+      await waiterAddLine(page, seed.platoName, '');
+      const table = page.getByTestId('comandero-waiter-table').first();
+      await expect(table).toContainText(money('6,00'), { timeout: 15000 });
+
+      // Nothing is ready, so there is no "Servir" and the bill cannot be closed.
+      await expect(page.getByTestId('comandero-serve-line')).toHaveCount(0);
+      await page.getByTestId('comandero-close-bill').first().click();
+
+      await expect(page.getByText('all lines must be served')).toBeVisible({ timeout: 15000 });
+      await expect(table).toContainText(money('6,00'));
+      await expect(table).not.toContainText('Libre');
+    } finally {
+      await cleanupSeed(request, seed);
+    }
   });
 });
