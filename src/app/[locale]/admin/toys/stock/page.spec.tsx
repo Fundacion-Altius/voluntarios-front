@@ -315,10 +315,10 @@ describe('ToysStockPage', () => {
     expect(screen.getByTestId('toys-no-results')).toBeInTheDocument();
   });
 
-  it('adds one unit from the card with the existing PATCH', async () => {
+  it('adds one unit from the card with the atomic adjust endpoint', async () => {
     const bodies: string[] = [];
     base((url, init) => {
-      if (url.includes('/items/t1') && init?.method === 'PATCH') {
+      if (url.includes('/items/t1/adjust') && init?.method === 'POST') {
         bodies.push(String(init.body));
         return { ...ROW, quantity: 6 };
       }
@@ -329,7 +329,7 @@ describe('ToysStockPage', () => {
     expect(screen.getByTestId('toys-qty-t1')).toHaveTextContent('Quedan 5');
     await userEvent.click(screen.getByTestId('toys-qty-plus-t1'));
     await waitFor(() => expect(screen.getByTestId('toys-qty-t1')).toHaveTextContent('6 en stock'));
-    expect(bodies).toEqual(['{"quantity":6}']);
+    expect(bodies).toEqual(['{"delta":1}']);
   });
 
   it('denies the stock page when the flag is off', async () => {

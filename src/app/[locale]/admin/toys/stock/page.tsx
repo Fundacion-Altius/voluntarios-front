@@ -63,11 +63,12 @@ export default function ToysStockPage() {
   if (!api.status.enabled) return <p data-testid="toys-denied">{t('apagado')}</p>;
 
   const changeQty = async (item: StockItem, delta: number) => {
-    const next = Math.max(0, (item.quantity ?? 0) + delta);
     setBusy(item.id);
-    const r = await api.updateItem(item.id, { quantity: next });
+    // Atomic on the server: two people pressing at once never lose a unit.
+    const r = await api.adjustItem(item.id, delta);
     setBusy(null);
     if (!r.success) return setOut({ text: t('inv.errorGuardar', { error: r.error }), error: true });
+    const next = Number(r.data?.quantity ?? 0);
     setStock((list) => list.map((s) => (s.id === item.id ? { ...s, quantity: next } : s)));
     setOut({ text: t('inv.unidadesAhora', { title: item.title ?? item.article ?? '', n: next }), error: false });
   };

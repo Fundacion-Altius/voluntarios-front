@@ -48,16 +48,24 @@ export default function ToysOverviewPage() {
     if (requested || !api.status?.enabled) return;
     setRequested(true);
     const pick = <T,>(r: { success: boolean; data?: unknown }) => (r.success && Array.isArray(r.data) ? (r.data as T[]) : null);
-    void Promise.all([api.listItems(), api.listChildren(), api.listSlots(), api.listBookings(), api.pending(), api.listDispositions()]).then(
-      ([items, children, slots, bookings, pending, dispositions]) =>
-        setData({
-          items: pick(items),
-          children: pick(children),
-          slots: pick(slots),
-          bookings: pick(bookings),
-          pending: pick(pending),
-          dispositions: pick(dispositions),
-        }),
+    void Promise.all([
+      api.listItems(),
+      api.listChildren(),
+      api.listSlots(),
+      api.listBookings(),
+      api.pending(),
+      api.listDispositions(),
+      api.handoverSummary(),
+    ]).then(([items, children, slots, bookings, pending, dispositions, summary]) =>
+      setData({
+        items: pick(items),
+        children: pick(children),
+        slots: pick(slots),
+        bookings: pick(bookings),
+        pending: pick(pending),
+        dispositions: pick(dispositions),
+        summary: summary.success ? summary.data : null,
+      }),
     );
   }, [api, requested]);
 
@@ -109,7 +117,10 @@ function Overview({ data }: { data: CampaignData }) {
       { label: t('campana.n.turnos'), value: n.slots, testid: 'toys-n-slots' },
       { label: t('campana.n.reservas'), value: n.bookings, testid: 'toys-n-bookings' },
     ],
-    entrega: [{ label: t('campana.n.porRecoger'), value: n.toCollect, testid: 'toys-n-tocollect' }],
+    entrega: [
+      { label: t('campana.n.entregados'), value: n.delivered, testid: 'toys-n-delivered' },
+      { label: t('campana.n.porRecoger'), value: n.toCollect, testid: 'toys-n-tocollect' },
+    ],
     cierre: [{ label: t('campana.n.cerrados'), value: n.closedUnits, testid: 'toys-n-closed' }],
   };
 
@@ -129,7 +140,7 @@ function Overview({ data }: { data: CampaignData }) {
           <p className="mt-1 text-[#d9daf2]">{t(`campana.next.${next.key}.texto`)}</p>
         </div>
         <Button asChild variant="cta" className="h-12 px-6 text-base">
-          <Link href={next.href} data-testid="toys-next-action">
+          <Link href={next.href} data-testid="toys-next-action" data-next={next.key}>
             {t(`campana.next.${next.key}.boton`)}
             <ArrowRight aria-hidden="true" />
           </Link>
@@ -228,10 +239,10 @@ function Overview({ data }: { data: CampaignData }) {
             {(
               [
                 ['inventario', '/admin/toys/stock', Gift],
-                ['ninos', '/admin/toys/consola#toys-children', Users],
-                ['turnos', '/admin/toys/consola#toys-slots', CalendarDays],
-                ['entrega', '/admin/toys/consola#toys-scan', ScanLine],
-                ['cierre', '/admin/toys/consola#toys-close', Flag],
+                ['ninos', '/admin/toys/familias', Users],
+                ['turnos', '/admin/toys/turnos', CalendarDays],
+                ['entrega', '/admin/toys/entrega', ScanLine],
+                ['cierre', '/admin/toys/cierre', Flag],
               ] as const
             ).map(([key, href, Icon]) => (
               <li key={key}>

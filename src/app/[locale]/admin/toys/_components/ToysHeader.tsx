@@ -4,12 +4,15 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 
-export type ToysTab = 'resumen' | 'inventario' | 'consola';
+export type ToysTab = 'resumen' | 'inventario' | 'familias' | 'turnos' | 'entrega' | 'cierre';
 
 const TABS: { key: ToysTab; href: string; testid: string }[] = [
   { key: 'resumen', href: '/admin/toys', testid: 'toys-tab-resumen' },
   { key: 'inventario', href: '/admin/toys/stock', testid: 'toys-tab-inventario' },
-  { key: 'consola', href: '/admin/toys/consola', testid: 'toys-tab-consola' },
+  { key: 'familias', href: '/admin/toys/familias', testid: 'toys-tab-familias' },
+  { key: 'turnos', href: '/admin/toys/turnos', testid: 'toys-tab-turnos' },
+  { key: 'entrega', href: '/admin/toys/entrega', testid: 'toys-tab-entrega' },
+  { key: 'cierre', href: '/admin/toys/cierre', testid: 'toys-tab-cierre' },
 ];
 
 /** Campaign header shared by every toys admin screen: title, status, tabs. */

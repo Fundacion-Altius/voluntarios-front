@@ -22,8 +22,18 @@ async function call(session: any, path: string, init?: RequestInit) {
     credentials: 'include',
   });
   const body = await res.json().catch(() => ({}));
-  if (!res.ok) return { success: false as const, error: body.error || `Error ${res.status}` };
+  if (!res.ok) {
+    return { success: false as const, error: body.error || `Error ${res.status}`, code: body.code as string | undefined, status: res.status };
+  }
   return { success: true as const, data: body };
+}
+
+export interface SlotInput {
+  date?: string;
+  label?: string;
+  start_time?: string | null;
+  end_time?: string | null;
+  capacity?: number | null;
 }
 
 const pub = async (path: string, init?: RequestInit) => {
@@ -89,7 +99,32 @@ export function useToys() {
     setCover: (itemId: string, picture: string) =>
       call(session, `/items/${itemId}/cover`, { method: 'PATCH', body: JSON.stringify({ picture }) }),
     listSlots: () => pub('/slots'),
-    addSlot: (date: string, label: string) => call(session, '/slots', { method: 'POST', body: JSON.stringify({ date, label }) }),
+    addSlot: (date: string, label: string, extra: Omit<SlotInput, 'date' | 'label'> = {}) =>
+      call(session, '/slots', { method: 'POST', body: JSON.stringify({ date, label, ...extra }) }),
+    updateSlot: (id: string, patch: SlotInput) => call(session, `/slots/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
+    deleteSlot: (id: string) => call(session, `/slots/${id}`, { method: 'DELETE' }),
+    updateChild: (id: string, patch: { label?: string; age?: number }) =>
+      call(session, `/children/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
+    deleteChild: (id: string) => call(session, `/children/${id}`, { method: 'DELETE' }),
+    previewChildren: async (file: File) => {
+      const form = new FormData();
+      form.append('file', file);
+      return multipart(session, '/children/upload?dry_run=1', form);
+    },
+    listFamilies: () => call(session, '/families'),
+    addHousehold: (toy_quota: number, code?: string) =>
+      call(session, '/households', { method: 'POST', body: JSON.stringify(code ? { code, toy_quota } : { toy_quota }) }),
+    updateHousehold: (code: string, toy_quota: number) =>
+      call(session, `/households/${encodeURIComponent(code)}`, { method: 'PATCH', body: JSON.stringify({ toy_quota }) }),
+    deleteHousehold: (code: string) => call(session, `/households/${encodeURIComponent(code)}`, { method: 'DELETE' }),
+    adjustItem: (id: string, delta: number) =>
+      call(session, `/items/${id}/adjust`, { method: 'POST', body: JSON.stringify({ delta }) }),
+    scanLookup: (token: string) => call(session, '/scan/lookup', { method: 'POST', body: JSON.stringify({ token }) }),
+    scanConfirm: (token: string) => call(session, '/scan/confirm', { method: 'POST', body: JSON.stringify({ token }) }),
+    scanProblem: (token: string, note: string) =>
+      call(session, '/scan/problem', { method: 'POST', body: JSON.stringify({ token, note }) }),
+    handoverSummary: () => call(session, '/handover/summary'),
+    deleteDisposition: (id: string) => call(session, `/dispositions/${id}`, { method: 'DELETE' }),
     listItems: (age?: number | string) =>
       call(
         session,

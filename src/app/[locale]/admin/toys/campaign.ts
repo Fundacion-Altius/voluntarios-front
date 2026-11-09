@@ -15,6 +15,8 @@ export interface CampaignData {
   bookings: unknown[] | null;
   pending: { status?: string }[] | null;
   dispositions: { quantity?: number }[] | null;
+  /** From GET /handover/summary (step 2); null when it could not be read. */
+  summary?: { delivered: number; to_collect: number; problems: number } | null;
 }
 
 /** Same bounds as the backend `bandForYears` (inclusive; 15+ → older). */
@@ -66,6 +68,7 @@ export interface Totals {
   bookings: number | null;
   toCollect: number | null;
   closedUnits: number | null;
+  delivered: number | null;
 }
 
 export function totals(d: CampaignData): Totals {
@@ -78,6 +81,7 @@ export function totals(d: CampaignData): Totals {
     // Carts checked out (QR issued) but not yet collected.
     toCollect: d.pending ? d.pending.filter((c) => c.status === 'checked_out').length : null,
     closedUnits: d.dispositions ? sum(d.dispositions) : null,
+    delivered: d.summary ? d.summary.delivered : null,
   };
 }
 
@@ -119,14 +123,14 @@ export type NextKey =
 export function nextAction(phase: Phase, d: CampaignData): { key: NextKey; href: string } {
   if (phase === 'preparar') {
     if (len(d.items) === 0) return { key: 'anadeJuguetes', href: '/admin/toys/stock' };
-    return { key: 'inscribeNinos', href: '/admin/toys/consola#toys-children' };
+    return { key: 'inscribeNinos', href: '/admin/toys/familias' };
   }
   if (phase === 'reservas') {
-    if (len(d.slots) === 0) return { key: 'anadeTurnos', href: '/admin/toys/consola#toys-slots' };
+    if (len(d.slots) === 0) return { key: 'anadeTurnos', href: '/admin/toys/turnos' };
     return { key: 'familiasReservan', href: '/juguetes' };
   }
-  if (phase === 'entrega') return { key: 'abreEscaner', href: '/admin/toys/consola#toys-scan' };
-  return { key: 'revisaCierre', href: '/admin/toys/consola#toys-close' };
+  if (phase === 'entrega') return { key: 'abreEscaner', href: '/admin/toys/entrega' };
+  return { key: 'revisaCierre', href: '/admin/toys/cierre' };
 }
 
 /** Stock level for the chip colour: none, low (5 or fewer) or ok. */

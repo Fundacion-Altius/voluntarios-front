@@ -66,8 +66,23 @@ describe('ToysOverviewPage', () => {
   it('keeps every old tool reachable from the overview', async () => {
     setup({ '/items': [], '/children': [], '/slots': [], '/bookings': [], '/pending': [], '/dispositions': [] });
     await waitFor(() => expect(screen.getByTestId('toys-tool-cierre')).toBeInTheDocument());
-    expect(screen.getByTestId('toys-tab-consola')).toHaveAttribute('href', expect.stringContaining('/admin/toys/consola'));
-    expect(screen.getByTestId('toys-tool-entrega')).toHaveAttribute('href', expect.stringContaining('#toys-scan'));
+    expect(screen.getByTestId('toys-tool-entrega')).toHaveAttribute('href', expect.stringContaining('/admin/toys/entrega'));
+  });
+
+  it('shows the real delivered count once pickup days start', async () => {
+    setup({
+      '/items': [{ id: 'a', quantity: 3, ageBand: 'y5_7' }],
+      '/children': [{ id: 'c1', age: 6 }],
+      '/slots': [{ id: 's', date: '2020-12-14' }],
+      '/bookings': [],
+      '/pending': [{ id: 'p', status: 'checked_out' }],
+      '/dispositions': [],
+      '/handover/summary': { delivered: 7, to_collect: 1, open: 0, problems: 0 },
+    });
+    await waitFor(() => expect(screen.getByTestId('toys-phase-entrega')).toHaveAttribute('data-state', 'now'));
+    expect(screen.getByTestId('toys-n-delivered')).toHaveTextContent('7');
+    expect(screen.getByTestId('toys-n-tocollect')).toHaveTextContent('1');
+    expect(screen.getByTestId('toys-next-action')).toHaveAttribute('href', expect.stringContaining('/admin/toys/entrega'));
   });
 
   it('denies the page when the flag is off', async () => {
