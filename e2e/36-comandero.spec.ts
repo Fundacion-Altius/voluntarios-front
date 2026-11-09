@@ -446,7 +446,6 @@ test.describe('Comandero edge cases (browser)', () => {
 });
 
 test.describe('KL-E-022 exception paths', () => {
-  // Serial: the empty-carta case temporarily wipes the shared tenant menu.
   test.describe.configure({ mode: 'serial', timeout: 120000 });
   const tag = `ex-${Date.now()}`;
 
@@ -541,28 +540,8 @@ test.describe('KL-E-022 exception paths', () => {
     expect(session.status()).toBe(403);
   });
 
-  test('arrancar sesion con carta vacia deja snapshot vacio', async ({ request }) => {
-    const headers = await apiHeaders(request);
-    // Wipe classroom menu for this tenant so the next snapshot is empty.
-    // Shared PG: do this last among exception tests that need a menu, and keep serial-ish via unique tag.
-    const menu = await (await request.fetch(`${api}/menu`, { headers })).json();
-    for (const item of menu as { id: string }[]) {
-      await request.fetch(`${api}/menu/${item.id}`, { method: 'DELETE', headers });
-    }
-
-    const session = await (
-      await request.fetch(`${api}/sessions`, { method: 'POST', headers, data: { label: `Empty ${tag}` } })
-    ).json();
-    const snapshot = await (await request.fetch(`${api}/sessions/${session.id}/snapshot`, { headers })).json();
-    expect(snapshot).toEqual([]);
-
-    // Restore a minimal carta so later parallel workers / re-runs still have seed material.
-    await request.fetch(`${api}/menu`, {
-      method: 'POST',
-      headers,
-      data: { name: `Restore ${tag}`, category: 'plato', price_cents: 500 },
-    });
-  });
+  // "Empty carta -> empty snapshot" lives in voluntarios-back comandero.integration.test.ts: checking it here
+  // meant wiping the shared Altius carta, which broke tests running in parallel and lost the demo carta.
 
   test('cerrar una sesion ya cerrada sigue devolviendo resumen', async ({ request }) => {
     const headers = await apiHeaders(request);
