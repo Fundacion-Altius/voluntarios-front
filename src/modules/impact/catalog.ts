@@ -50,7 +50,6 @@ export type PublicImpactConfig = {
   publicHeadline?: string;
   publicCtaText?: string;
   publicKeys: string[];
-  selectedKeys: string[];
   figures: PublicImpactFigure[];
 };
 

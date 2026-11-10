@@ -41,7 +41,6 @@ export default function PublicImpactDashboardPage() {
             organizationLogo: '',
             showEstimateBadge: true,
             publicKeys: [],
-            selectedKeys: [],
             figures: [],
           });
         }
