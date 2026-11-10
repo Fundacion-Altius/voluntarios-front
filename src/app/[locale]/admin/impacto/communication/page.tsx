@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,7 @@ import type {
   CommunicationResponse,
 } from '@/modules/impact/types';
 import { getApiBaseUrl } from '@/lib/apiUrl';
+import { formatImpactNumber } from '@/modules/impact/formatNumber';
 
 const PLATFORMS: { value: SocialMediaPlatform; label: string }[] = [
   { value: 'twitter', label: 'Twitter/X' },
@@ -28,6 +29,7 @@ const PLATFORMS: { value: SocialMediaPlatform; label: string }[] = [
 
 export default function AdminImpactCommunicationPage() {
   const t = useTranslations('admin.impact.communication');
+  const locale = useLocale();
   const [activeTab, setActiveTab] = useState('social-media');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,7 +69,7 @@ export default function AdminImpactCommunicationPage() {
           if (data.success && data.data) {
             const previewData = data.data.map((kpi: any) => ({
               key: kpi.key,
-              value: kpi.value.toLocaleString(),
+              value: formatImpactNumber(Number(kpi.value), locale),
               displayName: getKpiDisplayName(kpi.key),
             }));
             setKpiPreview(previewData);
@@ -78,7 +80,7 @@ export default function AdminImpactCommunicationPage() {
       }
     }
     fetchKpis();
-  }, []);
+  }, [locale]);
 
   function getKpiDisplayName(key: string): string {
     const displayNames: Record<string, string> = {

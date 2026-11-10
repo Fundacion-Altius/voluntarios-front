@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,7 @@ import {
 } from '@/modules/impact/catalog';
 import { ImpactStepStrip } from '@/modules/impact/components/ImpactStepStrip';
 import { PublicToggle, SourceBadge } from '@/modules/impact/components/SourceBadge';
+import { formatImpactNumber } from '@/modules/impact/formatNumber';
 import type { ImpactKpi } from '@/modules/impact/types';
 
 const PROFILES: { id: ImpactGuidedProfile; ico: string }[] = [
@@ -30,13 +31,19 @@ const PROFILES: { id: ImpactGuidedProfile; ico: string }[] = [
 
 type FilterChip = 'for_you' | 'outcome' | 'operation' | 'network' | 'fgps_entity' | 'fgps_project';
 
-function formatKpiValue(kpi: ImpactKpi | undefined, manual?: number | null, unit?: string): string {
+function formatKpiValue(
+  locale: string,
+  kpi: ImpactKpi | undefined,
+  manual?: number | null,
+  unit?: string,
+): string {
   if (manual != null && !Number.isNaN(manual)) {
-    return unit ? `${manual} ${unit}` : String(manual);
+    const formatted = formatImpactNumber(manual, locale);
+    return unit ? `${formatted} ${unit}` : formatted;
   }
   if (!kpi) return '—';
-  if (kpi.unit === '%') return `${kpi.value} %`;
-  return String(kpi.value);
+  if (kpi.unit === '%') return `${formatImpactNumber(kpi.value, locale)} %`;
+  return formatImpactNumber(kpi.value, locale);
 }
 
 function resolveKpi(
@@ -76,6 +83,7 @@ export function ImpactRedesignApp({
   }) => Promise<TenantImpactConfig | null>;
 }) {
   const t = useTranslations('admin.impact');
+  const locale = useLocale();
   const [view, setView] = useState<ImpactAdminView>('home');
   const [profiles, setProfiles] = useState<ImpactGuidedProfile[]>(['direct_care', 'network']);
   const [setupKey, setSetupKey] = useState<string | null>(null);
@@ -314,7 +322,7 @@ export function ImpactRedesignApp({
                       {t(`catalog.${sel.key}.title`)}
                     </div>
                     <div className="text-[26px] font-bold tracking-tight">
-                      {formatKpiValue(kpi, sel.manualValue, sel.manualUnit)}
+                      {formatKpiValue(locale, kpi, sel.manualValue, sel.manualUnit)}
                     </div>
                     <div className="flex flex-wrap gap-1.5 text-[11px] text-muted-foreground">
                       {item && <SourceBadge type={item.sourceType} labels={sourceLabels} />}
@@ -349,7 +357,7 @@ export function ImpactRedesignApp({
                       {t(`catalog.${sel.key}.title`)}
                     </div>
                     <div className="text-[22px] font-bold tracking-tight">
-                      {formatKpiValue(kpi, sel.manualValue, sel.manualUnit)}
+                      {formatKpiValue(locale, kpi, sel.manualValue, sel.manualUnit)}
                     </div>
                     {item && <SourceBadge type={item.sourceType} labels={sourceLabels} />}
                   </div>
@@ -510,7 +518,7 @@ export function ImpactRedesignApp({
                     <div className="min-w-0 flex-1">
                       <div className="font-semibold">{t(`catalog.${sel.key}.title`)}</div>
                       <div className="mt-1 text-2xl font-bold tracking-tight">
-                        {formatKpiValue(kpi, sel.manualValue, sel.manualUnit)}
+                        {formatKpiValue(locale, kpi, sel.manualValue, sel.manualUnit)}
                       </div>
                       <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                         {needs && (
@@ -802,7 +810,7 @@ export function ImpactRedesignApp({
                         key={sel.key}
                         className="rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-sm font-medium"
                       >
-                        {formatKpiValue(kpi, sel.manualValue, sel.manualUnit)} ·{' '}
+                        {formatKpiValue(locale, kpi, sel.manualValue, sel.manualUnit)} ·{' '}
                         {t(`catalog.${sel.key}.title`)}
                       </div>
                     );
@@ -858,7 +866,7 @@ export function ImpactRedesignApp({
                     return (
                       <div key={sel.key} className="rounded-lg border border-border bg-card p-3">
                         <div className="text-xl font-bold">
-                          {formatKpiValue(kpi, sel.manualValue, sel.manualUnit)}
+                          {formatKpiValue(locale, kpi, sel.manualValue, sel.manualUnit)}
                         </div>
                         <div className="text-sm text-muted-foreground">
                           {t(`catalog.${sel.key}.publicLine`)}

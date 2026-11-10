@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { apiClient, apiUrl } from '@/lib/apiClient';
 import { getCatalogItem, type PublicImpactConfig } from '@/modules/impact/catalog';
+import { formatImpactNumber } from '@/modules/impact/formatNumber';
 import { currentMonthPeriod } from '@/modules/impact/hooks/useImpactKpis';
 import type { ImpactKpi, ImpactKpiResponse } from '@/modules/impact/types';
 
@@ -12,6 +13,7 @@ type PublicConfigResponse = { success: boolean; data?: PublicImpactConfig; error
 export default function PublicImpactDashboardPage() {
   const t = useTranslations('impact.dashboard');
   const ti = useTranslations('admin.impact');
+  const locale = useLocale();
   const monthPeriod = currentMonthPeriod();
   const [pub, setPub] = useState<PublicImpactConfig | null>(null);
   const [kpis, setKpis] = useState<ImpactKpi[]>([]);
@@ -65,12 +67,12 @@ export default function PublicImpactDashboardPage() {
       const value =
         fig.manualValue != null
           ? fig.manualUnit
-            ? `${fig.manualValue} ${fig.manualUnit}`
-            : String(fig.manualValue)
+            ? `${formatImpactNumber(fig.manualValue, locale)} ${fig.manualUnit}`
+            : formatImpactNumber(fig.manualValue, locale)
           : kpi
             ? kpi.unit === '%'
-              ? `${kpi.value} %`
-              : String(kpi.value)
+              ? `${formatImpactNumber(kpi.value, locale)} %`
+              : formatImpactNumber(kpi.value, locale)
             : '—';
       return {
         key: fig.key,
@@ -80,7 +82,7 @@ export default function PublicImpactDashboardPage() {
         line: ti(`catalog.${fig.key}.publicLine`),
       };
     });
-  }, [pub, kpis, ti]);
+  }, [pub, kpis, ti, locale]);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-8 sm:px-6">

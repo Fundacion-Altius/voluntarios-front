@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Info } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,6 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { formatImpactNumber } from '@/modules/impact/formatNumber';
 import { useCountUp } from '@/modules/impact/hooks/useCountUp';
 import {
   ALL_IMPACT_KPI_KEYS,
@@ -141,14 +142,15 @@ export function ImpactKpiCard({
   showExplanation?: boolean;
 }) {
   const t = useTranslations('impact.dashboard');
+  const locale = useLocale();
   const displayName = t(`kpi.${kpi.key}`);
   const unitKey = UNIT_MESSAGE_KEYS[kpi.unit];
   const unitLabel = unitKey ? t(unitKey) : kpi.unit;
   const animated = useCountUp(kpi.value);
   const displayValue =
     animated === kpi.value
-      ? kpi.value.toLocaleString()
-      : Number(animated.toFixed(2)).toLocaleString();
+      ? formatImpactNumber(kpi.value, locale)
+      : formatImpactNumber(Number(animated.toFixed(2)), locale);
   return (
     <Card className="w-full">
       <CardHeader>
