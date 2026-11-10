@@ -111,6 +111,12 @@ async function openAdmin(page: Page) {
   await page.getByTestId('comandero-admin').waitFor({ timeout: 15000 });
 }
 
+/** Docente stepper: Carta is the default; Abrir servicio holds the start-session form. */
+async function goAdminAbrir(page: Page) {
+  await page.getByTestId('comandero-step-abrir').click();
+  await page.getByTestId('comandero-session-label').waitFor({ timeout: 15000 });
+}
+
 /**
  * Open the student portal (general/alumno) on the Altius host, join a service BY NAME (the student
  * never types or sees an id), and switch to a role.
@@ -138,10 +144,15 @@ async function expectMenuRow(page: Page, itemName: string, station?: RegExp | st
       return;
     }
     const next = page.getByTestId('comandero-menu-next');
-    if ((await next.count()) === 0 || (await next.isDisabled())) break;
-    await next.click();
+    if ((await next.count()) === 0) break;
+    if (await next.isDisabled()) break;
+    try {
+      await next.click({ timeout: 2000 });
+    } catch {
+      break;
+    }
   }
-  await expect(row(), `menu row "${itemName}" not found across pages`).toHaveCount(1);
+  await expect(row(), `menu row "${itemName}" not found across pages`).toHaveCount(1, { timeout: 15000 });
 }
 
 /**
@@ -149,14 +160,35 @@ async function expectMenuRow(page: Page, itemName: string, station?: RegExp | st
  * The Select option text is "<name> · <station> · <price>", so match by the unique
  * name as a substring (not exact) — the per-test tag keeps it unambiguous.
  */
-async function waiterAddLine(page: Page, itemName: string, note: string) {
+async function dismissWaiterSheet(page: Page) {
+  if ((await page.getByTestId('comandero-waiter-sheet').count()) === 0) return;
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('comandero-waiter-sheet')).toHaveCount(0, { timeout: 10000 });
+}
+
+async function openWaiterSheet(page: Page) {
   await page.getByTestId('comandero-waiter-table').first().waitFor({ timeout: 15000 });
+  if ((await page.getByTestId('comandero-waiter-sheet').count()) > 0) return;
   const openBtn = page.getByTestId('comandero-open-order').first();
-  if (await openBtn.isVisible().catch(() => false)) await openBtn.click();
-  await page.getByTestId('comandero-item-select').first().click();
-  await page.getByRole('option', { name: rx(itemName) }).click();
-  if (note) await page.getByTestId('comandero-line-note').first().fill(note);
-  await page.getByTestId('comandero-add-line').first().click();
+  if (await openBtn.isVisible().catch(() => false)) {
+    await openBtn.click();
+  } else {
+    await page.getByTestId('comandero-waiter-open-sheet').first().click();
+  }
+  await page.getByTestId('comandero-waiter-sheet').waitFor({ timeout: 15000 });
+}
+
+async function waiterAddLine(page: Page, itemName: string, note: string) {
+  await openWaiterSheet(page);
+  if (note) await page.getByTestId('comandero-line-note').fill(note);
+  const tile = () => page.getByTestId('comandero-menu-tile').filter({ hasText: itemName });
+  if ((await tile().count()) === 0) {
+    await page.getByRole('tab', { name: /bebidas|drinks|begudes/i }).click();
+  }
+  if ((await tile().count()) === 0) {
+    await page.getByRole('tab', { name: /platos|dishes|plats/i }).click();
+  }
+  await tile().click();
 }
 
 // ---------------------------------------------------------------------------
@@ -219,8 +251,9 @@ test.describe('KL-US-038 mesas y apertura de comanda', () => {
     await page.getByTestId('comandero-waiter-table').first().waitFor({ timeout: 15000 });
 
     await page.getByTestId('comandero-open-order').first().click();
-    // Once open, the "abrir comanda" button is gone for that table (it shows the order form).
-    await expect(page.getByTestId('comandero-item-select').first()).toBeVisible({ timeout: 15000 });
+    // Once open, the mesa sheet shows the carta tiles and "+ Abrir" is gone for that table.
+    await expect(page.getByTestId('comandero-waiter-sheet')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId('comandero-item-select')).toBeVisible({ timeout: 15000 });
     await expect(page.getByTestId('comandero-open-order')).toHaveCount(0);
   });
 });
@@ -237,9 +270,8 @@ test.describe('KL-US-039 anadir items y ruteo cocina/barra', () => {
     await waiterAddLine(page, platoName, 'sin gluten');
     await expect(page.getByText('sin gluten')).toBeVisible({ timeout: 15000 });
 
-    await page.getByTestId('comandero-item-select').first().click();
-    await page.getByRole('option', { name: rx(bebidaName) }).click();
-    await page.getByTestId('comandero-add-line').first().click();
+    await waiterAddLine(page, bebidaName, '');
+    await dismissWaiterSheet(page);
 
     // Queues are per-session: kitchen shows the dish by name, bar shows the drink by name.
     await page.getByTestId('comandero-tab-cocina').click();
@@ -260,6 +292,7 @@ test.describe('KL-US-040 colas de estacion y transiciones', () => {
     // Add the dish line through the waiter UI so the whole flow is browser-driven.
     await openPortal(page, seed.sessionLabel, 'camarero');
     await waiterAddLine(page, seed.platoName, '');
+    await dismissWaiterSheet(page);
 
     // Bar queue is empty (the only line is a dish).
     await page.getByTestId('comandero-tab-barra').click();
@@ -285,6 +318,7 @@ test.describe('KL-US-041 servir y cerrar cuenta', () => {
     const seed = await seedSession(request, tag);
     await openPortal(page, seed.sessionLabel, 'camarero');
     await waiterAddLine(page, seed.platoName, '');
+    await dismissWaiterSheet(page);
 
     // Advance in the kitchen to 'listo'.
     await page.getByTestId('comandero-tab-cocina').click();
@@ -292,8 +326,9 @@ test.describe('KL-US-041 servir y cerrar cuenta', () => {
     await cocina.getByTestId('comandero-advance-line').first().click();
     await cocina.getByTestId('comandero-advance-line').first().click();
 
-    // Serve + close from the waiter.
+    // Serve + close from the waiter sheet.
     await page.getByTestId('comandero-tab-camarero').click();
+    await openWaiterSheet(page);
     await page.getByTestId('comandero-serve-line').first().click();
     await page.getByTestId('comandero-close-bill').first().click();
     // Table shows "Libre" once the order is closed.
@@ -309,6 +344,7 @@ test.describe('KL-US-042 nota de linea visible en estacion', () => {
     const seed = await seedSession(request, tag);
     await openPortal(page, seed.sessionLabel, 'camarero');
     await waiterAddLine(page, seed.platoName, 'sin sal');
+    await dismissWaiterSheet(page);
 
     await page.getByTestId('comandero-tab-cocina').click();
     await expect(page.getByTestId('comandero-station-cocina').getByText('sin sal')).toBeVisible({ timeout: 15000 });
@@ -330,6 +366,7 @@ test.describe('KL-US-043 vista de sala del docente por polling + resumen', () =>
     await page.getByTestId('comandero-item-add').click();
     await page.getByTestId('comandero-menu-row').first().waitFor({ timeout: 15000 });
 
+    await goAdminAbrir(page);
     await page.getByTestId('comandero-session-label').fill(sessionLabel);
     await page.getByTestId('comandero-session-start').click();
     await page.getByTestId('comandero-table-label').waitFor({ timeout: 15000 });
@@ -599,6 +636,7 @@ test.describe('Comandero redesign: primary course', () => {
     let sessionId = '';
     try {
       await openAdmin(page);
+      await goAdminAbrir(page);
       await page.getByTestId('comandero-session-label').fill(label);
       await page.getByTestId('comandero-session-start').click();
       await page.getByTestId('comandero-table-label').waitFor({ timeout: 15000 });
@@ -687,12 +725,13 @@ test.describe('Comandero redesign: exception course', () => {
       const table = page.getByTestId('comandero-waiter-table').first();
       await expect(table).toContainText(money('6,00'), { timeout: 15000 });
 
-      // Nothing is ready, so there is no "Servir" and the bill cannot be closed.
+      // Nothing is ready: no "Servir", and close stays disabled with the "falta servir" reason.
       await expect(page.getByTestId('comandero-serve-line')).toHaveCount(0);
-      await page.getByTestId('comandero-close-bill').first().click();
-
-      await expect(page.getByText('all lines must be served')).toBeVisible({ timeout: 15000 });
+      const closeBill = page.getByTestId('comandero-close-bill').first();
+      await expect(closeBill).toBeDisabled();
+      await expect(closeBill).toContainText(/falta servir|still to serve/i);
       await expect(table).toContainText(money('6,00'));
+      await dismissWaiterSheet(page);
       await expect(table).not.toContainText('Libre');
     } finally {
       await cleanupSeed(request, seed);

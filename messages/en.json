@@ -2349,22 +2349,34 @@
           "pedido": "Start preparing",
           "en_preparacion": "Mark ready"
         },
-        "advance": "Advance"
+        "advance": "Advance",
+        "liveHint": "Live queue"
       },
       "waiter": {
         "loading": "Loading floor…",
         "free": "Free",
-        "openOrder": "Open order",
+        "openOrder": "+ Open",
         "noLines": "No lines yet",
         "serve": "Serve",
         "pickAria": "Choose a menu item",
         "pickPlaceholder": "Add from the menu…",
         "option": "{name} · {station} · {price}",
-        "notePlaceholder": "Note (e.g. gluten-free)",
+        "notePlaceholder": "Optional note (e.g. gluten-free)",
         "add": "Add",
         "closeBill": "Close bill",
         "noTables": "The teacher hasn't added tables to this session yet.",
-        "error": "Error"
+        "error": "Error",
+        "serveNamed": "Serve {name}",
+        "closeBlocked": "Close bill · still to serve",
+        "dishes": "Dishes",
+        "drinks": "Drinks",
+        "sheetEyebrow": "Waiter · service",
+        "total": "Total",
+        "prepShort": "In prep.",
+        "readyOne": "Ready · {name}",
+        "readyMany": "Ready · {n} dishes",
+        "inKitchen": "In the kitchen",
+        "open": "Ordered"
       }
     },
     "status": {
@@ -2404,17 +2416,34 @@
         "start": "Start session",
         "addTable": "Add table",
         "tablePlaceholder": "Table 1",
-        "tableButton": "Table",
-        "close": "Close session and see summary",
+        "tableButton": "+ Table",
+        "close": "Close service",
         "free": "Free",
         "noLines": "No lines",
-        "noTables": "Add tables to start the service."
+        "noTables": "Add tables to start the service.",
+        "floorTitle": "Floor plan",
+        "floorSubtitle": "Updates every few seconds · {n} tables with food ready",
+        "readyHint": "Ready to serve · {n}",
+        "inKitchen": "In the kitchen",
+        "newOrders": "New orders",
+        "livePill": "In service",
+        "liveTitle": "Live floor",
+        "liveHint": "Watch the floor and close the service when ready.",
+        "alreadyOpen": "A service is already open — go to Live floor.",
+        "newAfterClose": "Open another service"
       },
       "summary": {
         "title": "Session summary",
         "waiting": "Lines still waiting at close: {n}",
         "served": "Items served: {n}",
         "phases": "Average time per phase (s): ordered {pedido} · preparing {preparacion} · ready {listo}"
+      },
+      "steps": {
+        "aria": "Classroom flow",
+        "carta": "Menu",
+        "abrir": "Open service",
+        "sala": "Live floor",
+        "cierre": "Close-out"
       }
     }
   }

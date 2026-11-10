@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useComanderoMenu } from '@/modules/comandero/useComandero';
 import { MenuForm, type AddMenuItem } from './MenuForm';
 import { MenuTable } from './MenuTable';
-import { pageOfIndex, pageWindow } from './paging';
+import { pageWindow } from './paging';
 
 const MENU_PAGE_SIZE = 10;
 
@@ -55,8 +55,9 @@ export function MenuCard() {
 
   const handleAdd: AddMenuItem = async (input) => {
     const failure = await addItem(input);
-    // New items append, so jump to the page that now holds the new row.
-    if (!failure) setPage(pageOfIndex(menu.length, MENU_PAGE_SIZE));
+    // New items append. `menu.length` is still the pre-refresh count here, so aim past the
+    // end and let the clamp effect land on the last page once the list updates.
+    if (!failure) setPage(10_000);
     return failure;
   };
 
