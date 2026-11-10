@@ -147,7 +147,8 @@
     "receipt": "Receipt",
     "other": "Other",
     "view": "View",
-    "all": "All"
+    "all": "All",
+    "demoData": "Sample data"
   },
   "home": {
     "acuerdoVoluntariado": "Volunteering agreement with Fundación Altius"
@@ -542,7 +543,7 @@
         "entregados": "Delivered",
         "porRecoger": "To collect",
         "aMano": "Type the code",
-        "placeholder": "QR code or family code",
+        "placeholder": "QR or family code",
         "buscar": "Find",
         "apunta": "Point at the family's QR code",
         "camaraTexto": "Open the camera and point it at the family's QR.",
@@ -1185,7 +1186,7 @@
       "emptyHome": "No indicators yet. Start with the guided setup.",
       "guidedTitle": "Start with Impact",
       "guidedSubtitle": "A few questions · we suggest 4 or 5 indicators",
-      "guidedQuestion": "What does your organization do?",
+      "guidedQuestion": "What does {org} do?",
       "guidedLead": "Pick one or two. You can change indicators later.",
       "guidedSuggest": "We suggest starting with these {count}",
       "seeMore": "See more",

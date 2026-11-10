@@ -147,7 +147,8 @@
     "receipt": "Rebut",
     "other": "Altre",
     "view": "Veure",
-    "all": "Tots"
+    "all": "Tots",
+    "demoData": "Dades d'exemple"
   },
   "home": {
     "acuerdoVoluntariado": "Acord de voluntariat amb la Fundación Altius"
@@ -542,7 +543,7 @@
         "entregados": "Lliurats",
         "porRecoger": "Per recollir",
         "aMano": "Escriure el codi a mà",
-        "placeholder": "Codi QR o codi de família",
+        "placeholder": "Codi QR o de família",
         "buscar": "Cercar",
         "apunta": "Apunta al codi QR de la família",
         "camaraTexto": "Obre la càmera i apunta al QR que porta la família.",
@@ -1185,7 +1186,7 @@
       "emptyHome": "Encara no hi ha indicadors. Comença amb l’inici guiat.",
       "guidedTitle": "Començar amb Impacte",
       "guidedSubtitle": "3 preguntes · et proposem 4 o 5 indicadors",
-      "guidedQuestion": "Què fa la vostra entitat?",
+      "guidedQuestion": "Què fa {org}?",
       "guidedLead": "Tria una o dues. Després pots canviar els indicadors.",
       "guidedSuggest": "Et proposem començar amb aquests {count}",
       "seeMore": "Veure’n més",
