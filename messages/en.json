@@ -2406,14 +2406,15 @@
         "next": "Next",
         "page": "Page {page} of {total}",
         "cocina": "Kitchen",
-        "barra": "Bar"
+        "barra": "Bar",
+        "hint": "What students will order today. Opening the service freezes a snapshot."
       },
       "session": {
         "title": "Practice session",
         "refresh": "Refresh floor",
         "label": "Session name",
         "labelPlaceholder": "Lunch service 12 Nov",
-        "start": "Start session",
+        "start": "Open service →",
         "addTable": "Add table",
         "tablePlaceholder": "Table 1",
         "tableButton": "+ Table",
@@ -2444,6 +2445,12 @@
         "abrir": "Open service",
         "sala": "Live floor",
         "cierre": "Close-out"
+      },
+      "nextStep": {
+        "title": "Next step",
+        "body": "When the menu is ready, open the service. Students will see it by name — no codes.",
+        "footnote": "Only the teacher can edit the menu or open/close the service.",
+        "goSala": "Go to live floor →"
       }
     }
   }

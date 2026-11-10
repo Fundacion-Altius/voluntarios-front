@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useComanderoMenu } from '@/modules/comandero/useComandero';
 import { MenuForm, type AddMenuItem } from './MenuForm';
-import { MenuTable } from './MenuTable';
+import { MenuRows } from './MenuRows';
 import { pageWindow } from './paging';
 
 const MENU_PAGE_SIZE = 10;
@@ -65,6 +65,7 @@ export function MenuCard() {
     <Card>
       <CardHeader>
         <CardTitle>{t('title')}</CardTitle>
+        <p className="text-sm text-muted-foreground">{t('hint')}</p>
       </CardHeader>
       <CardContent className="space-y-4">
         <MenuForm onAdd={handleAdd} />
@@ -77,7 +78,7 @@ export function MenuCard() {
           <p className="text-sm text-muted-foreground">{t('empty')}</p>
         ) : (
           <div className="space-y-3">
-            <MenuTable items={menu.slice(start, end)} onRemove={removeItem} />
+            <MenuRows items={menu.slice(start, end)} onRemove={removeItem} />
             {menu.length > MENU_PAGE_SIZE && <MenuPagination current={current} count={count} onPage={setPage} />}
           </div>
         )}
