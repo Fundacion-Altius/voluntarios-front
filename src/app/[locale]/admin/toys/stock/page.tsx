@@ -44,11 +44,11 @@ export default function ToysStockPage() {
   }, [api, t]);
 
   useEffect(() => {
-    if (!loaded && api.status?.enabled) {
+    if (!loaded && api.ready && api.status?.enabled) {
       setLoaded(true);
       void loadStock();
     }
-  }, [api.status, loaded, loadStock]);
+  }, [api.ready, api.status, loaded, loadStock]);
 
   useEffect(() => {
     const timer = setTimeout(() => {

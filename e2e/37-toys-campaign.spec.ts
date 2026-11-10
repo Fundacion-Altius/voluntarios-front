@@ -292,6 +292,31 @@ test.describe('Toys campaign redesign', () => {
       await expect(page.getByTestId('toys-reparto-result')).toContainText('Ya se entregó');
       await expect(page.getByTestId('toys-reparto-confirm')).toHaveCount(0);
       expect(await itemQuantity(api, toyId)).toBe(stock);
+
+      // Second Entregado is impossible in the UI once delivered; API must not double-count.
+      const again = await api.post('/scan/confirm', { token: famA });
+      expect(again.status()).toBe(409);
+      expect((await again.json()).code).toBe('already_delivered');
+      expect(await itemQuantity(api, toyId)).toBe(stock);
+    });
+
+    test('modo reparto rejects a QR from another campaign and an invalid token', async ({ page }) => {
+      await asAdmin(page, '/es/admin/toys/entrega', 'toys-reparto');
+      const error = page.getByTestId('toys-reparto-error');
+      await lookup(page, `otra-campana-${tag}`);
+      await expect(error).toHaveAttribute('data-error', 'not_found');
+      await lookup(page, '00000000-0000-0000-0000-000000000000');
+      await expect(error).toHaveAttribute('data-error', 'not_found');
+    });
+
+    test('expired session on Entregado sends the admin to login', async ({ page }) => {
+      await asAdmin(page, '/es/admin/toys/entrega', 'toys-reparto');
+      await page.evaluate(() => sessionStorage.setItem('klaruk-had-session', '1'));
+      await page.route('**/api/toys/scan/**', (route) =>
+        route.fulfill({ status: 401, contentType: 'application/json', body: JSON.stringify({ error: 'Unauthorized' }) }),
+      );
+      await lookup(page, famB);
+      await page.waitForURL(/\/es\/login/, { timeout: 15000 });
     });
 
     test('turnos blocks deleting a booked slot, shrinking it below its bookings and ending before it starts', async ({ page }) => {

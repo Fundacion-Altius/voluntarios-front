@@ -54,10 +54,10 @@ export default function ToysSlotsPage() {
   }, [api]);
 
   useEffect(() => {
-    if (requested || !api.status?.enabled) return;
+    if (requested || !api.ready || !api.status?.enabled) return;
     setRequested(true);
     void load();
-  }, [api.status, requested, load]);
+  }, [api.ready, api.status, requested, load]);
 
   if (authLoading || !api.status) return <Skeleton className="h-32 w-full" />;
   if (!isAuthenticated) return <p>{t('loginRequerido')}</p>;

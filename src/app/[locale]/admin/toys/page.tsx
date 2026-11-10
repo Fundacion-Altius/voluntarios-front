@@ -45,7 +45,7 @@ export default function ToysOverviewPage() {
   const [requested, setRequested] = useState(false);
 
   useEffect(() => {
-    if (requested || !api.status?.enabled) return;
+    if (requested || !api.ready || !api.status?.enabled) return;
     setRequested(true);
     const pick = <T,>(r: { success: boolean; data?: unknown }) => (r.success && Array.isArray(r.data) ? (r.data as T[]) : null);
     void Promise.all([
