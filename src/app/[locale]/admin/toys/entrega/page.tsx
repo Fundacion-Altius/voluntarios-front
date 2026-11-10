@@ -39,10 +39,10 @@ export default function ToysHandoverPage() {
   }, [api]);
 
   useEffect(() => {
-    if (requested || !api.status?.enabled) return;
+    if (requested || !api.ready || !api.status?.enabled) return;
     setRequested(true);
     void loadSummary();
-  }, [api.status, requested, loadSummary]);
+  }, [api.ready, api.status, requested, loadSummary]);
 
   const lookup = async (value: string) => {
     const token = value.trim();
