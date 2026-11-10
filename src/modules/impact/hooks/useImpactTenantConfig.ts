@@ -1,12 +1,8 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useState } from 'react';
-import { apiClient, apiUrl } from '@/lib/apiClient';
-import type {
-  ImpactCatalogItem,
-  PublicImpactConfig,
-  TenantImpactConfig,
-} from '@/modules/impact/catalog';
+import { useCallback, useEffect, useState } from "react";
+import { apiClient, apiUrl } from "@/lib/apiClient";
+import type { ImpactCatalogItem, PublicImpactConfig, TenantImpactConfig } from "@/modules/impact/catalog";
 
 type ApiOk<T> = { success: boolean; data?: T; error?: string };
 
@@ -26,11 +22,14 @@ export function useImpactTenantConfig({ enabled = true }: { enabled?: boolean } 
     setError(null);
     try {
       const [cfgRes, catRes] = await Promise.all([
-        apiClient<ApiOk<TenantImpactConfig>>(apiUrl('/api/impact/config')),
-        apiClient<ApiOk<ImpactCatalogItem[]>>(apiUrl('/api/impact/catalog')),
+        apiClient<ApiOk<TenantImpactConfig>>(apiUrl("/api/impact/config")),
+        apiClient<ApiOk<ImpactCatalogItem[]>>(apiUrl("/api/impact/catalog")),
       ]);
-      if (!cfgRes.success || !cfgRes.data?.success || !cfgRes.data.data) {
-        setError(cfgRes.error || cfgRes.data?.error || 'Failed to load impact config');
+      if (!cfgRes.success) {
+        setError(cfgRes.error || "Failed to load impact config");
+        setConfig(null);
+      } else if (!cfgRes.data?.success || !cfgRes.data.data) {
+        setError(cfgRes.data?.error || "Failed to load impact config");
         setConfig(null);
       } else {
         setConfig(cfgRes.data.data);
@@ -47,27 +46,25 @@ export function useImpactTenantConfig({ enabled = true }: { enabled?: boolean } 
     void refresh();
   }, [refresh]);
 
-  const saveConfig = useCallback(
-    async (patch: Partial<TenantImpactConfig>) => {
-      setSaving(true);
-      setError(null);
-      try {
-        const res = await apiClient.put<ApiOk<TenantImpactConfig>>(
-          apiUrl('/api/impact/config'),
-          patch,
-        );
-        if (!res.success || !res.data?.success || !res.data.data) {
-          setError(res.error || res.data?.error || 'Failed to save');
-          return null;
-        }
-        setConfig(res.data.data);
-        return res.data.data;
-      } finally {
-        setSaving(false);
+  const saveConfig = useCallback(async (patch: Partial<TenantImpactConfig>) => {
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await apiClient.put<ApiOk<TenantImpactConfig>>(apiUrl("/api/impact/config"), patch);
+      if (!res.success) {
+        setError(res.error || "Failed to save");
+        return null;
       }
-    },
-    [],
-  );
+      if (!res.data?.success || !res.data.data) {
+        setError(res.data?.error || "Failed to save");
+        return null;
+      }
+      setConfig(res.data.data);
+      return res.data.data;
+    } finally {
+      setSaving(false);
+    }
+  }, []);
 
   const setManualValue = useCallback(
     async (body: {
@@ -81,12 +78,13 @@ export function useImpactTenantConfig({ enabled = true }: { enabled?: boolean } 
       setSaving(true);
       setError(null);
       try {
-        const res = await apiClient.post<ApiOk<TenantImpactConfig>>(
-          apiUrl('/api/impact/config/manual-value'),
-          body,
-        );
-        if (!res.success || !res.data?.success || !res.data.data) {
-          setError(res.error || res.data?.error || 'Failed to save value');
+        const res = await apiClient.post<ApiOk<TenantImpactConfig>>(apiUrl("/api/impact/config/manual-value"), body);
+        if (!res.success) {
+          setError(res.error || "Failed to save value");
+          return null;
+        }
+        if (!res.data?.success || !res.data.data) {
+          setError(res.data?.error || "Failed to save value");
           return null;
         }
         setConfig(res.data.data);
@@ -118,9 +116,7 @@ export function usePublicImpactConfig() {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const res = await apiClient<ApiOk<PublicImpactConfig>>(
-        apiUrl('/api/impact/public-config'),
-      );
+      const res = await apiClient<ApiOk<PublicImpactConfig>>(apiUrl("/api/impact/public-config"));
       if (!cancelled) {
         if (res.success && res.data?.success && res.data.data) {
           setConfig(res.data.data);

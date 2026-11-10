@@ -1,30 +1,24 @@
-'use client';
+"use client";
 
-import { useAuth } from '@/app/auth/useAuth';
-import { useRouter } from '@/i18n/navigation';
-import { useEffect, useMemo } from 'react';
-import { useTranslations } from 'next-intl';
-import { Skeleton } from '@/components/ui/skeleton';
-import { AutomationWorkloadWidget } from './components/AutomationWorkloadWidget';
-import { ContractsByMonthChart } from './components/ContractsByMonthChart';
-import { ContractsByLugarChart } from './components/ContractsByLugarChart';
-import { CorporateVsIndependentChart } from './components/CorporateVsIndependentChart';
-import { RecentContracts } from './components/RecentContracts';
-import { ImpactTrendsChart } from './components/ImpactTrendsChart';
-import { useDashboardStats, type DashboardStats } from './useDashboardStats';
-import { useImpactTrends, type ImpactTrendResult } from './useImpactTrends';
-import { useAutomationWorkload } from './useAutomationWorkload';
-import {
-  buildTrendsMap,
-} from '@/modules/impact/components/ImpactKpiGrid';
-import { ImpactKpiGrid } from '@/modules/impact/components/ImpactKpiGrid';
-import { getCatalogItem } from '@/modules/impact/catalog';
-import { currentMonthPeriod, useImpactKpis } from '@/modules/impact/hooks/useImpactKpis';
-import { useImpactTenantConfig } from '@/modules/impact/hooks/useImpactTenantConfig';
-import {
-  COORDINATOR_KPI_ORDER,
-  type ImpactKpiKey,
-} from '@/modules/impact/types';
+import { useTranslations } from "next-intl";
+import { useEffect, useMemo } from "react";
+import { useAuth } from "@/app/auth/useAuth";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useRouter } from "@/i18n/navigation";
+import { getCatalogItem } from "@/modules/impact/catalog";
+import { buildTrendsMap, ImpactKpiGrid } from "@/modules/impact/components/ImpactKpiGrid";
+import { currentMonthPeriod, useImpactKpis } from "@/modules/impact/hooks/useImpactKpis";
+import { useImpactTenantConfig } from "@/modules/impact/hooks/useImpactTenantConfig";
+import { COORDINATOR_KPI_ORDER, type ImpactKpiKey } from "@/modules/impact/types";
+import { AutomationWorkloadWidget } from "./components/AutomationWorkloadWidget";
+import { ContractsByLugarChart } from "./components/ContractsByLugarChart";
+import { ContractsByMonthChart } from "./components/ContractsByMonthChart";
+import { CorporateVsIndependentChart } from "./components/CorporateVsIndependentChart";
+import { ImpactTrendsChart } from "./components/ImpactTrendsChart";
+import { RecentContracts } from "./components/RecentContracts";
+import { useAutomationWorkload } from "./useAutomationWorkload";
+import { type DashboardStats, useDashboardStats } from "./useDashboardStats";
+import { type ImpactTrendResult, useImpactTrends } from "./useImpactTrends";
 
 function DashboardLowerSections({
   stats,
@@ -49,11 +43,7 @@ function DashboardLowerSections({
   }
 
   if (statsError) {
-    return (
-      <div className="rounded-md bg-destructive/10 p-4 text-sm text-destructive">
-        {statsError}
-      </div>
-    );
+    return <div className="rounded-md bg-destructive/10 p-4 text-sm text-destructive">{statsError}</div>;
   }
 
   if (!stats) return null;
@@ -82,10 +72,10 @@ function DashboardLowerSections({
 }
 
 export default function AdminDashboardPage() {
-  const t = useTranslations('admin.dashboard');
+  const t = useTranslations("admin.dashboard");
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { stats, isLoading: statsLoading, error: statsError } = useDashboardStats();
-  const { data: trends, isLoading: trendsLoading } = useImpactTrends('12months');
+  const { data: trends, isLoading: trendsLoading } = useImpactTrends("12months");
   const { metrics: automationMetrics, manualTasks, isLoading: automationLoading } = useAutomationWorkload();
   const router = useRouter();
 
@@ -98,7 +88,7 @@ export default function AdminDashboardPage() {
     const fromTenant = (tenantImpactConfig?.selected ?? [])
       .map((s) => getCatalogItem(s.key)?.mapsToKpi)
       .filter((k): k is ImpactKpiKey => Boolean(k));
-    const unique = [...new Set(fromTenant)];
+    const unique = Array.from(new Set(fromTenant));
     return unique.length > 0 ? unique : [...COORDINATOR_KPI_ORDER];
   }, [tenantImpactConfig]);
   const {
@@ -115,8 +105,8 @@ export default function AdminDashboardPage() {
   });
 
   useEffect(() => {
-    if (!authLoading && isAuthenticated && user && (user as any).role !== 'admin') {
-      router.replace('/admin/contratos');
+    if (!authLoading && isAuthenticated && user && (user as any).role !== "admin") {
+      router.replace("/admin/contratos");
     }
   }, [authLoading, isAuthenticated, user, router]);
 
@@ -143,7 +133,7 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold">{t('titulo')}</h2>
+      <h2 className="text-xl font-semibold">{t("titulo")}</h2>
 
       <ImpactKpiGrid
         kpis={impactLoading ? null : visibleImpactKpis}
@@ -151,20 +141,13 @@ export default function AdminDashboardPage() {
         isLoading={impactLoading}
         error={impactError}
         onRetry={fetchImpactKpis}
-        showEstimateBadge={
-          tenantImpactConfig?.showEstimateBadge ?? impactConfig?.showEstimateBadge ?? true
-        }
+        showEstimateBadge={tenantImpactConfig?.showEstimateBadge ?? impactConfig?.showEstimateBadge ?? true}
         showExplanations
-        expectedKeys={
-          tenantImpactConfig && tenantImpactConfig.selected.length === 0 ? [] : dashboardKeys
-        }
+        expectedKeys={tenantImpactConfig && tenantImpactConfig.selected.length === 0 ? [] : dashboardKeys}
       />
 
       {!automationLoading && automationMetrics ? (
-        <AutomationWorkloadWidget
-          metrics={automationMetrics}
-          manualCount={manualTasks.length}
-        />
+        <AutomationWorkloadWidget metrics={automationMetrics} manualCount={manualTasks.length} />
       ) : null}
 
       <DashboardLowerSections
