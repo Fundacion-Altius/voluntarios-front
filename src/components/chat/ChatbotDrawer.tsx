@@ -7,6 +7,10 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { ChatbotPanel } from "./ChatbotPanel";
 import { useChatbotDisplayName } from "./chatbotDisplayName";
 
+/**
+ * Floating Alti trigger. Positioned above the admin bottom nav and any
+ * page-level fixed action bars via --admin-fab-bottom / --admin-fixed-bar-h.
+ */
 export function ChatbotDrawer() {
   const { data: session, status } = useSession();
   const authToken = (session as { authToken?: string } | null)?.authToken;
@@ -17,12 +21,16 @@ export function ChatbotDrawer() {
   }
 
   return (
-    <div className="fixed bottom-20 right-4 z-40 lg:bottom-6">
+    <div
+      className="fixed right-4 z-40"
+      style={{ bottom: "var(--admin-fab-bottom, 5rem)" }}
+      data-testid="chatbot-fab-anchor"
+    >
       <Sheet>
         <SheetTrigger asChild>
           <Button
             size="lg"
-            className="rounded-full shadow-lg"
+            className="h-12 rounded-full px-4 shadow-lg"
             data-testid="chatbot-drawer-trigger"
             aria-label={`Abrir ${displayName}`}
           >
