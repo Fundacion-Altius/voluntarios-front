@@ -7,7 +7,7 @@ describe('getApiBaseUrl', () => {
     Object.defineProperty(global, 'window', { value: originalWindow, writable: true });
   });
 
-  it('uses same-origin on tenant hosts', () => {
+  it('uses same-origin on production tenant hosts', () => {
     Object.defineProperty(global, 'window', {
       value: { location: { hostname: 'fundacionaltius.klaruk.com', protocol: 'https:', host: 'fundacionaltius.klaruk.com' } },
       writable: true,
@@ -15,11 +15,19 @@ describe('getApiBaseUrl', () => {
     expect(getApiBaseUrl()).toBe('https://fundacionaltius.klaruk.com');
   });
 
-  it('uses NEXT_PUBLIC_API_URL on local tenant hosts', () => {
+  it('uses same-origin on local tenant hosts', () => {
     Object.defineProperty(global, 'window', {
       value: { location: { hostname: 'homelessentrepreneur.localhost', protocol: 'http:', host: 'homelessentrepreneur.localhost:3000' } },
       writable: true,
     });
-    expect(getApiBaseUrl()).toBe(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001');
+    expect(getApiBaseUrl()).toBe('http://homelessentrepreneur.localhost:3000');
+  });
+
+  it('uses same-origin on apex localhost', () => {
+    Object.defineProperty(global, 'window', {
+      value: { location: { hostname: 'localhost', protocol: 'http:', host: 'localhost:3000' } },
+      writable: true,
+    });
+    expect(getApiBaseUrl()).toBe('http://localhost:3000');
   });
 });
