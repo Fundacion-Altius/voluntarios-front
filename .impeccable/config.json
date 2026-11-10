@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "src/app/[locale]/admin/toys/turnos/page.tsx"
+        ],
+        "createdAt": "2026-11-10T09:40:30.941Z",
+        "reason": "pre-existing toys SlotCard fill accent (campaign design), not introduced by this visual-fix pass"
+      }
+    ]
+  }
+}
