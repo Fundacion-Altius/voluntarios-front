@@ -146,6 +146,7 @@ describe('Comandero admin: practice session', () => {
     mockBackend();
     renderPage();
 
+    await userEvent.click(await screen.findByTestId('comandero-step-abrir'));
     const start = await screen.findByTestId('comandero-session-start');
     expect(start).toBeDisabled();
     await userEvent.type(screen.getByTestId('comandero-session-label'), '   ');
@@ -158,6 +159,7 @@ describe('Comandero admin: practice session', () => {
     mockBackend();
     renderPage();
 
+    await userEvent.click(await screen.findByTestId('comandero-step-abrir'));
     await userEvent.type(await screen.findByTestId('comandero-session-label'), 'Servicio mediodía');
     await userEvent.click(screen.getByTestId('comandero-session-start'));
 
