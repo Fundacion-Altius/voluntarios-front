@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { apiClient, apiUrl } from '@/lib/apiClient';
 import { getCatalogItem, type PublicImpactConfig } from '@/modules/impact/catalog';
-import { formatImpactNumber } from '@/modules/impact/formatNumber';
+import { formatImpactNumber, localizeImpactUnit } from '@/modules/impact/formatNumber';
 import { currentMonthPeriod } from '@/modules/impact/hooks/useImpactKpis';
 import type { ImpactKpi, ImpactKpiResponse } from '@/modules/impact/types';
 
@@ -64,14 +64,16 @@ export default function PublicImpactDashboardPage() {
     return list.map((fig) => {
       const item = getCatalogItem(fig.key);
       const kpi = item?.mapsToKpi ? kpis.find((k) => k.key === item.mapsToKpi) : undefined;
+      const manualUnit = localizeImpactUnit(fig.manualUnit, (key) => t(`unit.${key}`));
+      const kpiUnit = localizeImpactUnit(kpi?.unit, (key) => t(`unit.${key}`));
       const value =
         fig.manualValue != null
-          ? fig.manualUnit
-            ? `${formatImpactNumber(fig.manualValue, locale)} ${fig.manualUnit}`
+          ? manualUnit
+            ? `${formatImpactNumber(fig.manualValue, locale)} ${manualUnit}`
             : formatImpactNumber(fig.manualValue, locale)
           : kpi
-            ? kpi.unit === '%'
-              ? `${formatImpactNumber(kpi.value, locale)} %`
+            ? kpiUnit
+              ? `${formatImpactNumber(kpi.value, locale)} ${kpiUnit}`
               : formatImpactNumber(kpi.value, locale)
             : '—';
       return {
@@ -82,7 +84,7 @@ export default function PublicImpactDashboardPage() {
         line: ti(`catalog.${fig.key}.publicLine`),
       };
     });
-  }, [pub, kpis, ti, locale]);
+  }, [pub, kpis, ti, t, locale]);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-8 sm:px-6">

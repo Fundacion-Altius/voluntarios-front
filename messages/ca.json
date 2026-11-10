@@ -2367,7 +2367,17 @@
       "unit": {
         "hours": "hores",
         "people": "persones",
-        "perHour": "persones/hora"
+        "perHour": "persones/hora",
+        "kg": "kg",
+        "students": "alumnes",
+        "volunteers": "voluntaris",
+        "families": "famílies",
+        "score": "punts",
+        "entities": "entitats",
+        "members": "membres",
+        "participants": "participants",
+        "currency": "€",
+        "days": "dies"
       },
       "estimateBadge": "Estimat",
       "empty": "No hi ha dades d'impacte disponibles.",

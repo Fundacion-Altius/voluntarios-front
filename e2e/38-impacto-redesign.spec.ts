@@ -39,6 +39,25 @@ async function adminApi(): Promise<{
   };
 }
 
+/** Altius demo figures. afterAll puts these back so a green run does not wipe the classroom demo. */
+const ALTIUS_DEMO_IMPACT = {
+  organizationName: 'Fundación Altius',
+  organizationLogo: '',
+  showEstimateBadge: false,
+  peoplePerHourFactor: 4,
+  guidedCompleted: true,
+  publicHeadline: 'Altius en cifras',
+  publicCtaText: 'Hazlo posible: hazte voluntario',
+  selected: [
+    { key: 'basic_needs_people', showOnPublicPage: true, manualValue: 9840, manualUnit: 'people' },
+    { key: 'food_kilos_delivered', showOnPublicPage: true, manualValue: 523000, manualUnit: 'kg' },
+    { key: 'social_integration_people', showOnPublicPage: true, manualValue: 4215, manualUnit: 'people' },
+    { key: 'course_students', showOnPublicPage: true, manualValue: 1360, manualUnit: 'students' },
+    { key: 'insertion_itineraries_people', showOnPublicPage: true, manualValue: 2130, manualUnit: 'people' },
+    { key: 'volunteers_supporting', showOnPublicPage: true, manualValue: 1175, manualUnit: 'volunteers' },
+  ],
+};
+
 test.describe('Impacto redesign', () => {
   test.describe.configure({ mode: 'serial', timeout: 120000 });
 
@@ -55,14 +74,9 @@ test.describe('Impacto redesign', () => {
   });
 
   test.afterAll(async () => {
-    // Reset selection so the suite is idempotent.
+    // Put the Altius classroom demo back. Clearing to [] wiped "Altius en cifras" after a green run.
     await api.put('/api/impact/config', {
-      data: {
-        organizationName: '',
-        guidedCompleted: false,
-        selected: [],
-        publicHeadline: '',
-      },
+      data: ALTIUS_DEMO_IMPACT,
       headers: { 'X-CSRF-Token': csrf },
     });
     await dispose();

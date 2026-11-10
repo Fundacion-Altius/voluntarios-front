@@ -1,4 +1,4 @@
-import { formatImpactNumber } from "./formatNumber";
+import { formatImpactNumber, localizeImpactUnit } from "./formatNumber";
 
 describe("formatImpactNumber", () => {
   it("groups thousands with the locale's own separator", () => {
@@ -12,5 +12,17 @@ describe("formatImpactNumber", () => {
   it("keeps decimals in the locale's decimal mark", () => {
     expect(formatImpactNumber(27.27, "es")).toBe("27,27");
     expect(formatImpactNumber(27.27, "en")).toBe("27.27");
+  });
+
+  it("shows stored unit codes in the active language", () => {
+    const es = (key: string) =>
+      ({ people: "personas", students: "alumnos", volunteers: "voluntarios", perHour: "personas/hora" })[key] ?? key;
+    expect(localizeImpactUnit("people", es)).toBe("personas");
+    expect(localizeImpactUnit("students", es)).toBe("alumnos");
+    expect(localizeImpactUnit("volunteers", es)).toBe("voluntarios");
+    expect(localizeImpactUnit("people/hour", es)).toBe("personas/hora");
+    expect(localizeImpactUnit("%", es)).toBe("%");
+    expect(localizeImpactUnit("raciones", es)).toBe("raciones");
+    expect(localizeImpactUnit(undefined, es)).toBe("");
   });
 });

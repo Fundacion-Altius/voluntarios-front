@@ -32,14 +32,19 @@ async function proxy(request: NextRequest) {
     }
   }
 
-  const body = request.method !== 'GET' && request.method !== 'HEAD'
-    ? await request.text()
-    : undefined;
+  // Buffer the body as bytes. request.text() mangles multipart uploads (toy photos,
+  // CSV of children): the boundary stays in Content-Type but the file bytes are ruined.
+  let body: BodyInit | undefined;
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    const buf = await request.arrayBuffer();
+    body = buf.byteLength > 0 ? Buffer.from(buf) : undefined;
+    headers.delete('content-length');
+  }
 
   const res = await fetch(url, {
     method: request.method,
     headers,
-    body: body as BodyInit | undefined,
+    body,
   });
 
   const responseHeaders = new Headers(res.headers);

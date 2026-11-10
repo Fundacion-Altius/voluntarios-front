@@ -164,17 +164,22 @@ test.describe('Toys campaign redesign', () => {
     test('familias adds a family, filters by status, edits its quota and deletes it', async ({ page }) => {
       const code = `e2ex-${tag}`;
       await asAdmin(page, '/es/admin/toys/familias', 'toys-familias');
+      // The list is paginated (demo + e2e rows). Search so famA is on this page.
+      await page.getByTestId('toys-fam-search').fill(famA);
       await expect(page.getByTestId(`toys-fam-status-${famA}`)).toHaveText('Recogido');
+      await page.getByTestId('toys-fam-search').fill('');
 
       await page.getByTestId('toys-family-add').click();
       await page.getByTestId('toys-family-code').fill(code);
       await page.getByTestId('toys-family-quota').fill('2');
       await page.getByTestId('toys-family-save').click();
       await expect(page.getByTestId('toys-fam-notice')).toContainText(code.toUpperCase());
+      await page.getByTestId('toys-fam-search').fill(code);
       await expect(page.getByTestId(`toys-fam-status-${code}`)).toHaveText('Inscrita');
 
       await page.getByTestId('toys-fam-filter-recogido').click();
       await expect(page.getByTestId(`toys-fam-row-${code}`)).toHaveCount(0);
+      await page.getByTestId('toys-fam-search').fill(famA);
       await expect(page.getByTestId(`toys-fam-row-${famA}`)).toBeVisible();
       await page.getByTestId('toys-fam-filter-all').click();
       await page.getByTestId('toys-fam-search').fill(code);
