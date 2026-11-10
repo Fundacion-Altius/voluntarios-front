@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import {
   Table,
   TableBody,
@@ -19,20 +20,22 @@ interface ContractTableProps {
   contracts: Contract[];
 }
 
-export function ContractTable({ contracts }: ContractTableProps) {
+export async function ContractTable({ contracts }: ContractTableProps) {
+  const t = await getTranslations("admin.contracts");
+
   if (contracts.length === 0) {
-    return <p className="text-muted-foreground">No hay contratos disponibles.</p>;
+    return <p className="text-muted-foreground">{t("noDisponibles")}</p>;
   }
 
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Nombre</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Áreas</TableHead>
-          <TableHead>Fecha</TableHead>
-          <TableHead>Acciones</TableHead>
+          <TableHead>{t("headerNombre")}</TableHead>
+          <TableHead>{t("headerEmail")}</TableHead>
+          <TableHead>{t("headerAreas")}</TableHead>
+          <TableHead>{t("headerFecha")}</TableHead>
+          <TableHead>{t("headerAcciones")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -51,7 +54,7 @@ export function ContractTable({ contracts }: ContractTableProps) {
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"
               >
-                Descargar PDF
+                {t("descargarPdf")}
               </a>
             </TableCell>
           </TableRow>

@@ -42,7 +42,9 @@ interface UseContractsReturn {
   lugares: string[]
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL
+import { getApiBaseUrl } from '@/lib/apiUrl'
+
+const API_URL = getApiBaseUrl()
 
 export function useContracts(): UseContractsReturn {
   const { data: session } = useSession()
@@ -97,8 +99,11 @@ export function useContracts(): UseContractsReturn {
       credentials: "include",
       signal: abortController.signal,
     })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch contracts")
+      .then(async (res) => {
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          return Promise.reject(new Error(errorData.message || errorData.error || "Failed to fetch contracts"))
+        }
         return res.json()
       })
       .then((json: PaginatedResponse) => {

@@ -1,5 +1,5 @@
 allowBuilds:
-  cypress: set this to true or false
+  '@sentry/cli': true
   sharp: true
   unrs-resolver: true
 onlyBuiltDependencies:

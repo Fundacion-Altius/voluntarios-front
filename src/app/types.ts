@@ -16,6 +16,20 @@ export type DuracionT =
   | "indeterminado"
   | string;
 export type ModalidadT = "Presencial" | "Online" | "Híbrido";
+
+export interface Question {
+  id: number;
+  text: string;
+  surveyID: number;
+  created_at?: string;
+}
+
+export interface SurveySubmission {
+  surveyID: number;
+  ratings: { [questionId: number]: number };
+  additionalAnswer?: string;
+}
+
 export interface DatosContrato {
   nombre: string;
   fecha: string;

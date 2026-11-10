@@ -1,9 +1,196 @@
-import { request as playwrightRequest } from '@playwright/test';
+import { request as playwrightRequest, type Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 export const BACKEND_URL = 'http://localhost:3001';
+const FRONTEND_URL = 'http://localhost:3000';
 
 export function randomId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+}
+
+async function sleep(ms: number): Promise<void> {
+  await new Promise((r) => setTimeout(r, ms));
+}
+
+function setCookieValues(res: { headers: () => Record<string, string>; headersArray: () => { name: string; value: string }[] }): string {
+  const fromArray = res
+    .headersArray()
+    .filter((h) => h.name.toLowerCase() === 'set-cookie')
+    .map((h) => h.value);
+  if (fromArray.length > 0) return fromArray.join('\n');
+  return res.headers()['set-cookie'] || '';
+}
+
+/**
+ * Authenticate in the browser context using the same order as LoginForm:
+ * 1) Front BFF POST /api/auth/login (copies upstream auth_token Set-Cookie)
+ * 2) NextAuth credentials callback with prefilled tokens (no second backend login)
+ *
+ * Retries transient Next-dev ECONNRESET under parallel workers and requires
+ * both next-auth.session-token and tenant auth_token before returning.
+ */
+export async function loginAsBrowser(
+  page: Page,
+  email: string,
+  password: string,
+): Promise<void> {
+  let loginData: {
+    authToken?: string;
+    csrfToken?: string;
+    user?: {
+      email?: string;
+      display_name?: string;
+      name?: string;
+      role?: string;
+      user_type?: string;
+      user_id?: string;
+      id?: string;
+    };
+  } | null = null;
+
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const loginRes = await page.request.post(`${FRONTEND_URL}/api/auth/login`, {
+        data: { email, password },
+      });
+      if (loginRes.ok()) {
+        loginData = await loginRes.json();
+        if (loginData?.authToken && loginData?.user) break;
+      }
+    } catch {
+      // transient ECONNRESET / connection reset under parallel workers
+    }
+    if (attempt < 3) await sleep(1000 * attempt);
+  }
+  if (!loginData?.authToken || !loginData.user) {
+    throw new Error(`Failed front /api/auth/login after retries for ${email}`);
+  }
+
+  let nextAuthCsrf: string | undefined;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const csrfRes = await page.request.get(`${FRONTEND_URL}/api/auth/csrf`);
+      if (csrfRes.ok()) {
+        nextAuthCsrf = (await csrfRes.json()).csrfToken;
+        if (nextAuthCsrf) break;
+      }
+    } catch {
+      // transient ECONNRESET
+    }
+    if (attempt < 3) await sleep(1000 * attempt);
+  }
+  if (!nextAuthCsrf) {
+    throw new Error('Failed to fetch NextAuth CSRF token after retries (front :3000)');
+  }
+
+  const user = loginData.user;
+  let authRes: Awaited<ReturnType<typeof page.request.post>> | null = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      authRes = await page.request.post(`${FRONTEND_URL}/api/auth/callback/credentials`, {
+        form: {
+          csrfToken: nextAuthCsrf,
+          email: user.email || email,
+          name: user.display_name || user.name || email,
+          role: user.role || '',
+          user_type: user.user_type || '',
+          user_id: user.user_id || user.id || '',
+          authToken: loginData.authToken,
+          json: 'true',
+        },
+      });
+      break;
+    } catch {
+      // transient ECONNRESET under parallel worker load; retry
+    }
+    if (attempt < 3) await sleep(1000 * attempt);
+  }
+  if (!authRes) {
+    throw new Error('Failed credentials callback after retries (front :3000)');
+  }
+
+  const raw = setCookieValues(authRes);
+  const match = raw.match(/next-auth\.session-token=([^;]+)/);
+  if (!match) {
+    throw new Error(`Failed to extract next-auth.session-token from Set-Cookie: ${raw}`);
+  }
+
+  // page.request already applied BFF Set-Cookie (auth_token/csrf_token); ensure
+  // session-token + auth cookies are present even if a header was dropped.
+  await page.context().addCookies([
+    {
+      name: 'next-auth.session-token',
+      value: match[1],
+      domain: 'localhost',
+      path: '/',
+      httpOnly: true,
+    },
+    {
+      name: 'auth_token',
+      value: loginData.authToken,
+      domain: 'localhost',
+      path: '/',
+      httpOnly: true,
+    },
+    ...(loginData.csrfToken
+      ? [{ name: 'csrf_token', value: loginData.csrfToken, domain: 'localhost', path: '/' }]
+      : []),
+  ]);
+
+  const cookies = await page.context().cookies();
+  if (!cookies.some((c) => c.name === 'auth_token')) {
+    throw new Error('loginAsBrowser: auth_token missing after cookie injection');
+  }
+  if (!cookies.some((c) => c.name === 'next-auth.session-token')) {
+    throw new Error('loginAsBrowser: next-auth.session-token missing after cookie injection');
+  }
+}
+
+/**
+ * Same as loginAsBrowser, but authenticates against a specific tenant origin
+ * (e.g. http://fundacionaltius.localhost:3000) and pins the session cookies to
+ * that host. Use for tenant-scoped modules (comandero is Altius-only) so the
+ * browser's tenant matches the host under test, not the localhost fallback.
+ */
+export async function loginAsBrowserOnHost(
+  page: Page,
+  origin: string,
+  email: string,
+  password: string,
+): Promise<void> {
+  const host = new URL(origin).hostname; // e.g. "fundacionaltius.localhost"
+
+  const loginRes = await page.request.post(`${origin}/api/auth/login`, { data: { email, password } });
+  if (!loginRes.ok()) throw new Error(`login on ${host} failed: ${loginRes.status()}`);
+  const loginData = await loginRes.json();
+  if (!loginData?.authToken || !loginData.user) throw new Error(`login on ${host} returned no token/user`);
+
+  const csrfRes = await page.request.get(`${origin}/api/auth/csrf`);
+  const nextAuthCsrf = (await csrfRes.json()).csrfToken as string | undefined;
+  if (!nextAuthCsrf) throw new Error(`NextAuth CSRF fetch failed on ${host}`);
+
+  const user = loginData.user;
+  const authRes = await page.request.post(`${origin}/api/auth/callback/credentials`, {
+    form: {
+      csrfToken: nextAuthCsrf,
+      email: user.email || email,
+      name: user.display_name || user.name || email,
+      role: user.role || '',
+      user_type: user.user_type || '',
+      user_id: user.user_id || user.id || '',
+      authToken: loginData.authToken,
+      json: 'true',
+    },
+  });
+  const raw = setCookieValues(authRes);
+  const match = raw.match(/next-auth\.session-token=([^;]+)/);
+  if (!match) throw new Error(`No next-auth.session-token in Set-Cookie on ${host}: ${raw}`);
+
+  await page.context().addCookies([
+    { name: 'next-auth.session-token', value: match[1], domain: host, path: '/', httpOnly: true },
+    { name: 'auth_token', value: loginData.authToken, domain: host, path: '/', httpOnly: true },
+    ...(loginData.csrfToken ? [{ name: 'csrf_token', value: loginData.csrfToken, domain: host, path: '/' }] : []),
+  ]);
 }
 
 export async function loginAs(
@@ -19,13 +206,21 @@ export async function loginAs(
   return res.json();
 }
 
-export async function adminLogin(request: any): Promise<{ authToken: string; csrfToken: string }> {
-  const res = await request.fetch(`${BACKEND_URL}/api/auth/login`, {
-    method: 'POST',
-    data: { email: 'admin@fundacionaltius.org', password: 'admin123' },
-  });
-  if (!res.ok()) throw new Error('Admin login failed');
-  return res.json();
+export async function adminLogin(request: any, retries = 3): Promise<{ authToken: string; csrfToken: string }> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await request.fetch(`${BACKEND_URL}/api/auth/login`, {
+        method: 'POST',
+        data: { email: 'admin@fundacionaltius.org', password: 'admin123' },
+      });
+      if (!res.ok()) throw new Error(`Admin login failed: ${res.status()}`);
+      return res.json();
+    } catch (err: any) {
+      if (attempt === retries) throw err;
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+  }
+  throw new Error('Admin login failed after retries');
 }
 
 export function authHeaders(token: string, csrf: string) {
@@ -50,3 +245,126 @@ export const CONTRACT_TEMPLATE = {
   derechoConfidencialidad: true,
   horario: 'tardes',
 };
+
+export async function seedQuizCourse(request: any): Promise<{ courseId: string; lessonId: string }> {
+  const { authToken: adminToken, csrfToken: adminCsrf } = await adminLogin(request);
+
+  // 1. Create a unique published course
+  const courseTitle = `Quiz E2E ${Date.now()}`;
+  const courseRes = await request.fetch(`${BACKEND_URL}/api/courses`, {
+    method: 'POST',
+    headers: { ...authHeaders(adminToken, adminCsrf), 'Content-Type': 'application/json' },
+    data: {
+      title: courseTitle,
+      description: 'Curso de prueba para quiz e2e',
+      status: 'published',
+      level: 'beginner',
+      category: 'Formación',
+    },
+  });
+  if (!courseRes.ok()) {
+    const body = await courseRes.text();
+    throw new Error(`Failed to create course: ${courseRes.status()} ${body}`);
+  }
+
+  // 2. Find the course ID by listing all courses
+  const listRes = await request.fetch(`${BACKEND_URL}/api/courses?status=all`, {
+    headers: authHeaders(adminToken, adminCsrf),
+  });
+  if (!listRes.ok()) {
+    const body = await listRes.text();
+    throw new Error(`Failed to list courses: ${listRes.status()} ${body}`);
+  }
+  const listJson = await listRes.json();
+  const courses = Array.isArray(listJson) ? listJson : listJson.data || [];
+  const course = courses.find((c: any) => c.title === courseTitle);
+  expect(course, 'Seeded course not found').toBeTruthy();
+  const courseId = course.id;
+
+  // 3. Create module
+  const moduleRes = await request.fetch(`${BACKEND_URL}/api/courses/${courseId}/modules`, {
+    method: 'POST',
+    headers: { ...authHeaders(adminToken, adminCsrf), 'Content-Type': 'application/json' },
+    data: {
+      title: 'Módulo Quiz',
+      description: 'Módulo de prueba con quiz',
+      order: 1,
+    },
+  });
+  if (!moduleRes.ok()) {
+    const body = await moduleRes.text();
+    throw new Error(`Failed to create module: ${moduleRes.status()} ${body}`);
+  }
+
+  // 4. Get module ID from course detail
+  const courseDetailRes = await request.fetch(`${BACKEND_URL}/api/courses/${courseId}`, {
+    headers: authHeaders(adminToken, adminCsrf),
+  });
+  if (!courseDetailRes.ok()) {
+    const body = await courseDetailRes.text();
+    throw new Error(`Failed to get course detail: ${courseDetailRes.status()} ${body}`);
+  }
+  const courseDetail = await courseDetailRes.json();
+  const module = (courseDetail.modules || []).find((m: any) => m.title === 'Módulo Quiz');
+  expect(module, 'Seeded module not found').toBeTruthy();
+  const moduleId = module.id;
+
+  // 5. Create quiz lesson
+  const lessonRes = await request.fetch(`${BACKEND_URL}/api/courses/${courseId}/modules/${moduleId}/lessons`, {
+    method: 'POST',
+    headers: { ...authHeaders(adminToken, adminCsrf), 'Content-Type': 'application/json' },
+    data: {
+      title: 'Lección Quiz',
+      content_type: 'quiz',
+      content: JSON.stringify({
+        question: '¿Cuál es la capital de España?',
+        options: ['Madrid', 'Barcelona', 'Sevilla', 'Valencia'],
+        correct: 0,
+      }),
+      order: 1,
+    },
+  });
+  if (!lessonRes.ok()) {
+    const body = await lessonRes.text();
+    throw new Error(`Failed to create lesson: ${lessonRes.status()} ${body}`);
+  }
+
+  // 6. Get lesson ID
+  const refreshedRes = await request.fetch(`${BACKEND_URL}/api/courses/${courseId}`, {
+    headers: authHeaders(adminToken, adminCsrf),
+  });
+  if (!refreshedRes.ok()) {
+    const body = await refreshedRes.text();
+    throw new Error(`Failed to refresh course: ${refreshedRes.status()} ${body}`);
+  }
+  const refreshed = await refreshedRes.json();
+  const refreshedModule = (refreshed.modules || []).find((m: any) => m.title === 'Módulo Quiz');
+  const lesson = (refreshedModule?.lessons || []).find((l: any) => l.title === 'Lección Quiz');
+  expect(lesson, 'Seeded lesson not found').toBeTruthy();
+  const lessonId = lesson.id;
+
+  // 7. Login as volunteer to enroll them
+  const volunteerRes = await request.fetch(`${BACKEND_URL}/api/auth/login`, {
+    method: 'POST',
+    data: { email: 'general@fundacionaltius.org', password: 'general123' },
+  });
+  if (!volunteerRes.ok()) {
+    const body = await volunteerRes.text();
+    throw new Error(`Failed to login as volunteer: ${volunteerRes.status()} ${body}`);
+  }
+  const volunteerData = await volunteerRes.json();
+  const volunteerToken = volunteerData.authToken;
+  const volunteerCsrf = volunteerData.csrfToken || '';
+
+  // 8. Enroll volunteer in the course
+  const enrollRes = await request.fetch(`${BACKEND_URL}/api/courses/${courseId}/enroll`, {
+    method: 'POST',
+    headers: { ...authHeaders(volunteerToken, volunteerCsrf), 'Content-Type': 'application/json' },
+  });
+  if (!enrollRes.ok() && enrollRes.status() !== 400) {
+    const body = await enrollRes.text();
+    throw new Error(`Failed to enroll volunteer: ${enrollRes.status()} ${body}`);
+  }
+
+  return { courseId, lessonId };
+}

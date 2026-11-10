@@ -1,6 +1,8 @@
+"use client";
 import React from "react";
+import { useTranslations } from "next-intl";
 import { DatosContrato } from "../types";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -19,17 +21,36 @@ const StepThree: React.FC<StepThreeProps> = ({
   handleSubmit,
   prevStep,
 }) => {
+  const t = useTranslations("wizard.stepThree");
+  const tc = useTranslations("wizard.common");
+
+  const allConsentsAccepted =
+    Boolean(contractData.derechoDatos) &&
+    Boolean(contractData.derechoConfidencialidad) &&
+    Boolean(contractData.derechoImagen);
+
+  const handleClick = async () => {
+    if (!allConsentsAccepted) {
+      alert(t("errorConsentimiento") || "Debes aceptar todos los consentimientos obligatorios para enviar el contrato.");
+      return;
+    }
+    try {
+      await handleSubmit();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : t("errorEnviar"));
+    }
+  };
+
   return (
     <Card className="step">
       <CardContent className="space-y-4">
         <p>
-          <span style={{ color: "red" }}>*</span> indica campo obligatorio
+          <span style={{ color: "red" }}>*</span> {tc("campoObligatorio")}
         </p>
 
         <div className="flex items-center gap-2">
           <Checkbox
             id="datos"
-            name="derechoDatos"
             checked={contractData.derechoDatos}
             onCheckedChange={(checked) =>
               handleInputChange({
@@ -43,9 +64,9 @@ const StepThree: React.FC<StepThreeProps> = ({
             }
           />
           <Label htmlFor="datos">
-            Acepto la{" "}
+            {t("aceptoDatosPrefix")}{" "}
             <Link href="/datos" target="_blank">
-              autorización para tratamiento de datos
+              {t("autorizacionDatos")}
             </Link>{" "}
             <span style={{ color: "red" }}>*</span>
           </Label>
@@ -53,7 +74,6 @@ const StepThree: React.FC<StepThreeProps> = ({
         <div className="flex items-center gap-2">
           <Checkbox
             id="confidencialidad"
-            name="derechoConfidencialidad"
             checked={contractData.derechoConfidencialidad}
             onCheckedChange={(checked) =>
               handleInputChange({
@@ -67,9 +87,9 @@ const StepThree: React.FC<StepThreeProps> = ({
             }
           />
           <Label htmlFor="confidencialidad">
-            Acepto la{" "}
+            {t("aceptoConfPrefix")}{" "}
             <Link href="/confidencialidad" target="_blank">
-              autorización de confidencialidad
+              {t("autorizacionConfidencialidad")}
             </Link>{" "}
             <span style={{ color: "red" }}>*</span>
           </Label>
@@ -77,7 +97,6 @@ const StepThree: React.FC<StepThreeProps> = ({
         <div className="flex items-center gap-2">
           <Checkbox
             id="imagen"
-            name="derechoImagen"
             checked={contractData.derechoImagen}
             onCheckedChange={(checked) =>
               handleInputChange({
@@ -91,15 +110,18 @@ const StepThree: React.FC<StepThreeProps> = ({
             }
           />
           <Label htmlFor="imagen">
-            Acepto la{" "}
+            {t("aceptoImgPrefix")}{" "}
             <Link href="/imagen" target="_blank">
-              cesión de derechos de imagen
-            </Link>
+              {t("cesionImagen")}
+            </Link>{" "}
+            <span style={{ color: "red" }}>*</span>
           </Label>
         </div>
         <div className="buttons">
-          <Button variant="outline" onClick={prevStep}>{"<"} Volver</Button>
-          <Button onClick={handleSubmit} type="button">Enviar contrato</Button>
+          <Button variant="outline" onClick={prevStep}>{"<"} {tc("volver")}</Button>
+          <Button onClick={handleClick} type="button" disabled={!allConsentsAccepted}>
+            {t("enviarContrato")}
+          </Button>
         </div>
       </CardContent>
     </Card>

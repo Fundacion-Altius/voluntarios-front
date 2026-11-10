@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import StepTwo from "./StepTwo";
 import { DatosContrato } from "../types";
+import { TestProviders } from "../test-utils";
 
 beforeAll(() => {
   HTMLCanvasElement.prototype.getContext = jest.fn().mockReturnValue({
@@ -61,12 +62,14 @@ function setup(contractData = defaultContractData) {
   return {
     user: userEvent.setup(),
     ...render(
-      <StepTwo
-        contractData={contractData}
-        handleSignature={mockHandleSignature}
-        nextStep={mockNextStep}
-        prevStep={mockPrevStep}
-      />
+      <TestProviders>
+        <StepTwo
+          contractData={contractData}
+          handleSignature={mockHandleSignature}
+          nextStep={mockNextStep}
+          prevStep={mockPrevStep}
+        />
+      </TestProviders>
     ),
   };
 }
@@ -87,6 +90,12 @@ describe("StepTwo Component", () => {
     setup();
     const canvas = document.querySelector("canvas");
     expect(canvas).toBeInTheDocument();
+  });
+
+  it("renders the signature canvas with white background", () => {
+    setup();
+    const canvas = document.querySelector("canvas") as HTMLCanvasElement;
+    expect(canvas).toHaveStyle({ background: "#fff" });
   });
 
   it("renders navigation shadcn Buttons", () => {

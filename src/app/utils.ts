@@ -1,4 +1,19 @@
-const HOST = process.env.NEXT_PUBLIC_API_URL;
+import { getApiBaseUrl } from '@/lib/apiUrl';
+
+const HOST = getApiBaseUrl();
+export function getCSRFTokenFromCookie(): string | null {
+  if (typeof document !== 'undefined') {
+    const cookies = document.cookie.split(';');
+    for (const cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === 'csrf_token') {
+        return value;
+      }
+    }
+  }
+  return null;
+}
+
 export function todayToSQL() {
   const date = new Date();
   const formattedDate = date.toISOString().slice(0, 19).replace("T", " ");
@@ -6,12 +21,13 @@ export function todayToSQL() {
 }
 export async function isUser(id: string): Promise<boolean> {
   try {
-    const response = await fetch(`${HOST}/api/contracts/${id}`);
-    if (response.status === 200) {
-      return true;
+    const response = await fetch(`${HOST}/api/contracts/check/${id}`);
+    if (response.ok) {
+      const data = await response.json();
+      return data.exists === true;
     }
   } catch (error) {
-    console.error("Error submitting contract:", error);
+    console.error("Error checking duplicate:", error);
   }
   return false;
 }

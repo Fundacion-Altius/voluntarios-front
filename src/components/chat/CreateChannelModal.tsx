@@ -1,0 +1,104 @@
+'use client';
+
+import { useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Plus, Search } from 'lucide-react';
+import { apiClient, apiUrl } from '@/lib/apiClient';
+
+interface Props {
+  onCreated: (channelId: string) => void;
+}
+
+export function CreateChannelModal({ onCreated }: Props) {
+  const t = useTranslations('portal.mensajes');
+  const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<'direct' | 'group'>('direct');
+  const [name, setName] = useState('');
+  const [topic, setTopic] = useState('');
+  const [query, setQuery] = useState('');
+  const [error, setError] = useState('');
+  const [results, setResults] = useState<Array<{ id: string; user_id?: string; name?: string; email?: string }>>([]);
+  const [selected, setSelected] = useState<Array<{ id: string; user_id?: string; name?: string; email?: string }>>([]);
+
+  async function search(q: string) {
+    setQuery(q);
+    if (q.length < 2) { setResults([]); return; }
+    try {
+      const result = await apiClient<{ data: Array<{ id: string; user_id?: string; name?: string; email?: string }> }>(
+        apiUrl(`/api/users/search?q=${encodeURIComponent(q)}`),
+      );
+      if (!result.success) { setResults([]); return; }
+      const payload = result.data as { data?: typeof results } | typeof results;
+      const list = Array.isArray(payload) ? payload : (payload.data || []);
+      setResults(list);
+    } catch { setResults([]); }
+  }
+
+  async function create() {
+    setError('');
+    const otherId = selected[0]?.id || selected[0]?.user_id;
+    const body =
+      mode === 'direct'
+        ? { type: 'direct', otherUserId: otherId }
+        : { type: 'group', name: name.trim(), topic: topic.trim() || null, memberIds: selected.map((u) => u.id || u.user_id) };
+    const channelResult = await apiClient<{ id: string }>(apiUrl('/api/chat/channels'), {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+    if (!channelResult.success) {
+      setError(channelResult.error);
+      return;
+    }
+    setOpen(false);
+    onCreated(channelResult.data.id);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="icon" variant="outline" className="shrink-0" aria-label={t('nuevaConversacion')} title={t('nuevaConversacion')}>
+          <Plus className="size-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader><DialogTitle>{t('nuevaConversacion')}</DialogTitle></DialogHeader>
+        <div className="grid grid-cols-2 gap-2 pt-2">
+          <Button size="sm" variant={mode === 'direct' ? 'default' : 'outline'} onClick={() => setMode('direct')}>{t('directo')}</Button>
+          <Button size="sm" variant={mode === 'group' ? 'default' : 'outline'} onClick={() => setMode('group')}>{t('grupal')}</Button>
+        </div>
+        {mode === 'group' && (
+          <div className="space-y-2">
+            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('nombreGrupo')} />
+            <Input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder={t('tema')} />
+          </div>
+        )}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input value={query} onChange={(e) => void search(e.target.value)} placeholder={t('escribeNombre')} className="pl-9" />
+        </div>
+        {results.map((u) => (
+          <button key={u.id} className="w-full rounded-md px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => {
+            setSelected(mode === 'direct' ? [u] : [...selected.filter((s) => s.id !== u.id), u]);
+            setQuery('');
+            setResults([]);
+          }}>
+            {u.name || u.email}
+          </button>
+        ))}
+        {selected.map((u) => (
+          <div key={u.id} className="flex items-center gap-2 text-sm">
+            <span>{u.name || u.email}</span>
+            <button type="button" onClick={() => setSelected(selected.filter((s) => s.id !== u.id))}>x</button>
+          </div>
+        ))}
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
+        <Button onClick={() => void create()} disabled={mode === 'direct' ? selected.length !== 1 : !name.trim()}>
+          {t('crear')}
+        </Button>
+      </DialogContent>
+    </Dialog>
+  );
+}

@@ -1,4 +1,6 @@
-const HOST = process.env.NEXT_PUBLIC_API_URL;
+import { getApiBaseUrl } from '@/lib/apiUrl';
+
+const HOST = getApiBaseUrl();
 
 let _authToken: string | null = null;
 
@@ -49,6 +51,14 @@ export async function apiPut(
 ): Promise<Response> {
   return fetch(`${HOST}${path}`, withAuth({
     method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  }));
+}
+
+export async function apiPatch(path: string, body: unknown = {}): Promise<Response> {
+  return fetch(`${HOST}${path}`, withAuth({
+    method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   }));

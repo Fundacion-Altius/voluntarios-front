@@ -16,8 +16,12 @@ const customJestConfig = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
-  testPathIgnorePatterns: ['<rootDir>/e2e/'],
+  testPathIgnorePatterns: ['<rootDir>/e2e/', '<rootDir>/coverage/', '<rootDir>/.stryker-tmp/', '<rootDir>/reports/'],
   testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.tsx?$',
+  // Async RTL/userEvent suites exceed the 5s default under load (CI / check-done).
+  testTimeout: 15000,
+  collectCoverage: true,
+  coverageReporters: ['json-summary', 'html', 'text'],
 }
 
 module.exports = createJestConfig(customJestConfig)

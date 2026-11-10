@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { useTranslations } from "next-intl";
 import StepOne from "./StepOne";
 import StepTwo from "./StepTwo";
 import StepThree from "./StepThree";
@@ -7,8 +8,9 @@ import StepFour from "./StepFour";
 import Image from "next/image";
 import { useContractForm } from "@/hooks/useContractForm";
 
-const imagePrefix = `${process.env.NEXT_PUBLIC_IMAGE_PREFIX}`;
+const imagePrefix = (process.env.NEXT_PUBLIC_IMAGE_PREFIX || '/').replace(/\/$/, '');
 const Contract: React.FC = () => {
+  const t = useTranslations("wizard.contract");
   const {
     step,
     datosContrato,
@@ -18,6 +20,7 @@ const Contract: React.FC = () => {
     handleInputChange,
     handleSignature,
     handleSubmit,
+    setDatosContrato,
   } = useContractForm();
 
   const renderStep = () => {
@@ -26,7 +29,7 @@ const Contract: React.FC = () => {
         return (
           <StepOne
             contractData={datosContrato}
-            setDatosContrato={() => {}}
+            setDatosContrato={setDatosContrato}
             handleInputChange={handleInputChange}
             handleRadioChange={handleRadioChange}
             nextStep={nextStep}
@@ -61,14 +64,14 @@ const Contract: React.FC = () => {
     <main>
       <Image
         alt="logo"
-        src={`${imagePrefix}logo.png`}
+        src={`${imagePrefix}/logo.png`}
         width={400}
         height={100}
         className="logo"
         priority
       />
       <div className="contract-wizard">
-        <h2>Acuerdo de voluntariado con la Fundación Altius</h2>
+        <h2>{t("titulo")}</h2>
         {renderStep()}
       </div>
     </main>

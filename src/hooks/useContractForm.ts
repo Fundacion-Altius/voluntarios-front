@@ -5,6 +5,15 @@ import { AreasT, DatosContrato, ModalidadT } from '@/app/types';
 import { todayToSQL } from '@/app/utils';
 import { apiPost } from '@/app/lib/csrf';
 
+type Result<T> = { success: true; data?: T } | { success: false; error: string };
+
+/** DOM checkbox ids → DatosContrato boolean field names */
+const CONSENT_FIELD_BY_ID: Record<string, keyof DatosContrato> = {
+  datos: 'derechoDatos',
+  confidencialidad: 'derechoConfidencialidad',
+  imagen: 'derechoImagen',
+};
+
 export function useContractForm() {
   const [step, setStep] = useState(1);
   const [datosContrato, setDatosContrato] = useState<DatosContrato>({
@@ -42,28 +51,39 @@ export function useContractForm() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     if (e.type !== 'select') {
-      const { name, value, type } = e.target;
+      const { name, value, type, id } = e.target;
+      // Prefer name; fall back to id. Map consent checkbox DOM ids → derecho* fields.
+      const rawKey = name || id;
+      const fieldName = CONSENT_FIELD_BY_ID[rawKey] ?? rawKey;
       if (type !== 'checkbox') {
-        return setDatosContrato((prev) => ({ ...prev, [name]: value }));
+        return setDatosContrato((prev) => ({ ...prev, [fieldName]: value }));
       }
       if (type === 'checkbox') {
         const { checked } = e.target;
-        if (name === 'areas') {
+        if (fieldName === 'areas') {
           setDatosContrato((prev) => {
             const newAreas = checked
               ? ([...prev.areas, value] as AreasT[])
               : (prev.areas.filter((area) => area !== value) as AreasT[]);
             return { ...prev, areas: newAreas };
           });
-        } else if (name === 'modalidad') {
+        } else if (fieldName === 'modalidad') {
           setDatosContrato((prev) => {
             const newModalidad = checked
               ? ([...prev.modalidad, value] as ModalidadT[])
               : (prev.modalidad.filter((mod) => mod !== value) as ModalidadT[]);
             return { ...prev, modalidad: newModalidad };
           });
+        } else if (fieldName === 'horario') {
+          setDatosContrato((prev) => {
+            const current = prev.horario ? prev.horario.split(', ') : [];
+            const next = checked
+              ? Array.from(new Set([...current, value]))
+              : current.filter((h) => h !== value);
+            return { ...prev, horario: next.join(', ') };
+          });
         } else {
-          setDatosContrato((prev) => ({ ...prev, [name]: checked }));
+          setDatosContrato((prev) => ({ ...prev, [fieldName]: checked }));
         }
       }
     }
@@ -74,11 +94,20 @@ export function useContractForm() {
   };
 
   const handleSubmit = async () => {
+    if (!datosContrato.derechoDatos || !datosContrato.derechoConfidencialidad || !datosContrato.derechoImagen) {
+      throw new Error('Debes aceptar todos los consentimientos obligatorios para enviar el contrato.');
+    }
     const response = await apiPost('/api/contracts', datosContrato);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      return { success: false as const, error: errorData.message || errorData.error || `HTTP error! status: ${response.status}` };
+    }
+    const data = await response.json();
+    if (data.existing) {
+      return { success: false as const, error: "No se puede generar dos veces el mismo contrato para el mismo DNI/NIE. Recarga para intentar con otro DNI/NIE" };
     }
     nextStep();
+    return { success: true as const };
   };
 
   return {
@@ -93,3 +122,5 @@ export function useContractForm() {
     handleSubmit,
   };
 }
+
+export type UseContractFormReturn = ReturnType<typeof useContractForm>;

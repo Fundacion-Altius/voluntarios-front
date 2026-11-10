@@ -1,6 +1,7 @@
 "use client"
 
 import type { ColumnDef } from "@tanstack/react-table"
+import { getApiBaseUrl } from '@/lib/apiUrl'
 
 interface Contract {
   id: string
@@ -56,7 +57,7 @@ export const columns: ColumnDef<Contract>[] = [
     enableSorting: false,
     cell: ({ row }) => (
       <a
-        href={`${process.env.NEXT_PUBLIC_API_URL}/api/generate-pdf?id=${row.original.id}`}
+        href={`${getApiBaseUrl()}/api/generate-pdf?id=${row.original.id}`}
         target="_blank"
         rel="noopener noreferrer"
         className="text-primary hover:underline"

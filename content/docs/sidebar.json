@@ -1,0 +1,52 @@
+{
+  "sections": [
+    {
+      "id": "empezar",
+      "title": { "es": "Empezar", "ca": "Començar", "en": "Get started" },
+      "pages": [
+        { "slug": "que-es-klaruk", "title": { "es": "Qué es Klaruk", "ca": "Què és Klaruk", "en": "What is Klaruk" } },
+        { "slug": "acceso", "title": { "es": "Acceso", "ca": "Accés", "en": "Access" } },
+        { "slug": "entidad-y-roles", "title": { "es": "Entidad y roles", "ca": "Entitat i rols", "en": "Org and roles" } }
+      ]
+    },
+    {
+      "id": "modulos",
+      "title": { "es": "Módulos", "ca": "Mòduls", "en": "Modules" },
+      "pages": [
+        { "slug": "voluntariado", "title": { "es": "Voluntariado", "ca": "Voluntariat", "en": "Volunteering" } },
+        { "slug": "bienestar", "title": { "es": "Bienestar", "ca": "Benestar", "en": "Wellbeing" } },
+        { "slug": "un-kilo", "title": { "es": "1 kilo de ayuda", "ca": "1 quilo d'ajuda", "en": "1 kilo food aid" } },
+        { "slug": "citas", "title": { "es": "Citas en oficina", "ca": "Cites a oficina", "en": "Office appointments" } },
+        { "slug": "ticketing", "title": { "es": "Ticketing", "ca": "Ticketing", "en": "Ticketing" } }
+      ]
+    },
+    {
+      "id": "agentes",
+      "title": { "es": "Agentes", "ca": "Agents", "en": "Agents" },
+      "pages": [
+        { "slug": "asistente", "title": { "es": "Asistente en la app", "ca": "Assistent a l'app", "en": "In-app assistant" } }
+      ]
+    },
+    {
+      "id": "cuenta",
+      "title": { "es": "Cuenta", "ca": "Compte", "en": "Account" },
+      "pages": [
+        { "slug": "planes", "title": { "es": "Planes y facturación", "ca": "Plans i facturació", "en": "Plans and billing" } }
+      ]
+    },
+    {
+      "id": "preguntas-frecuentes",
+      "title": { "es": "Preguntas frecuentes", "ca": "Preguntes freqüents", "en": "FAQ" },
+      "pages": [
+        { "slug": "index", "title": { "es": "FAQ", "ca": "FAQ", "en": "FAQ" } }
+      ]
+    },
+    {
+      "id": "novedades",
+      "title": { "es": "Novedades", "ca": "Novetats", "en": "What's new" },
+      "pages": [
+        { "slug": "index", "title": { "es": "Novedades", "ca": "Novetats", "en": "What's new" } }
+      ]
+    }
+  ]
+}

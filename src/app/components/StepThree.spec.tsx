@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import StepThree from "./StepThree";
 import { DatosContrato } from "../types";
+import { TestProviders } from "../test-utils";
 
 const mockHandleSubmit = jest.fn();
 const mockPrevStep = jest.fn();
@@ -31,12 +32,14 @@ function setup(contractData = defaultContractData) {
   return {
     user: userEvent.setup(),
     ...render(
-      <StepThree
-        contractData={contractData}
-        handleSubmit={mockHandleSubmit}
-        prevStep={mockPrevStep}
-        handleInputChange={mockHandleInputChange}
-      />
+      <TestProviders>
+        <StepThree
+          contractData={contractData}
+          handleSubmit={mockHandleSubmit}
+          prevStep={mockPrevStep}
+          handleInputChange={mockHandleInputChange}
+        />
+      </TestProviders>
     ),
   };
 }
@@ -79,16 +82,42 @@ describe("StepThree Component", () => {
     expect(mockPrevStep).toHaveBeenCalledTimes(1);
   });
 
-  it("calls handleSubmit when Enviar contrato is clicked", async () => {
-    const { user } = setup();
+  it("disables Enviar contrato until all three consents are accepted", () => {
+    setup();
+    expect(screen.getByText(/Enviar contrato/).closest("button")).toBeDisabled();
+  });
+
+  it("calls handleSubmit when Enviar contrato is clicked with all consents", async () => {
+    mockHandleSubmit.mockResolvedValue(undefined);
+    const { user } = setup({
+      ...defaultContractData,
+      derechoDatos: true,
+      derechoConfidencialidad: true,
+      derechoImagen: true,
+    });
     await user.click(screen.getByText(/Enviar contrato/));
     expect(mockHandleSubmit).toHaveBeenCalledTimes(1);
   });
 
   it("renders links to legal pages", () => {
     setup();
-    expect(screen.getByRole("link", { name: /autorización para tratamiento de datos/i })).toHaveAttribute("href", "/datos");
-    expect(screen.getByRole("link", { name: /autorización de confidencialidad/i })).toHaveAttribute("href", "/confidencialidad");
-    expect(screen.getByRole("link", { name: /cesión de derechos de imagen/i })).toHaveAttribute("href", "/imagen");
+    expect(screen.getByRole("link", { name: /autorización para tratamiento de datos/i })).toHaveAttribute("href", "/es/datos");
+    expect(screen.getByRole("link", { name: /autorización de confidencialidad/i })).toHaveAttribute("href", "/es/confidencialidad");
+    expect(screen.getByRole("link", { name: /cesión de derechos de imagen/i })).toHaveAttribute("href", "/es/imagen");
+  });
+
+  it("calls handleInputChange with derecho* field names when consent checkboxes toggle", async () => {
+    const { user } = setup();
+    const checkboxes = document.querySelectorAll('[data-slot="checkbox"]');
+    expect(checkboxes.length).toBeGreaterThanOrEqual(3);
+    await user.click(checkboxes[0]);
+    await user.click(checkboxes[1]);
+    await user.click(checkboxes[2]);
+    const names = mockHandleInputChange.mock.calls.map(
+      (c) => (c[0] as React.ChangeEvent<HTMLInputElement>).target.name,
+    );
+    expect(names).toEqual(
+      expect.arrayContaining(["derechoDatos", "derechoConfidencialidad", "derechoImagen"]),
+    );
   });
 });

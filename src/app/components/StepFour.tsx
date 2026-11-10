@@ -1,4 +1,6 @@
+"use client";
 import React, { useState } from "react";
+import { useTranslations } from "next-intl";
 import { DatosContrato } from "../types";
 import { v4 as uuidv4 } from "uuid";
 import { apiPost } from "../lib/csrf";
@@ -9,6 +11,7 @@ interface StepFourProps {
   contractData: DatosContrato;
 }
 const StepFour: React.FC<StepFourProps> = ({ contractData }) => {
+  const t = useTranslations("wizard.stepFour");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDownload = async () => {
@@ -16,24 +19,17 @@ const StepFour: React.FC<StepFourProps> = ({ contractData }) => {
     try {
       const response = await apiPost("/api/generate-pdf", contractData);
       if (response.status === 400) {
-        throw new Error(
-          "No se puede generar dos veces el mismo contrato para el mismo DNI/NIE. Recarga para intentar con otro DNI/NIE"
-        );
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Error downloading PDF:", errorData.message || errorData.error || t("errorDuplicado"));
+        alert(errorData.message || errorData.error || t("errorDuplicado"));
+        return;
       }
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Error downloading PDF:", errorData.message || errorData.error || `HTTP error! status: ${response.status}`);
+        alert(errorData.message || errorData.error || `HTTP error! status: ${response.status}`);
+        return;
       }
-      /* 
-      const data = await response.json();
-      console.log({ data });
-      const link = document.createElement("a");
-      link.href = data.url;
-      link.setAttribute("download", `${data.url}.pdf`);
-      link.setAttribute("target", "_blank");
-
-      document.body.appendChild(link);
-      link.click();
-      link.remove(); */
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -45,7 +41,7 @@ const StepFour: React.FC<StepFourProps> = ({ contractData }) => {
       document.body.removeChild(link);
     } catch (error) {
       console.error("Error downloading PDF:", error);
-      alert(error);
+      alert(error instanceof Error ? error.message : String(error));
     } finally {
       setIsLoading(false);
     }
@@ -54,9 +50,9 @@ const StepFour: React.FC<StepFourProps> = ({ contractData }) => {
   return (
     <Card className="step">
       <CardContent className="space-y-4 text-center">
-        <p>Tu contrato se ha enviado y procesado correctamente</p>
+        <p>{t("contratoEnviado")}</p>
         <Button onClick={handleDownload} disabled={isLoading}>
-          {isLoading ? "Descargando PDF..." : "Descargar contrato"}
+          {isLoading ? t("descargando") : t("descargarContrato")}
         </Button>
       </CardContent>
     </Card>

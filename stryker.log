@@ -1,0 +1,645 @@
+17:03:28 (230728) DEBUG ConfigReader Loading config from stryker.conf.json
+17:03:28 (230728) DEBUG ConfigReader Loaded config: {
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-core-4.json",
+  "packageManager": "pnpm",
+  "reporters": [
+    "clear-text",
+    "progress",
+    "html"
+  ],
+  "testRunner": "jest",
+  "coverageAnalysis": "perTest",
+  "checkers": [
+    "typescript"
+  ],
+  "plugins": [
+    "@stryker-mutator/jest-runner",
+    "@stryker-mutator/typescript-checker"
+  ],
+  "mutate": [
+    "src/middleware.ts",
+    "public/sw.js",
+    "src/app/[locale]/encuesta/ClientRatingForm.tsx",
+    "src/components/portal/*.tsx",
+    "!src/components/portal/Sidebar.tsx",
+    "!src/components/portal/BottomNav.tsx",
+    "!src/components/portal/StateViews.tsx",
+    "src/app/[locale]/admin/encuestas/*.tsx",
+    "src/app/components/StepOne*.tsx",
+    "src/app/[locale]/admin/cursos/[id]/**/*.tsx"
+  ],
+  "ignorePatterns": [
+    "src/client/**/*",
+    "src/**/*.gen.ts",
+    ".vercel/**/*",
+    ".next/**/*",
+    "coverage/**/*",
+    "reports/**/*",
+    "node_modules/**/*",
+    "e2e/**/*",
+    "src/i18n/routing.ts",
+    "src/i18n/request.ts"
+  ],
+  "thresholds": {
+    "high": 80,
+    "low": 60,
+    "break": 50
+  },
+  "timeoutMS": 120000,
+  "concurrency": 2,
+  "fileLogLevel": "trace",
+  "logLevel": "debug",
+  "allowConsoleColors": true,
+  "checkerNodeArgs": [],
+  "commandRunner": {
+    "command": "npm test"
+  },
+  "clearTextReporter": {
+    "allowColor": true,
+    "allowEmojis": false,
+    "logTests": true,
+    "maxTestsToLog": 3,
+    "reportTests": true,
+    "reportMutants": true,
+    "reportScoreTable": true,
+    "skipFull": false
+  },
+  "dashboard": {
+    "baseUrl": "https://dashboard.stryker-mutator.io/api/reports",
+    "reportType": "full"
+  },
+  "dryRunOnly": false,
+  "eventReporter": {
+    "baseDir": "reports/mutation/events"
+  },
+  "ignoreStatic": false,
+  "incremental": false,
+  "incrementalFile": "reports/stryker-incremental.json",
+  "force": false,
+  "inPlace": false,
+  "maxConcurrentTestRunners": 9007199254740991,
+  "maxTestRunnerReuse": 0,
+  "mutator": {
+    "plugins": null,
+    "excludedMutations": []
+  },
+  "appendPlugins": [],
+  "htmlReporter": {
+    "fileName": "reports/mutation/mutation.html"
+  },
+  "jsonReporter": {
+    "fileName": "reports/mutation/mutation.json"
+  },
+  "disableTypeChecks": true,
+  "symlinkNodeModules": true,
+  "tempDirName": ".stryker-tmp",
+  "cleanTempDir": true,
+  "testRunnerNodeArgs": [],
+  "timeoutFactor": 1.5,
+  "dryRunTimeoutMinutes": 5,
+  "tsconfigFile": "tsconfig.json",
+  "warnings": true,
+  "disableBail": false,
+  "allowEmpty": false,
+  "ignorers": [],
+  "testFiles": []
+}
+17:03:28 (230728) DEBUG PluginLoader Loading plugin @stryker-mutator/jest-runner
+17:03:28 (230728) DEBUG PluginLoader Loading plugin @stryker-mutator/typescript-checker
+17:03:28 (230728) DEBUG PluginLoader Loading plugin file:///home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/@stryker-mutator+instrumenter@9.6.1/node_modules/@stryker-mutator/instrumenter/dist/src/frameworks/index.js
+17:03:28 (230728) DEBUG PluginLoader Loading plugin file:///home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/@stryker-mutator+core@9.6.1_@types+node@20.19.4/node_modules/@stryker-mutator/core/dist/src/reporters/index.js
+17:03:28 (230728) DEBUG MetaSchemaBuilder Contributing 2 schemas from plugins to options validation.
+17:03:28 (230728) WARN ProjectReader Glob pattern "src/app/[locale]/encuesta/ClientRatingForm.tsx" did not result in any files.
+17:03:28 (230728) WARN ProjectReader Glob pattern "src/app/[locale]/admin/encuestas/*.tsx" did not result in any files.
+17:03:28 (230728) WARN ProjectReader Glob pattern "src/app/[locale]/admin/cursos/[id]/**/*.tsx" did not result in any files.
+17:03:28 (230728) INFO ProjectReader Found 22 of 256 file(s) to be mutated.
+17:03:28 (230728) DEBUG ProjectReader All input files: [
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.dockerignore",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.env.development",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.env.example",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.env.local",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.env.production",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.eslintignore",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.eslintrc.json",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.github/workflows/ci.yml",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.github/workflows/mutation-testing.yml",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.gitignore",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.husky/_/.gitignore",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.husky/_/applypatch-msg",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.husky/_/commit-msg",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.husky/_/h",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.husky/_/husky.sh",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.husky/_/post-applypatch",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.husky/_/post-checkout",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.husky/_/post-commit",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.husky/_/post-merge",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.husky/_/post-rewrite",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.husky/_/pre-applypatch",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.husky/_/pre-auto-gc",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.husky/_/pre-commit",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.husky/_/pre-merge-commit",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.husky/_/pre-push",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.husky/_/pre-rebase",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/.husky/_/prepare-commit-msg",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/Dockerfile",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/README.md",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/components.json",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/deep-qa-results.csv",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/eslintcc-report.json",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/jest.config.js",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/jest.setup.js",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/jest.stryker.config.js",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/messages/ca.json",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/messages/en.json",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/messages/es.json",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/next-env.d.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/next.config.js",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/nginx.prod.conf",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/openapi-ts.config.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/package.json",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/playwright-report/index.html",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/playwright.config.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/pnpm-lock.yaml",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/pnpm-workspace.yaml",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/postcss.config.mjs",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/public/logo.png",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/public/manifest.json",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/public/next.svg",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/public/sw.js",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/public/vercel.svg",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/report.md",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/scripts/metrics-analysis.sh",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/scripts/predev.js",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/server.js",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/__tests__/sw-offline-survey.spec.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/QueryProvider.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/actividades/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/actividades/useActivities.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/analytics/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/blog/editor/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/blog/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/candidatos/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/candidatos/useCandidates.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/contratos/columns.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/contratos/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/contratos/useContracts.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/cursos/[id]/AddModuleDialog.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/cursos/[id]/AddModuleDialog.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/cursos/[id]/CourseForm.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/cursos/[id]/CourseForm.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/cursos/[id]/ModuleManagement.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/cursos/[id]/modulos/[moduleId]/lecciones/[lessonId]/LessonForm.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/cursos/[id]/modulos/[moduleId]/lecciones/[lessonId]/LessonForm.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/cursos/[id]/modulos/[moduleId]/lecciones/[lessonId]/page.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/cursos/[id]/modulos/[moduleId]/lecciones/[lessonId]/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/cursos/[id]/modulos/[moduleId]/lecciones/nueva/page.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/cursos/[id]/modulos/[moduleId]/lecciones/nueva/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/cursos/[id]/page.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/cursos/[id]/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/cursos/nuevo/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/cursos/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/dashboard/components/ChartTooltipContent.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/dashboard/components/ContractsByLugarChart.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/dashboard/components/ContractsByMonthChart.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/dashboard/components/CorporateVsIndependentChart.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/dashboard/components/MetricCards.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/dashboard/components/RecentContracts.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/dashboard/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/dashboard/useDashboardStats.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/encuestas/ReportView.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/encuestas/ReportView.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/encuestas/SurveyForm.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/encuestas/SurveyForm.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/encuestas/SurveyTable.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/encuestas/SurveyTable.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/encuestas/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/encuestas/useSurveys.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/layout.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/onboarding/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/ranking/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/scanner/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/usuarios/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/admin/usuarios/useUsers.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/confidencialidad/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/crear-password/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/datos/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/encuesta/ClientRatingForm.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/encuesta/ClientRatingForm.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/encuesta/confirmacion/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/encuesta/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/hazte-voluntario/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/imagen/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/layout.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/login/login.test.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/login/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/page.module.css",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/portal/actividades/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/portal/cursos/[id]/lecciones/[lessonId]/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/portal/cursos/[id]/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/portal/cursos/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/portal/layout.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/portal/logros/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/portal/mensajes/[id]/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/portal/mensajes/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/portal/noticias/[slug]/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/portal/noticias/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/portal/notificaciones/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/portal/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/portal/proyectos/[id]/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/portal/proyectos/mensajes/[id]/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/portal/proyectos/mensajes/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/portal/proyectos/nuevo/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/portal/proyectos/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/portal/ranking/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/portal/sala/[roomId]/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/recuperar-password/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/[locale]/restablecer-password/page.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/api/[...path]/route.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/api/auth/[...nextauth]/route.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/api/auth/login/route.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/api/test-env/route.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/auth/AuthProvider.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/auth/useAuth.spec.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/auth/useAuth.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/components/Contract.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/components/ContractTable.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/components/ContractTable.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/components/RoleBadge.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/components/StepFour.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/components/StepFour.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/components/StepOne.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/components/StepOne.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/components/StepOneAreas.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/components/StepOneDuracion.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/components/StepOneHorario.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/components/StepOneModalidad.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/components/StepThree.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/components/StepThree.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/components/StepTwo.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/components/StepTwo.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/context.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/dashboard/columns.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/dashboard/useContracts.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/favicon.ico",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/globals.css",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/layout.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/lib/csrf.spec.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/lib/csrf.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/test-utils.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/types.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/utils.spec.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/utils.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/NotificationBell.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/PushNotificationSetup.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ServiceWorkerRegister.spec.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ServiceWorkerRegister.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/SetLang.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/BadgesCard.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/BadgesCard.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/BookingsCard.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/BookingsSection.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/BottomNav.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/CoursesCard.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/CoursesCard.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/CoursesSection.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/NewsCard.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/NewsCard.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/NewsSection.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/PageHeader.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/ProfileCard.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/ProfileCard.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/ProfileSection.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/Sidebar.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/StateViews.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ratings/star-rating.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ratings/star-rating.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/alert-dialog.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/area-filter.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/badge.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/button.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/button.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/card.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/checkbox.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/data-table.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/dialog.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/dropdown-menu.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/input.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/label.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/lugar-filter.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/radio-group.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/select.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/select.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/separator.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/sheet.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/sidebar.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/skeleton.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/table.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/textarea.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/theme-toggle.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/tooltip.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/ui/topbar.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/video/ActiveSpeakerIndicator.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/video/VideoControls.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/video/VideoGrid.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/hooks/index.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/hooks/use-mobile.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/hooks/useAttentionEstimation.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/hooks/useAuth.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/hooks/useContractForm.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/hooks/useContracts.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/hooks/useDebounce.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/hooks/useMediasoupRoom.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/hooks/usePagination.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/hooks/useRealtimeChat.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/hooks/useRealtimeNotification.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/i18n/catalog-completeness.test.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/i18n/navigation.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/lib/api.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/lib/apiClient.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/lib/apiUrl.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/lib/theme-provider.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/lib/utils.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/middleware.spec.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/middleware.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/types/next-auth.d.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/stryker.conf.json",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/test-flows.mjs",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/test-results/.last-run.json",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/test.d.ts",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/tsconfig.json",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/tsconfig.test.json"
+]
+17:03:28 (230728) DEBUG ProjectReader Files to mutate: [
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/public/sw.js",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/components/StepOne.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/components/StepOne.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/components/StepOneAreas.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/components/StepOneDuracion.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/components/StepOneHorario.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/app/components/StepOneModalidad.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/BadgesCard.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/BadgesCard.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/BookingsCard.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/BookingsSection.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/CoursesCard.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/CoursesCard.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/CoursesSection.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/NewsCard.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/NewsCard.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/NewsSection.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/PageHeader.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/ProfileCard.spec.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/ProfileCard.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/components/portal/ProfileSection.tsx",
+  "/home/student/Documentos/dev/voluntarios/voluntarios-front/src/middleware.ts"
+]
+17:03:28 (230728) DEBUG TemporaryDirectory Using temp directory "/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR"
+17:03:28 (230728) DEBUG Instrumenter Instrumenting 22 source files with mutants
+17:03:28 (230728) DEBUG Instrumenter Instrumented public/sw.js (203 mutant(s))
+17:03:29 (230728) DEBUG Instrumenter Instrumented src/app/components/StepOne.spec.tsx (321 mutant(s))
+17:03:29 (230728) DEBUG Instrumenter Instrumented src/app/components/StepOne.tsx (177 mutant(s))
+17:03:29 (230728) DEBUG Instrumenter Instrumented src/app/components/StepOneAreas.tsx (88 mutant(s))
+17:03:29 (230728) DEBUG Instrumenter Instrumented src/app/components/StepOneDuracion.tsx (57 mutant(s))
+17:03:29 (230728) DEBUG Instrumenter Instrumented src/app/components/StepOneHorario.tsx (10 mutant(s))
+17:03:29 (230728) DEBUG Instrumenter Instrumented src/app/components/StepOneModalidad.tsx (12 mutant(s))
+17:03:29 (230728) DEBUG Instrumenter Instrumented src/components/portal/BadgesCard.spec.tsx (17 mutant(s))
+17:03:29 (230728) DEBUG Instrumenter Instrumented src/components/portal/BadgesCard.tsx (8 mutant(s))
+17:03:29 (230728) DEBUG Instrumenter Instrumented src/components/portal/BookingsCard.tsx (12 mutant(s))
+17:03:29 (230728) DEBUG Instrumenter Instrumented src/components/portal/BookingsSection.tsx (5 mutant(s))
+17:03:29 (230728) DEBUG Instrumenter Instrumented src/components/portal/CoursesCard.spec.tsx (41 mutant(s))
+17:03:29 (230728) DEBUG Instrumenter Instrumented src/components/portal/CoursesCard.tsx (31 mutant(s))
+17:03:29 (230728) DEBUG Instrumenter Instrumented src/components/portal/CoursesSection.tsx (6 mutant(s))
+17:03:29 (230728) DEBUG Instrumenter Instrumented src/components/portal/NewsCard.spec.tsx (40 mutant(s))
+17:03:29 (230728) DEBUG Instrumenter Instrumented src/components/portal/NewsCard.tsx (15 mutant(s))
+17:03:29 (230728) DEBUG Instrumenter Instrumented src/components/portal/NewsSection.tsx (6 mutant(s))
+17:03:29 (230728) DEBUG Instrumenter Instrumented src/components/portal/PageHeader.tsx (7 mutant(s))
+17:03:29 (230728) DEBUG Instrumenter Instrumented src/components/portal/ProfileCard.spec.tsx (21 mutant(s))
+17:03:29 (230728) DEBUG Instrumenter Instrumented src/components/portal/ProfileCard.tsx (49 mutant(s))
+17:03:29 (230728) DEBUG Instrumenter Instrumented src/components/portal/ProfileSection.tsx (8 mutant(s))
+17:03:29 (230728) DEBUG Instrumenter Instrumented src/middleware.ts (3 mutant(s))
+17:03:29 (230728) INFO Instrumenter Instrumented 22 source file(s) with 1137 mutant(s)
+17:03:30 (230728) DEBUG TSConfigPreprocessor Rewriting file ProjectFile {
+  fs: [FileSystem],
+  name: '/home/student/Documentos/dev/voluntarios/voluntarios-front/tsconfig.json',
+  mutate: false
+}
+17:03:30 (230728) INFO ConcurrencyTokenProvider Creating 1 checker process(es) and 1 test runner process(es).
+17:03:30 (230728) DEBUG ChildProcessProxy Started CheckerWorker in worker process 0 with pid 230744 
+17:03:30 (230744) DEBUG PluginLoader Loading plugin @stryker-mutator/jest-runner
+17:03:30 (230744) DEBUG PluginLoader Loading plugin @stryker-mutator/typescript-checker
+17:03:30 (230744) DEBUG PluginLoader Loading plugin file:///home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/@stryker-mutator+instrumenter@9.6.1/node_modules/@stryker-mutator/instrumenter/dist/src/frameworks/index.js
+17:03:30 (230744) DEBUG PluginLoader Loading plugin file:///home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/@stryker-mutator+core@9.6.1_@types+node@20.19.4/node_modules/@stryker-mutator/core/dist/src/reporters/index.js
+17:03:38 (230744) TRACE TypescriptChecker.HybridFileSystem Writing to file "/home/student/Documentos/dev/voluntarios/voluntarios-front/tsconfig.tsbuildinfo"
+17:03:39 (230728) DEBUG Sandbox Creating a sandbox for files in /home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR
+17:03:39 (230728) DEBUG Sandbox Start symlink node_modules
+17:03:39 (230728) DEBUG Sandbox Create symlink from /home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules to /home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/node_modules
+17:03:39 (230728) INFO BroadcastReporter Detected that current console does not support the "progress" reporter, downgrading to "progress-append-only" reporter
+17:03:39 (230728) DEBUG BroadcastReporter Broadcasting to reporters ["clear-text","progress-append-only","html"]
+17:03:39 (230728) DEBUG ChildProcessProxy Started ChildProcessTestRunnerWorker in worker process 0 with pid 230814 
+17:03:39 (230814) DEBUG PluginLoader Loading plugin @stryker-mutator/jest-runner
+17:03:39 (230814) DEBUG PluginLoader Loading plugin @stryker-mutator/typescript-checker
+17:03:39 (230814) DEBUG PluginLoader Loading plugin file:///home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/@stryker-mutator+instrumenter@9.6.1/node_modules/@stryker-mutator/instrumenter/dist/src/frameworks/index.js
+17:03:39 (230814) DEBUG PluginLoader Loading plugin file:///home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/@stryker-mutator+core@9.6.1_@types+node@20.19.4/node_modules/@stryker-mutator/core/dist/src/reporters/index.js
+17:03:39 (230814) DEBUG ChildProcessProxyWorker Changing current working directory for this process to /home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR
+17:03:39 (230814) DEBUG jestTestAdapterFactory Detected Jest version 29.7.0
+17:03:39 (230814) DEBUG JestTestRunner Running jest with --findRelatedTests flag. Set jest.enableFindRelatedTests to false to run all tests on every mutant.
+17:03:39 (230814) DEBUG CustomJestConfigLoader Read config from "jest.config.js" (used native `readInitialOptions` from jest-config).
+17:03:39 (230814) DEBUG JestTestRunner Merging file-based config {
+  "testEnvironment": "jsdom",
+  "setupFilesAfterEnv": [
+    "<rootDir>/jest.setup.js"
+  ],
+  "transform": {
+    "^.+\\.(js|jsx|ts|tsx|mjs)$": [
+      "/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/next@14.2.35_@babel+core@7.29.7_@playwright+test@1.61.1_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/swc/jest-transformer.js",
+      {
+        "modularizeImports": {
+          "@mui/icons-material": {
+            "transform": "@mui/icons-material/{{member}}"
+          },
+          "lodash": {
+            "transform": "lodash/{{member}}"
+          }
+        },
+        "jsConfig": {
+          "compilerOptions": {
+            "lib": [
+              "lib.dom.d.ts",
+              "lib.dom.iterable.d.ts",
+              "lib.esnext.d.ts"
+            ],
+            "allowJs": true,
+            "skipLibCheck": true,
+            "strict": true,
+            "noEmit": true,
+            "esModuleInterop": true,
+            "module": 99,
+            "moduleResolution": 100,
+            "resolveJsonModule": true,
+            "isolatedModules": true,
+            "jsx": 1,
+            "incremental": true,
+            "types": [
+              "jest",
+              "@testing-library/jest-dom"
+            ],
+            "plugins": [
+              {
+                "name": "next"
+              }
+            ],
+            "paths": {
+              "@/*": [
+                "./src/*"
+              ]
+            },
+            "pathsBasePath": "/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR"
+          }
+        },
+        "resolvedBaseUrl": {
+          "baseUrl": "/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR",
+          "isImplicit": true
+        },
+        "serverComponents": true,
+        "isEsmProject": false
+      }
+    ],
+    "^.+\\.tsx?$": [
+      "ts-jest",
+      {
+        "tsconfig": "tsconfig.test.json"
+      }
+    ]
+  },
+  "moduleNameMapper": {
+    "^.+\\.module\\.(css|sass|scss)$": "/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/next@14.2.35_@babel+core@7.29.7_@playwright+test@1.61.1_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/jest/object-proxy.js",
+    "^.+\\.(css|sass|scss)$": "/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/next@14.2.35_@babel+core@7.29.7_@playwright+test@1.61.1_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/jest/__mocks__/styleMock.js",
+    "^.+\\.(png|jpg|jpeg|gif|webp|avif|ico|bmp)$": "/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/next@14.2.35_@babel+core@7.29.7_@playwright+test@1.61.1_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/jest/__mocks__/fileMock.js",
+    "^.+\\.(svg)$": "/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/next@14.2.35_@babel+core@7.29.7_@playwright+test@1.61.1_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/jest/__mocks__/fileMock.js",
+    "@next/font/(.*)": "/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/next@14.2.35_@babel+core@7.29.7_@playwright+test@1.61.1_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/jest/__mocks__/nextFontMock.js",
+    "next/font/(.*)": "/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/next@14.2.35_@babel+core@7.29.7_@playwright+test@1.61.1_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/jest/__mocks__/nextFontMock.js",
+    "server-only": "/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/next@14.2.35_@babel+core@7.29.7_@playwright+test@1.61.1_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/jest/__mocks__/empty.js",
+    "^@/(.*)$": "<rootDir>/src/$1"
+  },
+  "testPathIgnorePatterns": [
+    "/node_modules/",
+    "/.next/",
+    "<rootDir>/e2e/"
+  ],
+  "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.tsx?$",
+  "collectCoverage": true,
+  "coverageReporters": [
+    "json-summary",
+    "html",
+    "text"
+  ],
+  "transformIgnorePatterns": [
+    "/node_modules/",
+    "^.+\\.module\\.(css|sass|scss)$"
+  ],
+  "watchPathIgnorePatterns": [
+    "/.next/"
+  ],
+  "rootDir": "/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR"
+}
+      with custom config {}
+      and default (internal) stryker config {
+  "collectCoverage": false,
+  "verbose": false,
+  "notify": false,
+  "bail": false,
+  "reporters": []
+}
+17:03:39 (230728) INFO DryRunExecutor Starting initial test run (jest test runner with "perTest" coverage analysis). This may take a while.
+17:03:39 (230728) DEBUG DryRunExecutor Using timeout of 300000 ms.
+17:03:39 (230728) DEBUG TimeoutDecorator Starting timeout timer (300000 ms) for a test run
+17:03:39 (230814) TRACE JestTestRunner Invoking Jest with config {"fileNamesUnderTest":["/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/public/sw.js","/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/app/components/StepOne.spec.tsx","/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/app/components/StepOne.tsx","/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/app/components/StepOneAreas.tsx","/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/app/components/StepOneDuracion.tsx","/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/app/components/StepOneHorario.tsx","/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/app/components/StepOneModalidad.tsx","/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/components/portal/BadgesCard.spec.tsx","/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/components/portal/BadgesCard.tsx","/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/components/portal/BookingsCard.tsx","/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/components/portal/BookingsSection.tsx","/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/components/portal/CoursesCard.spec.tsx","/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/components/portal/CoursesCard.tsx","/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/components/portal/CoursesSection.tsx","/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/components/portal/NewsCard.spec.tsx","/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/components/portal/NewsCard.tsx","/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/components/portal/NewsSection.tsx","/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/components/portal/PageHeader.tsx","/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/components/portal/ProfileCard.spec.tsx","/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/components/portal/ProfileCard.tsx","/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/components/portal/ProfileSection.tsx","/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/middleware.ts"],"jestConfig":{"testEnvironment":"/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/@stryker-mutator+jest-runner@9.6.1_@stryker-mutator+core@9.6.1_@types+node@20.19.4_/node_modules/@stryker-mutator/jest-runner/dist/src/jest-plugins/jest-environment-generic.cjs","setupFilesAfterEnv":["<rootDir>/jest.setup.js"],"transform":{"^.+\\.(js|jsx|ts|tsx|mjs)$":["/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/next@14.2.35_@babel+core@7.29.7_@playwright+test@1.61.1_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/swc/jest-transformer.js",{"modularizeImports":{"@mui/icons-material":{"transform":"@mui/icons-material/{{member}}"},"lodash":{"transform":"lodash/{{member}}"}},"jsConfig":{"compilerOptions":{"lib":["lib.dom.d.ts","lib.dom.iterable.d.ts","lib.esnext.d.ts"],"allowJs":true,"skipLibCheck":true,"strict":true,"noEmit":true,"esModuleInterop":true,"module":99,"moduleResolution":100,"resolveJsonModule":true,"isolatedModules":true,"jsx":1,"incremental":true,"types":["jest","@testing-library/jest-dom"],"plugins":[{"name":"next"}],"paths":{"@/*":["./src/*"]},"pathsBasePath":"/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR"}},"resolvedBaseUrl":{"baseUrl":"/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR","isImplicit":true},"serverComponents":true,"isEsmProject":false}],"^.+\\.tsx?$":["ts-jest",{"tsconfig":"tsconfig.test.json"}]},"moduleNameMapper":{"^.+\\.module\\.(css|sass|scss)$":"/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/next@14.2.35_@babel+core@7.29.7_@playwright+test@1.61.1_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/jest/object-proxy.js","^.+\\.(css|sass|scss)$":"/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/next@14.2.35_@babel+core@7.29.7_@playwright+test@1.61.1_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/jest/__mocks__/styleMock.js","^.+\\.(png|jpg|jpeg|gif|webp|avif|ico|bmp)$":"/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/next@14.2.35_@babel+core@7.29.7_@playwright+test@1.61.1_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/jest/__mocks__/fileMock.js","^.+\\.(svg)$":"/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/next@14.2.35_@babel+core@7.29.7_@playwright+test@1.61.1_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/jest/__mocks__/fileMock.js","@next/font/(.*)":"/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/next@14.2.35_@babel+core@7.29.7_@playwright+test@1.61.1_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/jest/__mocks__/nextFontMock.js","next/font/(.*)":"/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/next@14.2.35_@babel+core@7.29.7_@playwright+test@1.61.1_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/jest/__mocks__/nextFontMock.js","server-only":"/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/next@14.2.35_@babel+core@7.29.7_@playwright+test@1.61.1_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/build/jest/__mocks__/empty.js","^@/(.*)$":"<rootDir>/src/$1"},"testPathIgnorePatterns":["/node_modules/","/.next/","<rootDir>/e2e/"],"testRegex":"(/__tests__/.*|(\\.|/)(test|spec))\\.tsx?$","collectCoverage":false,"coverageReporters":["json-summary","html","text"],"transformIgnorePatterns":["/node_modules/","^.+\\.module\\.(css|sass|scss)$"],"watchPathIgnorePatterns":["/.next/"],"rootDir":"/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR","verbose":false,"notify":false,"bail":false,"reporters":[],"globals":{"__strykerGlobalNamespace__":"__stryker__"}},"testLocationInResults":true}
+17:03:45 (230728) ERROR DryRunExecutor One or more tests resulted in an error:
+	MODULE_NOT_FOUND Cannot find module './routing' from 'src/i18n/navigation.ts'
+
+Require stack:
+  src/i18n/navigation.ts
+  src/components/portal/CoursesCard.tsx
+  src/components/portal/CoursesCard.spec.tsx
+ Error: Cannot find module './routing' from 'src/i18n/navigation.ts'
+
+Require stack:
+  src/i18n/navigation.ts
+  src/components/portal/CoursesCard.tsx
+  src/components/portal/CoursesCard.spec.tsx
+
+    at Resolver._throwModNotFoundError (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-resolve@29.7.0/node_modules/jest-resolve/build/resolver.js:427:11)
+    at Resolver.resolveModule (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-resolve@29.7.0/node_modules/jest-resolve/build/resolver.js:358:10)
+    at Resolver._getVirtualMockPath (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-resolve@29.7.0/node_modules/jest-resolve/build/resolver.js:619:14)
+    at Resolver._getAbsolutePath (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-resolve@29.7.0/node_modules/jest-resolve/build/resolver.js:587:14)
+    at Resolver.getModuleID (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-resolve@29.7.0/node_modules/jest-resolve/build/resolver.js:530:31)
+    at Runtime._shouldMockCjs (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:1713:37)
+    at Runtime.requireModuleOrMock (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:1045:16)
+    at Object.<anonymous> (/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/i18n/navigation.ts:30:18)
+    at Runtime._execModule (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:1439:24)
+    at Runtime._loadModule (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:1022:12)
+    at Runtime.requireModule (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:882:12)
+    at Runtime.requireModuleOrMock (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:1048:21)
+    at Object.<anonymous> (/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/components/portal/CoursesCard.tsx:16:21)
+    at Runtime._execModule (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:1439:24)
+    at Runtime._loadModule (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:1022:12)
+    at Runtime.requireModule (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:882:12)
+    at Runtime.requireModuleOrMock (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:1048:21)
+    at Object.<anonymous> (/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/components/portal/CoursesCard.spec.tsx:8:22)
+    at Runtime._execModule (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:1439:24)
+    at Runtime._loadModule (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:1022:12)
+    at Runtime.requireModule (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:882:12)
+    at jestAdapter (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-circus@29.7.0/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:77:13)
+    at runTestInternal (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runner@29.7.0/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runner@29.7.0/node_modules/jest-runner/build/runTest.js:444:34), MODULE_NOT_FOUND Cannot find module './routing' from 'src/i18n/navigation.ts'
+
+Require stack:
+  src/i18n/navigation.ts
+  src/components/portal/NewsCard.tsx
+  src/components/portal/NewsCard.spec.tsx
+ Error: Cannot find module './routing' from 'src/i18n/navigation.ts'
+
+Require stack:
+  src/i18n/navigation.ts
+  src/components/portal/NewsCard.tsx
+  src/components/portal/NewsCard.spec.tsx
+
+    at Resolver._throwModNotFoundError (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-resolve@29.7.0/node_modules/jest-resolve/build/resolver.js:427:11)
+    at Resolver.resolveModule (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-resolve@29.7.0/node_modules/jest-resolve/build/resolver.js:358:10)
+    at Resolver._getVirtualMockPath (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-resolve@29.7.0/node_modules/jest-resolve/build/resolver.js:619:14)
+    at Resolver._getAbsolutePath (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-resolve@29.7.0/node_modules/jest-resolve/build/resolver.js:587:14)
+    at Resolver.getModuleID (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-resolve@29.7.0/node_modules/jest-resolve/build/resolver.js:530:31)
+    at Runtime._shouldMockCjs (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:1713:37)
+    at Runtime.requireModuleOrMock (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:1045:16)
+    at Object.<anonymous> (/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/i18n/navigation.ts:30:18)
+    at Runtime._execModule (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:1439:24)
+    at Runtime._loadModule (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:1022:12)
+    at Runtime.requireModule (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:882:12)
+    at Runtime.requireModuleOrMock (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:1048:21)
+    at Object.<anonymous> (/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/components/portal/NewsCard.tsx:15:21)
+    at Runtime._execModule (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:1439:24)
+    at Runtime._loadModule (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:1022:12)
+    at Runtime.requireModule (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:882:12)
+    at Runtime.requireModuleOrMock (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:1048:21)
+    at Object.<anonymous> (/home/student/Documentos/dev/voluntarios/voluntarios-front/.stryker-tmp/sandbox-iNw7cR/src/components/portal/NewsCard.spec.tsx:8:19)
+    at Runtime._execModule (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:1439:24)
+    at Runtime._loadModule (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:1022:12)
+    at Runtime.requireModule (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:882:12)
+    at jestAdapter (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-circus@29.7.0/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:77:13)
+    at runTestInternal (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runner@29.7.0/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/jest-runner@29.7.0/node_modules/jest-runner/build/runTest.js:444:34)
+17:03:45 (230728) DEBUG Stryker Not removing the temp dir because an error occurred
+17:03:45 (230728) ERROR Stryker Unexpected error occurred while running Stryker Error: Something went wrong in the initial test run
+    at DryRunExecutor.validateResultCompleted (file:///home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/@stryker-mutator+core@9.6.1_@types+node@20.19.4/node_modules/@stryker-mutator/core/dist/src/process/3-dry-run-executor.js:76:15)
+    at DryRunExecutor.executeDryRun (file:///home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/@stryker-mutator+core@9.6.1_@types+node@20.19.4/node_modules/@stryker-mutator/core/dist/src/process/3-dry-run-executor.js:100:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async WorkItem.execute (file:///home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/@stryker-mutator+core@9.6.1_@types+node@20.19.4/node_modules/@stryker-mutator/core/dist/src/concurrent/pool.js:32:28)
+    at async file:///home/student/Documentos/dev/voluntarios/voluntarios-front/node_modules/.pnpm/@stryker-mutator+core@9.6.1_@types+node@20.19.4/node_modules/@stryker-mutator/core/dist/src/concurrent/pool.js:69:13
+17:03:45 (230728) INFO Stryker This might be a known problem with a solution documented in our troubleshooting guide.
+17:03:45 (230728) INFO Stryker You can find it at https://stryker-mutator.io/docs/stryker-js/troubleshooting/
+17:03:45 (230728) DEBUG ChildProcessProxy Disposing of worker process 230814
+17:03:45 (230728) DEBUG ChildProcessProxy Kill 230814
+17:03:45 (230728) DEBUG ChildProcessProxy Disposing of worker process 230744
+17:03:45 (230728) DEBUG ChildProcessProxy Kill 230744
