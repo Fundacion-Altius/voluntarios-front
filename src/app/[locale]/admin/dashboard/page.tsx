@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/app/auth/useAuth';
 import { useRouter } from '@/i18n/navigation';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AutomationWorkloadWidget } from './components/AutomationWorkloadWidget';
@@ -18,9 +18,12 @@ import {
   buildTrendsMap,
 } from '@/modules/impact/components/ImpactKpiGrid';
 import { ImpactKpiGrid } from '@/modules/impact/components/ImpactKpiGrid';
+import { getCatalogItem } from '@/modules/impact/catalog';
 import { currentMonthPeriod, useImpactKpis } from '@/modules/impact/hooks/useImpactKpis';
+import { useImpactTenantConfig } from '@/modules/impact/hooks/useImpactTenantConfig';
 import {
   COORDINATOR_KPI_ORDER,
+  type ImpactKpiKey,
 } from '@/modules/impact/types';
 
 function DashboardLowerSections({
@@ -90,6 +93,14 @@ export default function AdminDashboardPage() {
   // Badges use the same monthly window as the cards; the 12-month series
   // below keeps feeding the history chart.
   const { data: badgeTrends } = useImpactTrends(isAuthenticated ? monthPeriod : undefined);
+  const { config: tenantImpactConfig } = useImpactTenantConfig({ enabled: isAuthenticated });
+  const dashboardKeys = useMemo(() => {
+    const fromTenant = (tenantImpactConfig?.selected ?? [])
+      .map((s) => getCatalogItem(s.key)?.mapsToKpi)
+      .filter((k): k is ImpactKpiKey => Boolean(k));
+    const unique = [...new Set(fromTenant)];
+    return unique.length > 0 ? unique : [...COORDINATOR_KPI_ORDER];
+  }, [tenantImpactConfig]);
   const {
     kpis: visibleImpactKpis,
     config: impactConfig,
@@ -99,8 +110,8 @@ export default function AdminDashboardPage() {
   } = useImpactKpis({
     enabled: isAuthenticated,
     period: monthPeriod,
-    includeKeys: COORDINATOR_KPI_ORDER,
-    order: COORDINATOR_KPI_ORDER,
+    includeKeys: dashboardKeys,
+    order: dashboardKeys,
   });
 
   useEffect(() => {
@@ -140,9 +151,13 @@ export default function AdminDashboardPage() {
         isLoading={impactLoading}
         error={impactError}
         onRetry={fetchImpactKpis}
-        showEstimateBadge={impactConfig?.showEstimateBadge ?? true}
+        showEstimateBadge={
+          tenantImpactConfig?.showEstimateBadge ?? impactConfig?.showEstimateBadge ?? true
+        }
         showExplanations
-        expectedKeys={COORDINATOR_KPI_ORDER}
+        expectedKeys={
+          tenantImpactConfig && tenantImpactConfig.selected.length === 0 ? [] : dashboardKeys
+        }
       />
 
       {!automationLoading && automationMetrics ? (

@@ -2,28 +2,33 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { apiClient, apiUrl } from '@/lib/apiClient';
-import type { ImpactKpi, ImpactKpiResponse } from '@/modules/impact/types';
+import type { PublicImpactConfig } from '@/modules/impact/catalog';
 import {
   filterKpisByVisibleKeys,
-  readImpactConfig,
   sortKpisByOrder,
   type ImpactConfig,
 } from '@/modules/impact/components/ImpactKpiGrid';
+import type { ImpactKpi, ImpactKpiResponse } from '@/modules/impact/types';
 
 export function currentMonthPeriod(now: Date = new Date()): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 }
+
+type PublicConfigResponse = { success: boolean; data?: PublicImpactConfig; error?: string };
 
 export function useImpactKpis({
   enabled = true,
   period,
   includeKeys,
   order,
+  /** When true, load publicKeys from tenant API instead of localStorage. */
+  useTenantPublicConfig = false,
 }: {
   enabled?: boolean;
   period?: string;
   includeKeys?: readonly string[];
   order?: readonly string[];
+  useTenantPublicConfig?: boolean;
 } = {}) {
   const [rawKpis, setRawKpis] = useState<ImpactKpi[] | null>(null);
   const [config, setConfig] = useState<ImpactConfig | null>(null);
@@ -50,15 +55,34 @@ export function useImpactKpis({
         setError(data.error || 'Failed to load impact data');
         setRawKpis(null);
       }
+
+      if (useTenantPublicConfig) {
+        const cfgRes = await apiClient<PublicConfigResponse>(apiUrl('/api/impact/public-config'));
+        if (cfgRes.success && cfgRes.data?.success && cfgRes.data.data) {
+          const pub = cfgRes.data.data;
+          setConfig({
+            organizationName: pub.organizationName,
+            organizationLogo: pub.organizationLogo,
+            enabledKpis: pub.publicKeys,
+            showEstimateBadge: pub.showEstimateBadge,
+          });
+        } else {
+          setConfig({
+            organizationName: '',
+            organizationLogo: '',
+            enabledKpis: [],
+            showEstimateBadge: true,
+          });
+        }
+      }
     } finally {
       setLoading(false);
     }
-  }, [period]);
+  }, [period, useTenantPublicConfig]);
 
   useEffect(() => {
-    setConfig(readImpactConfig());
     if (enabled) {
-      refresh();
+      void refresh();
     } else {
       setLoading(false);
     }
@@ -72,5 +96,5 @@ export function useImpactKpis({
     return order ? sortKpisByOrder(visible, order) : visible;
   }, [rawKpis, config, includeKeys, order]);
 
-  return { kpis, config, loading, error, refresh };
+  return { kpis, rawKpis: rawKpis ?? [], config, loading, error, refresh };
 }

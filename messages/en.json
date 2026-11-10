@@ -1135,30 +1135,30 @@
       "hacerCheckOut": "Check-out"
     },
     "impact": {
-      "title": "Impact Dashboard Configuration",
-      "subtitle": "Configure which KPIs are displayed and the branding of the public dashboard",
-      "organizationSettings": "Organization Settings",
-      "organizationSettingsDesc": "Configure the organization name and logo to be displayed on the public dashboard.",
-      "organizationName": "Organization Name",
-      "organizationLogo": "Logo URL",
-      "displaySettings": "Display Settings",
-      "displaySettingsDesc": "Configure how data is displayed on the dashboard.",
-      "peoplePerHourFactor": "People per Hour Factor",
-      "peoplePerHourHint": "Estimated number of people served per hour of volunteering.",
-      "showEstimateBadge": "Show Estimate Badge",
-      "kpiSelection": "KPI Selection",
-      "kpiSelectionDesc": "Select which KPIs will be displayed on the public dashboard.",
-      "save": "Save",
-      "saving": "Saving...",
-      "reset": "Reset",
-      "success": "Success",
+      "title": "Impacto",
+      "subtitle": "Elige qué medís, de dónde sale y qué contáis en público",
+      "organizationSettings": "Configuración de la organización",
+      "organizationSettingsDesc": "Nombre y logo en la página pública.",
+      "organizationName": "Organization name",
+      "organizationLogo": "URL del logo",
+      "displaySettings": "Visualización",
+      "displaySettingsDesc": "Cómo se muestran los datos.",
+      "peoplePerHourFactor": "Factor personas/hora",
+      "peoplePerHourHint": "Personas estimadas por hora de voluntariado.",
+      "showEstimateBadge": "Mostrar etiqueta Estimado",
+      "kpiSelection": "Selección de indicadores",
+      "kpiSelectionDesc": "Usa Mis indicadores en el nuevo flujo.",
+      "save": "Guardar",
+      "saving": "Guardando...",
+      "reset": "Restablecer",
+      "success": "Éxito",
       "error": "Error",
-      "configSaved": "Configuration saved successfully",
-      "configSaveError": "Error saving configuration",
-      "loadingError": "Error loading configuration",
-      "preview": "Preview",
-      "previewDesc": "Preview of how the public dashboard will look with the current configuration.",
-      "previewSubtitle": "{count} KPIs will be displayed",
+      "configSaved": "Configuración guardada",
+      "configSaveError": "Error al guardar",
+      "loadingError": "Error al cargar",
+      "preview": "Vista previa",
+      "previewDesc": "Vista previa de la página pública.",
+      "previewSubtitle": "Se mostrarán {count} indicadores",
       "communication": {
         "title": "Title",
         "subtitle": "Subtitle",
@@ -1194,6 +1194,220 @@
         "cardSubtitlePlaceholder": "Together we make a difference",
         "currentKpis": "Current KPIs",
         "currentKpisDesc": "Current impact data that will be used to generate content."
+      },
+      "homeTitle": "Impact",
+      "homeSubtitle": "What changed for people and how operations are doing · {org}",
+      "yourOrg": "your organization",
+      "ctaMine": "My indicators",
+      "ctaEditPublic": "Edit public page",
+      "ctaGuided": "Set up indicators",
+      "layerImpact": "Impact",
+      "layerImpactHint": "Outcomes for people.",
+      "layerOps": "Operations",
+      "layerOpsHint": "For the team.",
+      "firstTime": "First time?",
+      "emptyHome": "No indicators yet. Start with the guided setup.",
+      "guidedTitle": "Start with Impact",
+      "guidedSubtitle": "A few questions · we suggest 4 or 5 indicators",
+      "guidedQuestion": "What does your organization do?",
+      "guidedLead": "Pick one or two. You can change indicators later.",
+      "guidedSuggest": "We suggest starting with these {count}",
+      "seeMore": "See more",
+      "useThisSet": "Use this set →",
+      "mineTitle": "My indicators",
+      "mineSubtitle": "What you measure now · saved on the server",
+      "activeCount": "{count} active indicators",
+      "needsConfig": "One or more need a value from you.",
+      "allReady": "All ready.",
+      "addAnother": "+ Add another",
+      "statReady": "ready",
+      "statNeed": "need setup",
+      "statPublic": "on the public page",
+      "emptyMine": "No indicators yet.",
+      "missingValue": "Missing value",
+      "showOnPublic": "Show on the public page",
+      "configureNow": "Configure now",
+      "viewDetail": "View details",
+      "remove": "Remove",
+      "nextPublic": "Next: public page →",
+      "howItGoes": "How this works",
+      "help1": "Configure the ones that need a value.",
+      "help2": "Turn on “Show on the public page”.",
+      "help3": "Edit the public page.",
+      "repeatGuided": "Repeat guided start",
+      "addTitle": "Add an indicator",
+      "addSubtitle": "Search or filter · we won’t dump the whole list",
+      "searchPlaceholder": "Search: volunteering, network, satisfaction…",
+      "add": "Add",
+      "backMine": "← Back to my indicators",
+      "setupTitle": "Configure indicator",
+      "setupSubtitle": "What it measures · where it comes from · value if needed",
+      "setupWhat": "What it measures",
+      "setupSource": "Where it comes from",
+      "setupValue": "Value",
+      "setupPublic": "Public page",
+      "value": "Value",
+      "unit": "Unit",
+      "evidence": "Evidence",
+      "markEstimate": "Mark as estimate",
+      "saveEntity": "Save for the whole organization",
+      "saveAndPublic": "Save and view public page",
+      "unknownIndicator": "Unknown indicator",
+      "editorTitle": "Public page editor",
+      "editorSubtitle": "The page belongs to the NGO · Klaruk only in the footer",
+      "fromMine": "From My indicators",
+      "fromMineHint": "Only with the toggle on. No empty slots.",
+      "noPublicYet": "None published yet.",
+      "changeSelection": "Change selection",
+      "publicHeadline": "Public headline",
+      "publicHeadlinePlaceholder": "This is how our year went…",
+      "defaultHeadline": "This is our impact this year.",
+      "dataPeriod": "Data for {period}",
+      "methodNote": "How we measure: carefully, without inventing numbers.",
+      "madeWithKlaruk": "Made with Klaruk",
+      "nextPaths": "Next: communicate →",
+      "pathsTitle": "Communicate and export",
+      "pathsSubtitle": "The same figures, nothing invented",
+      "pathComm": "Communication",
+      "pathCommDesc": "Social card or annual report.",
+      "createSocialCard": "Create social card",
+      "pathExport": "Export report",
+      "pathExportDesc": "PDF without personal data.",
+      "exportMemory": "Export report (PDF)",
+      "rolesNote": "Roles: admin edits. Nave is read-only.",
+      "backHome": "Back to home",
+      "readOnlyNave": "Read-only: your nave role can view Impact but not edit.",
+      "estimated": "Estimate",
+      "fgpsEntity": "entity",
+      "fgpsProject": "project",
+      "source": {
+        "automatic": "Automatic",
+        "semiautomatic": "Semi-automatic",
+        "entity_provided": "Provided by the organization"
+      },
+      "sourceHint": {
+        "automatic": "Klaruk calculates the value from data you already have.",
+        "semiautomatic": "Partly automatic; you can adjust or add evidence.",
+        "entity_provided": "You enter the number and the evidence."
+      },
+      "steps": {
+        "of": "Step {n} of 4",
+        "start": "Start",
+        "mine": "My indicators",
+        "public": "Public page",
+        "paths": "Communicate"
+      },
+      "profiles": {
+        "direct_care": {
+          "title": "Direct care for people",
+          "desc": "Food, clothing, shelter…"
+        },
+        "volunteering": {
+          "title": "Organized volunteering",
+          "desc": "Shifts, check-ins…"
+        },
+        "advocacy": {
+          "title": "Awareness or advocacy",
+          "desc": "Workshops, campaigns…"
+        },
+        "network": {
+          "title": "Networked work",
+          "desc": "Neighbourhood alliances…"
+        }
+      },
+      "filter": {
+        "forYou": "For you",
+        "outcome": "Impact on people",
+        "operation": "Operations",
+        "network": "Network",
+        "fgpsEntity": "FGPS entity",
+        "fgpsProject": "FGPS project"
+      },
+      "catalog": {
+        "families_served_weekly": {
+          "title": "Personas / familias atendidas",
+          "why": "Automático · registros",
+          "measures": "Personas o familias que recibís de forma habitual.",
+          "publicLine": "reciben apoyo de forma habitual"
+        },
+        "feel_less_alone": {
+          "title": "Satisfacción / menos solas",
+          "why": "Semiautomático · encuesta",
+          "measures": "Cómo se sienten las personas tras el acompañamiento.",
+          "publicLine": "se sienten menos solas"
+        },
+        "volunteer_hours": {
+          "title": "Horas de voluntariado",
+          "why": "Automático · turnos",
+          "measures": "Horas registradas de voluntariado en el periodo.",
+          "publicLine": "de voluntariado"
+        },
+        "shift_coverage": {
+          "title": "Cobertura de turnos",
+          "why": "Automático · operación",
+          "measures": "Porcentaje de plazas cubiertas frente a las previstas.",
+          "publicLine": "de cobertura de turnos"
+        },
+        "shift_reliability": {
+          "title": "Fiabilidad",
+          "why": "Automático · fichajes",
+          "measures": "Quién cumple lo comprometido en los turnos.",
+          "publicLine": "de fiabilidad en turnos"
+        },
+        "volunteer_retention": {
+          "title": "Retención de voluntariado",
+          "why": "Automático",
+          "measures": "Voluntariado que sigue activo respecto al periodo anterior.",
+          "publicLine": "de retención"
+        },
+        "network_participation": {
+          "title": "Participación y trabajo en red",
+          "why": "FGPS · lo aportáis vosotros",
+          "measures": "Entidades con las que trabajáis juntas de verdad.",
+          "publicLine": "entidades del barrio con las que trabajamos"
+        },
+        "social_base_volume": {
+          "title": "Volumen de la base social",
+          "why": "Socios al corriente · FGPS entidad",
+          "measures": "Tamaño de la base social (socios / miembros).",
+          "publicLine": "en la base social"
+        },
+        "project_volunteering": {
+          "title": "Voluntariado en el proyecto",
+          "why": "Horas en un proyecto concreto · FGPS proyecto",
+          "measures": "Horas de voluntariado atribuidas a un proyecto.",
+          "publicLine": "horas en el proyecto"
+        },
+        "user_design_participation": {
+          "title": "Participación del usuario en el diseño",
+          "why": "Quién opina sobre el servicio · FGPS proyecto",
+          "measures": "Personas usuarias que participan en diseñar el servicio.",
+          "publicLine": "participan en el diseño"
+        },
+        "social_return": {
+          "title": "Retorno social",
+          "why": "Solo si ya lo calculáis. Sin SROI automático.",
+          "measures": "Valor de retorno social que ya calculáis fuera de Klaruk.",
+          "publicLine": "de retorno social"
+        },
+        "onboarding_completion": {
+          "title": "Onboarding completado",
+          "why": "Automático",
+          "measures": "Porcentaje de personas que terminan el onboarding.",
+          "publicLine": "completan el onboarding"
+        },
+        "time_to_fill": {
+          "title": "Tiempo para cubrir",
+          "why": "Automático",
+          "measures": "Días medios para cubrir un turno o plaza.",
+          "publicLine": "días para cubrir plazas"
+        },
+        "social_impact_per_hour": {
+          "title": "Impacto social por hora",
+          "why": "Automático · beneficiarios / horas",
+          "measures": "Beneficiarios atendidos por hora de voluntariado.",
+          "publicLine": "personas por hora de voluntariado"
+        }
       }
     },
     "miembros": {
@@ -2153,7 +2367,9 @@
         "stable": "Stable"
       },
       "trendsTitle": "Impact trends",
-      "trendsEmpty": "No trend data available"
+      "trendsEmpty": "No trend data available",
+      "loading": "Loading…",
+      "error": "Could not load impact data"
     }
   },
   "klaruk": {
