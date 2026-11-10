@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToys } from '../admin/toys/useToys';
+import { useToysPublic as useToys } from '../admin/toys/useToysPublic';
 import { getApiBaseUrl } from '@/lib/apiUrl';
 import { AGE_BANDS } from '@/lib/toyBands';
 import './juguetes.css';
