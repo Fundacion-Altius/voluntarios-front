@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Info } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,6 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { formatImpactNumber } from '@/modules/impact/formatNumber';
 import { useCountUp } from '@/modules/impact/hooks/useCountUp';
 import {
   ALL_IMPACT_KPI_KEYS,
@@ -54,22 +55,9 @@ export type ImpactConfig = {
   showEstimateBadge: boolean;
 };
 
+/** @deprecated localStorage is no longer the source of truth; use /api/impact/public-config. */
 export function readImpactConfig(): ImpactConfig | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const raw = window.localStorage.getItem('impactConfig');
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<ImpactConfig>;
-    if (!parsed || !Array.isArray(parsed.enabledKpis)) return null;
-    return {
-      organizationName: parsed.organizationName ?? '',
-      organizationLogo: parsed.organizationLogo ?? '',
-      enabledKpis: parsed.enabledKpis,
-      showEstimateBadge: parsed.showEstimateBadge ?? true,
-    };
-  } catch {
-    return null;
-  }
+  return null;
 }
 
 export function buildTrendsMap(
@@ -154,14 +142,15 @@ export function ImpactKpiCard({
   showExplanation?: boolean;
 }) {
   const t = useTranslations('impact.dashboard');
+  const locale = useLocale();
   const displayName = t(`kpi.${kpi.key}`);
   const unitKey = UNIT_MESSAGE_KEYS[kpi.unit];
   const unitLabel = unitKey ? t(unitKey) : kpi.unit;
   const animated = useCountUp(kpi.value);
   const displayValue =
     animated === kpi.value
-      ? kpi.value.toLocaleString()
-      : Number(animated.toFixed(2)).toLocaleString();
+      ? formatImpactNumber(kpi.value, locale)
+      : formatImpactNumber(Number(animated.toFixed(2)), locale);
   return (
     <Card className="w-full">
       <CardHeader>
@@ -237,10 +226,12 @@ export function ImpactKpiGrid({
   expectedKeys?: readonly string[];
 }) {
   const t = useTranslations('impact.dashboard');
+  const skeletonCount = expectedKeys && expectedKeys.length > 0 ? expectedKeys.length : 4;
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: expectedKeys?.length ?? 8 }).map((_, i) => (
+        {Array.from({ length: skeletonCount }).map((_, i) => (
           <Skeleton key={i} className="h-32 w-full rounded-lg" />
         ))}
       </div>
@@ -264,11 +255,17 @@ export function ImpactKpiGrid({
     );
   }
 
+  // Empty selection → clear empty state (never invent 8 missing coordinator cards).
+  if (expectedKeys && expectedKeys.length === 0) {
+    return <p className="text-muted-foreground">{t('empty')}</p>;
+  }
+
   if (!kpis || kpis.length === 0) {
     return <p className="text-muted-foreground">{t('empty')}</p>;
   }
 
   const present = new Set<string>(kpis.map((kpi) => kpi.key));
+  // Only fill "missing" slots when the caller still wants placeholders for known keys.
   const missing = (expectedKeys ?? []).filter((key) => !present.has(key));
 
   return (

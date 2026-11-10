@@ -391,7 +391,7 @@
         "tabs": {
           "resumen": "Resum",
           "inventario": "Inventari",
-          "familias": "Famílies i infants",
+          "familias": "Famílies",
           "turnos": "Torns",
           "entrega": "Mode repartiment",
           "cierre": "Tancament"
@@ -614,16 +614,9 @@
         }
       },
       "familias": {
-        "titulo": "Famílies i infants",
+        "titulo": "Famílies",
         "sub": "Qui està inscrit, qui ha reservat i qui ja ha recollit.",
-        "vistas": "Vistes",
-        "tab": {
-          "familias": "Famílies ({n})",
-          "ninos": "Infants ({n})"
-        },
         "anadirFamilia": "Afegir família",
-        "anadirNino": "Afegir infant",
-        "importar": "Importar llista",
         "buscarCodigo": "Cercar per codi",
         "filtrar": "Filtrar per estat",
         "todas": "Totes ({n})",
@@ -642,11 +635,6 @@
         "cupo": "{n, plural, one {# joguina} other {# joguines}}",
         "sinTurno": "Sense torn",
         "incidencia": "Incidència",
-        "buscarNino": "Cercar per etiqueta",
-        "privacidad": "Fes servir etiquetes com «Infant 1», mai el nom de l'infant.",
-        "vacioNinos": "Encara no hi ha infants inscrits.",
-        "anos": "{n, plural, one {# any} other {# anys}}",
-        "editarNino": "Editar {label}",
         "editarFamilia": "Editar família",
         "nuevaFamilia": "Família nova",
         "codigo": "Codi de la família (opcional)",
@@ -655,28 +643,16 @@
         "cupoAyuda": "Normalment una per infant.",
         "borrarFamilia": "Esborrar aquesta família? També s'esborraran la seva reserva de torn i la comanda.",
         "error": {
-          "existe": "Aquest codi ja existeix. Tria'n un altre.",
-          "nino": "Escriu una etiqueta i una edat vàlida.",
-          "archivo": "No podem llegir aquest fitxer: {error}"
+          "existe": "Aquest codi ja existeix. Tria'n un altre."
         },
         "guardada": "Família {code} desada",
         "creada": "Família {code} afegida",
         "borrada": "Família {code} esborrada",
-        "editarNinoTitulo": "Editar infant",
-        "nuevoNino": "Infant nou",
-        "borrarNino": "Esborrar aquest infant de la llista?",
-        "etiqueta": "Etiqueta",
-        "etiquetaAyuda": "Ex.: Infant 1. Mai el nom.",
-        "edad": "Edat (anys)",
-        "ninoGuardado": "{label} desat",
-        "ninoCreado": "{label} afegit",
-        "ninoBorrado": "{label} esborrat",
-        "importarEyebrow": "Excel o CSV",
-        "importarAyuda": "El fitxer necessita una columna d'etiqueta (nom, etiqueta) i una d'edat. Abans d'importar veuràs el que es crearà.",
-        "elegirArchivo": "Tria un fitxer .csv o .xlsx",
-        "vistaPrevia": "Es crearan {n, plural, one {# infant} other {# infants}}{skipped, plural, =0 {} one { · # fila no vàlida se saltarà} other { · # files no vàlides se saltaran}}",
-        "importarN": "{n, plural, =0 {Importar} one {Importar # infant} other {Importar # infants}}",
-        "importados": "Importats: {n}. Files saltades: {skipped}."
+        "paginacion": "Pàgines de famílies",
+        "rango": "{from}–{to} de {total} famílies",
+        "anterior": "Anterior",
+        "siguiente": "Següent",
+        "paginaN": "Pàgina {page} de {pages}"
       },
       "cierreGuiado": {
         "titulo": "Tancament de la campanya",
@@ -1135,30 +1111,30 @@
       "hacerCheckOut": "Check-out"
     },
     "impact": {
-      "title": "Configuració del Tauler d'Impacte",
-      "subtitle": "Configura quins KPIs es mostren i la imatge de marca del tauler públic",
-      "organizationSettings": "Configuració de l'organització",
-      "organizationSettingsDesc": "Configura el nom i el logotip de l'organització que es mostren al tauler públic.",
-      "organizationName": "Nom de l'organització",
-      "organizationLogo": "URL del logotip",
-      "displaySettings": "Configuració de visualització",
-      "displaySettingsDesc": "Configura com es mostren les dades al tauler.",
-      "peoplePerHourFactor": "Factor persones/hora",
-      "peoplePerHourHint": "Nombre estimat de persones ateses per cada hora de voluntariat.",
-      "showEstimateBadge": "Mostrar etiqueta Estimat",
-      "kpiSelection": "Selecció de KPIs",
-      "kpiSelectionDesc": "Selecciona quins KPIs es mostren al tauler públic.",
-      "save": "Desar",
-      "saving": "Desant...",
-      "reset": "Restablir",
-      "success": "Èxit",
+      "title": "Impacto",
+      "subtitle": "Elige qué medís, de dónde sale y qué contáis en público",
+      "organizationSettings": "Configuración de la organización",
+      "organizationSettingsDesc": "Nombre y logo en la página pública.",
+      "organizationName": "Nom de l’organització",
+      "organizationLogo": "URL del logo",
+      "displaySettings": "Visualización",
+      "displaySettingsDesc": "Cómo se muestran los datos.",
+      "peoplePerHourFactor": "Factor personas/hora",
+      "peoplePerHourHint": "Personas estimadas por hora de voluntariado.",
+      "showEstimateBadge": "Mostrar etiqueta Estimado",
+      "kpiSelection": "Selección de indicadores",
+      "kpiSelectionDesc": "Usa Mis indicadores en el nuevo flujo.",
+      "save": "Guardar",
+      "saving": "Guardando...",
+      "reset": "Restablecer",
+      "success": "Éxito",
       "error": "Error",
-      "configSaved": "Configuració desada correctament",
-      "configSaveError": "Error al desar la configuració",
-      "loadingError": "Error al carregar la configuració",
-      "preview": "Vista prèvia",
-      "previewDesc": "Vista prèvia de com es veurà el tauler públic amb la configuració actual.",
-      "previewSubtitle": "Es mostren {count} KPIs",
+      "configSaved": "Configuración guardada",
+      "configSaveError": "Error al guardar",
+      "loadingError": "Error al cargar",
+      "preview": "Vista previa",
+      "previewDesc": "Vista previa de la página pública.",
+      "previewSubtitle": "Se mostrarán {count} indicadores",
       "communication": {
         "title": "Títol",
         "subtitle": "Subtítol",
@@ -1194,6 +1170,256 @@
         "cardSubtitlePlaceholder": "Junts fem la diferència",
         "currentKpis": "KPIs actuals",
         "currentKpisDesc": "Dades d'impacte actuals que s'utilitzaran per generar el contingut."
+      },
+      "homeTitle": "Impacte",
+      "homeSubtitle": "El que ha canviat per a les persones i com va l’operació · {org}",
+      "yourOrg": "la vostra entitat",
+      "ctaMine": "Els meus indicadors",
+      "ctaEditPublic": "Editar pàgina pública",
+      "ctaGuided": "Configurar indicadors",
+      "layerImpact": "Impacte",
+      "layerImpactHint": "Resultats per a les persones.",
+      "layerOps": "Operació",
+      "layerOpsHint": "Per a l’equip.",
+      "firstTime": "Primera vegada?",
+      "emptyHome": "Encara no hi ha indicadors. Comença amb l’inici guiat.",
+      "guidedTitle": "Començar amb Impacte",
+      "guidedSubtitle": "3 preguntes · et proposem 4 o 5 indicadors",
+      "guidedQuestion": "Què fa la vostra entitat?",
+      "guidedLead": "Tria una o dues. Després pots canviar els indicadors.",
+      "guidedSuggest": "Et proposem començar amb aquests {count}",
+      "seeMore": "Veure’n més",
+      "useThisSet": "Fer servir aquest set →",
+      "mineTitle": "Els meus indicadors",
+      "mineSubtitle": "El que mesureu ara · desat al servidor",
+      "activeCount": "{count} indicadors actius",
+      "needsConfig": "Un o més necessiten un valor vostre.",
+      "allReady": "Tots a punt.",
+      "addAnother": "+ Afegir-ne un altre",
+      "statReady": "a punt",
+      "statNeed": "falta configurar",
+      "statPublic": "a la pàgina pública",
+      "emptyMine": "Encara no hi ha indicadors.",
+      "missingValue": "Falta valor",
+      "showOnPublic": "Mostrar a la pàgina pública",
+      "configureNow": "Configurar ara",
+      "viewDetail": "Veure detall",
+      "remove": "Treure",
+      "nextPublic": "Següent: pàgina pública →",
+      "howItGoes": "Com va això",
+      "help1": "Configura els que falten.",
+      "help2": "Activa «Mostrar a la pàgina pública».",
+      "help3": "Edita la pàgina pública.",
+      "repeatGuided": "Repetir l’inici guiat",
+      "addTitle": "Afegir un indicador",
+      "addSubtitle": "Cerca o filtra · no et tirem la llista sencera",
+      "searchPlaceholder": "Cercar: voluntariat, xarxa, satisfacció…",
+      "add": "Afegir",
+      "backMine": "← Tornar als meus indicadors",
+      "setupTitle": "Configurar indicador",
+      "setupSubtitle": "Què mesura · d’on surt · valor si cal",
+      "setupWhat": "Què mesura",
+      "setupSource": "D’on surt",
+      "setupValue": "Valor",
+      "setupPublic": "Pàgina pública",
+      "value": "Valor",
+      "unit": "Unitat",
+      "evidence": "Evidència",
+      "markEstimate": "Marcar com a estimat",
+      "saveEntity": "Desar per a tota l’entitat",
+      "saveAndPublic": "Desar i veure la pàgina pública",
+      "unknownIndicator": "Indicador desconegut",
+      "editorTitle": "Editor de la pàgina pública",
+      "editorSubtitle": "La pàgina és de l’ONG · Klaruk només al peu",
+      "fromMine": "Ve dels meus indicadors",
+      "fromMineHint": "Només amb l’interruptor activat. Sense forats.",
+      "noPublicYet": "Cap de publicat encara.",
+      "changeSelection": "Canviar selecció",
+      "publicHeadline": "Titular públic",
+      "publicHeadlinePlaceholder": "Així ha estat el nostre any…",
+      "defaultHeadline": "Així ha estat el nostre impacte aquest any.",
+      "dataPeriod": "Dades de {period}",
+      "methodNote": "Com mesurem? Amb cura i sense inventar xifres.",
+      "madeWithKlaruk": "Fet amb Klaruk",
+      "nextPaths": "Següent: comunicar →",
+      "pathsTitle": "Comunicar i exportar",
+      "pathsSubtitle": "Les mateixes xifres, sense inventar-ne d’altres",
+      "pathComm": "Comunicació",
+      "pathCommDesc": "Targeta social o memòria anual.",
+      "createSocialCard": "Crear targeta social",
+      "pathExport": "Exportar memòria",
+      "pathExportDesc": "PDF sense dades personals.",
+      "exportMemory": "Exportar memòria (PDF)",
+      "rolesNote": "Rols: admin edita. Nave només llegeix.",
+      "backHome": "Tornar a l’inici",
+      "readOnlyNave": "Només lectura: el teu rol nave pot veure Impacte però no editar.",
+      "estimated": "Estimat",
+      "fgpsEntity": "entitat",
+      "fgpsProject": "projecte",
+      "source": {
+        "automatic": "Automàtic",
+        "semiautomatic": "Semiautomàtic",
+        "entity_provided": "Ho aporta l’entitat"
+      },
+      "sourceHint": {
+        "automatic": "Klaruk calcula el valor amb les dades que ja teniu.",
+        "semiautomatic": "Part automàtica; pots ajustar o aportar evidència.",
+        "entity_provided": "Tu poses el número i l’evidència."
+      },
+      "steps": {
+        "of": "Pas {n} de 4",
+        "start": "Començar",
+        "mine": "Els meus indicadors",
+        "public": "Pàgina pública",
+        "paths": "Comunicar"
+      },
+      "profiles": {
+        "direct_care": {
+          "title": "Atenció directa a persones",
+          "desc": "Menjar, roba, acollida…"
+        },
+        "volunteering": {
+          "title": "Voluntariat organitzat",
+          "desc": "Tornaments, fitxatges…"
+        },
+        "advocacy": {
+          "title": "Sensibilització o incidència",
+          "desc": "Tallers, campanyes…"
+        },
+        "network": {
+          "title": "Treball en xarxa",
+          "desc": "Aliances del barri…"
+        }
+      },
+      "filter": {
+        "forYou": "Per a vosaltres",
+        "outcome": "Impacte en persones",
+        "operation": "Operació",
+        "network": "Xarxa",
+        "fgpsEntity": "FGPS entitat",
+        "fgpsProject": "FGPS projecte"
+      },
+      "catalog": {
+        "families_served_weekly": {
+          "title": "Personas / familias atendidas",
+          "why": "Automático · registros",
+          "measures": "Personas o familias que recibís de forma habitual.",
+          "publicLine": "reciben apoyo de forma habitual"
+        },
+        "feel_less_alone": {
+          "title": "Satisfacción / menos solas",
+          "why": "Semiautomático · encuesta",
+          "measures": "Cómo se sienten las personas tras el acompañamiento.",
+          "publicLine": "se sienten menos solas"
+        },
+        "volunteer_hours": {
+          "title": "Horas de voluntariado",
+          "why": "Automático · turnos",
+          "measures": "Horas registradas de voluntariado en el periodo.",
+          "publicLine": "de voluntariado"
+        },
+        "basic_needs_people": {
+          "title": "Persones ajudades en necessitats bàsiques",
+          "why": "Dada de l'entitat",
+          "measures": "Persones que reben ajuda per cobrir les seves necessitats bàsiques.",
+          "publicLine": "persones ajudades en les seves necessitats bàsiques"
+        },
+        "food_kilos_delivered": {
+          "title": "Quilos d'aliments lliurats",
+          "why": "Dada de l'entitat",
+          "measures": "Quilos d'aliments lliurats a famílies.",
+          "publicLine": "quilos d'aliments lliurats"
+        },
+        "social_integration_people": {
+          "title": "Persones ateses per a la integració social",
+          "why": "Dada de l'entitat",
+          "measures": "Persones ateses en processos d'integració social.",
+          "publicLine": "persones ateses per a la seva integració social"
+        },
+        "course_students": {
+          "title": "Alumnes en cursos d'ocupabilitat",
+          "why": "Dada de l'entitat",
+          "measures": "Alumnes en cursos que han millorat la seva ocupabilitat.",
+          "publicLine": "alumnes en cursos que han millorat la seva ocupabilitat"
+        },
+        "insertion_itineraries_people": {
+          "title": "Persones en itineraris d'inserció",
+          "why": "Dada de l'entitat",
+          "measures": "Persones acompanyades en itineraris d'inserció i cerca de feina.",
+          "publicLine": "persones acompanyades en itineraris d'inserció i cerca de feina"
+        },
+        "volunteers_supporting": {
+          "title": "Voluntaris que ens donen suport",
+          "why": "Dada de l'entitat",
+          "measures": "Voluntaris que han donat suport a l'entitat.",
+          "publicLine": "voluntaris ens han donat suport"
+        },
+        "shift_coverage": {
+          "title": "Cobertura de turnos",
+          "why": "Automático · operación",
+          "measures": "Porcentaje de plazas cubiertas frente a las previstas.",
+          "publicLine": "de cobertura de turnos"
+        },
+        "shift_reliability": {
+          "title": "Fiabilidad",
+          "why": "Automático · fichajes",
+          "measures": "Quién cumple lo comprometido en los turnos.",
+          "publicLine": "de fiabilidad en turnos"
+        },
+        "volunteer_retention": {
+          "title": "Retención de voluntariado",
+          "why": "Automático",
+          "measures": "Voluntariado que sigue activo respecto al periodo anterior.",
+          "publicLine": "de retención"
+        },
+        "network_participation": {
+          "title": "Participación y trabajo en red",
+          "why": "FGPS · lo aportáis vosotros",
+          "measures": "Entidades con las que trabajáis juntas de verdad.",
+          "publicLine": "entidades del barrio con las que trabajamos"
+        },
+        "social_base_volume": {
+          "title": "Volumen de la base social",
+          "why": "Socios al corriente · FGPS entidad",
+          "measures": "Tamaño de la base social (socios / miembros).",
+          "publicLine": "en la base social"
+        },
+        "project_volunteering": {
+          "title": "Voluntariado en el proyecto",
+          "why": "Horas en un proyecto concreto · FGPS proyecto",
+          "measures": "Horas de voluntariado atribuidas a un proyecto.",
+          "publicLine": "horas en el proyecto"
+        },
+        "user_design_participation": {
+          "title": "Participación del usuario en el diseño",
+          "why": "Quién opina sobre el servicio · FGPS proyecto",
+          "measures": "Personas usuarias que participan en diseñar el servicio.",
+          "publicLine": "participan en el diseño"
+        },
+        "social_return": {
+          "title": "Retorno social",
+          "why": "Solo si ya lo calculáis. Sin SROI automático.",
+          "measures": "Valor de retorno social que ya calculáis fuera de Klaruk.",
+          "publicLine": "de retorno social"
+        },
+        "onboarding_completion": {
+          "title": "Onboarding completado",
+          "why": "Automático",
+          "measures": "Porcentaje de personas que terminan el onboarding.",
+          "publicLine": "completan el onboarding"
+        },
+        "time_to_fill": {
+          "title": "Tiempo para cubrir",
+          "why": "Automático",
+          "measures": "Días medios para cubrir un turno o plaza.",
+          "publicLine": "días para cubrir plazas"
+        },
+        "social_impact_per_hour": {
+          "title": "Impacto social por hora",
+          "why": "Automático · beneficiarios / horas",
+          "measures": "Beneficiarios atendidos por hora de voluntariado.",
+          "publicLine": "personas por hora de voluntariado"
+        }
       }
     },
     "miembros": {
@@ -2141,7 +2367,17 @@
       "unit": {
         "hours": "hores",
         "people": "persones",
-        "perHour": "persones/hora"
+        "perHour": "persones/hora",
+        "kg": "kg",
+        "students": "alumnes",
+        "volunteers": "voluntaris",
+        "families": "famílies",
+        "score": "punts",
+        "entities": "entitats",
+        "members": "membres",
+        "participants": "participants",
+        "currency": "€",
+        "days": "dies"
       },
       "estimateBadge": "Estimat",
       "empty": "No hi ha dades d'impacte disponibles.",
@@ -2153,7 +2389,9 @@
         "stable": "Estable"
       },
       "trendsTitle": "Tendències d'impacte",
-      "trendsEmpty": "No hi ha dades de tendències disponibles"
+      "trendsEmpty": "No hi ha dades de tendències disponibles",
+      "loading": "Carregant…",
+      "error": "No s’han pogut carregar les dades"
     }
   },
   "klaruk": {
@@ -2406,14 +2644,15 @@
         "next": "Següent",
         "page": "Pàgina {page} de {total}",
         "cocina": "Cuina",
-        "barra": "Barra"
+        "barra": "Barra",
+        "hint": "El que demanaran els alumnes avui. En obrir el servei es congela un snapshot."
       },
       "session": {
         "title": "Sessió de pràctica",
         "refresh": "Actualitza la sala",
         "label": "Nom de la sessió",
         "labelPlaceholder": "Servei del migdia 12-nov",
-        "start": "Arrencar sessió",
+        "start": "Obrir servei →",
         "addTable": "Afegeix una taula",
         "tablePlaceholder": "Taula 1",
         "tableButton": "+ Taula",
@@ -2444,6 +2683,12 @@
         "abrir": "Obrir servei",
         "sala": "Sala en viu",
         "cierre": "Tancament"
+      },
+      "nextStep": {
+        "title": "Següent pas",
+        "body": "Quan la carta estigui llesta, obre el servei. Els alumnes el veuran per nom, sense codis.",
+        "footnote": "Només el docent pot editar la carta o obrir/tancar el servei.",
+        "goSala": "Ves a la sala en viu →"
       }
     }
   }

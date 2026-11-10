@@ -2,15 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AdminStepper, type AdminStep } from '@/modules/comandero/components/admin/AdminStepper';
 import { LiveSession } from '@/modules/comandero/components/admin/LiveSession';
 import { MenuCard } from '@/modules/comandero/components/admin/MenuCard';
+import { NextStepCard } from '@/modules/comandero/components/admin/NextStepCard';
 import { StartSessionForm } from '@/modules/comandero/components/admin/StartSessionForm';
 import { SummaryCard } from '@/modules/comandero/components/admin/SummaryCard';
 import { comanderoApi } from '@/modules/comandero/api';
 import type { SessionSummary } from '@/modules/comandero/types';
 import { useComanderoFloor } from '@/modules/comandero/useComandero';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function ComanderoAdminPage() {
   const t = useTranslations('comandero.admin');
@@ -66,12 +67,23 @@ export default function ComanderoAdminPage() {
         canOpenCierre={Boolean(summary)}
       />
 
-      {step === 'carta' && <MenuCard />}
+      {step === 'carta' && (
+        <div className="grid gap-4 lg:grid-cols-2" data-testid="comandero-carta-grid">
+          <MenuCard />
+          <NextStepCard
+            busy={busy}
+            sessionOpen={Boolean(sessionId)}
+            onStart={start}
+            onGoSala={() => setStep('sala')}
+          />
+        </div>
+      )}
 
       {step === 'abrir' && (
         <Card>
           <CardHeader>
-            <CardTitle>{t('session.title')}</CardTitle>
+            <CardTitle>{t('nextStep.title')}</CardTitle>
+            <p className="text-sm text-muted-foreground">{t('nextStep.body')}</p>
           </CardHeader>
           <CardContent>
             {sessionId ? (

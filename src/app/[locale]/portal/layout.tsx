@@ -19,7 +19,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   const isStaffAllowedPortal =
     (pathname?.includes('/portal/sala') ?? false)
     || (pathname?.includes('/portal/mensajes') ?? false)
-    || (pathname?.includes('/portal/ayuda-alimentaria') ?? false);
+    || (pathname?.includes('/portal/ayuda-alimentaria') ?? false)
+    || (pathname?.includes('/portal/comandero') ?? false);
   const isProjectBoard = /\/portal\/proyectos\/(?!nuevo$|mensajes)[^/]+$/.test(pathname || '');
 
   useEffect(() => {

@@ -1,113 +1,129 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useEffect, useMemo, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { apiClient, apiUrl } from '@/lib/apiClient';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  buildTrendsMap,
-  type TrendsByKpi,
-} from '@/modules/impact/components/ImpactKpiGrid';
-import { ImpactKpiGrid } from '@/modules/impact/components/ImpactKpiGrid';
-import { currentMonthPeriod, useImpactKpis } from '@/modules/impact/hooks/useImpactKpis';
-import { COORDINATOR_KPI_ORDER } from '@/modules/impact/types';
+import { getCatalogItem, type PublicImpactConfig } from '@/modules/impact/catalog';
+import { formatImpactNumber, localizeImpactUnit } from '@/modules/impact/formatNumber';
+import { currentMonthPeriod } from '@/modules/impact/hooks/useImpactKpis';
+import type { ImpactKpi, ImpactKpiResponse } from '@/modules/impact/types';
 
-type ImpactTrendsResponse = {
-  success: boolean;
-  data?: Array<{
-    kpi: string;
-    current: { direction: 'up' | 'down' | 'stable'; percentChange: number } | null;
-  }>;
-  error?: string;
-};
-
-function OrganizationBranding({
-  name,
-  logo,
-}: {
-  name: string | null;
-  logo: string | null;
-}) {
-  if (!name && !logo) return null;
-  return (
-    <div className="mb-3 flex items-center gap-3">
-      {logo && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={logo}
-          alt={name ?? 'Organization logo'}
-          className="h-10 w-10 rounded object-contain"
-        />
-      )}
-      {name && <p className="text-lg font-semibold">{name}</p>}
-    </div>
-  );
-}
+type PublicConfigResponse = { success: boolean; data?: PublicImpactConfig; error?: string };
 
 export default function PublicImpactDashboardPage() {
   const t = useTranslations('impact.dashboard');
-  // Same coordinator view as the admin dashboard (unauthenticated).
+  const ti = useTranslations('admin.impact');
+  const locale = useLocale();
   const monthPeriod = currentMonthPeriod();
-  const { kpis, config, loading, error, refresh } = useImpactKpis({
-    period: monthPeriod,
-    includeKeys: COORDINATOR_KPI_ORDER,
-    order: COORDINATOR_KPI_ORDER,
-  });
-  const [trendsByKpi, setTrendsByKpi] = useState<TrendsByKpi>({});
+  const [pub, setPub] = useState<PublicImpactConfig | null>(null);
+  const [kpis, setKpis] = useState<ImpactKpi[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchTrends() {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const trendsResult = await apiClient<ImpactTrendsResponse>(
-          apiUrl(`/api/impact/trends?period=${monthPeriod}`),
-        );
-        if (trendsResult.success && trendsResult.data.success) {
-          setTrendsByKpi(buildTrendsMap(trendsResult.data.data));
+        const [cfgRes, kpiRes] = await Promise.all([
+          apiClient<PublicConfigResponse>(apiUrl('/api/impact/public-config')),
+          apiClient<ImpactKpiResponse>(
+            apiUrl(`/api/impact/kpis?period=${encodeURIComponent(monthPeriod)}`),
+          ),
+        ]);
+        if (cancelled) return;
+        if (cfgRes.success && cfgRes.data?.success && cfgRes.data.data) {
+          setPub(cfgRes.data.data);
+        } else {
+          setPub({
+            organizationName: '',
+            organizationLogo: '',
+            showEstimateBadge: true,
+            publicKeys: [],
+            figures: [],
+          });
+        }
+        if (kpiRes.success && kpiRes.data?.success && kpiRes.data.data) {
+          setKpis(kpiRes.data.data);
         }
       } catch {
-        setTrendsByKpi({});
+        if (!cancelled) setError(t('error'));
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-    }
-    fetchTrends();
-  }, [monthPeriod]);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [monthPeriod, t]);
 
-  const showEstimateBadge = config?.showEstimateBadge ?? true;
-  const organizationLogo =
-    config?.organizationLogo && config.organizationLogo !== '/logo.png'
-      ? config.organizationLogo
-      : null;
+  const figures = useMemo(() => {
+    const list = pub?.figures ?? [];
+    return list.map((fig) => {
+      const item = getCatalogItem(fig.key);
+      const kpi = item?.mapsToKpi ? kpis.find((k) => k.key === item.mapsToKpi) : undefined;
+      const manualUnit = localizeImpactUnit(fig.manualUnit, (key) => t(`unit.${key}`));
+      const kpiUnit = localizeImpactUnit(kpi?.unit, (key) => t(`unit.${key}`));
+      const value =
+        fig.manualValue != null
+          ? manualUnit
+            ? `${formatImpactNumber(fig.manualValue, locale)} ${manualUnit}`
+            : formatImpactNumber(fig.manualValue, locale)
+          : kpi
+            ? kpiUnit
+              ? `${formatImpactNumber(kpi.value, locale)} ${kpiUnit}`
+              : formatImpactNumber(kpi.value, locale)
+            : '—';
+      return {
+        key: fig.key,
+        value,
+        isEstimate: fig.isEstimate || kpi?.isEstimate,
+        title: ti(`catalog.${fig.key}.title`),
+        line: ti(`catalog.${fig.key}.publicLine`),
+      };
+    });
+  }, [pub, kpis, ti, t, locale]);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-3xl space-y-6 px-4 py-8 sm:px-6">
       <div>
-        <OrganizationBranding
-          name={config?.organizationName ?? null}
-          logo={organizationLogo}
-        />
-        <h1 className="text-2xl font-bold">{t('title')}</h1>
-        <p className="text-muted-foreground mt-1">{t('subtitle')}</p>
+        {pub?.organizationName && (
+          <p className="text-sm font-semibold text-primary">{pub.organizationName}</p>
+        )}
+        <h1 className="mt-1 text-2xl font-bold tracking-tight">
+          {pub?.publicHeadline || t('title')}
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
       </div>
 
-      <ImpactKpiGrid
-        kpis={loading ? null : kpis}
-        trendsByKpi={trendsByKpi}
-        isLoading={loading}
-        error={error}
-        onRetry={refresh}
-        showEstimateBadge={showEstimateBadge}
-        showExplanations
-        expectedKeys={COORDINATOR_KPI_ORDER}
-      />
+      {loading && <p className="text-sm text-muted-foreground">{t('loading')}</p>}
+      {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">{t('about')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">{t('description')}</p>
-          <p className="text-sm text-muted-foreground mt-2">{t('dataNote')}</p>
-        </CardContent>
-      </Card>
+      {!loading && figures.length === 0 && (
+        <p className="rounded-lg border border-dashed border-border p-6 text-sm text-muted-foreground">
+          {t('empty')}
+        </p>
+      )}
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        {figures.map((fig) => (
+          <div key={fig.key} className="rounded-[10px] border border-border bg-card p-4">
+            <div className="text-2xl font-bold tracking-tight">{fig.value}</div>
+            <div className="mt-1 text-sm text-muted-foreground">{fig.line || fig.title}</div>
+            {pub?.showEstimateBadge && fig.isEstimate && (
+              <span className="mt-2 inline-flex rounded-[5px] border border-border bg-muted px-1.5 py-0.5 text-[11px] font-bold">
+                {ti('estimated')}
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="flex items-center justify-between border-t border-border pt-4 text-xs text-muted-foreground">
+        <span>{t('dataNote')}</span>
+        <span className="font-semibold text-primary">{ti('madeWithKlaruk')}</span>
+      </div>
     </div>
   );
 }

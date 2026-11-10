@@ -391,7 +391,7 @@
         "tabs": {
           "resumen": "Resumen",
           "inventario": "Inventario",
-          "familias": "Familias y niños",
+          "familias": "Familias",
           "turnos": "Turnos",
           "entrega": "Modo reparto",
           "cierre": "Cierre"
@@ -614,16 +614,9 @@
         }
       },
       "familias": {
-        "titulo": "Familias y niños",
+        "titulo": "Familias",
         "sub": "Quién está inscrito, quién ha reservado y quién ya recogió.",
-        "vistas": "Vistas",
-        "tab": {
-          "familias": "Familias ({n})",
-          "ninos": "Niños ({n})"
-        },
         "anadirFamilia": "Añadir familia",
-        "anadirNino": "Añadir niño",
-        "importar": "Importar lista",
         "buscarCodigo": "Buscar por código",
         "filtrar": "Filtrar por estado",
         "todas": "Todas ({n})",
@@ -642,11 +635,6 @@
         "cupo": "{n, plural, one {# juguete} other {# juguetes}}",
         "sinTurno": "Sin turno",
         "incidencia": "Incidencia",
-        "buscarNino": "Buscar por etiqueta",
-        "privacidad": "Usa etiquetas como «Niño 1», nunca el nombre del niño.",
-        "vacioNinos": "Todavía no hay niños inscritos.",
-        "anos": "{n, plural, one {# año} other {# años}}",
-        "editarNino": "Editar {label}",
         "editarFamilia": "Editar familia",
         "nuevaFamilia": "Nueva familia",
         "codigo": "Código de la familia (opcional)",
@@ -655,28 +643,16 @@
         "cupoAyuda": "Normalmente uno por niño.",
         "borrarFamilia": "¿Borrar esta familia? También se borrarán su reserva de turno y su pedido.",
         "error": {
-          "existe": "Ese código ya existe. Elige otro.",
-          "nino": "Escribe una etiqueta y una edad válida.",
-          "archivo": "No podemos leer ese archivo: {error}"
+          "existe": "Ese código ya existe. Elige otro."
         },
         "guardada": "Familia {code} guardada",
         "creada": "Familia {code} añadida",
         "borrada": "Familia {code} borrada",
-        "editarNinoTitulo": "Editar niño",
-        "nuevoNino": "Nuevo niño",
-        "borrarNino": "¿Borrar este niño de la lista?",
-        "etiqueta": "Etiqueta",
-        "etiquetaAyuda": "Ej.: Niño 1. Nunca el nombre.",
-        "edad": "Edad (años)",
-        "ninoGuardado": "{label} guardado",
-        "ninoCreado": "{label} añadido",
-        "ninoBorrado": "{label} borrado",
-        "importarEyebrow": "Excel o CSV",
-        "importarAyuda": "El archivo necesita una columna de etiqueta (nombre, etiqueta) y otra de edad. Antes de importar verás lo que se va a crear.",
-        "elegirArchivo": "Elige un archivo .csv o .xlsx",
-        "vistaPrevia": "Se crearán {n, plural, one {# niño} other {# niños}}{skipped, plural, =0 {} one { · # fila no válida se saltará} other { · # filas no válidas se saltarán}}",
-        "importarN": "{n, plural, =0 {Importar} one {Importar # niño} other {Importar # niños}}",
-        "importados": "Importados: {n}. Filas saltadas: {skipped}."
+        "paginacion": "Páginas de familias",
+        "rango": "{from}–{to} de {total} familias",
+        "anterior": "Anterior",
+        "siguiente": "Siguiente",
+        "paginaN": "Página {page} de {pages}"
       },
       "cierreGuiado": {
         "titulo": "Cierre de la campaña",
@@ -1135,30 +1111,30 @@
       "hacerCheckOut": "Check-out"
     },
     "impact": {
-      "title": "Configuración del Dashboard de Impacto",
-      "subtitle": "Configura qué KPIs se muestran y el branding del dashboard público",
+      "title": "Impacto",
+      "subtitle": "Elige qué medís, de dónde sale y qué contáis en público",
       "organizationSettings": "Configuración de la organización",
-      "organizationSettingsDesc": "Configura el nombre y logo de la organización que se mostrarán en el dashboard público.",
+      "organizationSettingsDesc": "Nombre y logo en la página pública.",
       "organizationName": "Nombre de la organización",
       "organizationLogo": "URL del logo",
-      "displaySettings": "Configuración de visualización",
-      "displaySettingsDesc": "Configura cómo se muestran los datos en el dashboard.",
+      "displaySettings": "Visualización",
+      "displaySettingsDesc": "Cómo se muestran los datos.",
       "peoplePerHourFactor": "Factor personas/hora",
-      "peoplePerHourHint": "Número de personas estimadas que se atienden por cada hora de voluntariado.",
+      "peoplePerHourHint": "Personas estimadas por hora de voluntariado.",
       "showEstimateBadge": "Mostrar etiqueta Estimado",
-      "kpiSelection": "Selección de KPIs",
-      "kpiSelectionDesc": "Selecciona qué KPIs se mostrarán en el dashboard público.",
+      "kpiSelection": "Selección de indicadores",
+      "kpiSelectionDesc": "Usa Mis indicadores en el nuevo flujo.",
       "save": "Guardar",
       "saving": "Guardando...",
       "reset": "Restablecer",
       "success": "Éxito",
       "error": "Error",
-      "configSaved": "Configuración guardada correctamente",
-      "configSaveError": "Error al guardar la configuración",
-      "loadingError": "Error al cargar la configuración",
+      "configSaved": "Configuración guardada",
+      "configSaveError": "Error al guardar",
+      "loadingError": "Error al cargar",
       "preview": "Vista previa",
-      "previewDesc": "Vista previa de cómo se verá el dashboard público con la configuración actual.",
-      "previewSubtitle": "Se mostrarán {count} KPIs",
+      "previewDesc": "Vista previa de la página pública.",
+      "previewSubtitle": "Se mostrarán {count} indicadores",
       "communication": {
         "title": "Título",
         "subtitle": "Subtítulo",
@@ -1194,6 +1170,256 @@
         "cardSubtitlePlaceholder": "Juntos hacemos la diferencia",
         "currentKpis": "KPIs actuales",
         "currentKpisDesc": "Datos de impacto actuales que se utilizarán para generar el contenido."
+      },
+      "homeTitle": "Impacto",
+      "homeSubtitle": "Lo que cambió para las personas y cómo va la operación · {org}",
+      "yourOrg": "vuestra entidad",
+      "ctaMine": "Mis indicadores",
+      "ctaEditPublic": "Editar página pública",
+      "ctaGuided": "Configurar indicadores",
+      "layerImpact": "Impacto",
+      "layerImpactHint": "Resultados para las personas.",
+      "layerOps": "Operación",
+      "layerOpsHint": "Para el equipo.",
+      "firstTime": "¿Primera vez?",
+      "emptyHome": "Aún no hay indicadores. Empieza con el inicio guiado.",
+      "guidedTitle": "Empezar con Impacto",
+      "guidedSubtitle": "3 preguntas · te proponemos 4 o 5 indicadores",
+      "guidedQuestion": "¿Qué hace vuestra entidad?",
+      "guidedLead": "Elige una o dos. Luego puedes cambiar los indicadores.",
+      "guidedSuggest": "Te proponemos empezar con estos {count}",
+      "seeMore": "Ver más",
+      "useThisSet": "Usar este set →",
+      "mineTitle": "Mis indicadores",
+      "mineSubtitle": "Lo que medís ahora · guardado en el servidor",
+      "activeCount": "{count} indicadores activos",
+      "needsConfig": "Uno o más necesitan un valor vuestro.",
+      "allReady": "Todos listos.",
+      "addAnother": "+ Añadir otro",
+      "statReady": "listos",
+      "statNeed": "falta configurar",
+      "statPublic": "en la página pública",
+      "emptyMine": "No hay indicadores aún.",
+      "missingValue": "Falta valor",
+      "showOnPublic": "Mostrar en la página pública",
+      "configureNow": "Configurar ahora",
+      "viewDetail": "Ver detalle",
+      "remove": "Quitar",
+      "nextPublic": "Siguiente: página pública →",
+      "howItGoes": "Cómo va esto",
+      "help1": "Configura los que faltan.",
+      "help2": "Activa «Mostrar en la página pública».",
+      "help3": "Edita la página pública.",
+      "repeatGuided": "Repetir inicio guiado",
+      "addTitle": "Añadir un indicador",
+      "addSubtitle": "Busca o filtra · no te tiramos la lista entera",
+      "searchPlaceholder": "Buscar: voluntariado, red, satisfacción…",
+      "add": "Añadir",
+      "backMine": "← Volver a mis indicadores",
+      "setupTitle": "Configurar indicador",
+      "setupSubtitle": "Qué mide · de dónde sale · valor si hace falta",
+      "setupWhat": "Qué mide",
+      "setupSource": "De dónde sale",
+      "setupValue": "Valor",
+      "setupPublic": "Página pública",
+      "value": "Valor",
+      "unit": "Unidad",
+      "evidence": "Evidencia",
+      "markEstimate": "Marcar como estimado",
+      "saveEntity": "Guardar para toda la entidad",
+      "saveAndPublic": "Guardar y ver página pública",
+      "unknownIndicator": "Indicador desconocido",
+      "editorTitle": "Editor de la página pública",
+      "editorSubtitle": "La página es de la ONG · Klaruk solo en el pie",
+      "fromMine": "Viene de Mis indicadores",
+      "fromMineHint": "Solo con el interruptor activado. Sin huecos.",
+      "noPublicYet": "Ninguno publicado todavía.",
+      "changeSelection": "Cambiar selección",
+      "publicHeadline": "Titular público",
+      "publicHeadlinePlaceholder": "Así ha sido nuestro año…",
+      "defaultHeadline": "Así ha sido nuestro impacto este año.",
+      "dataPeriod": "Datos de {period}",
+      "methodNote": "¿Cómo medimos? Contamos con cuidado y sin inventar cifras.",
+      "madeWithKlaruk": "Hecho con Klaruk",
+      "nextPaths": "Siguiente: comunicar →",
+      "pathsTitle": "Comunicar y exportar",
+      "pathsSubtitle": "Las mismas cifras, sin inventar otras",
+      "pathComm": "Comunicación",
+      "pathCommDesc": "Tarjeta social o memoria anual.",
+      "createSocialCard": "Crear tarjeta social",
+      "pathExport": "Exportar memoria",
+      "pathExportDesc": "PDF sin datos personales.",
+      "exportMemory": "Exportar memoria (PDF)",
+      "rolesNote": "Roles: admin edita. Nave solo lee.",
+      "backHome": "Volver al inicio",
+      "readOnlyNave": "Solo lectura: tu rol nave puede ver Impacto pero no editar.",
+      "estimated": "Estimado",
+      "fgpsEntity": "entidad",
+      "fgpsProject": "proyecto",
+      "source": {
+        "automatic": "Automático",
+        "semiautomatic": "Semiautomático",
+        "entity_provided": "Lo aporta la entidad"
+      },
+      "sourceHint": {
+        "automatic": "Klaruk calcula el valor con los datos que ya tenéis.",
+        "semiautomatic": "Parte automática; puedes ajustar o aportar evidencia.",
+        "entity_provided": "Tú pones el número y la evidencia."
+      },
+      "steps": {
+        "of": "Paso {n} de 4",
+        "start": "Empezar",
+        "mine": "Mis indicadores",
+        "public": "Página pública",
+        "paths": "Comunicar"
+      },
+      "profiles": {
+        "direct_care": {
+          "title": "Atención directa a personas",
+          "desc": "Comida, ropa, acogida…"
+        },
+        "volunteering": {
+          "title": "Voluntariado organizado",
+          "desc": "Turnos, fichajes…"
+        },
+        "advocacy": {
+          "title": "Sensibilización o incidencia",
+          "desc": "Talleres, campañas…"
+        },
+        "network": {
+          "title": "Trabajo en red",
+          "desc": "Alianzas del barrio…"
+        }
+      },
+      "filter": {
+        "forYou": "Para vosotras",
+        "outcome": "Impacto en personas",
+        "operation": "Operación",
+        "network": "Red",
+        "fgpsEntity": "FGPS entidad",
+        "fgpsProject": "FGPS proyecto"
+      },
+      "catalog": {
+        "families_served_weekly": {
+          "title": "Personas / familias atendidas",
+          "why": "Automático · registros",
+          "measures": "Personas o familias que recibís de forma habitual.",
+          "publicLine": "reciben apoyo de forma habitual"
+        },
+        "feel_less_alone": {
+          "title": "Satisfacción / menos solas",
+          "why": "Semiautomático · encuesta",
+          "measures": "Cómo se sienten las personas tras el acompañamiento.",
+          "publicLine": "se sienten menos solas"
+        },
+        "volunteer_hours": {
+          "title": "Horas de voluntariado",
+          "why": "Automático · turnos",
+          "measures": "Horas registradas de voluntariado en el periodo.",
+          "publicLine": "de voluntariado"
+        },
+        "basic_needs_people": {
+          "title": "Personas ayudadas en necesidades básicas",
+          "why": "Dato de la entidad",
+          "measures": "Personas que reciben ayuda para cubrir sus necesidades básicas.",
+          "publicLine": "personas ayudadas en sus necesidades básicas"
+        },
+        "food_kilos_delivered": {
+          "title": "Kilos de alimentos entregados",
+          "why": "Dato de la entidad",
+          "measures": "Kilos de alimentos entregados a familias.",
+          "publicLine": "kilos de alimentos entregados"
+        },
+        "social_integration_people": {
+          "title": "Personas atendidas para su integración social",
+          "why": "Dato de la entidad",
+          "measures": "Personas atendidas en procesos de integración social.",
+          "publicLine": "personas atendidas para su integración social"
+        },
+        "course_students": {
+          "title": "Alumnos en cursos de empleabilidad",
+          "why": "Dato de la entidad",
+          "measures": "Alumnos en cursos que han mejorado su empleabilidad.",
+          "publicLine": "alumnos en cursos que han mejorado su empleabilidad"
+        },
+        "insertion_itineraries_people": {
+          "title": "Personas en itinerarios de inserción",
+          "why": "Dato de la entidad",
+          "measures": "Personas acompañadas en itinerarios de inserción y búsqueda de empleo.",
+          "publicLine": "personas acompañadas en itinerarios de inserción y búsqueda de empleo"
+        },
+        "volunteers_supporting": {
+          "title": "Voluntarios que nos apoyan",
+          "why": "Dato de la entidad",
+          "measures": "Voluntarios que han apoyado a la entidad.",
+          "publicLine": "voluntarios nos han apoyado"
+        },
+        "shift_coverage": {
+          "title": "Cobertura de turnos",
+          "why": "Automático · operación",
+          "measures": "Porcentaje de plazas cubiertas frente a las previstas.",
+          "publicLine": "de cobertura de turnos"
+        },
+        "shift_reliability": {
+          "title": "Fiabilidad",
+          "why": "Automático · fichajes",
+          "measures": "Quién cumple lo comprometido en los turnos.",
+          "publicLine": "de fiabilidad en turnos"
+        },
+        "volunteer_retention": {
+          "title": "Retención de voluntariado",
+          "why": "Automático",
+          "measures": "Voluntariado que sigue activo respecto al periodo anterior.",
+          "publicLine": "de retención"
+        },
+        "network_participation": {
+          "title": "Participación y trabajo en red",
+          "why": "FGPS · lo aportáis vosotros",
+          "measures": "Entidades con las que trabajáis juntas de verdad.",
+          "publicLine": "entidades del barrio con las que trabajamos"
+        },
+        "social_base_volume": {
+          "title": "Volumen de la base social",
+          "why": "Socios al corriente · FGPS entidad",
+          "measures": "Tamaño de la base social (socios / miembros).",
+          "publicLine": "en la base social"
+        },
+        "project_volunteering": {
+          "title": "Voluntariado en el proyecto",
+          "why": "Horas en un proyecto concreto · FGPS proyecto",
+          "measures": "Horas de voluntariado atribuidas a un proyecto.",
+          "publicLine": "horas en el proyecto"
+        },
+        "user_design_participation": {
+          "title": "Participación del usuario en el diseño",
+          "why": "Quién opina sobre el servicio · FGPS proyecto",
+          "measures": "Personas usuarias que participan en diseñar el servicio.",
+          "publicLine": "participan en el diseño"
+        },
+        "social_return": {
+          "title": "Retorno social",
+          "why": "Solo si ya lo calculáis. Sin SROI automático.",
+          "measures": "Valor de retorno social que ya calculáis fuera de Klaruk.",
+          "publicLine": "de retorno social"
+        },
+        "onboarding_completion": {
+          "title": "Onboarding completado",
+          "why": "Automático",
+          "measures": "Porcentaje de personas que terminan el onboarding.",
+          "publicLine": "completan el onboarding"
+        },
+        "time_to_fill": {
+          "title": "Tiempo para cubrir",
+          "why": "Automático",
+          "measures": "Días medios para cubrir un turno o plaza.",
+          "publicLine": "días para cubrir plazas"
+        },
+        "social_impact_per_hour": {
+          "title": "Impacto social por hora",
+          "why": "Automático · beneficiarios / horas",
+          "measures": "Beneficiarios atendidos por hora de voluntariado.",
+          "publicLine": "personas por hora de voluntariado"
+        }
       }
     },
     "miembros": {
@@ -2141,7 +2367,17 @@
       "unit": {
         "hours": "horas",
         "people": "personas",
-        "perHour": "personas/hora"
+        "perHour": "personas/hora",
+        "kg": "kg",
+        "students": "alumnos",
+        "volunteers": "voluntarios",
+        "families": "familias",
+        "score": "puntos",
+        "entities": "entidades",
+        "members": "miembros",
+        "participants": "participantes",
+        "currency": "€",
+        "days": "días"
       },
       "estimateBadge": "Estimado",
       "empty": "No hay datos de impacto disponibles.",
@@ -2153,7 +2389,9 @@
         "stable": "Estable"
       },
       "trendsTitle": "Tendencias de Impacto",
-      "trendsEmpty": "No hay datos de tendencias disponibles"
+      "trendsEmpty": "No hay datos de tendencias disponibles",
+      "loading": "Cargando…",
+      "error": "No se pudieron cargar los datos"
     }
   },
   "klaruk": {
@@ -2406,14 +2644,15 @@
         "next": "Siguiente",
         "page": "Página {page} de {total}",
         "cocina": "Cocina",
-        "barra": "Barra"
+        "barra": "Barra",
+        "hint": "Lo que los alumnos pedirán hoy. Al abrir el servicio se congela un snapshot."
       },
       "session": {
         "title": "Sesión de práctica",
         "refresh": "Actualizar sala",
         "label": "Nombre de la sesión",
         "labelPlaceholder": "Servicio mediodía 12-nov",
-        "start": "Arrancar sesión",
+        "start": "Abrir servicio →",
         "addTable": "Añadir mesa",
         "tablePlaceholder": "Mesa 1",
         "tableButton": "+ Mesa",
@@ -2444,6 +2683,12 @@
         "abrir": "Abrir servicio",
         "sala": "Sala en vivo",
         "cierre": "Cierre"
+      },
+      "nextStep": {
+        "title": "Siguiente paso",
+        "body": "Cuando la carta esté lista, abre el servicio. Los alumnos lo verán por nombre, sin códigos.",
+        "footnote": "Solo el docente puede editar la carta o abrir/cerrar el servicio.",
+        "goSala": "Ir a sala en vivo →"
       }
     }
   }

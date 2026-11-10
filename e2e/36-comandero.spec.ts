@@ -1,4 +1,4 @@
-import { expect, type Page, test } from '@playwright/test';
+import { expect, type Page, request as apiContext, test } from '@playwright/test';
 import { adminLogin, authHeaders, BACKEND_URL, loginAsBrowserOnHost } from './helpers';
 
 /**
@@ -78,10 +78,11 @@ async function seedCarta(request: Parameters<typeof adminLogin>[0], tag: string)
  * Names carry the per-test `tag` so UI option selectors are unambiguous even
  * though the tenant carta is shared per tenant and accumulates across tests.
  */
-async function seedSession(request: Parameters<typeof adminLogin>[0], tag: string): Promise<Seed> {
+async function seedSession(request: Parameters<typeof adminLogin>[0], tag: string, hold = false): Promise<Seed> {
   const headers = await apiHeaders(request);
   const carta = await seedCarta(request, tag);
   const sessionLabel = `E2E ${tag}`;
+  trackSessionLabel(sessionLabel, hold);
   const session = await (
     await request.fetch(`${api}/sessions`, { method: 'POST', headers, data: { label: sessionLabel } })
   ).json();
@@ -95,6 +96,49 @@ async function seedSession(request: Parameters<typeof adminLogin>[0], tag: strin
     snapBebidaId: snapshot.find((s: { source_item_id: string }) => s.source_item_id === carta.bebidaId).id,
   };
 }
+
+/**
+ * Services created by the test that is running. Closed in afterEach, so a failure
+ * still takes them off the student picker. A label in `heldSessionLabels` is shared
+ * with the next test of a serial describe and is closed in afterAll instead.
+ * Anything a teacher opened by hand, including the demo service, is not in either set.
+ */
+const closeAfterTest = new Set<string>();
+const heldSessionLabels = new Set<string>();
+
+function trackSessionLabel(label: string, hold = false) {
+  (hold ? heldSessionLabels : closeAfterTest).add(label);
+}
+
+async function closeTrackedSessions(
+  request: Parameters<typeof adminLogin>[0],
+  labels: Set<string>,
+) {
+  if (labels.size === 0) return;
+  const headers = await apiHeaders(request);
+  const listed = await (await request.fetch(`${api}/sessions`, { headers })).json();
+  if (!Array.isArray(listed)) return;
+  for (const session of listed) {
+    if (!session?.id || typeof session.label !== 'string' || !labels.has(session.label)) continue;
+    await request.fetch(`${api}/sessions/${session.id}/close`, { method: 'POST', headers, data: {} });
+  }
+}
+
+test.afterEach(async ({ request }) => {
+  await closeTrackedSessions(request, closeAfterTest);
+  closeAfterTest.clear();
+});
+
+test.afterAll(async () => {
+  if (heldSessionLabels.size === 0) return;
+  const request = await apiContext.newContext();
+  try {
+    await closeTrackedSessions(request, heldSessionLabels);
+  } finally {
+    heldSessionLabels.clear();
+    await request.dispose();
+  }
+});
 
 /** Close the seed's service and remove its carta items, so the shared tenant is left as found. */
 async function cleanupSeed(request: Parameters<typeof adminLogin>[0], seed: Carta & { sessionId?: string }) {
@@ -137,6 +181,22 @@ function rx(s: string): RegExp {
 /** Find a carta row by name, walking menu pagination (10 per page) if needed. */
 async function expectMenuRow(page: Page, itemName: string, station?: RegExp | string) {
   const row = () => page.getByTestId('comandero-menu-row').filter({ hasText: itemName });
+  // New items land on the last page; wait there first before walking from the start.
+  try {
+    await expect(row()).toHaveCount(1, { timeout: 5000 });
+    if (station) await expect(row()).toContainText(station);
+    return;
+  } catch {
+    /* walk pages below */
+  }
+  const prev = page.getByTestId('comandero-menu-prev');
+  for (let guard = 0; guard < 20 && (await prev.count()) > 0 && !(await prev.isDisabled()); guard++) {
+    try {
+      await prev.click({ timeout: 2000 });
+    } catch {
+      break;
+    }
+  }
   for (let guard = 0; guard < 20; guard++) {
     if ((await row().count()) > 0) {
       await expect(row()).toHaveCount(1);
@@ -224,8 +284,10 @@ test.describe('KL-US-037 carta del aula + snapshot inmutable', () => {
     const plato = await (
       await request.fetch(`${api}/menu`, { method: 'POST', headers, data: { name: `Fijo ${tag}`, category: 'plato', price_cents: 600 } })
     ).json();
+    const snapLabel = `Snap ${tag}`;
+    trackSessionLabel(snapLabel);
     const session = await (
-      await request.fetch(`${api}/sessions`, { method: 'POST', headers, data: { label: `Snap ${tag}` } })
+      await request.fetch(`${api}/sessions`, { method: 'POST', headers, data: { label: snapLabel } })
     ).json();
 
     // Delete the carta item AFTER the session started.
@@ -243,7 +305,7 @@ test.describe('KL-US-038 mesas y apertura de comanda', () => {
   let sessionLabel = '';
 
   test('seed', async ({ request }) => {
-    ({ sessionLabel } = await seedSession(request, tag));
+    ({ sessionLabel } = await seedSession(request, tag, true));
   });
 
   test('camarero abre comanda en mesa libre; la 2a abierta se bloquea', async ({ page }) => {
@@ -358,6 +420,7 @@ test.describe('KL-US-043 vista de sala del docente por polling + resumen', () =>
 
   test('docente ve la mesa en la sala y cierra con resumen', async ({ page }) => {
     sessionLabel = `Sala ${tag}`;
+    trackSessionLabel(sessionLabel);
     await openAdmin(page);
 
     // Need a carta item so the session is usable, then start + add a table.
@@ -633,6 +696,7 @@ test.describe('Comandero redesign: primary course', () => {
     const tag = `flr-${Date.now()}`;
     const carta = await seedCarta(request, tag);
     const label = `Sala ${tag}`;
+    trackSessionLabel(label);
     let sessionId = '';
     try {
       await openAdmin(page);
