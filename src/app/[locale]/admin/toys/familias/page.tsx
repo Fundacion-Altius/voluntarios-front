@@ -1,25 +1,20 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { AlertTriangle, FileUp, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, ChevronRight, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
 import { useAuth } from '@/app/auth/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { bandForYears } from '../campaign';
 import { Field } from '../_components/Field';
 import { ToysHeader } from '../_components/ToysHeader';
 import { useToys } from '../useToys';
 import type { Slot } from '../turnos/slots';
-import { FAMILY_STATUSES, countByStatus, filterChildren, filterFamilies, type Child, type Family, type FamilyStatus } from './families';
+import { FAMILY_STATUSES, countByStatus, familyPage, filterFamilies, type Family, type FamilyStatus } from './families';
 
-type Tab = 'familias' | 'ninos';
-type Panel =
-  | { kind: 'family'; family: Family | null }
-  | { kind: 'child'; child: Child | null }
-  | { kind: 'import' };
+type Panel = { family: Family | null };
 
 const STATUS_STYLE: Record<FamilyStatus, string> = {
   inscrita: 'bg-muted text-foreground',
@@ -31,18 +26,15 @@ export default function ToysFamiliesPage() {
   const t = useTranslations('admin.toys');
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const api = useToys();
-  const [tab, setTab] = useState<Tab>('familias');
   const [families, setFamilies] = useState<Family[] | null>(null);
-  const [children, setChildren] = useState<Child[] | null>(null);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [panel, setPanel] = useState<Panel | null>(null);
   const [notice, setNotice] = useState('');
   const [requested, setRequested] = useState(false);
 
   const load = useCallback(async () => {
-    const [f, c, s] = await Promise.all([api.listFamilies(), api.listChildren(), api.listSlots()]);
+    const [f, s] = await Promise.all([api.listFamilies(), api.listSlots()]);
     setFamilies(f.success ? (f.data as Family[]) : []);
-    setChildren(c.success ? (c.data as Child[]) : []);
     setSlots(s.success ? (s.data as Slot[]) : []);
   }, [api]);
 
@@ -69,52 +61,44 @@ export default function ToysFamiliesPage() {
         title={t('familias.titulo')}
         subtitle={t('familias.sub')}
         actions={
-          tab === 'familias' ? (
-            <Button data-testid="toys-family-add" variant="cta" className="h-11 px-5" onClick={() => setPanel({ kind: 'family', family: null })}>
-              <Plus aria-hidden="true" />
-              {t('familias.anadirFamilia')}
-            </Button>
-          ) : (
-            <>
-              <Button data-testid="toys-child-import" variant="outline" className="h-11" onClick={() => setPanel({ kind: 'import' })}>
-                <FileUp aria-hidden="true" />
-                {t('familias.importar')}
-              </Button>
-              <Button data-testid="toys-child-add" variant="cta" className="h-11 px-5" onClick={() => setPanel({ kind: 'child', child: null })}>
-                <Plus aria-hidden="true" />
-                {t('familias.anadirNino')}
-              </Button>
-            </>
-          )
+          <Button data-testid="toys-family-add" variant="cta" className="h-11 px-5" onClick={() => setPanel({ family: null })}>
+            <Plus aria-hidden="true" />
+            {t('familias.anadirFamilia')}
+          </Button>
         }
       />
-      <div role="tablist" aria-label={t('familias.vistas')} className="inline-flex w-full max-w-sm rounded-xl bg-muted p-1">
-        {(['familias', 'ninos'] as const).map((key) => (
-          <button
-            key={key}
-            role="tab"
-            type="button"
-            aria-selected={tab === key}
-            data-testid={`toys-fam-tab-${key}`}
-            onClick={() => setTab(key)}
-            className={cn('min-h-11 flex-1 rounded-lg text-sm font-semibold outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50', tab === key ? 'bg-card shadow-xs' : 'text-muted-foreground')}
-          >
-            {t(`familias.tab.${key}`, { n: key === 'familias' ? (families?.length ?? 0) : (children?.length ?? 0) })}
-          </button>
-        ))}
-      </div>
       {notice && <p data-testid="toys-fam-notice" role="status" className="text-sm text-success">{notice}</p>}
-      {!families || !children ? (
+      {!families ? (
         <Skeleton className="h-64 w-full" />
-      ) : tab === 'familias' ? (
-        <FamilyList families={families} slots={slots} onEdit={(family) => setPanel({ kind: 'family', family })} />
       ) : (
-        <ChildList list={children} onEdit={(child) => setPanel({ kind: 'child', child })} />
+        <FamilyList families={families} slots={slots} onEdit={(family) => setPanel({ family })} />
       )}
-      {panel?.kind === 'family' && <FamilyPanel key={panel.family?.code ?? 'new'} family={panel.family} onClose={() => setPanel(null)} onDone={done} />}
-      {panel?.kind === 'child' && <ChildPanel key={panel.child?.id ?? 'new'} child={panel.child} onClose={() => setPanel(null)} onDone={done} />}
-      {panel?.kind === 'import' && <ImportPanel onClose={() => setPanel(null)} onDone={done} />}
+      {panel && <FamilyPanel key={panel.family?.code ?? 'new'} family={panel.family} onClose={() => setPanel(null)} onDone={done} />}
     </div>
+  );
+}
+
+function FamilyPager({ page, pages, from, to, total, onPage }: { page: number; pages: number; from: number; to: number; total: number; onPage: (p: number) => void }) {
+  const t = useTranslations('admin.toys');
+  return (
+    <nav aria-label={t('familias.paginacion')} className="flex flex-wrap items-center justify-between gap-3" data-testid="toys-fam-pager">
+      <p className="text-sm text-muted-foreground" data-testid="toys-fam-range" aria-live="polite">
+        {t('familias.rango', { from, to, total })}
+      </p>
+      <div className="flex items-center gap-2">
+        <Button variant="outline" className="h-11" data-testid="toys-fam-prev" disabled={page <= 0} onClick={() => onPage(page - 1)}>
+          <ChevronLeft aria-hidden="true" />
+          {t('familias.anterior')}
+        </Button>
+        <span className="min-w-24 text-center text-sm font-medium" data-testid="toys-fam-page">
+          {t('familias.paginaN', { page: page + 1, pages })}
+        </span>
+        <Button variant="outline" className="h-11" data-testid="toys-fam-next" disabled={page >= pages - 1} onClick={() => onPage(page + 1)}>
+          {t('familias.siguiente')}
+          <ChevronRight aria-hidden="true" />
+        </Button>
+      </div>
+    </nav>
   );
 }
 
@@ -123,8 +107,10 @@ function FamilyList({ families, slots, onEdit }: { families: Family[]; slots: Sl
   const locale = useLocale();
   const [status, setStatus] = useState<FamilyStatus | 'all'>('all');
   const [query, setQuery] = useState('');
+  const [page, setPage] = useState(0);
   const counts = countByStatus(families);
-  const rows = filterFamilies(families, status, query);
+  const shown = familyPage(filterFamilies(families, status, query), page);
+  const rows = shown.rows;
   const fmt = new Intl.DateTimeFormat(locale, { weekday: 'short', day: 'numeric', month: 'short' });
   const slotText = (id: string | null) => {
     const s = slots.find((x) => x.id === id);
@@ -138,7 +124,7 @@ function FamilyList({ families, slots, onEdit }: { families: Family[]; slots: Sl
       <div className="flex flex-col gap-3 md:flex-row md:items-center">
         <div className="relative md:w-72">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-          <Input data-testid="toys-fam-search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t('familias.buscarCodigo')} aria-label={t('familias.buscarCodigo')} className="h-11 pl-9" />
+          <Input data-testid="toys-fam-search" value={query} onChange={(e) => { setQuery(e.target.value); setPage(0); }} placeholder={t('familias.buscarCodigo')} aria-label={t('familias.buscarCodigo')} className="h-11 pl-9" />
         </div>
         <div className="flex flex-wrap gap-2" role="group" aria-label={t('familias.filtrar')}>
           {(['all', ...FAMILY_STATUSES] as const).map((key) => (
@@ -147,7 +133,7 @@ function FamilyList({ families, slots, onEdit }: { families: Family[]; slots: Sl
               type="button"
               aria-pressed={status === key}
               data-testid={`toys-fam-filter-${key}`}
-              onClick={() => setStatus(key)}
+              onClick={() => { setStatus(key); setPage(0); }}
               className={cn('min-h-11 rounded-full border px-4 text-sm font-medium outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50', status === key ? 'border-primary bg-primary text-primary-foreground' : 'bg-card hover:border-primary')}
             >
               {key === 'all' ? t('familias.todas', { n: families.length }) : t(`familias.estadoN.${key}`, { n: counts[key] })}
@@ -160,6 +146,7 @@ function FamilyList({ families, slots, onEdit }: { families: Family[]; slots: Sl
       ) : rows.length === 0 ? (
         <p data-testid="toys-fam-no-results" className="rounded-xl border bg-card p-8 text-center text-muted-foreground">{t('familias.sinResultados')}</p>
       ) : (
+        <>
         <ul className="divide-y rounded-xl border bg-card shadow-xs" data-testid="toys-fam-list">
           {rows.map((f) => (
             <li key={f.code} data-testid={`toys-fam-row-${f.code}`} data-status={f.status} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
@@ -183,43 +170,8 @@ function FamilyList({ families, slots, onEdit }: { families: Family[]; slots: Sl
             </li>
           ))}
         </ul>
-      )}
-    </section>
-  );
-}
-
-function ChildList({ list, onEdit }: { list: Child[]; onEdit: (c: Child) => void }) {
-  const t = useTranslations('admin.toys');
-  const [query, setQuery] = useState('');
-  const rows = filterChildren(list, query);
-  return (
-    <section className="flex flex-col gap-3">
-      <div className="relative md:w-72">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-        <Input data-testid="toys-child-search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t('familias.buscarNino')} aria-label={t('familias.buscarNino')} className="h-11 pl-9" />
-      </div>
-      <p className="text-xs text-muted-foreground">{t('familias.privacidad')}</p>
-      {rows.length === 0 ? (
-        <p data-testid="toys-child-empty" className="rounded-xl border bg-card p-8 text-center text-muted-foreground">{list.length === 0 ? t('familias.vacioNinos') : t('familias.sinResultados')}</p>
-      ) : (
-        <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3" data-testid="toys-child-list">
-          {rows.map((c) => {
-            const band = bandForYears(c.age);
-            return (
-              <li key={c.id} data-testid={`toys-child-row-${c.id}`} className="flex items-center gap-3 rounded-xl border bg-card px-4 py-2 shadow-xs">
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate font-semibold">{c.label}</span>
-                  <span className="block text-sm text-muted-foreground">
-                    {t('familias.anos', { n: c.age })}{band ? ` · ${t(`bandas.${band}`)}` : ''}
-                  </span>
-                </span>
-                <Button variant="ghost" size="icon" className="size-11" aria-label={t('familias.editarNino', { label: c.label })} data-testid={`toys-child-edit-${c.id}`} onClick={() => onEdit(c)}>
-                  <Pencil aria-hidden="true" />
-                </Button>
-              </li>
-            );
-          })}
-        </ul>
+        {shown.pages > 1 && <FamilyPager {...shown} onPage={setPage} />}
+        </>
       )}
     </section>
   );
@@ -333,114 +285,6 @@ function FamilyPanel({ family, onClose, onDone }: { family: Family | null; onClo
         <Input id="fam-quota" type="number" min={0} max={50} data-testid="toys-family-quota" value={quota} onChange={(e) => setQuota(e.target.value)} className="h-11" />
       </Field>
       {error && <p role="alert" data-testid="toys-family-error" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>}
-    </PanelShell>
-  );
-}
-
-function ChildPanel({ child, onClose, onDone }: { child: Child | null; onClose: () => void; onDone: (text: string) => void }) {
-  const t = useTranslations('admin.toys');
-  const api = useToys();
-  const [label, setLabel] = useState(child?.label ?? '');
-  const [age, setAge] = useState(child ? String(child.age) : '');
-  const [error, setError] = useState('');
-  const [confirm, setConfirm] = useState(false);
-
-  const save = async () => {
-    const n = Number(age);
-    if (!label.trim() || age === '' || !Number.isInteger(n) || n < 0) return setError(t('familias.error.nino'));
-    const r = child ? await api.updateChild(child.id, { label: label.trim(), age: n }) : await api.addChild(label.trim(), n);
-    if (!r.success) return setError(r.error);
-    onDone(child ? t('familias.ninoGuardado', { label: label.trim() }) : t('familias.ninoCreado', { label: label.trim() }));
-  };
-  const remove = async () => {
-    if (!child) return;
-    const r = await api.deleteChild(child.id);
-    if (!r.success) return setError(r.error);
-    onDone(t('familias.ninoBorrado', { label: child.label }));
-  };
-
-  return (
-    <PanelShell
-      testid="toys-child-panel"
-      eyebrow={child ? t('familias.editarNinoTitulo') : t('familias.nuevoNino')}
-      title={child ? child.label : t('familias.anadirNino')}
-      onClose={onClose}
-      footer={
-        <>
-          {confirm && <DeleteStrip testid="toys-child-delete" question={t('familias.borrarNino')} onCancel={() => setConfirm(false)} onConfirm={remove} />}
-          <Footer testid="toys-child" canDelete={!!child} onDelete={() => setConfirm(true)} onCancel={onClose} onSave={save} saveLabel={child ? t('guardarCambios') : t('anadir')} />
-        </>
-      }
-    >
-      <Field id="child-label" label={t('familias.etiqueta')} hint={t('familias.etiquetaAyuda')}>
-        <Input id="child-label" data-testid="toys-child-label" value={label} onChange={(e) => setLabel(e.target.value)} className="h-11" autoComplete="off" />
-      </Field>
-      <Field id="child-age" label={t('familias.edad')}>
-        <Input id="child-age" type="number" min={0} max={17} data-testid="toys-child-age" value={age} onChange={(e) => setAge(e.target.value)} className="h-11" />
-      </Field>
-      {error && <p role="alert" data-testid="toys-child-error" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>}
-    </PanelShell>
-  );
-}
-
-function ImportPanel({ onClose, onDone }: { onClose: () => void; onDone: (text: string) => void }) {
-  const t = useTranslations('admin.toys');
-  const api = useToys();
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<{ rows: { label: string; age: number }[]; skipped: number } | null>(null);
-  const [error, setError] = useState('');
-
-  const pick = async (f: File | undefined) => {
-    setPreview(null);
-    setError('');
-    if (!f) return;
-    setFile(f);
-    const r = await api.previewChildren(f);
-    if (!r.success) return setError(t('familias.error.archivo', { error: r.error }));
-    setPreview({ rows: r.data.rows ?? [], skipped: Number(r.data.skipped ?? 0) });
-  };
-  const confirm = async () => {
-    if (!file) return;
-    const r = await api.uploadChildren(file);
-    if (!r.success) return setError(t('familias.error.archivo', { error: r.error }));
-    onDone(t('familias.importados', { n: Number(r.data.created ?? 0), skipped: Number(r.data.skipped ?? 0) }));
-  };
-
-  return (
-    <PanelShell
-      testid="toys-import-panel"
-      eyebrow={t('familias.importarEyebrow')}
-      title={t('familias.importar')}
-      onClose={onClose}
-      footer={
-        <div className="flex items-center justify-end gap-2 border-t bg-muted/30 px-5 py-3">
-          <Button variant="outline" className="h-11" data-testid="toys-import-cancel" onClick={onClose}>{t('cancelar')}</Button>
-          <Button className="h-11" data-testid="toys-import-confirm" disabled={!preview || preview.rows.length === 0} onClick={confirm}>
-            {t('familias.importarN', { n: preview?.rows.length ?? 0 })}
-          </Button>
-        </div>
-      }
-    >
-      <p className="text-sm text-muted-foreground">{t('familias.importarAyuda')}</p>
-      <label className="flex min-h-28 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed bg-accent/40 p-4 text-center text-sm font-medium text-primary hover:border-primary">
-        <FileUp className="size-6" aria-hidden="true" />
-        {file ? file.name : t('familias.elegirArchivo')}
-        <input type="file" accept=".csv,.xlsx,.xls" className="sr-only" data-testid="toys-import-file" onChange={(e) => void pick(e.target.files?.[0])} />
-      </label>
-      {error && <p role="alert" data-testid="toys-import-error" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>}
-      {preview && (
-        <div data-testid="toys-import-preview" className="flex flex-col gap-2">
-          <p className="font-semibold">{t('familias.vistaPrevia', { n: preview.rows.length, skipped: preview.skipped })}</p>
-          <ul className="max-h-64 divide-y overflow-y-auto rounded-lg border text-sm">
-            {preview.rows.slice(0, 50).map((row, i) => (
-              <li key={`${row.label}-${i}`} className="flex justify-between px-3 py-1.5">
-                <span>{row.label}</span>
-                <span className="text-muted-foreground">{t('familias.anos', { n: row.age })}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </PanelShell>
   );
 }

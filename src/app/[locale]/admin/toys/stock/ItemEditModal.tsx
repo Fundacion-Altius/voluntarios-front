@@ -83,7 +83,8 @@ export function ItemEditModal({
     }
     if (!current) return;
     const r = await api.updateItem(current.id, {
-      ean,
+      // Only send the EAN when edited: demo seed EANs are not valid EAN-13 and would block every save.
+      ...(ean !== (current.ean ?? '') ? { ean } : {}),
       title,
       description,
       ageBand: band,
@@ -182,7 +183,11 @@ export function ItemEditModal({
                 multiple
                 className="sr-only"
                 tabIndex={-1}
-                onChange={(e) => upload(e.target.files)}
+                onChange={async (e) => {
+                  const input = e.target;
+                  await upload(input.files);
+                  input.value = ''; // so picking the same photo again after an error fires onChange
+                }}
               />
               <div
                 onDragOver={(e) => { e.preventDefault(); setDragging(true); }}

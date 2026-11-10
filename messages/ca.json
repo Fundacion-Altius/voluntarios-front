@@ -391,7 +391,7 @@
         "tabs": {
           "resumen": "Resum",
           "inventario": "Inventari",
-          "familias": "Famílies i infants",
+          "familias": "Famílies",
           "turnos": "Torns",
           "entrega": "Mode repartiment",
           "cierre": "Tancament"
@@ -614,16 +614,9 @@
         }
       },
       "familias": {
-        "titulo": "Famílies i infants",
+        "titulo": "Famílies",
         "sub": "Qui està inscrit, qui ha reservat i qui ja ha recollit.",
-        "vistas": "Vistes",
-        "tab": {
-          "familias": "Famílies ({n})",
-          "ninos": "Infants ({n})"
-        },
         "anadirFamilia": "Afegir família",
-        "anadirNino": "Afegir infant",
-        "importar": "Importar llista",
         "buscarCodigo": "Cercar per codi",
         "filtrar": "Filtrar per estat",
         "todas": "Totes ({n})",
@@ -642,11 +635,6 @@
         "cupo": "{n, plural, one {# joguina} other {# joguines}}",
         "sinTurno": "Sense torn",
         "incidencia": "Incidència",
-        "buscarNino": "Cercar per etiqueta",
-        "privacidad": "Fes servir etiquetes com «Infant 1», mai el nom de l'infant.",
-        "vacioNinos": "Encara no hi ha infants inscrits.",
-        "anos": "{n, plural, one {# any} other {# anys}}",
-        "editarNino": "Editar {label}",
         "editarFamilia": "Editar família",
         "nuevaFamilia": "Família nova",
         "codigo": "Codi de la família (opcional)",
@@ -655,28 +643,16 @@
         "cupoAyuda": "Normalment una per infant.",
         "borrarFamilia": "Esborrar aquesta família? També s'esborraran la seva reserva de torn i la comanda.",
         "error": {
-          "existe": "Aquest codi ja existeix. Tria'n un altre.",
-          "nino": "Escriu una etiqueta i una edat vàlida.",
-          "archivo": "No podem llegir aquest fitxer: {error}"
+          "existe": "Aquest codi ja existeix. Tria'n un altre."
         },
         "guardada": "Família {code} desada",
         "creada": "Família {code} afegida",
         "borrada": "Família {code} esborrada",
-        "editarNinoTitulo": "Editar infant",
-        "nuevoNino": "Infant nou",
-        "borrarNino": "Esborrar aquest infant de la llista?",
-        "etiqueta": "Etiqueta",
-        "etiquetaAyuda": "Ex.: Infant 1. Mai el nom.",
-        "edad": "Edat (anys)",
-        "ninoGuardado": "{label} desat",
-        "ninoCreado": "{label} afegit",
-        "ninoBorrado": "{label} esborrat",
-        "importarEyebrow": "Excel o CSV",
-        "importarAyuda": "El fitxer necessita una columna d'etiqueta (nom, etiqueta) i una d'edat. Abans d'importar veuràs el que es crearà.",
-        "elegirArchivo": "Tria un fitxer .csv o .xlsx",
-        "vistaPrevia": "Es crearan {n, plural, one {# infant} other {# infants}}{skipped, plural, =0 {} one { · # fila no vàlida se saltarà} other { · # files no vàlides se saltaran}}",
-        "importarN": "{n, plural, =0 {Importar} one {Importar # infant} other {Importar # infants}}",
-        "importados": "Importats: {n}. Files saltades: {skipped}."
+        "paginacion": "Pàgines de famílies",
+        "rango": "{from}–{to} de {total} famílies",
+        "anterior": "Anterior",
+        "siguiente": "Següent",
+        "paginaN": "Pàgina {page} de {pages}"
       },
       "cierreGuiado": {
         "titulo": "Tancament de la campanya",
