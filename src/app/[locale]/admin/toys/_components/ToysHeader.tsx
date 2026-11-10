@@ -38,18 +38,22 @@ export function ToysHeader({
         </div>
         {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>
-      <nav aria-label={t('campana.navegacion')} className="-mx-1 border-b">
-        <ul className="flex flex-wrap gap-x-1 px-1">
+      <nav
+        aria-label={t('campana.navegacion')}
+        data-testid="toys-tabs"
+        className="-mx-1 overflow-x-auto overscroll-x-contain border-b [scrollbar-width:thin]"
+      >
+        <ul className="flex w-max min-w-full flex-nowrap gap-x-1 px-1">
           {TABS.map((tab) => {
             const on = tab.key === active;
             return (
-              <li key={tab.key}>
+              <li key={tab.key} className="shrink-0">
                 <Link
                   href={tab.href}
                   data-testid={tab.testid}
                   aria-current={on ? 'page' : undefined}
                   className={cn(
-                    '-mb-px inline-flex min-h-11 items-center border-b-[3px] px-2.5 text-sm font-medium outline-none transition-colors focus-visible:rounded-md focus-visible:ring-[3px] focus-visible:ring-ring/50',
+                    '-mb-px inline-flex min-h-11 min-w-11 items-center whitespace-nowrap border-b-[3px] px-3 text-sm font-medium outline-none transition-colors focus-visible:rounded-md focus-visible:ring-[3px] focus-visible:ring-ring/50',
                     on ? 'border-primary font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground',
                   )}
                 >

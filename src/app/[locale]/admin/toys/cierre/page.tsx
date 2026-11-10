@@ -52,10 +52,10 @@ export default function ToysClosingPage() {
   }, [api]);
 
   useEffect(() => {
-    if (requested || !api.status?.enabled) return;
+    if (requested || !api.ready || !api.status?.enabled) return;
     setRequested(true);
     void load();
-  }, [api.status, requested, load]);
+  }, [api.ready, api.status, requested, load]);
 
   const rows = useMemo(() => leftovers(items ?? [], dispositions), [items, dispositions]);
   const kindOf = (id: string): Kind => kinds[id] ?? defaultKind;
