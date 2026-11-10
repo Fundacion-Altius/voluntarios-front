@@ -4,9 +4,8 @@ export function getApiBaseUrl(): string {
   if (typeof window === 'undefined') {
     return ENV_API;
   }
-  const h = window.location.hostname;
-  if (h === 'localhost' || h === '127.0.0.1' || h.endsWith('.localhost')) {
-    return ENV_API;
-  }
+  // Browser: always same-origin so the Next BFF can attach Authorization from
+  // the host-only NextAuth session (tenant *.localhost / *.klaruk.com). Direct
+  // calls to :3001 would skip that handoff and 401 with a logged-in UI.
   return `${window.location.protocol}//${window.location.host}`;
 }

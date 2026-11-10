@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -14,6 +15,21 @@ async function proxy(request: NextRequest) {
   headers.set('accept-encoding', 'identity');
   if (incomingHost) {
     headers.set('x-forwarded-host', incomingHost);
+  }
+
+  // When the browser session is on a tenant host but the in-memory Bearer is
+  // not ready yet (or a server component omitted it), attach authToken from
+  // the host-only NextAuth JWT. Do not invent credentials — only forward an
+  // existing session token.
+  if (!headers.get('authorization')) {
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+    const authToken = typeof token?.authToken === 'string' ? token.authToken : null;
+    if (authToken) {
+      headers.set('Authorization', `Bearer ${authToken}`);
+    }
   }
 
   const body = request.method !== 'GET' && request.method !== 'HEAD'
