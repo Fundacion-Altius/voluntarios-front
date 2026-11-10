@@ -1342,6 +1342,42 @@
           "measures": "Horas registradas de voluntariado en el periodo.",
           "publicLine": "de voluntariado"
         },
+        "basic_needs_people": {
+          "title": "Personas ayudadas en necesidades básicas",
+          "why": "Dato de la entidad",
+          "measures": "Personas que reciben ayuda para cubrir sus necesidades básicas.",
+          "publicLine": "personas ayudadas en sus necesidades básicas"
+        },
+        "food_kilos_delivered": {
+          "title": "Kilos de alimentos entregados",
+          "why": "Dato de la entidad",
+          "measures": "Kilos de alimentos entregados a familias.",
+          "publicLine": "kilos de alimentos entregados"
+        },
+        "social_integration_people": {
+          "title": "Personas atendidas para su integración social",
+          "why": "Dato de la entidad",
+          "measures": "Personas atendidas en procesos de integración social.",
+          "publicLine": "personas atendidas para su integración social"
+        },
+        "course_students": {
+          "title": "Alumnos en cursos de empleabilidad",
+          "why": "Dato de la entidad",
+          "measures": "Alumnos en cursos que han mejorado su empleabilidad.",
+          "publicLine": "alumnos en cursos que han mejorado su empleabilidad"
+        },
+        "insertion_itineraries_people": {
+          "title": "Personas en itinerarios de inserción",
+          "why": "Dato de la entidad",
+          "measures": "Personas acompañadas en itinerarios de inserción y búsqueda de empleo.",
+          "publicLine": "personas acompañadas en itinerarios de inserción y búsqueda de empleo"
+        },
+        "volunteers_supporting": {
+          "title": "Voluntarios que nos apoyan",
+          "why": "Dato de la entidad",
+          "measures": "Voluntarios que han apoyado a la entidad.",
+          "publicLine": "voluntarios nos han apoyado"
+        },
         "shift_coverage": {
           "title": "Cobertura de turnos",
           "why": "Automático · operación",

@@ -1342,6 +1342,42 @@
           "measures": "Horas registradas de voluntariado en el periodo.",
           "publicLine": "de voluntariado"
         },
+        "basic_needs_people": {
+          "title": "People helped with basic needs",
+          "why": "Entity-provided",
+          "measures": "People who receive help covering their basic needs.",
+          "publicLine": "people helped with their basic needs"
+        },
+        "food_kilos_delivered": {
+          "title": "Kilos of food delivered",
+          "why": "Entity-provided",
+          "measures": "Kilos of food delivered to families.",
+          "publicLine": "kilos of food delivered"
+        },
+        "social_integration_people": {
+          "title": "People served for social integration",
+          "why": "Entity-provided",
+          "measures": "People served in social integration programmes.",
+          "publicLine": "people served for their social integration"
+        },
+        "course_students": {
+          "title": "Students in employability courses",
+          "why": "Entity-provided",
+          "measures": "Students in courses that improved their employability.",
+          "publicLine": "students in courses that improved their employability"
+        },
+        "insertion_itineraries_people": {
+          "title": "People in job-insertion pathways",
+          "why": "Entity-provided",
+          "measures": "People accompanied in insertion and job-search pathways.",
+          "publicLine": "people accompanied in insertion and job-search pathways"
+        },
+        "volunteers_supporting": {
+          "title": "Volunteers supporting us",
+          "why": "Entity-provided",
+          "measures": "Volunteers who have supported the organisation.",
+          "publicLine": "volunteers have supported us"
+        },
         "shift_coverage": {
           "title": "Cobertura de turnos",
           "why": "Automático · operación",

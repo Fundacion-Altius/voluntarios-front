@@ -70,6 +70,13 @@ export const IMPACT_CATALOG: readonly ImpactCatalogItem[] = [
   { key: 'onboarding_completion', layer: 'operation', sourceType: 'automatic', mapsToKpi: 'onboarding_completion_rate', unit: '%', profiles: ['volunteering'] },
   { key: 'time_to_fill', layer: 'operation', sourceType: 'automatic', mapsToKpi: 'time_to_fill', unit: 'days', profiles: ['volunteering'] },
   { key: 'social_impact_per_hour', layer: 'outcome', sourceType: 'automatic', mapsToKpi: 'social_impact_per_hour', unit: 'people/hour', profiles: ['direct_care', 'volunteering'] },
+  // fundacionaltius-only (served by the back for that tenant)
+  { key: 'basic_needs_people', layer: 'outcome', sourceType: 'entity_provided', unit: 'people', profiles: ['direct_care'] },
+  { key: 'food_kilos_delivered', layer: 'outcome', sourceType: 'entity_provided', unit: 'kg', profiles: ['direct_care'] },
+  { key: 'social_integration_people', layer: 'outcome', sourceType: 'entity_provided', unit: 'people', profiles: ['direct_care', 'advocacy'] },
+  { key: 'course_students', layer: 'outcome', sourceType: 'entity_provided', unit: 'students', profiles: ['direct_care'] },
+  { key: 'insertion_itineraries_people', layer: 'outcome', sourceType: 'entity_provided', unit: 'people', profiles: ['direct_care'] },
+  { key: 'volunteers_supporting', layer: 'operation', sourceType: 'entity_provided', unit: 'volunteers', profiles: ['volunteering'] },
 ] as const;
 
 export function getCatalogItem(key: string): ImpactCatalogItem | undefined {

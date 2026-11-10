@@ -1342,6 +1342,42 @@
           "measures": "Horas registradas de voluntariado en el periodo.",
           "publicLine": "de voluntariado"
         },
+        "basic_needs_people": {
+          "title": "Persones ajudades en necessitats bàsiques",
+          "why": "Dada de l'entitat",
+          "measures": "Persones que reben ajuda per cobrir les seves necessitats bàsiques.",
+          "publicLine": "persones ajudades en les seves necessitats bàsiques"
+        },
+        "food_kilos_delivered": {
+          "title": "Quilos d'aliments lliurats",
+          "why": "Dada de l'entitat",
+          "measures": "Quilos d'aliments lliurats a famílies.",
+          "publicLine": "quilos d'aliments lliurats"
+        },
+        "social_integration_people": {
+          "title": "Persones ateses per a la integració social",
+          "why": "Dada de l'entitat",
+          "measures": "Persones ateses en processos d'integració social.",
+          "publicLine": "persones ateses per a la seva integració social"
+        },
+        "course_students": {
+          "title": "Alumnes en cursos d'ocupabilitat",
+          "why": "Dada de l'entitat",
+          "measures": "Alumnes en cursos que han millorat la seva ocupabilitat.",
+          "publicLine": "alumnes en cursos que han millorat la seva ocupabilitat"
+        },
+        "insertion_itineraries_people": {
+          "title": "Persones en itineraris d'inserció",
+          "why": "Dada de l'entitat",
+          "measures": "Persones acompanyades en itineraris d'inserció i cerca de feina.",
+          "publicLine": "persones acompanyades en itineraris d'inserció i cerca de feina"
+        },
+        "volunteers_supporting": {
+          "title": "Voluntaris que ens donen suport",
+          "why": "Dada de l'entitat",
+          "measures": "Voluntaris que han donat suport a l'entitat.",
+          "publicLine": "voluntaris ens han donat suport"
+        },
         "shift_coverage": {
           "title": "Cobertura de turnos",
           "why": "Automático · operación",
