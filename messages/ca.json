@@ -2658,14 +2658,15 @@
         "next": "Següent",
         "page": "Pàgina {page} de {total}",
         "cocina": "Cuina",
-        "barra": "Barra"
+        "barra": "Barra",
+        "hint": "El que demanaran els alumnes avui. En obrir el servei es congela un snapshot."
       },
       "session": {
         "title": "Sessió de pràctica",
         "refresh": "Actualitza la sala",
         "label": "Nom de la sessió",
         "labelPlaceholder": "Servei del migdia 12-nov",
-        "start": "Arrencar sessió",
+        "start": "Obrir servei →",
         "addTable": "Afegeix una taula",
         "tablePlaceholder": "Taula 1",
         "tableButton": "+ Taula",
@@ -2696,6 +2697,12 @@
         "abrir": "Obrir servei",
         "sala": "Sala en viu",
         "cierre": "Tancament"
+      },
+      "nextStep": {
+        "title": "Següent pas",
+        "body": "Quan la carta estigui llesta, obre el servei. Els alumnes el veuran per nom, sense codis.",
+        "footnote": "Només el docent pot editar la carta o obrir/tancar el servei.",
+        "goSala": "Ves a la sala en viu →"
       }
     }
   }

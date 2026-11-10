@@ -2658,14 +2658,15 @@
         "next": "Siguiente",
         "page": "Página {page} de {total}",
         "cocina": "Cocina",
-        "barra": "Barra"
+        "barra": "Barra",
+        "hint": "Lo que los alumnos pedirán hoy. Al abrir el servicio se congela un snapshot."
       },
       "session": {
         "title": "Sesión de práctica",
         "refresh": "Actualizar sala",
         "label": "Nombre de la sesión",
         "labelPlaceholder": "Servicio mediodía 12-nov",
-        "start": "Arrancar sesión",
+        "start": "Abrir servicio →",
         "addTable": "Añadir mesa",
         "tablePlaceholder": "Mesa 1",
         "tableButton": "+ Mesa",
@@ -2696,6 +2697,12 @@
         "abrir": "Abrir servicio",
         "sala": "Sala en vivo",
         "cierre": "Cierre"
+      },
+      "nextStep": {
+        "title": "Siguiente paso",
+        "body": "Cuando la carta esté lista, abre el servicio. Los alumnos lo verán por nombre, sin códigos.",
+        "footnote": "Solo el docente puede editar la carta o abrir/cerrar el servicio.",
+        "goSala": "Ir a sala en vivo →"
       }
     }
   }
