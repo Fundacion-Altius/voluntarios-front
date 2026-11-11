@@ -147,7 +147,8 @@
     "receipt": "Recibo",
     "other": "Otro",
     "view": "Ver",
-    "all": "Todos"
+    "all": "Todos",
+    "demoData": "Datos de ejemplo"
   },
   "home": {
     "acuerdoVoluntariado": "Acuerdo de voluntariado con la Fundación Altius"
@@ -542,7 +543,7 @@
         "entregados": "Entregados",
         "porRecoger": "Por recoger",
         "aMano": "Escribir el código a mano",
-        "placeholder": "Código QR o código de familia",
+        "placeholder": "Código QR o de familia",
         "buscar": "Buscar",
         "apunta": "Apunta al código QR de la familia",
         "camaraTexto": "Abre la cámara y apunta al QR que trae la familia.",
@@ -1185,7 +1186,7 @@
       "emptyHome": "Aún no hay indicadores. Empieza con el inicio guiado.",
       "guidedTitle": "Empezar con Impacto",
       "guidedSubtitle": "3 preguntas · te proponemos 4 o 5 indicadores",
-      "guidedQuestion": "¿Qué hace vuestra entidad?",
+      "guidedQuestion": "¿Qué hace {org}?",
       "guidedLead": "Elige una o dos. Luego puedes cambiar los indicadores.",
       "guidedSuggest": "Te proponemos empezar con estos {count}",
       "seeMore": "Ver más",
