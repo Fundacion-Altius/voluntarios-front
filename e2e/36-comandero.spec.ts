@@ -1,26 +1,19 @@
 import { expect, type Page, request as apiContext, test } from '@playwright/test';
-import { adminLogin, authHeaders, BACKEND_URL, loginAsBrowserOnHost } from './helpers';
+import { adminLogin, authHeaders, loginAsBrowserOnHost } from './helpers';
 
 /**
- * Comandero (KL-E-022) end-to-end — one describe per story (KL-US-037…044).
+ * Comandero (KL-E-022) end-to-end — browser stories (KL-US-037…044).
  *
- * The comandero is an Altius-only module, so the browser MUST run on the Altius
- * tenant host (fundacionaltius.localhost:3000), not the bare localhost origin.
- * Teacher surfaces are driven through /admin/comandero and student surfaces
- * through /portal/comandero (waiter + station tabs). Incidental setup is seeded
- * via the API; the behaviour each story owns is asserted through the browser.
- * Training simulation only: "cobrar" closes the bill, no real payment.
+ * HTTP 409/403/isolation/snapshot/reclose/non-Altius Host →
+ * comanderoApi.spec.ts / comanderoRolesApi.spec.ts.
  *
- * Runs against `pnpm local:docker` (NODE_ENV=staging, Postgres + RLS) on :3001;
- * Playwright starts the front on :3000. The comandero flag must be ON for the
- * Altius tenant (seeded on docker boot). Run visually with: pnpm test:e2e:ui
+ * Incidental seed uses same-origin /api/comandero via the Altius front host
+ * (Next rewrite), never BACKEND_URL request.fetch asserts.
  */
 
-const api = `${BACKEND_URL}/api/comandero`;
-// Tenant host under test. The comandero only exists for Altius, so the browser
-// must use its subdomain; localhost would fall back to Altius and hide the bug.
 const base = new URL(process.env.NEXTAUTH_URL || 'http://localhost:3000');
 const ALTIUS_ORIGIN = `${base.protocol}//fundacionaltius.localhost:${base.port || '80'}`;
+const api = `${ALTIUS_ORIGIN}/api/comandero`;
 
 // Docente = admin (drives /admin/comandero). Alumno = general (drives /portal/comandero);
 // the portal layout redirects non-general roles to /admin/dashboard, so the student surfaces
@@ -279,36 +272,15 @@ test.describe('KL-US-037 carta del aula + snapshot inmutable', () => {
     await expectMenuRow(page, agua, 'Barra');
   });
 
-  test('editar la carta tras arrancar la sesion NO altera el snapshot', async ({ page, request }) => {
-    const headers = await apiHeaders(request);
-    const plato = await (
-      await request.fetch(`${api}/menu`, { method: 'POST', headers, data: { name: `Fijo ${tag}`, category: 'plato', price_cents: 600 } })
-    ).json();
-    const snapLabel = `Snap ${tag}`;
-    trackSessionLabel(snapLabel);
-    const session = await (
-      await request.fetch(`${api}/sessions`, { method: 'POST', headers, data: { label: snapLabel } })
-    ).json();
-
-    // Delete the carta item AFTER the session started.
-    await request.fetch(`${api}/menu/${plato.id}`, { method: 'DELETE', headers });
-
-    // The session snapshot still carries the original item unchanged.
-    const snapshot = await (await request.fetch(`${api}/sessions/${session.id}/snapshot`, { headers })).json();
-    expect(snapshot.find((s: { name: string }) => s.name === `Fijo ${tag}`)).toBeTruthy();
-  });
+  // Snapshot immutability after carta delete → comanderoApi "keeps the session snapshot…"
 });
 
 test.describe('KL-US-038 mesas y apertura de comanda', () => {
   test.describe.configure({ mode: 'serial', timeout: 120000 });
   const tag = `s38-${Date.now()}`;
-  let sessionLabel = '';
 
-  test('seed', async ({ request }) => {
-    ({ sessionLabel } = await seedSession(request, tag, true));
-  });
-
-  test('camarero abre comanda en mesa libre; la 2a abierta se bloquea', async ({ page }) => {
+  test('camarero abre comanda en mesa libre; la 2a abierta se bloquea', async ({ page, request }) => {
+    const { sessionLabel } = await seedSession(request, tag, true);
     await openPortal(page, sessionLabel, 'camarero');
     await page.getByTestId('comandero-waiter-table').first().waitFor({ timeout: 15000 });
 
@@ -445,74 +417,18 @@ test.describe('KL-US-043 vista de sala del docente por polling + resumen', () =>
   });
 });
 
-test.describe('KL-US-044 practice_session + aislamiento multitenant', () => {
-  test.describe.configure({ mode: 'serial', timeout: 120000 });
-  const tag = `s44-${Date.now()}`;
-
-  test('registro de practica al cerrar (rol + ciclo completado)', async ({ request }) => {
-    const headers = await apiHeaders(request);
-    const seed = await seedSession(request, tag);
-    const floor = await (await request.fetch(`${api}/sessions/${seed.sessionId}/floor`, { headers })).json();
-    const tableId = floor.tables[0].table.id;
-    const orderRes = await request.fetch(`${api}/tables/${tableId}/order`, { method: 'POST', headers, data: {} });
-    expect(orderRes.ok(), 'open order').toBeTruthy();
-    const order = await orderRes.json();
-    const lineRes = await request.fetch(`${api}/orders/${order.id}/lines`, { method: 'POST', headers, data: { snapshot_item_id: seed.snapPlatoId } });
-    expect(lineRes.ok(), 'add line').toBeTruthy();
-    const line = await lineRes.json();
-    expect((await request.fetch(`${api}/lines/${line.id}/advance`, { method: 'POST', headers, data: {} })).ok()).toBeTruthy();
-    expect((await request.fetch(`${api}/lines/${line.id}/advance`, { method: 'POST', headers, data: {} })).ok()).toBeTruthy();
-    expect((await request.fetch(`${api}/lines/${line.id}/serve`, { method: 'POST', headers, data: {} })).ok()).toBeTruthy();
-    expect((await request.fetch(`${api}/orders/${order.id}/close`, { method: 'POST', headers, data: {} })).ok()).toBeTruthy();
-
-    const closeRes = await request.fetch(`${api}/sessions/${seed.sessionId}/close`, { method: 'POST', headers, data: { student_role: 'camarero', teacher_note: 'ok' } });
-    expect(closeRes.ok(), 'close session').toBeTruthy();
-    const summary = await closeRes.json();
-    expect(summary.service_order.length).toBe(1);
-  });
-
-  // Same-tenant session isolation: a line in one session must not leak into another.
-  // Cross-TENANT isolation (comandero denied on non-Altius hosts) is asserted in the
-  // "exclusivo de Altius" describe below, and at the DB level by Postgres RLS.
-  test('una comanda de una sesion no aparece en otra sesion del mismo tenant', async ({ request }) => {
-    const headers = await apiHeaders(request);
-    const a = await seedSession(request, `${tag}a`);
-    const b = await seedSession(request, `${tag}b`);
-
-    // Open an order + line on session A's table.
-    const floorA = await (await request.fetch(`${api}/sessions/${a.sessionId}/floor`, { headers })).json();
-    const orderA = await (
-      await request.fetch(`${api}/tables/${floorA.tables[0].table.id}/order`, { method: 'POST', headers, data: {} })
-    ).json();
-    await request.fetch(`${api}/orders/${orderA.id}/lines`, { method: 'POST', headers, data: { snapshot_item_id: a.snapPlatoId } });
-
-    // Session B's kitchen queue stays empty — A's line does not leak across sessions.
-    const queueB = await (await request.fetch(`${api}/sessions/${b.sessionId}/stations/cocina`, { headers })).json();
-    expect(queueB.length).toBe(0);
-    // And A's own queue does have it.
-    const queueA = await (await request.fetch(`${api}/sessions/${a.sessionId}/stations/cocina`, { headers })).json();
-    expect(queueA.length).toBe(1);
-  });
-});
+// Practice record + same-tenant queue isolation → comanderoApi.spec.ts
+// Non-Altius Host 403 → comanderoApi "blocks comandero on a non-Altius Host…"
 
 test.describe('KL-E-022 el comandero es exclusivo de Altius', () => {
   test.describe.configure({ timeout: 120000 });
   const HE_ORIGIN = `${base.protocol}//homelessentrepreneur.localhost:${base.port || '80'}`;
 
-  test('en el host de otro tenant el comandero no esta disponible', async ({ page, request }) => {
-    // No HE seed user exists; Altius credentials are rejected on that host (email-domain /
-    // tenant binding). An Altius session hitting the HE Host is also forbidden, so the
-    // module is not usable outside Altius (flag is seeded ON for Altius only).
+  test('en el host de otro tenant el login Altius es rechazado', async ({ page }) => {
     const loginRes = await page.request.post(`${HE_ORIGIN}/api/auth/login`, {
       data: { email: ADMIN.email, password: ADMIN.password },
     });
     expect(loginRes.status(), 'Altius admin must not log in on HE host').toBe(401);
-
-    const headers = await apiHeaders(request);
-    const res = await request.fetch(`${BACKEND_URL}/api/comandero/menu`, {
-      headers: { ...headers, Host: 'homelessentrepreneur.localhost' },
-    });
-    expect(res.status(), 'comandero API must be forbidden on a non-Altius host').toBe(403);
   });
 
   test('en el host de Altius el comandero si responde', async ({ page }) => {
@@ -545,123 +461,7 @@ test.describe('Comandero edge cases (browser)', () => {
   });
 });
 
-test.describe('KL-E-022 exception paths', () => {
-  test.describe.configure({ mode: 'serial', timeout: 120000 });
-  const tag = `ex-${Date.now()}`;
-
-  async function studentHeaders(request: Parameters<typeof adminLogin>[0]) {
-    const res = await request.fetch(`${BACKEND_URL}/api/auth/login`, {
-      method: 'POST',
-      data: { email: STUDENT.email, password: STUDENT.password },
-    });
-    expect(res.ok(), 'student login').toBeTruthy();
-    const { authToken, csrfToken } = await res.json();
-    return { ...authHeaders(authToken, csrfToken), 'Content-Type': 'application/json' };
-  }
-
-  test('servir una linea que no esta listo → 409', async ({ request }) => {
-    const headers = await apiHeaders(request);
-    const seed = await seedSession(request, `${tag}-serve`);
-    const floor = await (await request.fetch(`${api}/sessions/${seed.sessionId}/floor`, { headers })).json();
-    const order = await (
-      await request.fetch(`${api}/tables/${floor.tables[0].table.id}/order`, { method: 'POST', headers, data: {} })
-    ).json();
-    const line = await (
-      await request.fetch(`${api}/orders/${order.id}/lines`, {
-        method: 'POST',
-        headers,
-        data: { snapshot_item_id: seed.snapPlatoId },
-      })
-    ).json();
-
-    const serve = await request.fetch(`${api}/lines/${line.id}/serve`, { method: 'POST', headers, data: {} });
-    expect(serve.status()).toBe(409);
-  });
-
-  test('cerrar cuenta con lineas sin servir → 409', async ({ request }) => {
-    const headers = await apiHeaders(request);
-    const seed = await seedSession(request, `${tag}-close`);
-    const floor = await (await request.fetch(`${api}/sessions/${seed.sessionId}/floor`, { headers })).json();
-    const order = await (
-      await request.fetch(`${api}/tables/${floor.tables[0].table.id}/order`, { method: 'POST', headers, data: {} })
-    ).json();
-    await request.fetch(`${api}/orders/${order.id}/lines`, {
-      method: 'POST',
-      headers,
-      data: { snapshot_item_id: seed.snapPlatoId },
-    });
-
-    const close = await request.fetch(`${api}/orders/${order.id}/close`, { method: 'POST', headers, data: {} });
-    expect(close.status()).toBe(409);
-  });
-
-  test('anadir item a comanda ya cerrada → 409', async ({ request }) => {
-    const headers = await apiHeaders(request);
-    const seed = await seedSession(request, `${tag}-closed-order`);
-    const floor = await (await request.fetch(`${api}/sessions/${seed.sessionId}/floor`, { headers })).json();
-    const order = await (
-      await request.fetch(`${api}/tables/${floor.tables[0].table.id}/order`, { method: 'POST', headers, data: {} })
-    ).json();
-    const line = await (
-      await request.fetch(`${api}/orders/${order.id}/lines`, {
-        method: 'POST',
-        headers,
-        data: { snapshot_item_id: seed.snapPlatoId },
-      })
-    ).json();
-    expect((await request.fetch(`${api}/lines/${line.id}/advance`, { method: 'POST', headers, data: {} })).ok()).toBeTruthy();
-    expect((await request.fetch(`${api}/lines/${line.id}/advance`, { method: 'POST', headers, data: {} })).ok()).toBeTruthy();
-    expect((await request.fetch(`${api}/lines/${line.id}/serve`, { method: 'POST', headers, data: {} })).ok()).toBeTruthy();
-    expect((await request.fetch(`${api}/orders/${order.id}/close`, { method: 'POST', headers, data: {} })).ok()).toBeTruthy();
-
-    const again = await request.fetch(`${api}/orders/${order.id}/lines`, {
-      method: 'POST',
-      headers,
-      data: { snapshot_item_id: seed.snapPlatoId },
-    });
-    expect(again.status()).toBe(409);
-  });
-
-  test('rol general no puede crear carta ni arrancar sesion → 403', async ({ request }) => {
-    const headers = await studentHeaders(request);
-
-    const menu = await request.fetch(`${api}/menu`, {
-      method: 'POST',
-      headers,
-      data: { name: `Forbidden ${tag}`, category: 'plato', price_cents: 100 },
-    });
-    expect(menu.status()).toBe(403);
-
-    const session = await request.fetch(`${api}/sessions`, {
-      method: 'POST',
-      headers,
-      data: { label: `Forbidden ${tag}` },
-    });
-    expect(session.status()).toBe(403);
-  });
-
-  // "Empty carta -> empty snapshot" lives in voluntarios-back comandero.integration.test.ts: checking it here
-  // meant wiping the shared Altius carta, which broke tests running in parallel and lost the demo carta.
-
-  test('cerrar una sesion ya cerrada sigue devolviendo resumen', async ({ request }) => {
-    const headers = await apiHeaders(request);
-    const seed = await seedSession(request, `${tag}-reclose`);
-    const first = await request.fetch(`${api}/sessions/${seed.sessionId}/close`, {
-      method: 'POST',
-      headers,
-      data: { student_role: 'camarero' },
-    });
-    expect(first.ok()).toBeTruthy();
-    const second = await request.fetch(`${api}/sessions/${seed.sessionId}/close`, {
-      method: 'POST',
-      headers,
-      data: { student_role: 'camarero' },
-    });
-    expect(second.ok()).toBeTruthy();
-    const body = await second.json();
-    expect(body.session_id).toBe(seed.sessionId);
-  });
-});
+// Exception HTTP paths (409/403/reclose) → comanderoApi.spec.ts / comanderoRolesApi.spec.ts
 
 // ---------------------------------------------------------------------------
 // Redesign: real running totals, joining a service by name, student permissions.
