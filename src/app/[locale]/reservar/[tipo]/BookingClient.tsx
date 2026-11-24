@@ -131,17 +131,22 @@ export default function BookingClient({ tipo }: Props) {
   }
 
   return (
-    <div className="mx-auto max-w-xl px-4 py-10">
+    <div className="mx-auto max-w-xl px-4 py-10" data-testid="booking-page">
       <h1 className="mb-2 text-3xl font-semibold tracking-tight">Reservar — {tipo}</h1>
       <p className="mb-8 text-sm opacity-80">Elige un hueco y confirma tu reunión con ShiftCitizen.</p>
 
-      <form onSubmit={onSubmit} className="flex flex-col gap-4">
+      <form onSubmit={onSubmit} className="flex flex-col gap-4" data-testid="booking-form">
         <fieldset className="flex flex-col gap-2">
           <legend className="text-sm font-medium">Huecos disponibles</legend>
           {slots.length === 0 ? (
-            <p className="text-sm opacity-70">No hay huecos en la ventana actual.</p>
+            <p className="text-sm opacity-70" data-testid="booking-no-slots">
+              No hay huecos en la ventana actual.
+            </p>
           ) : (
-            <ul className="max-h-64 space-y-2 overflow-auto rounded border p-2">
+            <ul
+              className="max-h-64 space-y-2 overflow-auto rounded border p-2"
+              data-testid="booking-slots"
+            >
               {slots.map((slot) => {
                 const label = new Date(slot.startUtc).toLocaleString(undefined, {
                   timeZone: visitorTz,
@@ -153,6 +158,8 @@ export default function BookingClient({ tipo }: Props) {
                       <input
                         type="radio"
                         name="slot"
+                        data-testid="booking-slot"
+                        data-start-utc={slot.startUtc}
                         checked={checked}
                         onChange={() => setSelected(slot)}
                       />
@@ -169,6 +176,7 @@ export default function BookingClient({ tipo }: Props) {
           Nombre
           <input
             required
+            data-testid="booking-name"
             className="rounded border px-3 py-2"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -179,6 +187,7 @@ export default function BookingClient({ tipo }: Props) {
           <input
             required
             type="email"
+            data-testid="booking-email"
             className="rounded border px-3 py-2"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -201,6 +210,7 @@ export default function BookingClient({ tipo }: Props) {
           <input
             type="checkbox"
             checked={consent}
+            data-testid="booking-consent"
             onChange={(e) => setConsent(e.target.checked)}
             required
           />
@@ -222,6 +232,7 @@ export default function BookingClient({ tipo }: Props) {
 
         <button
           type="submit"
+          data-testid="booking-submit"
           disabled={status === 'loading'}
           className="rounded bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
         >
@@ -230,7 +241,11 @@ export default function BookingClient({ tipo }: Props) {
       </form>
 
       {message ? (
-        <p className={`mt-4 text-sm ${status === 'error' ? 'text-red-700' : 'text-green-800'}`}>
+        <p
+          data-testid="booking-message"
+          data-status={status}
+          className={`mt-4 text-sm ${status === 'error' ? 'text-red-700' : 'text-green-800'}`}
+        >
           {message}
           {hangoutLink ? (
             <>

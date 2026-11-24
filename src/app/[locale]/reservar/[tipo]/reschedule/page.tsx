@@ -65,7 +65,7 @@ function RescheduleInner() {
   }
 
   return (
-    <main className="mx-auto max-w-lg px-6 py-16">
+    <main className="mx-auto max-w-lg px-6 py-16" data-testid="booking-reschedule-page">
       <h1 className="text-2xl font-semibold">Reprogramar reserva</h1>
       <p className="mt-2 text-sm text-neutral-600">Elige un nuevo hueco. El enlace actual se invalidará.</p>
       {status === 'loading' || status === 'saving' ? (
@@ -80,6 +80,8 @@ function RescheduleInner() {
               <li key={slot.startUtc}>
                 <button
                   type="button"
+                  data-testid="booking-reschedule-slot"
+                  data-start-utc={slot.startUtc}
                   className="w-full rounded border border-neutral-300 px-3 py-2 text-left text-sm hover:bg-neutral-50"
                   onClick={() => onPick(slot)}
                   disabled={!token}
@@ -92,7 +94,12 @@ function RescheduleInner() {
         </ul>
       ) : null}
       {(status === 'ok' || status === 'error') && (
-        <p className="mt-6 text-sm" role="status">
+        <p
+          className="mt-6 text-sm"
+          role="status"
+          data-testid="booking-reschedule-message"
+          data-status={status}
+        >
           {message}
         </p>
       )}
