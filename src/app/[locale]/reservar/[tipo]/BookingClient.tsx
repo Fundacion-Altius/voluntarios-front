@@ -267,15 +267,16 @@ export default function BookingClient({ tipo }: Props) {
             onChange={(e) => setNotes(e.target.value)}
           />
         </label>
-        <label className="flex items-start gap-2 text-sm">
+        <label className="flex items-start gap-2 text-sm leading-snug">
           <input
             type="checkbox"
             checked={consent}
             data-testid="booking-consent"
             onChange={(e) => setConsent(e.target.checked)}
             required
+            className="mt-0.5 size-4 shrink-0"
           />
-          Consiento el tratamiento de mis datos para gestionar esta reunión.
+          <span>Consiento el tratamiento de mis datos para gestionar esta reunión.</span>
         </label>
 
         {/* Honeypot — leave empty; bots often fill "website" */}
