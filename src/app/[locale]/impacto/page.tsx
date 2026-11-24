@@ -10,6 +10,40 @@ import type { ImpactKpi, ImpactKpiResponse } from '@/modules/impact/types';
 
 type PublicConfigResponse = { success: boolean; data?: PublicImpactConfig; error?: string };
 
+const EMPTY_PUBLIC_CONFIG: PublicImpactConfig = {
+  organizationName: '',
+  organizationLogo: '',
+  showEstimateBadge: true,
+  publicKeys: [],
+  figures: [],
+};
+
+async function fetchPublicImpact(period: string): Promise<{ pub: PublicImpactConfig; kpis?: ImpactKpi[] }> {
+  const [cfgRes, kpiRes] = await Promise.all([
+    apiClient<PublicConfigResponse>(apiUrl('/api/impact/public-config')),
+    apiClient<ImpactKpiResponse>(apiUrl(`/api/impact/kpis?period=${encodeURIComponent(period)}`)),
+  ]);
+  const cfg = cfgRes.success && cfgRes.data?.success ? cfgRes.data.data : undefined;
+  const kpis = kpiRes.success && kpiRes.data?.success ? kpiRes.data.data : undefined;
+  return { pub: cfg || EMPTY_PUBLIC_CONFIG, kpis: kpis || undefined };
+}
+
+function withUnit(value: number, unit: string | undefined, locale: string): string {
+  const formatted = formatImpactNumber(value, locale);
+  return unit ? `${formatted} ${unit}` : formatted;
+}
+
+function figureValue(
+  fig: PublicImpactConfig['figures'][number],
+  kpi: ImpactKpi | undefined,
+  units: { manual: string | undefined; kpi: string | undefined },
+  locale: string,
+): string {
+  if (fig.manualValue != null) return withUnit(fig.manualValue, units.manual, locale);
+  if (kpi) return withUnit(kpi.value, units.kpi, locale);
+  return '—';
+}
+
 export default function PublicImpactDashboardPage() {
   const t = useTranslations('impact.dashboard');
   const ti = useTranslations('admin.impact');
@@ -22,37 +56,20 @@ export default function PublicImpactDashboardPage() {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const [cfgRes, kpiRes] = await Promise.all([
-          apiClient<PublicConfigResponse>(apiUrl('/api/impact/public-config')),
-          apiClient<ImpactKpiResponse>(
-            apiUrl(`/api/impact/kpis?period=${encodeURIComponent(monthPeriod)}`),
-          ),
-        ]);
+    setLoading(true);
+    setError(null);
+    fetchPublicImpact(monthPeriod)
+      .then((result) => {
         if (cancelled) return;
-        if (cfgRes.success && cfgRes.data?.success && cfgRes.data.data) {
-          setPub(cfgRes.data.data);
-        } else {
-          setPub({
-            organizationName: '',
-            organizationLogo: '',
-            showEstimateBadge: true,
-            publicKeys: [],
-            figures: [],
-          });
-        }
-        if (kpiRes.success && kpiRes.data?.success && kpiRes.data.data) {
-          setKpis(kpiRes.data.data);
-        }
-      } catch {
+        setPub(result.pub);
+        if (result.kpis) setKpis(result.kpis);
+      })
+      .catch(() => {
         if (!cancelled) setError(t('error'));
-      } finally {
+      })
+      .finally(() => {
         if (!cancelled) setLoading(false);
-      }
-    })();
+      });
     return () => {
       cancelled = true;
     };
@@ -65,16 +82,7 @@ export default function PublicImpactDashboardPage() {
       const kpi = item?.mapsToKpi ? kpis.find((k) => k.key === item.mapsToKpi) : undefined;
       const manualUnit = localizeImpactUnit(fig.manualUnit, (key) => t(`unit.${key}`));
       const kpiUnit = localizeImpactUnit(kpi?.unit, (key) => t(`unit.${key}`));
-      const value =
-        fig.manualValue != null
-          ? manualUnit
-            ? `${formatImpactNumber(fig.manualValue, locale)} ${manualUnit}`
-            : formatImpactNumber(fig.manualValue, locale)
-          : kpi
-            ? kpiUnit
-              ? `${formatImpactNumber(kpi.value, locale)} ${kpiUnit}`
-              : formatImpactNumber(kpi.value, locale)
-            : '—';
+      const value = figureValue(fig, kpi, { manual: manualUnit, kpi: kpiUnit }, locale);
       return {
         key: fig.key,
         value,

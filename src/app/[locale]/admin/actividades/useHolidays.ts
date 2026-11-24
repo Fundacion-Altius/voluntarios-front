@@ -16,6 +16,27 @@ export interface Holiday {
 
 const API_URL = getApiBaseUrl();
 
+function buildAuthHeaders(session: unknown, includeCsrf: boolean): Record<string, string> {
+  const token = (session as any)?.authToken;
+  const h: Record<string, string> = {};
+  if (token) h['Authorization'] = `Bearer ${token}`;
+  if (includeCsrf) {
+    const csrf = getCSRFToken();
+    if (csrf) h['X-CSRF-Token'] = csrf;
+  }
+  return h;
+}
+
+async function failureFrom(res: Response, fallback: string) {
+  const e = await res.json().catch(() => ({ error: fallback }));
+  return { success: false as const, error: e.error || fallback };
+}
+
+function sortHolidays(data: unknown): Holiday[] {
+  const list: Holiday[] = Array.isArray(data) ? data : [];
+  return list.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+}
+
 export function useHolidays() {
   const { data: session } = useSession();
   const [holidays, setHolidays] = useState<Holiday[]>([]);
@@ -23,16 +44,7 @@ export function useHolidays() {
   const [error, setError] = useState<string | null>(null);
   const fetchIdRef = useRef(0);
 
-  const authHeaders = (includeCsrf = true): Record<string, string> => {
-    const token = (session as any)?.authToken;
-    const h: Record<string, string> = {};
-    if (token) h['Authorization'] = `Bearer ${token}`;
-    if (includeCsrf) {
-      const csrf = getCSRFToken();
-      if (csrf) h['X-CSRF-Token'] = csrf;
-    }
-    return h;
-  };
+  const authHeaders = (includeCsrf = true) => buildAuthHeaders(session, includeCsrf);
 
   const fetchHolidays = useCallback(async () => {
     const thisFetchId = ++fetchIdRef.current;
@@ -48,8 +60,7 @@ export function useHolidays() {
       }
       const data = await res.json();
       if (thisFetchId === fetchIdRef.current) {
-        const list: Holiday[] = Array.isArray(data) ? data : [];
-        setHolidays(list.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+        setHolidays(sortHolidays(data));
         setIsLoading(false);
       }
     } catch (err: any) {
@@ -65,10 +76,7 @@ export function useHolidays() {
       method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, credentials: 'include',
       body: JSON.stringify(data),
     });
-    if (!res.ok) { 
-      const e = await res.json().catch(() => ({ error: 'Error' }));
-      return { success: false as const, error: e.error || 'Error' };
-    }
+    if (!res.ok) return failureFrom(res, 'Error');
     await fetchHolidays();
     return { success: true as const };
   };
@@ -77,10 +85,7 @@ export function useHolidays() {
     const res = await fetch(`${API_URL}/api/activities/holidays/${id}/${active ? 'activate' : 'deactivate'}`, {
       method: 'PUT', headers: authHeaders(), credentials: 'include',
     });
-    if (!res.ok) {
-      const e = await res.json().catch(() => ({ error: 'Error al actualizar festivo' }));
-      return { success: false as const, error: e.error || 'Error al actualizar festivo' };
-    }
+    if (!res.ok) return failureFrom(res, 'Error al actualizar festivo');
     await fetchHolidays();
     return { success: true as const };
   };
@@ -89,10 +94,7 @@ export function useHolidays() {
     const res = await fetch(`${API_URL}/api/activities/holidays/${id}`, {
       method: 'DELETE', headers: authHeaders(), credentials: 'include',
     });
-    if (!res.ok) {
-      const e = await res.json().catch(() => ({ error: 'Error al eliminar festivo' }));
-      return { success: false as const, error: e.error || 'Error al eliminar festivo' };
-    }
+    if (!res.ok) return failureFrom(res, 'Error al eliminar festivo');
     await fetchHolidays();
     return { success: true as const };
   };

@@ -1,5 +1,19 @@
 import { platformApi, __resetCsrfCache } from './platform/api';
 
+type FetchInput = string | URL | Request;
+
+function urlOf(url: FetchInput): string {
+  if (typeof url === 'string') return url;
+  if (url instanceof URL) return url.toString();
+  return (url as Request).url;
+}
+
+function jsonResponse(status: number, body: unknown) {
+  return Promise.resolve({ status, ok: status >= 200 && status < 300, json: () => Promise.resolve(body), headers: new Headers() });
+}
+
+const TEST_USER = { user: { id: '1', email: 'a@b.com', name: 'Test' } };
+
 describe('platformApi CSRF handling', () => {
   const originalFetch = global.fetch;
 
@@ -13,13 +27,11 @@ describe('platformApi CSRF handling', () => {
 
   it('fetches CSRF token before mutating request', async () => {
     const calls: string[] = [];
-    global.fetch = jest.fn((url: string | URL | Request, init?: RequestInit) => {
-      const urlStr = typeof url === 'string' ? url : (url instanceof URL ? url.toString() : (url as Request).url);
+    global.fetch = jest.fn((url: FetchInput) => {
+      const urlStr = urlOf(url);
       calls.push(urlStr);
-      if (urlStr.includes('/api/csrf-token')) {
-        return Promise.resolve({ status: 200, ok: true, json: () => Promise.resolve({ csrfToken: 'test' }), headers: new Headers() });
-      }
-      return Promise.resolve({ status: 200, ok: true, json: () => Promise.resolve({ user: { id: '1', email: 'a@b.com', name: 'Test' } }), headers: new Headers() });
+      if (urlStr.includes('/api/csrf-token')) return jsonResponse(200, { csrfToken: 'test' });
+      return jsonResponse(200, TEST_USER);
     }) as any;
 
     await platformApi.login('a@b.com', 'pass');
@@ -29,10 +41,9 @@ describe('platformApi CSRF handling', () => {
 
   it('does not fetch CSRF for GET requests', async () => {
     const calls: string[] = [];
-    global.fetch = jest.fn((url: string | URL | Request, init?: RequestInit) => {
-      const urlStr = typeof url === 'string' ? url : (url instanceof URL ? url.toString() : (url as Request).url);
-      calls.push(urlStr);
-      return Promise.resolve({ status: 200, ok: true, json: () => Promise.resolve({ prices: [] }), headers: new Headers() });
+    global.fetch = jest.fn((url: FetchInput) => {
+      calls.push(urlOf(url));
+      return jsonResponse(200, { prices: [] });
     }) as any;
 
     await platformApi.getPrices();
@@ -42,20 +53,15 @@ describe('platformApi CSRF handling', () => {
   it('retries with fresh CSRF on 403', async () => {
     let loginAttempts = 0;
     const calls: string[] = [];
-    global.fetch = jest.fn((url: string | URL | Request, init?: RequestInit) => {
-      const urlStr = typeof url === 'string' ? url : (url instanceof URL ? url.toString() : (url as Request).url);
+    global.fetch = jest.fn((url: FetchInput) => {
+      const urlStr = urlOf(url);
       calls.push(urlStr);
-      if (urlStr.includes('/api/csrf-token')) {
-        return Promise.resolve({ status: 200, ok: true, json: () => Promise.resolve({ csrfToken: `csrf-${calls.length}` }), headers: new Headers() });
-      }
+      if (urlStr.includes('/api/csrf-token')) return jsonResponse(200, { csrfToken: `csrf-${calls.length}` });
       if (urlStr.includes('/api/platform/auth/login')) {
         loginAttempts++;
-        if (loginAttempts === 1) {
-          return Promise.resolve({ status: 403, ok: false, json: () => Promise.resolve({ error: 'CSRF' }), headers: new Headers() });
-        }
-        return Promise.resolve({ status: 200, ok: true, json: () => Promise.resolve({ user: { id: '1', email: 'a@b.com', name: 'Test' } }), headers: new Headers() });
+        return loginAttempts === 1 ? jsonResponse(403, { error: 'CSRF' }) : jsonResponse(200, TEST_USER);
       }
-      return Promise.resolve({ status: 404, ok: false, json: () => Promise.resolve({}), headers: new Headers() });
+      return jsonResponse(404, {});
     }) as any;
 
     const result = await platformApi.login('a@b.com', 'pass');

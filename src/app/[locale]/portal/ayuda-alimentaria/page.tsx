@@ -166,6 +166,177 @@ function FoodAidTable({ lots, pendingLotId, canMutate, onStatusChange, onDelete 
   );
 }
 
+function ExpiryBanner({ expiringLots, onNotify }: { expiringLots: FoodAidLotWithItem[]; onNotify: () => void }) {
+  const t = useTranslations('portal.foodAid');
+  if (expiringLots.length === 0) return null;
+  return (
+
+    <Card className="border-amber-300 bg-amber-50 dark:bg-amber-950/30">
+      <CardContent className="flex flex-col gap-3 pt-6 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex gap-2">
+          <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-700" />
+          <div>
+            <p className="font-medium text-amber-900 dark:text-amber-100">
+              {t('expiryBannerTitle', { count: expiringLots.length })}
+            </p>
+            <ul className="mt-1 list-disc pl-4 text-sm text-amber-900/90 dark:text-amber-100/90">
+              {expiringLots.slice(0, 5).map((lot) => (
+                <li key={lot.id}>
+                  {lot.item?.title ?? t('unknownItem')} — {formatDate(lot.expiry_date) ?? '—'} @ {lot.location}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <Button variant="outline" size="sm" onClick={onNotify}>
+          {t('notifyAdmins')}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ActionErrorMessage({ actionError }: { actionError: string | null }) {
+  const t = useTranslations('portal.foodAid');
+  if (!actionError) return null;
+  return (
+    <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+      {actionError.startsWith('errors.') ? t(actionError as 'errors.generic') : actionError}
+    </p>
+  );
+}
+
+function LotsToolbar({ search, setSearch, statusFilter, setStatusFilter, canMutate, count, resetPage }: {
+  search: string; setSearch: (v: string) => void; statusFilter: string; setStatusFilter: (v: string) => void;
+  canMutate: boolean; count: number; resetPage: () => void;
+}) {
+  const t = useTranslations('portal.foodAid');
+  return (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <Input
+        value={search}
+        onChange={(e) => {
+          setSearch(e.target.value);
+          resetPage();
+        }}
+        placeholder={t('searchPlaceholder')}
+        className="sm:max-w-xs"
+        aria-label={t('searchPlaceholder')}
+      />
+      {canMutate && (
+        <Select
+          value={statusFilter}
+          onValueChange={(v) => {
+            setStatusFilter(v);
+            resetPage();
+          }}
+        >
+          <SelectTrigger className="sm:max-w-[12rem]" aria-label={t('filterLabel')}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('filterAll')}</SelectItem>
+            {FOOD_AID_LOT_STATUSES.map((status) => (
+              <SelectItem key={status} value={status}>
+                {t(`status.${status}`)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+      <span className="text-sm text-muted-foreground">
+        {t('count', { count })}
+      </span>
+    </div>
+  );
+}
+
+function LotsPager({ currentPage, totalPages, setPage }: {
+  currentPage: number; totalPages: number; setPage: (updater: (p: number) => number) => void;
+}) {
+  const t = useTranslations('portal.foodAid');
+  if (totalPages <= 1) return null;
+  return (
+
+    <div className="flex items-center justify-between gap-2">
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={currentPage <= 1}
+        onClick={() => setPage((p) => Math.max(1, p - 1))}
+      >
+        <ChevronLeft className="size-4" />
+        {t('prevPage')}
+      </Button>
+      <span className="text-sm text-muted-foreground">
+        {t('pageOf', { page: currentPage, total: totalPages })}
+      </span>
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={currentPage >= totalPages}
+        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+      >
+        {t('nextPage')}
+        <ChevronRight className="size-4" />
+      </Button>
+    </div>
+  );
+}
+
+function LotsBody({ totalCount, filteredCount, pageLots, pendingLotId, canMutate, currentPage, totalPages, setPage, onNew, onClear, onStatusChange, onDelete }: {
+  totalCount: number; filteredCount: number; pageLots: FoodAidLotWithItem[]; pendingLotId: string | null;
+  canMutate: boolean; currentPage: number; totalPages: number; setPage: (updater: (p: number) => number) => void;
+  onNew: () => void; onClear: () => void;
+  onStatusChange: (lot: FoodAidLotWithItem, status: FoodAidLotStatus) => void;
+  onDelete: (lot: FoodAidLotWithItem) => void;
+}) {
+  const t = useTranslations('portal.foodAid');
+  if (totalCount === 0) {
+    return (
+      <EmptyState
+        icon={<PackageSearch className="size-12 text-muted-foreground" />}
+        title={t('emptyTitle')}
+        description={t('emptyDescription')}
+        action={
+          canMutate ? (
+            <Button onClick={onNew}>
+              <Plus className="mr-1 size-4" />
+              {t('newRequest')}
+            </Button>
+          ) : undefined
+        }
+      />
+    );
+  }
+  if (filteredCount === 0) {
+    return (
+      <EmptyState
+        icon={<PackageSearch className="size-12 text-muted-foreground" />}
+        title={t('noMatchesTitle')}
+        description={t('noMatchesDescription')}
+        action={
+          <Button variant="outline" onClick={onClear}>
+            {t('clearFilters')}
+          </Button>
+        }
+      />
+    );
+  }
+  return (
+    <>
+      <FoodAidTable
+        lots={pageLots}
+        pendingLotId={pendingLotId}
+        canMutate={canMutate}
+        onStatusChange={onStatusChange}
+        onDelete={onDelete}
+      />
+      <LotsPager currentPage={currentPage} totalPages={totalPages} setPage={setPage} />
+    </>
+  );
+}
+
 function mutationErrorMessage(error: unknown): string {
   if (error instanceof FoodAidMutationError) {
     if (error.code === 'validation' && error.message) return error.message;
@@ -318,30 +489,7 @@ export default function FoodAidPortalPage() {
         }
       />
 
-      {canMutate && expiringLots.length > 0 && (
-        <Card className="border-amber-300 bg-amber-50 dark:bg-amber-950/30">
-          <CardContent className="flex flex-col gap-3 pt-6 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex gap-2">
-              <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-700" />
-              <div>
-                <p className="font-medium text-amber-900 dark:text-amber-100">
-                  {t('expiryBannerTitle', { count: expiringLots.length })}
-                </p>
-                <ul className="mt-1 list-disc pl-4 text-sm text-amber-900/90 dark:text-amber-100/90">
-                  {expiringLots.slice(0, 5).map((lot) => (
-                    <li key={lot.id}>
-                      {lot.item?.title ?? t('unknownItem')} — {formatDate(lot.expiry_date) ?? '—'} @ {lot.location}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => void handleNotifyExpiring()}>
-              {t('notifyAdmins')}
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+      {canMutate && <ExpiryBanner expiringLots={expiringLots} onNotify={() => void handleNotifyExpiring()} />}
 
       {notifyMessage && (
         <p className="rounded-md bg-emerald-500/10 p-3 text-sm text-emerald-800 dark:text-emerald-200">
@@ -357,11 +505,7 @@ export default function FoodAidPortalPage() {
         </Card>
       )}
 
-      {actionError && (
-        <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-          {actionError.startsWith('errors.') ? t(actionError as 'errors.generic') : actionError}
-        </p>
-      )}
+      <ActionErrorMessage actionError={actionError} />
 
       {error || errorCode ? (
         <ErrorState
@@ -372,104 +516,30 @@ export default function FoodAidPortalPage() {
         <LoadingSkeleton rows={3} />
       ) : (
         <>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Input
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              placeholder={t('searchPlaceholder')}
-              className="sm:max-w-xs"
-              aria-label={t('searchPlaceholder')}
-            />
-            {canMutate && (
-              <Select
-                value={statusFilter}
-                onValueChange={(v) => {
-                  setStatusFilter(v);
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger className="sm:max-w-[12rem]" aria-label={t('filterLabel')}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('filterAll')}</SelectItem>
-                  {FOOD_AID_LOT_STATUSES.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {t(`status.${status}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-            <span className="text-sm text-muted-foreground">
-              {t('count', { count: filteredLots.length })}
-            </span>
-          </div>
+          <LotsToolbar
+            search={search}
+            setSearch={setSearch}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            canMutate={canMutate}
+            count={filteredLots.length}
+            resetPage={() => setPage(1)}
+          />
 
-          {lots.length === 0 ? (
-            <EmptyState
-              icon={<PackageSearch className="size-12 text-muted-foreground" />}
-              title={t('emptyTitle')}
-              description={t('emptyDescription')}
-              action={
-                canMutate ? (
-                  <Button onClick={() => setShowForm(true)}>
-                    <Plus className="mr-1 size-4" />
-                    {t('newRequest')}
-                  </Button>
-                ) : undefined
-              }
-            />
-          ) : filteredLots.length === 0 ? (
-            <EmptyState
-              icon={<PackageSearch className="size-12 text-muted-foreground" />}
-              title={t('noMatchesTitle')}
-              description={t('noMatchesDescription')}
-              action={
-                <Button variant="outline" onClick={clearFilters}>
-                  {t('clearFilters')}
-                </Button>
-              }
-            />
-          ) : (
-            <>
-              <FoodAidTable
-                lots={pageLots}
-                pendingLotId={pendingLotId}
-                canMutate={canMutate}
-                onStatusChange={(lot, status) => void handleStatusChange(lot, status)}
-                onDelete={(lot) => void handleDelete(lot)}
-              />
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={currentPage <= 1}
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  >
-                    <ChevronLeft className="size-4" />
-                    {t('prevPage')}
-                  </Button>
-                  <span className="text-sm text-muted-foreground">
-                    {t('pageOf', { page: currentPage, total: totalPages })}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={currentPage >= totalPages}
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  >
-                    {t('nextPage')}
-                    <ChevronRight className="size-4" />
-                  </Button>
-                </div>
-              )}
-            </>
-          )}
+          <LotsBody
+            totalCount={lots.length}
+            filteredCount={filteredLots.length}
+            pageLots={pageLots}
+            pendingLotId={pendingLotId}
+            canMutate={canMutate}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            setPage={setPage}
+            onNew={() => setShowForm(true)}
+            onClear={clearFilters}
+            onStatusChange={(lot, status) => void handleStatusChange(lot, status)}
+            onDelete={(lot) => void handleDelete(lot)}
+          />
         </>
       )}
     </div>

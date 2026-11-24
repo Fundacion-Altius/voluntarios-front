@@ -17,6 +17,25 @@ function setupFetch(handler: (url: string, init?: RequestInit) => unknown) {
   }) as jest.Mock;
 }
 
+function cartFlowHandler(url: string, init?: RequestInit): unknown {
+  if (url.endsWith('/status')) return { flag: 'toy_handout', enabled: true };
+  if (url.includes('/items') && !url.includes('ageBand='))
+    return [
+      { id: 't1', title: 'Muñeca', description: 'Suave y grande', ageBand: 'y5_7', quantity: 4, location: 'A1', pictures: [] },
+      { id: 't2', title: 'Pelota', description: 'Bota', ageBand: 'y3_4', quantity: 2, location: 'B2', pictures: [] },
+    ];
+  if (url.includes('/items?ageBand=')) return [{ id: 't1', title: 'Muñeca', description: 'Suave y grande', ageBand: 'y5_7', quantity: 4, location: 'A1', pictures: [] }];
+  if (url.endsWith('/carts')) return { id: 'cart-1', lines: [] };
+  if (url.includes('/lines')) {
+    if (init?.method === 'DELETE') return { id: 'cart-1', lines: [] };
+    return { id: 'cart-1', lines: [{ toy_id: 't1', qty: 2 }] };
+  }
+  if (url.includes('/checkout')) return { qr_token: 'qr-abc', lines: [{ toy_id: 't1', qty: 1 }] };
+  if (url.endsWith('/slots')) return [{ id: 's1', date: '2026-12-20', label: 'mañana' }];
+  if (url.includes('/book')) return { id: 'b1', notify_channel: 'unknown' };
+  throw new Error(`unmatched fetch: ${url} ${init?.method ?? 'GET'}`);
+}
+
 async function enterCode() {
   await waitFor(() => expect(screen.getByTestId('juguetes-code')).toBeInTheDocument());
   await userEvent.clear(screen.getByTestId('juguetes-code'));
@@ -24,30 +43,13 @@ async function enterCode() {
   await userEvent.click(screen.getByTestId('juguetes-code-go'));
 }
 
-describe('JuguetesPage', () => {
+describe('JuguetesPage cart flow', () => {
   afterEach(() => {
     jest.resetAllMocks();
   });
 
   it('shows all ages as one flat grid on auto-load', async () => {
-    setupFetch((url, init) => {
-      if (url.endsWith('/status')) return { flag: 'toy_handout', enabled: true };
-      if (url.includes('/items') && !url.includes('ageBand='))
-        return [
-          { id: 't1', title: 'Muñeca', description: 'Suave y grande', ageBand: 'y5_7', quantity: 4, location: 'A1', pictures: [] },
-          { id: 't2', title: 'Pelota', description: 'Bota', ageBand: 'y3_4', quantity: 2, location: 'B2', pictures: [] },
-        ];
-      if (url.includes('/items?ageBand=')) return [{ id: 't1', title: 'Muñeca', description: 'Suave y grande', ageBand: 'y5_7', quantity: 4, location: 'A1', pictures: [] }];
-      if (url.endsWith('/carts')) return { id: 'cart-1', lines: [] };
-      if (url.includes('/lines')) {
-        if (init?.method === 'DELETE') return { id: 'cart-1', lines: [] };
-        return { id: 'cart-1', lines: [{ toy_id: 't1', qty: 2 }] };
-      }
-      if (url.includes('/checkout')) return { qr_token: 'qr-abc', lines: [{ toy_id: 't1', qty: 1 }] };
-      if (url.endsWith('/slots')) return [{ id: 's1', date: '2026-12-20', label: 'mañana' }];
-      if (url.includes('/book')) return { id: 'b1', notify_channel: 'unknown' };
-      throw new Error(`unmatched fetch: ${url} ${init?.method ?? 'GET'}`);
-    });
+    setupFetch(cartFlowHandler);
     render(
       <TestProviders>
         <JuguetesPage />
@@ -112,7 +114,15 @@ describe('JuguetesPage', () => {
     expect(screen.getByTestId('juguetes-age-all')).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('keeps the parked age filter hidden and disabled', async () => {    setupFetch((url, init) => {
+});
+
+describe('JuguetesPage parked filter and modal', () => {
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it('keeps the parked age filter hidden and disabled', async () => {
+    setupFetch((url, init) => {
       if (url.endsWith('/status')) return { flag: 'toy_handout', enabled: true };
       if (url.includes('/items')) return [{ id: 't1', title: 'Muñeca', description: 'x', ageBand: 'y5_7', quantity: 4, location: 'A1', pictures: [] }];
       throw new Error(`unmatched fetch: ${url} ${init?.method ?? 'GET'}`);
@@ -174,6 +184,13 @@ describe('JuguetesPage', () => {
     expect(screen.getByTestId('juguetes-modal-img')).toHaveAttribute('src', expect.stringContaining('/pic/b.png'));
     await userEvent.click(screen.getByTestId('juguetes-modal-prev'));
     await waitFor(() => expect(screen.getByTestId('juguetes-modal-count')).toHaveTextContent('1 / 3'));
+  });
+
+});
+
+describe('JuguetesPage search and flag', () => {
+  afterEach(() => {
+    jest.resetAllMocks();
   });
 
   it('filters loaded cards client-side with debounce and no new query', async () => {

@@ -14,6 +14,22 @@ const CONSENT_FIELD_BY_ID: Record<string, keyof DatosContrato> = {
   imagen: 'derechoImagen',
 };
 
+function toggleValue<T extends string>(list: T[], value: string, checked: boolean): T[] {
+  return checked ? ([...list, value] as T[]) : list.filter((item) => item !== value);
+}
+
+/** Pure reducer for a checkbox change: list-like fields toggle membership, the rest store the boolean. */
+function applyCheckbox(prev: DatosContrato, fieldName: string, value: string, checked: boolean): DatosContrato {
+  if (fieldName === 'areas') return { ...prev, areas: toggleValue<AreasT>(prev.areas, value, checked) };
+  if (fieldName === 'modalidad') return { ...prev, modalidad: toggleValue<ModalidadT>(prev.modalidad, value, checked) };
+  if (fieldName === 'horario') {
+    const current = prev.horario ? prev.horario.split(', ') : [];
+    const next = checked ? Array.from(new Set([...current, value])) : current.filter((h) => h !== value);
+    return { ...prev, horario: next.join(', ') };
+  }
+  return { ...prev, [fieldName]: checked };
+}
+
 export function useContractForm() {
   const [step, setStep] = useState(1);
   const [datosContrato, setDatosContrato] = useState<DatosContrato>({
@@ -50,43 +66,16 @@ export function useContractForm() {
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
-    if (e.type !== 'select') {
-      const { name, value, type, id } = e.target;
-      // Prefer name; fall back to id. Map consent checkbox DOM ids → derecho* fields.
-      const rawKey = name || id;
-      const fieldName = CONSENT_FIELD_BY_ID[rawKey] ?? rawKey;
-      if (type !== 'checkbox') {
-        return setDatosContrato((prev) => ({ ...prev, [fieldName]: value }));
-      }
-      if (type === 'checkbox') {
-        const { checked } = e.target;
-        if (fieldName === 'areas') {
-          setDatosContrato((prev) => {
-            const newAreas = checked
-              ? ([...prev.areas, value] as AreasT[])
-              : (prev.areas.filter((area) => area !== value) as AreasT[]);
-            return { ...prev, areas: newAreas };
-          });
-        } else if (fieldName === 'modalidad') {
-          setDatosContrato((prev) => {
-            const newModalidad = checked
-              ? ([...prev.modalidad, value] as ModalidadT[])
-              : (prev.modalidad.filter((mod) => mod !== value) as ModalidadT[]);
-            return { ...prev, modalidad: newModalidad };
-          });
-        } else if (fieldName === 'horario') {
-          setDatosContrato((prev) => {
-            const current = prev.horario ? prev.horario.split(', ') : [];
-            const next = checked
-              ? Array.from(new Set([...current, value]))
-              : current.filter((h) => h !== value);
-            return { ...prev, horario: next.join(', ') };
-          });
-        } else {
-          setDatosContrato((prev) => ({ ...prev, [fieldName]: checked }));
-        }
-      }
+    if (e.type === 'select') return;
+    const { name, value, type, id } = e.target;
+    // Prefer name; fall back to id. Map consent checkbox DOM ids → derecho* fields.
+    const rawKey = name || id;
+    const fieldName = CONSENT_FIELD_BY_ID[rawKey] ?? rawKey;
+    if (type !== 'checkbox') {
+      return setDatosContrato((prev) => ({ ...prev, [fieldName]: value }));
     }
+    const { checked } = e.target;
+    setDatosContrato((prev) => applyCheckbox(prev, fieldName, value, checked));
   };
 
   const handleSignature = (signatureDataURL: string) => {

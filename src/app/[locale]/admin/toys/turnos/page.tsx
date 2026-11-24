@@ -32,9 +32,140 @@ function todayIso(): string {
 
 type Editing = { slot: Slot | null; date: string };
 
-export default function ToysSlotsPage() {
+/** Returns the i18n key of the first validation error, or null when the form is valid. */
+function validateSlotForm(start: string, end: string, capacity: string): "agenda.error.horas" | "agenda.error.plazas" | null {
+  if (start && end && end <= start) return "agenda.error.horas";
+  if (capacity && (!Number.isInteger(Number(capacity)) || Number(capacity) < 1)) return "agenda.error.plazas";
+  return null;
+}
+
+function DayColumn({ day, slots, bookings, fmtDay, onAdd, onOpen }: {
+  day: string; slots: Slot[]; bookings: Booking[]; fmtDay: Intl.DateTimeFormat;
+  onAdd: () => void; onOpen: (slot: Slot) => void;
+}) {
+  const t = useTranslations("admin.toys");
+  const daySlots = sortSlots(slots.filter((s) => s.date === day));
+  return (
+    <li
+      data-testid={`toys-day-${day}`}
+      className={cn(
+        "flex min-h-40 flex-col gap-2 rounded-xl border p-3",
+        daySlots.length ? "bg-card shadow-xs" : "bg-muted/30",
+      )}
+    >
+      <div className="flex items-baseline justify-between">
+        <span className="text-sm capitalize text-muted-foreground">
+          {fmtDay.format(new Date(`${day}T12:00:00`))}
+        </span>
+        <span className="font-heading text-2xl font-bold">{Number(day.slice(8))}</span>
+      </div>
+      {daySlots.length === 0 && <p className="text-sm text-muted-foreground">{t("agenda.sinReparto")}</p>}
+      {daySlots.map((slot) => (
+        <SlotCard
+          key={slot.id}
+          slot={slot}
+          booked={bookedCount(slot.id, bookings)}
+          onOpen={() => onOpen(slot)}
+        />
+      ))}
+      <button
+        type="button"
+        data-testid={`toys-slot-add-${day}`}
+        onClick={onAdd}
+        className="mt-auto min-h-11 rounded-lg border-2 border-dashed text-sm text-muted-foreground outline-none hover:border-primary hover:text-primary focus-visible:ring-[3px] focus-visible:ring-ring/50"
+      >
+        + {t("agenda.anadirCorto")}
+      </button>
+    </li>
+  );
+}
+
+function WeekBoard({ slots, bookings, week, setWeek, withoutSlot, setEditing }: {
+  slots: Slot[]; bookings: Booking[]; week: string; setWeek: (w: string) => void;
+  withoutSlot: number | null; setEditing: (e: Editing) => void;
+}) {
   const t = useTranslations("admin.toys");
   const locale = useLocale();
+  const days = weekDays(week);
+  const fmtDay = new Intl.DateTimeFormat(locale, { weekday: "short" });
+  const fmtRange = new Intl.DateTimeFormat(locale, { day: "numeric", month: "long" });
+  const places = placesTotal(slots, bookings);
+  return (
+  <>
+    <section className="grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label={t("agenda.resumen")}>
+      <Stat label={t("agenda.nTurnos")} value={String(slots.length)} testid="toys-slots-count" />
+      <Stat
+        label={t("agenda.plazas")}
+        value={places.capacity > 0 ? `${places.booked} / ${places.capacity}` : "—"}
+        testid="toys-slots-places"
+        bar={places.capacity > 0 ? places.booked / places.capacity : undefined}
+      />
+      <Stat label={t("agenda.reservas")} value={String(bookings.length)} testid="toys-slots-bookings" />
+      <Stat
+        label={t("agenda.sinTurno")}
+        value={withoutSlot === null ? "—" : String(withoutSlot)}
+        testid="toys-slots-without"
+        tone="warn"
+      />
+    </section>
+
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="icon"
+          className="size-11"
+          aria-label={t("agenda.semanaAnterior")}
+          data-testid="toys-week-prev"
+          onClick={() => setWeek(addDays(week, -7))}
+        >
+          <ChevronLeft aria-hidden="true" />
+        </Button>
+        <h2 className="font-heading text-xl font-bold" data-testid="toys-week-label">
+          {fmtRange.format(new Date(`${days[0]}T12:00:00`))} – {fmtRange.format(new Date(`${days[6]}T12:00:00`))}
+        </h2>
+        <Button
+          variant="outline"
+          size="icon"
+          className="size-11"
+          aria-label={t("agenda.semanaSiguiente")}
+          data-testid="toys-week-next"
+          onClick={() => setWeek(addDays(week, 7))}
+        >
+          <ChevronRight aria-hidden="true" />
+        </Button>
+      </div>
+      <div className="flex gap-4 text-xs text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="size-2 rounded-full bg-primary" aria-hidden="true" />
+          {t("agenda.conPlazas")}
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="size-2 rounded-full bg-muted-foreground" aria-hidden="true" />
+          {t("agenda.completo")}
+        </span>
+      </div>
+    </div>
+
+    <ol className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-7" data-testid="toys-week">
+      {days.map((day) => (
+        <DayColumn
+          key={day}
+          day={day}
+          slots={slots}
+          bookings={bookings}
+          fmtDay={fmtDay}
+          onAdd={() => setEditing({ slot: null, date: day })}
+          onOpen={(slot) => setEditing({ slot, date: slot.date })}
+        />
+      ))}
+    </ol>
+  </>
+  );
+}
+
+export default function ToysSlotsPage() {
+  const t = useTranslations("admin.toys");
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const api = useToys();
   const [slots, setSlots] = useState<Slot[] | null>(null);
@@ -66,9 +197,6 @@ export default function ToysSlotsPage() {
   if (!api.status.enabled) return <p data-testid="toys-denied">{t("apagado")}</p>;
 
   const days = week ? weekDays(week) : [];
-  const fmtDay = new Intl.DateTimeFormat(locale, { weekday: "short" });
-  const fmtRange = new Intl.DateTimeFormat(locale, { day: "numeric", month: "long" });
-  const places = placesTotal(slots ?? [], bookings);
   const withoutSlot = families ? families.filter((f) => !f.slot_id).length : null;
 
   return (
@@ -97,102 +225,14 @@ export default function ToysSlotsPage() {
       {!slots || !week ? (
         <Skeleton className="h-64 w-full" />
       ) : (
-        <>
-          <section className="grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label={t("agenda.resumen")}>
-            <Stat label={t("agenda.nTurnos")} value={String(slots.length)} testid="toys-slots-count" />
-            <Stat
-              label={t("agenda.plazas")}
-              value={places.capacity > 0 ? `${places.booked} / ${places.capacity}` : "—"}
-              testid="toys-slots-places"
-              bar={places.capacity > 0 ? places.booked / places.capacity : undefined}
-            />
-            <Stat label={t("agenda.reservas")} value={String(bookings.length)} testid="toys-slots-bookings" />
-            <Stat
-              label={t("agenda.sinTurno")}
-              value={withoutSlot === null ? "—" : String(withoutSlot)}
-              testid="toys-slots-without"
-              tone="warn"
-            />
-          </section>
-
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                className="size-11"
-                aria-label={t("agenda.semanaAnterior")}
-                data-testid="toys-week-prev"
-                onClick={() => setWeek(addDays(week, -7))}
-              >
-                <ChevronLeft aria-hidden="true" />
-              </Button>
-              <h2 className="font-heading text-xl font-bold" data-testid="toys-week-label">
-                {fmtRange.format(new Date(`${days[0]}T12:00:00`))} – {fmtRange.format(new Date(`${days[6]}T12:00:00`))}
-              </h2>
-              <Button
-                variant="outline"
-                size="icon"
-                className="size-11"
-                aria-label={t("agenda.semanaSiguiente")}
-                data-testid="toys-week-next"
-                onClick={() => setWeek(addDays(week, 7))}
-              >
-                <ChevronRight aria-hidden="true" />
-              </Button>
-            </div>
-            <div className="flex gap-4 text-xs text-muted-foreground">
-              <span className="inline-flex items-center gap-1.5">
-                <span className="size-2 rounded-full bg-primary" aria-hidden="true" />
-                {t("agenda.conPlazas")}
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <span className="size-2 rounded-full bg-muted-foreground" aria-hidden="true" />
-                {t("agenda.completo")}
-              </span>
-            </div>
-          </div>
-
-          <ol className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-7" data-testid="toys-week">
-            {days.map((day) => {
-              const daySlots = sortSlots(slots.filter((s) => s.date === day));
-              return (
-                <li
-                  key={day}
-                  data-testid={`toys-day-${day}`}
-                  className={cn(
-                    "flex min-h-40 flex-col gap-2 rounded-xl border p-3",
-                    daySlots.length ? "bg-card shadow-xs" : "bg-muted/30",
-                  )}
-                >
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-sm capitalize text-muted-foreground">
-                      {fmtDay.format(new Date(`${day}T12:00:00`))}
-                    </span>
-                    <span className="font-heading text-2xl font-bold">{Number(day.slice(8))}</span>
-                  </div>
-                  {daySlots.length === 0 && <p className="text-sm text-muted-foreground">{t("agenda.sinReparto")}</p>}
-                  {daySlots.map((slot) => (
-                    <SlotCard
-                      key={slot.id}
-                      slot={slot}
-                      booked={bookedCount(slot.id, bookings)}
-                      onOpen={() => setEditing({ slot, date: slot.date })}
-                    />
-                  ))}
-                  <button
-                    type="button"
-                    data-testid={`toys-slot-add-${day}`}
-                    onClick={() => setEditing({ slot: null, date: day })}
-                    className="mt-auto min-h-11 rounded-lg border-2 border-dashed text-sm text-muted-foreground outline-none hover:border-primary hover:text-primary focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                  >
-                    + {t("agenda.anadirCorto")}
-                  </button>
-                </li>
-              );
-            })}
-          </ol>
-        </>
+        <WeekBoard
+          slots={slots}
+          bookings={bookings}
+          week={week}
+          setWeek={setWeek}
+          withoutSlot={withoutSlot}
+          setEditing={setEditing}
+        />
       )}
       {editing && (
         <SlotPanel
@@ -284,6 +324,41 @@ function SlotCard({ slot, booked, onOpen }: { slot: Slot; booked: number; onOpen
   );
 }
 
+function DeleteSlotConfirm({ onCancel, onConfirm }: { onCancel: () => void; onConfirm: () => void }) {
+  const t = useTranslations("admin.toys");
+  return (
+    <div
+      data-testid="toys-slot-delete-dialog"
+      role="alertdialog"
+      aria-labelledby="slot-del"
+      className="flex flex-col gap-3 border-t border-destructive/30 bg-destructive/5 px-5 py-4"
+    >
+      <p id="slot-del" className="font-semibold">
+        {t("agenda.borrarPregunta")}
+      </p>
+      <div className="flex justify-end gap-2">
+        <Button variant="outline" className="h-11" data-testid="toys-slot-delete-cancel" onClick={onCancel}>
+          {t("cancelar")}
+        </Button>
+        <Button variant="destructive" className="h-11" data-testid="toys-slot-delete-confirm" onClick={onConfirm}>
+          {t("agenda.borrarSi")}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function initialSlotForm(editing: Editing) {
+  const s = editing.slot;
+  return {
+    date: s?.date ?? editing.date,
+    start: s?.start_time ?? "10:00",
+    end: s?.end_time ?? "12:00",
+    label: s?.label ?? "",
+    capacity: s?.capacity ? String(s.capacity) : "",
+  };
+}
+
 function SlotPanel({
   editing,
   booked,
@@ -298,18 +373,18 @@ function SlotPanel({
   const t = useTranslations("admin.toys");
   const api = useToys();
   const s = editing.slot;
-  const [date, setDate] = useState(s?.date ?? editing.date);
-  const [start, setStart] = useState(s?.start_time ?? "10:00");
-  const [end, setEnd] = useState(s?.end_time ?? "12:00");
-  const [label, setLabel] = useState(s?.label ?? "");
-  const [capacity, setCapacity] = useState(s?.capacity ? String(s.capacity) : "");
+  const initial = initialSlotForm(editing);
+  const [date, setDate] = useState(initial.date);
+  const [start, setStart] = useState(initial.start);
+  const [end, setEnd] = useState(initial.end);
+  const [label, setLabel] = useState(initial.label);
+  const [capacity, setCapacity] = useState(initial.capacity);
   const [error, setError] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const save = async () => {
-    if (start && end && end <= start) return setError(t("agenda.error.horas"));
-    if (capacity && (!Number.isInteger(Number(capacity)) || Number(capacity) < 1))
-      return setError(t("agenda.error.plazas"));
+    const invalid = validateSlotForm(start, end, capacity);
+    if (invalid) return setError(t(invalid));
     const fields = { start_time: start || null, end_time: end || null, capacity: capacity ? Number(capacity) : null };
     const r = s ? await api.updateSlot(s.id, { date, label, ...fields }) : await api.addSlot(date, label, fields);
     if (!r.success)
@@ -426,31 +501,7 @@ function SlotPanel({
             </p>
           )}
         </div>
-        {confirmDelete && (
-          <div
-            data-testid="toys-slot-delete-dialog"
-            role="alertdialog"
-            aria-labelledby="slot-del"
-            className="flex flex-col gap-3 border-t border-destructive/30 bg-destructive/5 px-5 py-4"
-          >
-            <p id="slot-del" className="font-semibold">
-              {t("agenda.borrarPregunta")}
-            </p>
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                className="h-11"
-                data-testid="toys-slot-delete-cancel"
-                onClick={() => setConfirmDelete(false)}
-              >
-                {t("cancelar")}
-              </Button>
-              <Button variant="destructive" className="h-11" data-testid="toys-slot-delete-confirm" onClick={remove}>
-                {t("agenda.borrarSi")}
-              </Button>
-            </div>
-          </div>
-        )}
+        {confirmDelete && <DeleteSlotConfirm onCancel={() => setConfirmDelete(false)} onConfirm={remove} />}
         <div className="flex flex-wrap items-center gap-2 border-t bg-muted/30 px-5 py-3">
           {s && (
             <Button

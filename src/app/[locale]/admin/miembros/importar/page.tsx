@@ -13,60 +13,67 @@ import { useRouter } from '@/i18n/navigation';
 import Link from 'next/link';
 import { useMembers, type CreateMemberDto, type CreateContributionDto } from '../useMembers';
 
+const includesAny = (header: string, keys: string[]) => keys.some((k) => header.includes(k));
+
+function parseTier(value: string): CreateMemberDto['tier'] {
+  if (value === 'premium') return 'premium';
+  if (value === 'founder' || value === 'fundador') return 'founder';
+  return 'basic';
+}
+
+function parseStatus(value: string): CreateMemberDto['status'] {
+  if (value === 'lapsed' || value === 'inactivo') return 'lapsed';
+  if (value === 'churned' || value === 'baja') return 'churned';
+  return 'active';
+}
+
+// Ordered rules: the first matching header wins (same precedence as the original if/else chain)
+const FIELD_RULES: Array<{ keys: string[]; apply: (member: CreateMemberDto, value: string) => void }> = [
+  { keys: ['nombre', 'name', 'fullname'], apply: (m, v) => { m.fullName = v; } },
+  { keys: ['email', 'correo'], apply: (m, v) => { m.email = v; } },
+  { keys: ['telefono', 'phone'], apply: (m, v) => { m.phone = v || undefined; } },
+  { keys: ['nivel', 'tier'], apply: (m, v) => { m.tier = parseTier(v); } },
+  { keys: ['estado', 'status'], apply: (m, v) => { m.status = parseStatus(v); } },
+];
+
+function applyField(member: CreateMemberDto, header: string, value: string) {
+  const rule = FIELD_RULES.find((r) => includesAny(header, r.keys));
+  rule?.apply(member, value);
+}
+
+function parseCSVLine(line: string, headers: string[]): CreateMemberDto {
+  const values = line.split(',').map(v => v.trim());
+  const member: CreateMemberDto = {
+    fullName: '',
+    email: '',
+    phone: '',
+    tier: 'basic',
+    status: 'active',
+    contactPreferences: { email: true, phone: false, mail: false },
+  };
+  const columns = Math.min(headers.length, values.length);
+  for (let j = 0; j < columns; j++) {
+    applyField(member, headers[j], values[j]);
+  }
+  return member;
+}
+
 // CSV parsing function
 function parseCSV(csvText: string): { members: CreateMemberDto[]; contributions: CreateContributionDto[] } {
   const lines = csvText.split('\n').filter(line => line.trim() !== '');
-  const members: CreateMemberDto[] = [];
   const contributions: CreateContributionDto[] = [];
-
   if (lines.length < 2) {
-    return { members, contributions };
+    return { members: [], contributions };
   }
 
   // Parse header to understand columns
   const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
 
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i];
-    const values = line.split(',').map(v => v.trim());
-
-    // Create member object
-    const member: CreateMemberDto = {
-      fullName: '',
-      email: '',
-      phone: '',
-      tier: 'basic',
-      status: 'active',
-      contactPreferences: { email: true, phone: false, mail: false },
-    };
-
-    // Map values to member fields
-    for (let j = 0; j < Math.min(headers.length, values.length); j++) {
-      const header = headers[j];
-      const value = values[j];
-
-      if (header.includes('nombre') || header.includes('name') || header.includes('fullname')) {
-        member.fullName = value;
-      } else if (header.includes('email') || header.includes('correo')) {
-        member.email = value;
-      } else if (header.includes('telefono') || header.includes('phone')) {
-        member.phone = value || undefined;
-      } else if (header.includes('nivel') || header.includes('tier')) {
-        if (value === 'premium' || value === 'premium') member.tier = 'premium';
-        else if (value === 'founder' || value === 'fundador') member.tier = 'founder';
-        else member.tier = 'basic';
-      } else if (header.includes('estado') || header.includes('status')) {
-        if (value === 'lapsed' || value === 'inactivo') member.status = 'lapsed';
-        else if (value === 'churned' || value === 'baja') member.status = 'churned';
-        else member.status = 'active';
-      }
-    }
-
-    // Only add if we have at least a name or email
-    if (member.fullName || member.email) {
-      members.push(member);
-    }
-  }
+  // Only keep rows with at least a name or email
+  const members = lines
+    .slice(1)
+    .map((line) => parseCSVLine(line, headers))
+    .filter((member) => member.fullName || member.email);
 
   return { members, contributions };
 }

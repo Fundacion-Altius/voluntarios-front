@@ -99,6 +99,35 @@ export default function ToysOverviewPage() {
   );
 }
 
+type AgeRowData = ReturnType<typeof ageMatch>[number];
+
+function AgeRow({ r, max }: { r: AgeRowData; max: number }) {
+  const t = useTranslations('admin.toys');
+  let tone = 'bg-success/10 text-success';
+  let label = t('campana.edad.sobran', { n: r.diff });
+  if (r.kids === 0) {
+    tone = 'bg-muted text-muted-foreground';
+    label = t('campana.edad.sinNinos');
+  } else if (r.diff < 0) {
+    tone = 'bg-destructive/10 text-destructive';
+    label = t('campana.edad.faltan', { n: -r.diff });
+  } else if (r.diff === 0) {
+    label = t('campana.edad.justo');
+  }
+  return (
+    <li data-testid={`toys-age-${r.band}`} className="grid grid-cols-[5.5rem_1fr_auto] items-center gap-3 py-2.5 text-sm sm:grid-cols-[7rem_1fr_auto]">
+      <span className="font-semibold">{t(`bandas.${r.band}`)}</span>
+      <span className="flex flex-col gap-1" aria-label={t('campana.edad.aria', { toys: r.toys, kids: r.kids })}>
+        <span className="h-2 overflow-hidden rounded-full bg-muted"><span className="block h-full rounded-full bg-primary" style={{ width: `${(r.toys / max) * 100}%` }} /></span>
+        <span className="h-2 overflow-hidden rounded-full bg-muted"><span className="block h-full rounded-full bg-[#a9abe0]" style={{ width: `${(r.kids / max) * 100}%` }} /></span>
+      </span>
+      <span className={cn('whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold', tone)}>
+        {label}
+      </span>
+    </li>
+  );
+}
+
 function Overview({ data }: { data: CampaignData }) {
   const t = useTranslations('admin.toys');
   const phase = derivePhase(data, todayIso());
@@ -212,21 +241,7 @@ function Overview({ data }: { data: CampaignData }) {
           ) : (
             <ul className="divide-y">
               {rows.map((r) => (
-                <li key={r.band} data-testid={`toys-age-${r.band}`} className="grid grid-cols-[5.5rem_1fr_auto] items-center gap-3 py-2.5 text-sm sm:grid-cols-[7rem_1fr_auto]">
-                  <span className="font-semibold">{t(`bandas.${r.band}`)}</span>
-                  <span className="flex flex-col gap-1" aria-label={t('campana.edad.aria', { toys: r.toys, kids: r.kids })}>
-                    <span className="h-2 overflow-hidden rounded-full bg-muted"><span className="block h-full rounded-full bg-primary" style={{ width: `${(r.toys / max) * 100}%` }} /></span>
-                    <span className="h-2 overflow-hidden rounded-full bg-muted"><span className="block h-full rounded-full bg-[#a9abe0]" style={{ width: `${(r.kids / max) * 100}%` }} /></span>
-                  </span>
-                  <span
-                    className={cn(
-                      'whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold',
-                      r.kids === 0 ? 'bg-muted text-muted-foreground' : r.diff < 0 ? 'bg-destructive/10 text-destructive' : 'bg-success/10 text-success',
-                    )}
-                  >
-                    {r.kids === 0 ? t('campana.edad.sinNinos') : r.diff < 0 ? t('campana.edad.faltan', { n: -r.diff }) : r.diff === 0 ? t('campana.edad.justo') : t('campana.edad.sobran', { n: r.diff })}
-                  </span>
-                </li>
+                <AgeRow key={r.band} r={r} max={max} />
               ))}
             </ul>
           )}

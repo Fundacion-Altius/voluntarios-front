@@ -10,6 +10,41 @@ type Props = {
   tipo: string;
 };
 
+const TRACKING_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
+
+function buildBookingBody(f: {
+  tipo: string;
+  selected: Slot;
+  visitorTz: string;
+  email: string;
+  name: string;
+  org: string;
+  notes: string;
+  consent: boolean;
+  website: string;
+  searchParams: { get(key: string): string | null };
+}): Record<string, unknown> {
+  const body: Record<string, unknown> = {
+    tipo: f.tipo,
+    startUtc: f.selected.startUtc,
+    endUtc: f.selected.endUtc,
+    visitorTz: f.visitorTz,
+    visitorEmail: f.email,
+    visitorName: f.name,
+    visitorOrg: f.org || undefined,
+    notes: f.notes || undefined,
+    consent: f.consent,
+    website: f.website,
+  };
+  const ref = f.searchParams.get('ref');
+  if (ref) body.ref = ref;
+  for (const key of TRACKING_KEYS) {
+    const value = f.searchParams.get(key);
+    if (value) body[key] = value;
+  }
+  return body;
+}
+
 export default function BookingClient({ tipo }: Props) {
   const searchParams = useSearchParams();
   const [slots, setSlots] = useState<Slot[]>([]);
@@ -62,24 +97,18 @@ export default function BookingClient({ tipo }: Props) {
     setStatus('loading');
     setMessage('');
     try {
-      const body: Record<string, unknown> = {
+      const body = buildBookingBody({
         tipo,
-        startUtc: selected.startUtc,
-        endUtc: selected.endUtc,
+        selected,
         visitorTz,
-        visitorEmail: email,
-        visitorName: name,
-        visitorOrg: org || undefined,
-        notes: notes || undefined,
+        email,
+        name,
+        org,
+        notes,
         consent,
         website,
-      };
-      const ref = searchParams.get('ref');
-      if (ref) body.ref = ref;
-      for (const key of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']) {
-        const value = searchParams.get(key);
-        if (value) body[key] = value;
-      }
+        searchParams,
+      });
 
       const res = await fetch(`${getApiBaseUrl()}/api/booking`, {
         method: 'POST',

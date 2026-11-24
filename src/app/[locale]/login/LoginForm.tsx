@@ -13,6 +13,35 @@ import { Link } from '@/i18n/navigation';
 import { getCSRFTokenFromCookie } from '@/app/utils';
 import { parseTenantSlugFromHost, isAuthHost, getAuthHost } from '@/lib/tenantHost';
 
+/** User statuses that cannot log in, mapped to their `login` i18n message key. */
+const STATUS_ERROR_KEYS: Record<string, 'statusCandidate' | 'statusInactive' | 'statusOnReserve'> = {
+  candidate: 'statusCandidate',
+  inactive: 'statusInactive',
+  'on-reserve': 'statusOnReserve',
+};
+
+function LoginErrorBanner({ error, credError, t }: {
+  error: string | null; credError: string; t: ReturnType<typeof useTranslations>;
+}) {
+  if (!error && !credError) return null;
+  const fallback = error === 'AccessDenied' ? t('errorAccessDenied') : t('errorAutenticacion');
+  return (
+    <div className="w-full rounded-md bg-destructive/10 p-3 text-center text-sm text-destructive">
+      {credError || fallback}
+    </div>
+  );
+}
+
+function OrDivider({ label }: { label: string }) {
+  return (
+    <div className="flex w-full items-center gap-2">
+      <div className="h-px flex-1 bg-border" />
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <div className="h-px flex-1 bg-border" />
+    </div>
+  );
+}
+
 export function LoginForm({ hasGoogle, hasAzure }: { hasGoogle: boolean; hasAzure: boolean }) {
   const [googleLoading, setGoogleLoading] = useState(false);
   const searchParams = useSearchParams();
@@ -50,25 +79,13 @@ export function LoginForm({ hasGoogle, hasAzure }: { hasGoogle: boolean; hasAzur
   const effectiveTenant = tenantParam || tenantSlug || null;
   const returnTo = searchParams.get('return_to') || '/admin/dashboard';
 
-  const handleStatusError = (data: any, t: any, setCredError: (msg: string) => void): string | null => {
-    if (data.user?.status === 'candidate') {
-      setCredError(t('statusCandidate'));
-      return 'candidate';
-    }
-    if (data.user?.status === 'inactive') {
-      setCredError(t('statusInactive'));
-      return 'inactive';
-    }
-    if (data.user?.status === 'on-reserve') {
-      setCredError(t('statusOnReserve'));
-      return 'on-reserve';
-    }
-    return null;
-  };
-
   const handleLoginResponse = async (res: Response, data: any): Promise<boolean> => {
-    const statusError = handleStatusError(data, t, setCredError);
-    if (statusError) { setLoading(false); return true; }
+    const statusKey = STATUS_ERROR_KEYS[data.user?.status as string];
+    if (statusKey) {
+      setCredError(t(statusKey));
+      setLoading(false);
+      return true;
+    }
 
     if (!res.ok) {
       setCredError(data.error || t('errorCredenciales'));
@@ -139,13 +156,7 @@ export function LoginForm({ hasGoogle, hasAzure }: { hasGoogle: boolean; hasAzur
           <CardDescription>{t('subtitulo')}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center gap-4">
-          {(error || credError) && (
-            <div className="w-full rounded-md bg-destructive/10 p-3 text-center text-sm text-destructive">
-              {credError || (error === 'AccessDenied'
-                ? t('errorAccessDenied')
-                : t('errorAutenticacion'))}
-            </div>
-          )}
+          <LoginErrorBanner error={error} credError={credError} t={t} />
 
           <form onSubmit={handleCredentialsLogin} className="w-full space-y-3">
             <Input
@@ -183,13 +194,7 @@ export function LoginForm({ hasGoogle, hasAzure }: { hasGoogle: boolean; hasAzur
             </Button>
           </form>
 
-          {(hasGoogle || hasAzure) && (
-          <div className="flex w-full items-center gap-2">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-xs text-muted-foreground">{t('o')}</span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
-          )}
+          {(hasGoogle || hasAzure) && <OrDivider label={t('o')} />}
 
           {hasGoogle && (
             <Button

@@ -8,6 +8,58 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useHolidays, type Holiday } from './useHolidays';
 
+type HolidayListProps = {
+  holidays: Holiday[];
+  isLoading: boolean;
+  error: string | null;
+  onToggle: (id: string, active: boolean) => unknown;
+  onDelete: (id: string) => unknown;
+};
+
+function HolidayRow({ h, onToggle, onDelete }: { h: Holiday; onToggle: HolidayListProps['onToggle']; onDelete: HolidayListProps['onDelete'] }) {
+  const t = useTranslations('admin.actividades');
+  const tCommon = useTranslations('common');
+  const isActive = h.active === 'true';
+  return (
+    <div className={`flex items-center justify-between rounded-md border p-2 text-sm ${isActive ? '' : 'opacity-50'}`}>
+      <div className="flex items-center gap-2">
+        <span>{new Date(h.date).toLocaleDateString()}</span>
+        <span className="font-medium">{h.name}</span>
+        <Badge variant="outline">{h.region}</Badge>
+        <Badge variant={h.source === 'auto' ? 'secondary' : 'default'}>
+          {h.source === 'auto' ? t('auto') : t('manual')}
+        </Badge>
+      </div>
+      <div className="flex gap-2">
+        <Button size="sm" variant="outline" onClick={() => onToggle(h.id, !isActive)}>
+          {isActive ? t('desactivar') : t('activar')}
+        </Button>
+        <Button size="sm" variant="destructive" onClick={() => onDelete(h.id)}>
+          {tCommon('eliminar')}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function HolidayList({ holidays, isLoading, error, onToggle, onDelete }: HolidayListProps) {
+  const t = useTranslations('admin.actividades');
+  if (isLoading) {
+    return <div className="space-y-2">{Array.from({ length: 4 }).map((_, i) => (<Skeleton key={i} className="h-10 w-full" />))}</div>;
+  }
+  if (error) return <p className="text-sm text-destructive">{error}</p>;
+  if (holidays.length === 0) {
+    return <p className="py-4 text-center text-sm text-muted-foreground">{t('noFestivos')}</p>;
+  }
+  return (
+    <div className="max-h-80 space-y-2 overflow-y-auto">
+      {holidays.map((h) => (
+        <HolidayRow key={h.id} h={h} onToggle={onToggle} onDelete={onDelete} />
+      ))}
+    </div>
+  );
+}
+
 export default function HolidaysSection() {
   const t = useTranslations('admin.actividades');
   const tCommon = useTranslations('common');
@@ -54,36 +106,13 @@ export default function HolidaysSection() {
         <Card className="lg:col-span-2">
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">{t('listaFestivos')}</CardTitle></CardHeader>
           <CardContent>
-            {isLoading ? (
-              <div className="space-y-2">{Array.from({ length: 4 }).map((_, i) => (<Skeleton key={i} className="h-10 w-full" />))}</div>
-            ) : error ? (
-              <p className="text-sm text-destructive">{error}</p>
-            ) : holidays.length === 0 ? (
-              <p className="py-4 text-center text-sm text-muted-foreground">{t('noFestivos')}</p>
-            ) : (
-              <div className="max-h-80 space-y-2 overflow-y-auto">
-                {holidays.map((h: Holiday) => (
-                  <div key={h.id} className={`flex items-center justify-between rounded-md border p-2 text-sm ${h.active !== 'true' ? 'opacity-50' : ''}`}>
-                    <div className="flex items-center gap-2">
-                      <span>{new Date(h.date).toLocaleDateString()}</span>
-                      <span className="font-medium">{h.name}</span>
-                      <Badge variant="outline">{h.region}</Badge>
-                      <Badge variant={h.source === 'auto' ? 'secondary' : 'default'}>
-                        {h.source === 'auto' ? t('auto') : t('manual')}
-                      </Badge>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline" onClick={() => setHolidayActive(h.id, h.active !== 'true')}>
-                        {h.active === 'true' ? t('desactivar') : t('activar')}
-                      </Button>
-                      <Button size="sm" variant="destructive" onClick={() => deleteHoliday(h.id)}>
-                        {tCommon('eliminar')}
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <HolidayList
+              holidays={holidays}
+              isLoading={isLoading}
+              error={error}
+              onToggle={setHolidayActive}
+              onDelete={deleteHoliday}
+            />
           </CardContent>
         </Card>
       </div>

@@ -68,6 +68,131 @@ function formatCurrency(amount: string | null) {
   return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(parseFloat(amount));
 }
 
+function MiembrosAuthSkeleton() {
+  return (
+    <div className="space-y-4">
+      <Skeleton className="h-8 w-48" />
+      <Skeleton className="h-10 w-full" />
+      <div className="space-y-2">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-12 w-full" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MemberRow({ member, deleteTarget, setDeleteTarget, onDelete }: {
+  member: Member; deleteTarget: Member | null;
+  setDeleteTarget: (m: Member | null) => void; onDelete: () => void;
+}) {
+  const t = useTranslations('admin.miembros');
+  const tCommon = useTranslations('common');
+  return (
+    <tr className="border-b hover:bg-muted/50">
+      <td className="px-4 py-3 text-sm font-medium">{member.full_name}</td>
+      <td className="px-4 py-3 text-sm text-muted-foreground">{member.email}</td>
+      <td className="px-4 py-3 text-sm text-muted-foreground">
+        {member.phone || '-'}
+      </td>
+      <td className="px-4 py-3">
+        <Badge variant={tierBadgeVariant[member.tier] || 'outline'}>
+          {member.tier}
+        </Badge>
+      </td>
+      <td className="px-4 py-3">
+        <Badge variant={statusBadgeVariant[member.status] || 'outline'}>
+          {member.status}
+        </Badge>
+      </td>
+      <td className="px-4 py-3 text-sm text-muted-foreground">
+        {formatDate(member.join_date)}
+      </td>
+      <td className="px-4 py-3 text-sm text-muted-foreground">
+        {formatDate(member.last_contribution_date)}
+      </td>
+      <td className="px-4 py-3 text-right">
+        <div className="flex justify-end gap-2">
+          <Link href={`/admin/miembros/${member.id}`}>
+            <Button variant="outline" size="sm">
+              {tCommon('editar')}
+            </Button>
+          </Link>
+          <AlertDialog
+            open={deleteTarget?.id === member.id}
+            onOpenChange={(open) => {
+              if (!open) setDeleteTarget(null);
+            }}
+          >
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setDeleteTarget(member)}
+              >
+                {tCommon('eliminar')}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t('eliminarMiembro')}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t('eliminarMiembroDesc')}{' '}
+                  <strong>{deleteTarget?.full_name}</strong> ({deleteTarget?.email}).
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{tCommon('cancelar')}</AlertDialogCancel>
+                <AlertDialogAction onClick={onDelete}>
+                  {tCommon('eliminar')}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </td>
+    </tr>
+  );
+}
+
+function MembersTableBody({ isLoading, members, deleteTarget, setDeleteTarget, onDelete }: {
+  isLoading: boolean; members: Member[]; deleteTarget: Member | null;
+  setDeleteTarget: (m: Member | null) => void; onDelete: () => void;
+}) {
+  const t = useTranslations('admin.miembros');
+  if (isLoading) {
+    return (
+      <>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <tr key={i} className="border-b">
+            {Array.from({ length: 8 }).map((_, j) => (
+              <td key={j} className="px-4 py-3">
+                <Skeleton className="h-4 w-full" />
+              </td>
+            ))}
+          </tr>
+        ))}
+      </>
+    );
+  }
+  if (members.length === 0) {
+    return (
+      <tr>
+        <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+          {t('sinResultados')}
+        </td>
+      </tr>
+    );
+  }
+  return (
+    <>
+      {members.map((member) => (
+        <MemberRow key={member.id} member={member} deleteTarget={deleteTarget} setDeleteTarget={setDeleteTarget} onDelete={onDelete} />
+      ))}
+    </>
+  );
+}
+
 export default function MiembrosPage() {
   const t = useTranslations('admin.miembros');
   const tCommon = useTranslations('common');
@@ -124,18 +249,18 @@ export default function MiembrosPage() {
         contactPreferences: newContactPreferences,
       });
 
-      if (result.success) {
-        setNewFullName('');
-        setNewEmail('');
-        setNewPhone('');
-        setNewTier('basic');
-        setNewStatus('active');
-        setNewContactPreferences({ email: true, phone: false, mail: false });
-        setCreateOpen(false);
-        showSuccess(t('miembroCreado'));
-      } else {
+      if (!result.success) {
         setFormError(result.error);
+        return;
       }
+      setNewFullName('');
+      setNewEmail('');
+      setNewPhone('');
+      setNewTier('basic');
+      setNewStatus('active');
+      setNewContactPreferences({ email: true, phone: false, mail: false });
+      setCreateOpen(false);
+      showSuccess(t('miembroCreado'));
     } catch (err: any) {
       setFormError(err.message);
     } finally {
@@ -178,19 +303,7 @@ export default function MiembrosPage() {
   // Check if any filters are active
   const hasActiveFilters = filterOptions.search || filterOptions.status || filterOptions.tier;
 
-  if (authLoading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-10 w-full" />
-        <div className="space-y-2">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-12 w-full" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  if (authLoading) return <MiembrosAuthSkeleton />;
 
   if (!isAuthenticated) return null;
 
@@ -423,89 +536,13 @@ export default function MiembrosPage() {
             </tr>
           </thead>
           <tbody>
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="border-b">
-                  {Array.from({ length: 8 }).map((_, j) => (
-                    <td key={j} className="px-4 py-3">
-                      <Skeleton className="h-4 w-full" />
-                    </td>
-                  ))}
-                </tr>
-              ))
-            ) : members.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
-                  {t('sinResultados')}
-                </td>
-              </tr>
-            ) : (
-              members.map((member) => (
-                <tr key={member.id} className="border-b hover:bg-muted/50">
-                  <td className="px-4 py-3 text-sm font-medium">{member.full_name}</td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">{member.email}</td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">
-                    {member.phone || '-'}
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge variant={tierBadgeVariant[member.tier] || 'outline'}>
-                      {member.tier}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge variant={statusBadgeVariant[member.status] || 'outline'}>
-                      {member.status}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">
-                    {formatDate(member.join_date)}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">
-                    {formatDate(member.last_contribution_date)}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end gap-2">
-                      <Link href={`/admin/miembros/${member.id}`}>
-                        <Button variant="outline" size="sm">
-                          {tCommon('editar')}
-                        </Button>
-                      </Link>
-                      <AlertDialog
-                        open={deleteMemberTarget?.id === member.id}
-                        onOpenChange={(open) => {
-                          if (!open) setDeleteMemberTarget(null);
-                        }}
-                      >
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => setDeleteMemberTarget(member)}
-                          >
-                            {tCommon('eliminar')}
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>{t('eliminarMiembro')}</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              {t('eliminarMiembroDesc')}{' '}
-                              <strong>{deleteMemberTarget?.full_name}</strong> ({deleteMemberTarget?.email}).
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>{tCommon('cancelar')}</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleDelete}>
-                              {tCommon('eliminar')}
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
+            <MembersTableBody
+              isLoading={isLoading}
+              members={members}
+              deleteTarget={deleteMemberTarget}
+              setDeleteTarget={setDeleteMemberTarget}
+              onDelete={handleDelete}
+            />
           </tbody>
         </table>
       </div>

@@ -1,11 +1,22 @@
-export function parseTenantSlugFromHost(hostHeader: string | undefined | null): {
+type TenantHostParse = {
   slug: string | null;
   reason: 'ok' | 'apex' | 'no-subdomain' | 'empty';
-} {
-  if (!hostHeader || !hostHeader.trim()) {
-    return { slug: null, reason: 'empty' };
+};
+
+function normalizeHost(hostHeader: string | undefined | null): string {
+  if (!hostHeader || !hostHeader.trim()) return '';
+  return hostHeader.split(',')[0].trim().toLowerCase().replace(/:\d+$/, '');
+}
+
+function slugFromLabel(label: string, rejectWww: boolean): TenantHostParse {
+  if (!label || label.includes('.') || (rejectWww && label === 'www')) {
+    return { slug: null, reason: 'apex' };
   }
-  const host = hostHeader.split(',')[0].trim().toLowerCase().replace(/:\d+$/, '');
+  return { slug: label, reason: 'ok' };
+}
+
+export function parseTenantSlugFromHost(hostHeader: string | undefined | null): TenantHostParse {
+  const host = normalizeHost(hostHeader);
   if (!host) return { slug: null, reason: 'empty' };
   if (host === 'localhost' || host === '127.0.0.1') {
     return { slug: null, reason: 'no-subdomain' };
@@ -15,16 +26,10 @@ export function parseTenantSlugFromHost(hostHeader: string | undefined | null): 
     return { slug: null, reason: 'apex' };
   }
   if (host.endsWith(`.${base}`)) {
-    const label = host.slice(0, -(base.length + 1));
-    if (!label || label === 'www' || label.includes('.')) {
-      return { slug: null, reason: 'apex' };
-    }
-    return { slug: label, reason: 'ok' };
+    return slugFromLabel(host.slice(0, -(base.length + 1)), true);
   }
   if (host.endsWith('.localhost')) {
-    const label = host.slice(0, -'.localhost'.length);
-    if (!label || label.includes('.')) return { slug: null, reason: 'apex' };
-    return { slug: label, reason: 'ok' };
+    return slugFromLabel(host.slice(0, -'.localhost'.length), false);
   }
   return { slug: null, reason: 'no-subdomain' };
 }

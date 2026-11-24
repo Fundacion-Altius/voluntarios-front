@@ -108,6 +108,20 @@ export interface CreateContributionDto {
   notes?: string;
 }
 
+function buildMembersUrl(filters: MemberFilterOptions): string {
+  const queryParams = new URLSearchParams();
+  if (filters.status) queryParams.append('status', filters.status);
+  if (filters.tier) queryParams.append('tier', filters.tier);
+  if (filters.search) queryParams.append('search', filters.search);
+  const queryString = queryParams.toString();
+  return `${API_URL}/api/members${queryString ? `?${queryString}` : ''}`;
+}
+
+async function readApiError(res: Response, fallback: string): Promise<string> {
+  const errorData = await res.json().catch(() => ({}));
+  return errorData.message || errorData.error || fallback;
+}
+
 export function useMembers() {
   const { data: session } = useSession();
   const [members, setMembers] = useState<Member[]>([]);
@@ -136,37 +150,27 @@ export function useMembers() {
     setIsLoading(true);
     setError(null);
 
+    const isLatest = () => thisFetchId === fetchIdRef.current;
+
     try {
-      // Build query string from filter options
-      const queryParams = new URLSearchParams();
-      if (filterOptions.status) queryParams.append('status', filterOptions.status);
-      if (filterOptions.tier) queryParams.append('tier', filterOptions.tier);
-      if (filterOptions.search) queryParams.append('search', filterOptions.search);
-
-      const queryString = queryParams.toString();
-      const url = `${API_URL}/api/members${queryString ? `?${queryString}` : ''}`;
-
-      const res = await fetch(url, {
+      const res = await fetch(buildMembersUrl(filterOptions), {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         credentials: 'include',
       });
 
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        setError(errorData.message || errorData.error || 'Failed to fetch members');
-        if (thisFetchId === fetchIdRef.current) {
-          setIsLoading(false);
-        }
+        setError(await readApiError(res, 'Failed to fetch members'));
+        if (isLatest()) setIsLoading(false);
         return;
       }
 
       const data = await res.json();
-      if (thisFetchId === fetchIdRef.current) {
+      if (isLatest()) {
         setMembers(data);
         setIsLoading(false);
       }
     } catch (err: any) {
-      if (thisFetchId === fetchIdRef.current) {
+      if (isLatest()) {
         setError(err.message);
         setIsLoading(false);
       }

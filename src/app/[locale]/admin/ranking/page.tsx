@@ -8,8 +8,59 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 import { getApiBaseUrl } from '@/lib/apiUrl';
+import { readApiError } from '@/lib/errorMessage';
 
 const API_URL = getApiBaseUrl();
+
+function groupByWeek(rankings: any[]): Record<string, any[]> {
+  const groups: Record<string, any[]> = {};
+  for (const r of rankings) {
+    const key = r.week_start ? new Date(r.week_start).toLocaleDateString() : 'sin-fecha';
+    (groups[key] ??= []).push(r);
+  }
+  return groups;
+}
+
+function RankingGroups({ groups }: { groups: Record<string, any[]> }) {
+  const t = useTranslations('admin.ranking');
+  return (
+    <div className="space-y-6">
+      {Object.entries(groups).sort().reverse().map(([week, entries]) => (
+        <Card key={week}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">{t('semanaDel')} {week}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {entries.sort((a: any, b: any) => (a.position || 99) - (b.position || 99)).map((entry: any) => (
+                <div key={entry.id} className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-muted-foreground">#{entry.position}</span>
+                    <span>{entry.user_id.slice(0, 8)}</span>
+                  </div>
+                  <Badge variant="secondary">{entry.points} pts</Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function RankingBody({ isLoading, groups }: { isLoading: boolean; groups: Record<string, any[]> }) {
+  const t = useTranslations('admin.ranking');
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        {Array.from({ length: 3 }).map((_, i) => (<Skeleton key={i} className="h-24 w-full rounded-lg" />))}
+      </div>
+    );
+  }
+  if (Object.keys(groups).length === 0) return <p className="text-muted-foreground">{t('noHayRankings')}</p>;
+  return <RankingGroups groups={groups} />;
+}
 
 export default function RankingAdminPage() {
   const t = useTranslations('admin.ranking');
@@ -27,21 +78,21 @@ export default function RankingAdminPage() {
 
   const fetchRankings = useCallback(async () => {
     const thisFetchId = ++fetchIdRef.current;
+    const isLatest = () => thisFetchId === fetchIdRef.current;
     setIsLoading(true); setError(null);
     try {
       const res = await fetch(`${API_URL}/api/gamification/ranking/admin`, {
         headers: fetchHeaders(), credentials: 'include',
       });
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        setError(errorData.message || errorData.error || 'Error');
-        if (thisFetchId === fetchIdRef.current) { setIsLoading(false); }
+        setError(await readApiError(res, 'Error'));
+        if (isLatest()) setIsLoading(false);
         return;
       }
       const data = await res.json();
-      if (thisFetchId === fetchIdRef.current) { setRankings(data.success ? data.data : data); setIsLoading(false); }
+      if (isLatest()) { setRankings(data.success ? data.data : data); setIsLoading(false); }
     } catch (err: any) {
-      if (thisFetchId === fetchIdRef.current) { setError(err.message); setIsLoading(false); }
+      if (isLatest()) { setError(err.message); setIsLoading(false); }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
@@ -51,47 +102,13 @@ export default function RankingAdminPage() {
   if (authLoading) return <div className="space-y-4"><Skeleton className="h-8 w-48" /></div>;
   if (!isAuthenticated) return null;
 
-  const weeklyGroups: Record<string, any[]> = {};
-  for (const r of rankings) {
-    const key = r.week_start ? new Date(r.week_start).toLocaleDateString() : 'sin-fecha';
-    if (!weeklyGroups[key]) weeklyGroups[key] = [];
-    weeklyGroups[key].push(r);
-  }
+  const weeklyGroups = groupByWeek(rankings);
 
   return (
     <div>
       <h2 className="mb-4 text-xl font-semibold">{t('historial')}</h2>
       {error && <div className="mb-4 rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
-      {isLoading ? (
-        <div className="space-y-4">
-          {Array.from({ length: 3 }).map((_, i) => (<Skeleton key={i} className="h-24 w-full rounded-lg" />))}
-        </div>
-      ) : Object.keys(weeklyGroups).length === 0 ? (
-        <p className="text-muted-foreground">{t('noHayRankings')}</p>
-      ) : (
-        <div className="space-y-6">
-          {Object.entries(weeklyGroups).sort().reverse().map(([week, entries]) => (
-            <Card key={week}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">{t('semanaDel')} {week}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {entries.sort((a: any, b: any) => (a.position || 99) - (b.position || 99)).map((entry: any) => (
-                    <div key={entry.id} className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-muted-foreground">#{entry.position}</span>
-                        <span>{entry.user_id.slice(0, 8)}</span>
-                      </div>
-                      <Badge variant="secondary">{entry.points} pts</Badge>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      <RankingBody isLoading={isLoading} groups={weeklyGroups} />
     </div>
   );
 }

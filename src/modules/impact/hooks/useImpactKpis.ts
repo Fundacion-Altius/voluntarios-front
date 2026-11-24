@@ -16,6 +16,27 @@ export function currentMonthPeriod(now: Date = new Date()): string {
 
 type PublicConfigResponse = { success: boolean; data?: PublicImpactConfig; error?: string };
 
+const EMPTY_IMPACT_CONFIG: ImpactConfig = {
+  organizationName: '',
+  organizationLogo: '',
+  enabledKpis: [],
+  showEstimateBadge: true,
+};
+
+/** Maps the public-config API response to an ImpactConfig (empty/default config on any failure). */
+export function toImpactConfig(
+  cfgRes: { success: boolean; data?: PublicConfigResponse; error?: string },
+): ImpactConfig {
+  const pub = cfgRes.success && cfgRes.data?.success ? cfgRes.data.data : undefined;
+  if (!pub) return EMPTY_IMPACT_CONFIG;
+  return {
+    organizationName: pub.organizationName,
+    organizationLogo: pub.organizationLogo,
+    enabledKpis: pub.publicKeys,
+    showEstimateBadge: pub.showEstimateBadge,
+  };
+}
+
 export function useImpactKpis({
   enabled = true,
   period,
@@ -58,22 +79,7 @@ export function useImpactKpis({
 
       if (useTenantPublicConfig) {
         const cfgRes = await apiClient<PublicConfigResponse>(apiUrl('/api/impact/public-config'));
-        if (cfgRes.success && cfgRes.data?.success && cfgRes.data.data) {
-          const pub = cfgRes.data.data;
-          setConfig({
-            organizationName: pub.organizationName,
-            organizationLogo: pub.organizationLogo,
-            enabledKpis: pub.publicKeys,
-            showEstimateBadge: pub.showEstimateBadge,
-          });
-        } else {
-          setConfig({
-            organizationName: '',
-            organizationLogo: '',
-            enabledKpis: [],
-            showEstimateBadge: true,
-          });
-        }
+        setConfig(toImpactConfig(cfgRes));
       }
     } finally {
       setLoading(false);

@@ -47,6 +47,60 @@ type MyWaitlistEntry = {
   offer_expires_at: string | null;
 };
 
+function SessionAction({ s, booked, onWaitlist, pending, onBook, onJoin }: {
+  s: CalendarEntry; booked: boolean; onWaitlist: boolean; pending: boolean; onBook: () => void; onJoin: () => void;
+}) {
+  const t = useTranslations('portal.actividades');
+  if (s.isCancelled) return <Badge variant="outline">{t('cancelada')}</Badge>;
+  if (booked) return <Badge>{t('yaReservada')}</Badge>;
+  if (onWaitlist) return <Badge variant="outline">{t('enListaEspera')}</Badge>;
+  if (s.available > 0) {
+    return (
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" onClick={onBook} disabled={pending}>
+          {pending ? t('reservando') : t('reservar')}
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-wrap gap-2">
+      <Button size="sm" variant="secondary" onClick={onJoin} disabled={pending}>
+        {pending ? t('uniendose') : t('unirseLista')}
+      </Button>
+    </div>
+  );
+}
+
+function SessionCard({ s, booked, onWaitlist, pending, onBook, onJoin }: {
+  s: CalendarEntry; booked: boolean; onWaitlist: boolean; pending: boolean; onBook: () => void; onJoin: () => void;
+}) {
+  const t = useTranslations('portal.actividades');
+  return (
+    <Card className={s.isCancelled ? 'opacity-60' : undefined}>
+      <CardHeader className="pb-2">
+        <div className="flex items-start justify-between">
+          <div>
+            <CardTitle className="text-sm">{s.name}</CardTitle>
+            <p className="text-xs text-muted-foreground">
+              {new Date(s.date).toLocaleDateString()} · {s.shift}{s.localidad ? ` · ${s.localidad}` : ''}
+            </p>
+          </div>
+          <Badge variant={s.available > 0 && !s.isCancelled ? 'default' : 'outline'}>
+            {s.available}/{s.capacity} {t('plazas')}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <SessionAction s={s} booked={booked} onWaitlist={onWaitlist} pending={pending} onBook={onBook} onJoin={onJoin} />
+        {s.waitlistCount > 0 && (
+          <p className="mt-2 text-xs text-muted-foreground">{t('personasEnLista', { count: s.waitlistCount })}</p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function ActividadesPortalPage() {
   const t = useTranslations('portal.actividades');
   const [sessions, setSessions] = useState<CalendarEntry[]>([]);
@@ -261,51 +315,17 @@ export default function ActividadesPortalPage() {
           <EmptyState title={t('noSesiones')} description={t('vuelveMasTarde')} />
         ) : (
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            {sessions.map((s) => {
-              const booked = isBooked(s);
-              const onWaitlist = isOnWaitlist(s);
-              return (
-                <Card key={triple(s)} className={s.isCancelled ? 'opacity-60' : undefined}>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-sm">{s.name}</CardTitle>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(s.date).toLocaleDateString()} · {s.shift}{s.localidad ? ` · ${s.localidad}` : ''}
-                        </p>
-                      </div>
-                      <Badge variant={s.available > 0 && !s.isCancelled ? 'default' : 'outline'}>
-                        {s.available}/{s.capacity} {t('plazas')}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {s.isCancelled ? (
-                      <Badge variant="outline">{t('cancelada')}</Badge>
-                    ) : booked ? (
-                      <Badge>{t('yaReservada')}</Badge>
-                    ) : onWaitlist ? (
-                      <Badge variant="outline">{t('enListaEspera')}</Badge>
-                    ) : (
-                      <div className="flex flex-wrap gap-2">
-                        {s.available > 0 ? (
-                          <Button size="sm" onClick={() => handleBook(s)} disabled={pendingAction === triple(s)}>
-                            {pendingAction === triple(s) ? t('reservando') : t('reservar')}
-                          </Button>
-                        ) : (
-                          <Button size="sm" variant="secondary" onClick={() => handleJoinWaitlist(s)} disabled={pendingAction === triple(s)}>
-                            {pendingAction === triple(s) ? t('uniendose') : t('unirseLista')}
-                          </Button>
-                        )}
-                      </div>
-                    )}
-                    {s.waitlistCount > 0 && (
-                      <p className="mt-2 text-xs text-muted-foreground">{t('personasEnLista', { count: s.waitlistCount })}</p>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
+            {sessions.map((s) => (
+              <SessionCard
+                key={triple(s)}
+                s={s}
+                booked={isBooked(s)}
+                onWaitlist={isOnWaitlist(s)}
+                pending={pendingAction === triple(s)}
+                onBook={() => handleBook(s)}
+                onJoin={() => handleJoinWaitlist(s)}
+              />
+            ))}
           </div>
         )}
       </section>

@@ -25,6 +25,27 @@ export interface ActivityException {
 
 import { getApiBaseUrl } from '@/lib/apiUrl';
 
+function buildAuthHeaders(session: unknown, includeCsrf: boolean): Record<string, string> {
+  const token = (session as any)?.authToken;
+  const h: Record<string, string> = {};
+  if (token) h['Authorization'] = `Bearer ${token}`;
+  if (includeCsrf) {
+    const csrf = getCSRFToken();
+    if (csrf) h['X-CSRF-Token'] = csrf;
+  }
+  return h;
+}
+
+async function failureFrom(res: Response, fallback: string) {
+  const e = await res.json().catch(() => ({ error: fallback }));
+  return { success: false as const, error: e.error || fallback };
+}
+
+function extractTypeList(data: any): ActivityType[] {
+  if (Array.isArray(data)) return data;
+  return Array.isArray(data?.data) ? data.data : [];
+}
+
 export function useActivities() {
   const { data: session } = useSession();
   const [types, setTypes] = useState<ActivityType[]>([]);
@@ -32,16 +53,7 @@ export function useActivities() {
   const [error, setError] = useState<string | null>(null);
   const fetchIdRef = useRef(0);
 
-  const authHeaders = (includeCsrf = true): Record<string, string> => {
-    const token = (session as any)?.authToken;
-    const h: Record<string, string> = {};
-    if (token) h['Authorization'] = `Bearer ${token}`;
-    if (includeCsrf) {
-      const csrf = getCSRFToken();
-      if (csrf) h['X-CSRF-Token'] = csrf;
-    }
-    return h;
-  };
+  const authHeaders = (includeCsrf = true) => buildAuthHeaders(session, includeCsrf);
 
   const fetchTypes = useCallback(async () => {
     const thisFetchId = ++fetchIdRef.current;
@@ -56,7 +68,7 @@ export function useActivities() {
         return;
       }
       const data = await res.json();
-      const list = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
+      const list = extractTypeList(data);
       if (thisFetchId === fetchIdRef.current) { setTypes(list); setIsLoading(false); }
     } catch (err: any) {
       if (thisFetchId === fetchIdRef.current) { setError(err.message); setIsLoading(false); }
@@ -71,10 +83,7 @@ export function useActivities() {
       method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, credentials: 'include',
       body: JSON.stringify(data),
     });
-    if (!res.ok) { 
-      const e = await res.json().catch(() => ({ error: 'Error' }));
-      return { success: false as const, error: e.error || 'Error' };
-    }
+    if (!res.ok) return failureFrom(res, 'Error');
     await fetchTypes();
     return { success: true as const };
   };
@@ -84,10 +93,7 @@ export function useActivities() {
       method: 'PUT', headers: { 'Content-Type': 'application/json', ...authHeaders() }, credentials: 'include',
       body: JSON.stringify(data),
     });
-    if (!res.ok) { 
-      const e = await res.json().catch(() => ({ error: 'Error' }));
-      return { success: false as const, error: e.error || 'Error' };
-    }
+    if (!res.ok) return failureFrom(res, 'Error');
     await fetchTypes();
     return { success: true as const };
   };
@@ -96,10 +102,7 @@ export function useActivities() {
     const res = await fetch(`${getApiBaseUrl()}/api/activities/types/${id}`, {
       method: 'DELETE', headers: authHeaders(), credentials: 'include',
     });
-    if (!res.ok) {
-      const e = await res.json().catch(() => ({ error: 'Error al eliminar' }));
-      return { success: false as const, error: e.error || 'Error al eliminar' };
-    }
+    if (!res.ok) return failureFrom(res, 'Error al eliminar');
     await fetchTypes();
     return { success: true as const };
   };
@@ -120,10 +123,7 @@ export function useActivities() {
       method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, credentials: 'include',
       body: JSON.stringify(data),
     });
-    if (!res.ok) { 
-      const e = await res.json().catch(() => ({ error: 'Error' }));
-      return { success: false as const, error: e.error || 'Error' };
-    }
+    if (!res.ok) return failureFrom(res, 'Error');
     return { success: true as const };
   };
 
@@ -131,10 +131,7 @@ export function useActivities() {
     const res = await fetch(`${getApiBaseUrl()}/api/activities/exceptions/${id}`, {
       method: 'DELETE', headers: authHeaders(), credentials: 'include',
     });
-    if (!res.ok) {
-      const e = await res.json().catch(() => ({ error: 'Error al eliminar' }));
-      return { success: false as const, error: e.error || 'Error al eliminar' };
-    }
+    if (!res.ok) return failureFrom(res, 'Error al eliminar');
     return { success: true as const };
   };
 
