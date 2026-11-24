@@ -74,9 +74,41 @@ function linkFromMail(mail: MailpitMessage, kind: 'cancel' | 'reschedule'): stri
   return (match as RegExpExecArray)[0].replace(/&amp;/g, '&');
 }
 
+function dayKeyFromUtc(iso: string): string {
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Madrid';
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date(iso));
+}
+
+async function selectCalendarDay(
+  page: Page,
+  dayKey: string,
+  calendarTestId = 'booking-calendar',
+): Promise<void> {
+  const root = page.getByTestId(calendarTestId);
+  await expect(root).toBeVisible();
+  for (let i = 0; i < 6; i++) {
+    const day = root.locator(`button[data-day-key="${dayKey}"]:not([disabled])`);
+    if ((await day.count()) > 0) {
+      await day.first().click();
+      return;
+    }
+    const next = root.locator('button[aria-label*="Next"], button[name="next-month"]').first();
+    if ((await next.count()) === 0) break;
+    await next.click();
+  }
+  throw new Error(`Calendar day ${dayKey} not found or disabled`);
+}
+
 async function openBooking(page: Page): Promise<void> {
   await page.goto(BOOKING_PATH);
   await expect(page.getByTestId('booking-page')).toBeVisible();
+  await expect(page.getByTestId('booking-calendar')).toBeVisible();
+  // First available day is auto-selected → time slots for that day.
   await expect(page.getByTestId('booking-slots')).toBeVisible();
 }
 
@@ -84,8 +116,20 @@ function slotRadio(page: Page, startUtc: string) {
   return page.locator(`[data-testid="booking-slot"][data-start-utc="${startUtc}"]`);
 }
 
+async function showSlotOnBookingPage(page: Page, startUtc: string) {
+  await selectCalendarDay(page, dayKeyFromUtc(startUtc));
+  await expect(page.getByTestId('booking-slots')).toBeVisible();
+}
+
 /** Pick a random free slot so parallel / repeated runs do not collide. */
 async function pickRandomSlot(page: Page): Promise<string> {
+  const days = page.locator(
+    '[data-testid="booking-calendar"] button[data-day-key]:not([disabled])',
+  );
+  await expect(days.first()).toBeVisible();
+  const dayCount = await days.count();
+  await days.nth(Math.floor(Math.random() * dayCount)).click();
+
   const radios = page.getByTestId('booking-slot');
   await expect(radios.first()).toBeVisible();
   const count = await radios.count();
@@ -156,8 +200,9 @@ test.describe('KL-E-018 scheduler — public booking, cancel and reschedule', ()
     try {
       await expect(page.getByTestId('booking-message')).toContainText('Reserva confirmada');
 
-      // The booked slot is gone from the public list.
+      // The booked slot is gone from the public list (same day still open).
       await openBooking(page);
+      await showSlotOnBookingPage(page, startUtc);
       await expect(slotRadio(page, startUtc)).toHaveCount(0);
 
       const mail = await latestMail(request, email);
@@ -199,6 +244,7 @@ test.describe('KL-E-018 scheduler — public booking, cancel and reschedule', ()
 
       // The slot is public again and a different visitor can take it.
       await openBooking(page);
+      await showSlotOnBookingPage(page, startUtc);
       await expect(slotRadio(page, startUtc)).toHaveCount(1);
       await slotRadio(page, startUtc).check();
       await fillVisitor(page, 'Otra persona E2E', rebookEmail);
@@ -229,13 +275,38 @@ test.describe('KL-E-018 scheduler — public booking, cancel and reschedule', ()
 
       await page.goto(linkFromMail(firstMail, 'reschedule'));
       await expect(page.getByTestId('booking-reschedule-page')).toBeVisible();
+      await expect(page.getByTestId('booking-reschedule-calendar')).toBeVisible();
+
+      const days = page.locator(
+        '[data-testid="booking-reschedule-calendar"] button[data-day-key]:not([disabled])',
+      );
+      await expect(days.first()).toBeVisible();
+      // Prefer a day that is not the old booking's day when possible.
+      const oldDay = dayKeyFromUtc(oldStart);
+      const dayCount = await days.count();
+      let pickedDay = false;
+      for (let i = 0; i < dayCount; i++) {
+        const key = await days.nth(i).getAttribute('data-day-key');
+        if (key && key !== oldDay) {
+          await days.nth(i).click();
+          pickedDay = true;
+          break;
+        }
+      }
+      if (!pickedDay) await days.first().click();
+
       const options = page.locator(
         `[data-testid="booking-reschedule-slot"]:not([data-start-utc="${oldStart}"])`,
       );
       await expect(options.first()).toBeVisible();
-      const newStart = await options.nth(Math.floor(Math.random() * 10)).getAttribute('data-start-utc');
+      const optionCount = await options.count();
+      const newStart = await options
+        .nth(Math.floor(Math.random() * optionCount))
+        .getAttribute('data-start-utc');
       expect(newStart).toBeTruthy();
-      await page.locator(`[data-testid="booking-reschedule-slot"][data-start-utc="${newStart}"]`).click();
+      await page
+        .locator(`[data-testid="booking-reschedule-slot"][data-start-utc="${newStart}"]`)
+        .click();
       await expect(page.getByTestId('booking-reschedule-message')).toHaveAttribute(
         'data-status',
         'ok',
@@ -251,7 +322,9 @@ test.describe('KL-E-018 scheduler — public booking, cancel and reschedule', ()
 
       // Old slot is bookable again, the new one is taken.
       await openBooking(page);
+      await showSlotOnBookingPage(page, oldStart);
       await expect(slotRadio(page, oldStart)).toHaveCount(1);
+      await showSlotOnBookingPage(page, newStart as string);
       await expect(slotRadio(page, newStart as string)).toHaveCount(0);
     } finally {
       await releaseBooking(page, request, email);
@@ -267,6 +340,7 @@ test.describe('KL-E-018 scheduler — public booking, cancel and reschedule', ()
       await openBooking(first.page);
       await openBooking(second.page);
       const startUtc = await pickRandomSlot(first.page);
+      await showSlotOnBookingPage(second.page, startUtc);
       await expect(slotRadio(second.page, startUtc)).toHaveCount(1);
       await slotRadio(second.page, startUtc).check();
       await fillVisitor(first.page, 'Visitante A', emailA);
@@ -278,16 +352,24 @@ test.describe('KL-E-018 scheduler — public booking, cancel and reschedule', ()
       ]);
 
       const statuses: string[] = [];
+      let loserMessage = '';
       for (const { page } of [first, second]) {
         const message = page.getByTestId('booking-message');
         await expect(message).toHaveAttribute('data-status', /^(ok|error)$/, { timeout: 15_000 });
-        statuses.push((await message.getAttribute('data-status')) as string);
+        const status = (await message.getAttribute('data-status')) as string;
+        statuses.push(status);
+        if (status === 'error') {
+          loserMessage = (await message.textContent()) ?? '';
+        }
       }
       expect(statuses.sort()).toEqual(['error', 'ok']);
+      expect(loserMessage).toMatch(/otra persona/i);
+      expect(loserMessage).not.toContain('slot_conflict');
 
-      const winner = (await first.page.getByTestId('booking-message').getAttribute('data-status')) === 'ok'
-        ? { email: emailA, page: first.page }
-        : { email: emailB, page: second.page };
+      const winner =
+        (await first.page.getByTestId('booking-message').getAttribute('data-status')) === 'ok'
+          ? { email: emailA, page: first.page }
+          : { email: emailB, page: second.page };
       await releaseBooking(winner.page, request, winner.email);
     } finally {
       await first.context.close();
