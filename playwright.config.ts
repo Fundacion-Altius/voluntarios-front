@@ -8,8 +8,10 @@ dns.setDefaultResultOrder('ipv4first');
 const TENANT_HOST_RESOLVER =
   'MAP fundacionaltius.localhost 127.0.0.1,MAP homelessentrepreneur.localhost 127.0.0.1';
 
-/** forms-review uses a production Next server (no cold compile). */
-const formsProd = process.env.PLAYWRIGHT_FORMS_PROD === '1';
+/** Feature-review projects use a production Next server (no cold compile). */
+const reviewProd =
+  process.env.PLAYWRIGHT_FORMS_PROD === '1' ||
+  process.env.PLAYWRIGHT_SCHEDULER_PROD === '1';
 
 export default defineConfig({
   testDir: './e2e',
@@ -27,9 +29,9 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   webServer: {
-    // Default suite keeps `pnpm dev`. forms-review scripts set PLAYWRIGHT_FORMS_PROD=1
+    // Default suite keeps `pnpm dev`. Feature-review scripts set *_PROD=1
     // after `pnpm build` so pages are already compiled (`next start`).
-    command: formsProd ? 'pnpm start' : 'pnpm dev',
+    command: reviewProd ? 'pnpm start' : 'pnpm dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
@@ -54,6 +56,9 @@ export default defineConfig({
         '**/42-forms-*.spec.ts',
         '**/43-forms-*.spec.ts',
         '**/44-forms-*.spec.ts',
+        '**/45-forms-*.spec.ts',
+        // Owned by project `scheduler-review`
+        '**/46-scheduler-*.spec.ts',
       ],
     },
     {
@@ -118,6 +123,23 @@ export default defineConfig({
         '**/44-forms-d48.spec.ts',
         '**/45-forms-all-types.spec.ts',
       ],
+    },
+    {
+      // Stakeholder review for the public ShiftCitizen scheduler (Carlos).
+      // Run: pnpm test:e2e:scheduler-review   or   pnpm test:e2e:scheduler-review:ui
+      // Needs back with `pnpm local:docker` (+ Mailpit). Prefer RATE_LIMIT_IP=100.
+      name: 'scheduler-review',
+      fullyParallel: false,
+      use: {
+        browserName: 'chromium',
+        video: 'retain-on-failure',
+        actionTimeout: 15000,
+        navigationTimeout: 60000,
+        launchOptions: {
+          args: [`--host-resolver-rules=${TENANT_HOST_RESOLVER}`],
+        },
+      },
+      testMatch: ['**/46-scheduler-*.spec.ts'],
     },
   ],
 });

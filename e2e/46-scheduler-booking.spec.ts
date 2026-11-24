@@ -5,8 +5,12 @@
  * the visitor drives the real pages and the confirmation e-mail is read from
  * Mailpit (the dev SMTP sink), exactly like a person would read their inbox.
  *
+ * Playwright project: `scheduler-review`
+ *   pnpm test:e2e:scheduler-review
+ *   pnpm test:e2e:scheduler-review:ui
+ *
  * Runtime: back with `pnpm local:docker` (SMTP → Mailpit :1025, UI/API :8025),
- * front on http://localhost:3000. Never `local:memory`.
+ * front via the review script (`pnpm build` + `next start`). Never `local:memory`.
  *
  * Booking is limited to 10 POST /api/booking per IP per hour. One full run uses
  * 6; start the back with `RATE_LIMIT_IP=100 pnpm local:docker` to re-run freely.
