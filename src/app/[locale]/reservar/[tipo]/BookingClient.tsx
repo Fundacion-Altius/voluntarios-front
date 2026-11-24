@@ -174,15 +174,15 @@ export default function BookingClient({ tipo }: Props) {
       <p className="mb-8 text-sm opacity-80">Elige un día, un hueco y confirma tu reunión con ShiftCitizen.</p>
 
       <form onSubmit={onSubmit} className="flex flex-col gap-4" data-testid="booking-form">
-        <fieldset className="flex flex-col gap-3">
-          <legend className="text-sm font-medium">Elige un día</legend>
+        <fieldset className="flex flex-col gap-4">
+          <legend className="mb-3 text-sm font-medium">Elige un día</legend>
           {slots.length === 0 ? (
             <p className="text-sm opacity-70" data-testid="booking-no-slots">
               No hay huecos en la ventana actual.
             </p>
           ) : (
             <>
-              <div data-testid="booking-calendar" className="w-fit rounded-lg border bg-card">
+              <div data-testid="booking-calendar" className="mt-1 w-fit rounded-lg border bg-card">
                 <Calendar
                   mode="single"
                   locale={bookingCalendarLocale}
