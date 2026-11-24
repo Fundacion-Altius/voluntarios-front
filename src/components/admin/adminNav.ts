@@ -35,7 +35,7 @@ export function adminNavGroups(t: T): { pinned: NavGroup; groups: NavGroup[] } {
         { href: '/admin/scanner', label: i('escaner'), icon: Scan },
         { href: '/admin/cursos', label: i('cursos'), icon: BookOpen },
         { href: '/admin/comandero', label: i('comandero'), icon: UtensilsCrossed },
-        { href: '/admin/encuestas', label: i('encuestas'), icon: ClipboardList },
+        { href: '/admin/formularios', label: i('formularios'), icon: ClipboardList },
       ] },
       { id: 'personas', label: g('personas'), items: [
         { href: '/admin/beneficiarios', label: i('beneficiarias'), icon: HandHeart },

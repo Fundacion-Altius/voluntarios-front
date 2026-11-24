@@ -23,6 +23,7 @@
 # testing
 /test-results/
 /playwright-report/
+/e2e/.auth/
 
 # debug
 npm-debug.log*

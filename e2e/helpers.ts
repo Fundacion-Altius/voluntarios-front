@@ -2,7 +2,7 @@ import { request as playwrightRequest, type Page } from '@playwright/test';
 import { test, expect } from '@playwright/test';
 
 export const BACKEND_URL = 'http://localhost:3001';
-const FRONTEND_URL = 'http://localhost:3000';
+export const FRONTEND_URL = 'http://localhost:3000';
 
 export function randomId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
