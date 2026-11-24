@@ -28,6 +28,88 @@ interface BillingState {
 
 const ACTIVE_STATUSES = new Set(["active", "trialing", "comped"]);
 
+function ActiveSubscription({ tenant, subscriptionStatus }: { tenant: PlatformTenant | null; subscriptionStatus: string }) {
+  return (
+    <div className="border border-green-300 rounded-lg p-6 bg-green-50">
+      <h3 className="text-lg font-semibold text-green-800">Suscripción activa</h3>
+      <p className="text-sm text-green-700 mt-2">
+        Estado: {tenant?.comped ? "comped" : subscriptionStatus}
+        {tenant?.stripe_customer_id ? ` · Cliente Stripe: ${tenant.stripe_customer_id}` : ""}
+      </p>
+    </div>
+  );
+}
+
+function PlanOptions({ earlyBirdPlan, starterPlan, loadingCheckout, onCheckout }: {
+  earlyBirdPlan: Price | undefined;
+  starterPlan: Price | undefined;
+  loadingCheckout: boolean;
+  onCheckout: (priceId: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Piloto gratuito */}
+      <div className="border rounded-lg p-6">
+        <h3 className="text-lg font-semibold">Piloto gratuito</h3>
+        <p className="text-3xl font-bold mt-2">€0<span className="text-sm font-normal">/mes</span></p>
+        <p className="text-sm text-gray-500 mt-2">
+          Acceso completo durante el periodo de piloto.
+        </p>
+        <p className="text-xs text-gray-400 mt-2">
+          Sin coste · No requiere tarjeta
+        </p>
+      </div>
+
+      {/* Early Bird */}
+      {earlyBirdPlan && (
+        <div className="border border-blue-300 rounded-lg p-6 bg-blue-50">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            Early Bird
+            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
+              Oct–Dic 2026
+            </span>
+          </h3>
+          <p className="text-3xl font-bold mt-2">
+            €{((earlyBirdPlan.unit_amount ?? 0) / 100).toFixed(0)}
+            <span className="text-sm font-normal">/mes</span>
+          </p>
+          <p className="text-sm text-gray-500 mt-2">
+            Precio especial para los primeros colaboradores.
+          </p>
+          <button
+            disabled={loadingCheckout}
+            onClick={() => onCheckout(earlyBirdPlan.id)}
+            className="mt-4 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+          >
+            {loadingCheckout ? "Procesando..." : "Suscribirse con Early Bird"}
+          </button>
+        </div>
+      )}
+
+      {/* Starter */}
+      {starterPlan && (
+        <div className="border rounded-lg p-6">
+          <h3 className="text-lg font-semibold">Starter</h3>
+          <p className="text-3xl font-bold mt-2">
+            €{((starterPlan.unit_amount ?? 0) / 100).toFixed(0)}
+            <span className="text-sm font-normal">/mes</span>
+          </p>
+          <p className="text-sm text-gray-500 mt-2">
+            Acceso completo a todas las funcionalidades.
+          </p>
+          <button
+            disabled={loadingCheckout}
+            onClick={() => onCheckout(starterPlan.id)}
+            className="mt-4 w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-900 disabled:opacity-50"
+          >
+            {loadingCheckout ? "Procesando..." : "Suscribirse"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function TenantBillingPage() {
   const params = useParams();
   const tenantId = params.id as string;
@@ -96,76 +178,14 @@ export default function TenantBillingPage() {
       )}
 
       {isSubscribed ? (
-        <div className="border border-green-300 rounded-lg p-6 bg-green-50">
-          <h3 className="text-lg font-semibold text-green-800">Suscripción activa</h3>
-          <p className="text-sm text-green-700 mt-2">
-            Estado: {state.tenant?.comped ? "comped" : subscriptionStatus}
-            {state.tenant?.stripe_customer_id
-              ? ` · Cliente Stripe: ${state.tenant.stripe_customer_id}`
-              : ""}
-          </p>
-        </div>
+        <ActiveSubscription tenant={state.tenant} subscriptionStatus={subscriptionStatus} />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Piloto gratuito */}
-          <div className="border rounded-lg p-6">
-            <h3 className="text-lg font-semibold">Piloto gratuito</h3>
-            <p className="text-3xl font-bold mt-2">€0<span className="text-sm font-normal">/mes</span></p>
-            <p className="text-sm text-gray-500 mt-2">
-              Acceso completo durante el periodo de piloto.
-            </p>
-            <p className="text-xs text-gray-400 mt-2">
-              Sin coste · No requiere tarjeta
-            </p>
-          </div>
-
-          {/* Early Bird */}
-          {earlyBirdPlan && (
-            <div className="border border-blue-300 rounded-lg p-6 bg-blue-50">
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                Early Bird
-                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
-                  Oct–Dic 2026
-                </span>
-              </h3>
-              <p className="text-3xl font-bold mt-2">
-                €{((earlyBirdPlan.unit_amount ?? 0) / 100).toFixed(0)}
-                <span className="text-sm font-normal">/mes</span>
-              </p>
-              <p className="text-sm text-gray-500 mt-2">
-                Precio especial para los primeros colaboradores.
-              </p>
-              <button
-                disabled={state.loadingCheckout}
-                onClick={() => handleCheckout(earlyBirdPlan.id)}
-                className="mt-4 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-              >
-                {state.loadingCheckout ? "Procesando..." : "Suscribirse con Early Bird"}
-              </button>
-            </div>
-          )}
-
-          {/* Starter */}
-          {starterPlan && (
-            <div className="border rounded-lg p-6">
-              <h3 className="text-lg font-semibold">Starter</h3>
-              <p className="text-3xl font-bold mt-2">
-                €{((starterPlan.unit_amount ?? 0) / 100).toFixed(0)}
-                <span className="text-sm font-normal">/mes</span>
-              </p>
-              <p className="text-sm text-gray-500 mt-2">
-                Acceso completo a todas las funcionalidades.
-              </p>
-              <button
-                disabled={state.loadingCheckout}
-                onClick={() => handleCheckout(starterPlan.id)}
-                className="mt-4 w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-900 disabled:opacity-50"
-              >
-                {state.loadingCheckout ? "Procesando..." : "Suscribirse"}
-              </button>
-            </div>
-          )}
-        </div>
+        <PlanOptions
+          earlyBirdPlan={earlyBirdPlan}
+          starterPlan={starterPlan}
+          loadingCheckout={state.loadingCheckout}
+          onCheckout={handleCheckout}
+        />
       )}
 
       {/* Customer Portal */}

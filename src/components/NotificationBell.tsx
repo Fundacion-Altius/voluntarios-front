@@ -30,6 +30,31 @@ interface NotificationItem {
   metadata?: Record<string, unknown>;
 }
 
+function readMetadata(n: NotificationItem): Record<string, unknown> | undefined {
+  try {
+    return (typeof n.metadata === 'string' ? JSON.parse(n.metadata) : n.metadata) as
+      | Record<string, unknown>
+      | undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+const CHAT_TYPES = new Set(['channel_mention', 'new_message']);
+const VIDEO_TYPES = new Set(['video_call_started', 'video_call_ended']);
+
+function resolveNotificationTarget(n: NotificationItem, role: string | undefined): string | null {
+  if (CHAT_TYPES.has(n.type)) {
+    const channelId = readMetadata(n)?.channelId;
+    if (channelId) return `${role === 'general' ? '/portal/mensajes' : '/admin/mensajes'}/${channelId}`;
+  }
+  if (VIDEO_TYPES.has(n.type)) {
+    const roomId = readMetadata(n)?.roomId;
+    if (roomId) return `/portal/sala/${roomId}`;
+  }
+  return null;
+}
+
 export function NotificationBell() {
   const { data: session } = useSession();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
@@ -113,30 +138,9 @@ export function NotificationBell() {
 
   const handleNotificationClick = (n: NotificationItem) => {
     handleMarkRead(n.id);
-
-    if (n.type === 'channel_mention' || n.type === 'new_message') {
-      try {
-        const metadata = typeof n.metadata === 'string' ? JSON.parse(n.metadata) : n.metadata;
-        const channelId = metadata?.channelId;
-        if (channelId) {
-          const role = (session?.user as { role?: string } | undefined)?.role;
-          const chatBase = role === 'general' ? '/portal/mensajes' : '/admin/mensajes';
-          router.push(`${chatBase}/${channelId}`);
-          return;
-        }
-      } catch {}
-    }
-
-    if (n.type === 'video_call_started' || n.type === 'video_call_ended') {
-      try {
-        const metadata = typeof n.metadata === 'string' ? JSON.parse(n.metadata) : n.metadata;
-        const roomId = metadata?.roomId;
-        if (roomId) {
-          router.push(`/portal/sala/${roomId}`);
-          return;
-        }
-      } catch {}
-    }
+    const role = (session?.user as { role?: string } | undefined)?.role;
+    const target = resolveNotificationTarget(n, role);
+    if (target) router.push(target);
   };
 
   return (

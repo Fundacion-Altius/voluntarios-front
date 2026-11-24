@@ -82,48 +82,98 @@ export default function VideoRoomPage({ params }: { params: { roomId: string } }
 
   if (inCall || state.localStream || state.connected) {
     return (
-      <div className="mx-auto max-w-5xl space-y-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>
-                {t('titulo')} {params.roomId}
-              </CardTitle>
-              {mode === 'livestream' ? (
-                <p className="text-xs text-muted-foreground">
-                  {isLivestreamViewer ? t('modoEspectador') : t('modoEmision')}
-                </p>
-              ) : null}
-            </div>
-            <ActiveSpeakerIndicator connected={state.connected} />
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <VideoGrid peers={state.peers} localStream={state.localStream} userId={state.userId} />
-            {(joinError || state.error) && (
-              <p className="text-sm text-destructive">{joinError || state.error}</p>
-            )}
-            {!isLivestreamViewer ? (
-              <VideoControls
-                isMicOn={state.isMicOn}
-                isCameraOn={state.isCameraOn}
-                isScreenSharing={state.isScreenSharing}
-                cameraRecoveryNeedsGesture={state.cameraRecoveryNeedsGesture}
-                onToggleMic={toggleMic}
-                onToggleCamera={toggleCamera}
-                onToggleScreenShare={toggleScreenShare}
-                onLeave={handleLeave}
-              />
-            ) : (
-              <Button type="button" variant="destructive" onClick={handleLeave}>
-                {t('salir')}
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      <InCallView
+        roomId={params.roomId}
+        mode={mode}
+        isLivestreamViewer={isLivestreamViewer}
+        state={state}
+        joinError={joinError}
+        controls={{ toggleMic, toggleCamera, toggleScreenShare }}
+        onLeave={handleLeave}
+      />
     );
   }
 
+  return (
+    <JoinView
+      roomId={params.roomId}
+      mode={mode}
+      role={role}
+      setRole={setRole}
+      joining={joining}
+      joinError={joinError}
+      hasToken={!!session?.authToken}
+      onJoin={handleJoin}
+    />
+  );
+}
+
+type RoomState = ReturnType<typeof useMediasoupRoom>['state'];
+
+function InCallView({ roomId, mode, isLivestreamViewer, state, joinError, controls, onLeave }: {
+  roomId: string;
+  mode: RoomMode;
+  isLivestreamViewer: boolean;
+  state: RoomState;
+  joinError: string | null;
+  controls: { toggleMic: () => void; toggleCamera: () => void; toggleScreenShare: () => void };
+  onLeave: () => void;
+}) {
+  const t = useTranslations('portal.sala');
+  const errorText = joinError || state.error;
+  return (
+    <div className="mx-auto max-w-5xl space-y-4">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>
+              {t('titulo')} {roomId}
+            </CardTitle>
+            {mode === 'livestream' ? (
+              <p className="text-xs text-muted-foreground">
+                {isLivestreamViewer ? t('modoEspectador') : t('modoEmision')}
+              </p>
+            ) : null}
+          </div>
+          <ActiveSpeakerIndicator connected={state.connected} />
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <VideoGrid peers={state.peers} localStream={state.localStream} userId={state.userId} />
+          {errorText && <p className="text-sm text-destructive">{errorText}</p>}
+          {isLivestreamViewer ? (
+            <Button type="button" variant="destructive" onClick={onLeave}>
+              {t('salir')}
+            </Button>
+          ) : (
+            <VideoControls
+              isMicOn={state.isMicOn}
+              isCameraOn={state.isCameraOn}
+              isScreenSharing={state.isScreenSharing}
+              cameraRecoveryNeedsGesture={state.cameraRecoveryNeedsGesture}
+              onToggleMic={controls.toggleMic}
+              onToggleCamera={controls.toggleCamera}
+              onToggleScreenShare={controls.toggleScreenShare}
+              onLeave={onLeave}
+            />
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function JoinView({ roomId, mode, role, setRole, joining, joinError, hasToken, onJoin }: {
+  roomId: string;
+  mode: RoomMode;
+  role: 'host' | 'guest';
+  setRole: (r: 'host' | 'guest') => void;
+  joining: boolean;
+  joinError: string | null;
+  hasToken: boolean;
+  onJoin: () => void;
+}) {
+  const t = useTranslations('portal.sala');
+  const live = mode === 'livestream';
   return (
     <div className="mx-auto max-w-2xl space-y-4">
       <Card>
@@ -132,28 +182,26 @@ export default function VideoRoomPage({ params }: { params: { roomId: string } }
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            {t('salaId')}: {params.roomId}
+            {t('salaId')}: {roomId}
           </p>
-          {mode === 'livestream' ? (
-            <p className="text-sm text-muted-foreground">{t('livestreamHint')}</p>
-          ) : null}
+          {live ? <p className="text-sm text-muted-foreground">{t('livestreamHint')}</p> : null}
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <Button
               className="w-full sm:w-auto"
               variant={role === 'guest' ? 'secondary' : 'outline'}
               onClick={() => setRole('guest')}
             >
-              {mode === 'livestream' ? t('unirseEspectador') : t('unirseParticipante')}
+              {live ? t('unirseEspectador') : t('unirseParticipante')}
             </Button>
             <Button
               className="w-full sm:w-auto"
               variant={role === 'host' ? 'secondary' : 'outline'}
               onClick={() => setRole('host')}
             >
-              {mode === 'livestream' ? t('unirseEmisor') : t('unirseAnfitrion')}
+              {live ? t('unirseEmisor') : t('unirseAnfitrion')}
             </Button>
           </div>
-          <Button className="w-full" onClick={handleJoin} disabled={!session?.authToken || joining}>
+          <Button className="w-full" onClick={onJoin} disabled={!hasToken || joining}>
             {joining ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t('uniendose')}
@@ -163,7 +211,7 @@ export default function VideoRoomPage({ params }: { params: { roomId: string } }
             )}
           </Button>
           {joinError && <p className="text-sm text-destructive">{joinError}</p>}
-          {!session?.authToken && <p className="text-sm text-destructive">{t('debesIniciarSesion')}</p>}
+          {!hasToken && <p className="text-sm text-destructive">{t('debesIniciarSesion')}</p>}
         </CardContent>
       </Card>
     </div>

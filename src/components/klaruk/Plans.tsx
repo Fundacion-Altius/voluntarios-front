@@ -10,6 +10,29 @@ const plans: Plan[] = [
   { name: "Federación", for: "Para federaciones y redes que dan servicio a muchas asociaciones a la vez.", items: ["Todo lo de Completo", "Para varias organizaciones", "Vista conjunta de toda la red"], alta: "Precio según el tamaño de la red." },
 ];
 
+function PlanPrice({ p, annual }: { p: Plan; annual: boolean }) {
+  if (!p.m) return <p className="price talk">Hablemos</p>;
+  return (
+    <p className="price">
+      {annual ? p.a : p.m} <small>{annual ? "/año" : "/mes"}</small>
+    </p>
+  );
+}
+
+function PlanCard({ p, annual }: { p: Plan; annual: boolean }) {
+  return (
+    <article className={`card plan${p.rec ? " rec" : ""}`} aria-label={p.rec ? `${p.name}, recomendado` : p.name}>
+      {p.rec && <span className="rec-pill">Recomendado</span>}
+      <h2>{p.name}</h2>
+      <PlanPrice p={p} annual={annual} />
+      <p className="for">{p.for}</p>
+      <ul className="ticks">{p.items.map((i) => <li key={i}>{i}</li>)}</ul>
+      <p className="alta">{p.alta}</p>
+      <a className={`btn ${p.rec ? "btn-primary" : "btn-secondary"}`} href={TRIAL_URL}>Prueba 15 días gratis</a>
+    </article>
+  );
+}
+
 export default function Plans() {
   const [annual, setAnnual] = useState(false);
   return (
@@ -21,17 +44,7 @@ export default function Plans() {
       <p className="note">Todos los planes incluyen usuarios ilimitados, IA y agentes. Pago anual: pagas 10 meses y tienes 12.</p>
       <div className="plans" aria-live="polite">
         {plans.map((p) => (
-          <article key={p.name} className={`card plan${p.rec ? " rec" : ""}`} aria-label={p.rec ? `${p.name}, recomendado` : p.name}>
-            {p.rec && <span className="rec-pill">Recomendado</span>}
-            <h2>{p.name}</h2>
-            <p className={`price${p.m ? "" : " talk"}`}>
-              {p.m ? (<>{annual ? p.a : p.m} <small>{annual ? "/año" : "/mes"}</small></>) : "Hablemos"}
-            </p>
-            <p className="for">{p.for}</p>
-            <ul className="ticks">{p.items.map((i) => <li key={i}>{i}</li>)}</ul>
-            <p className="alta">{p.alta}</p>
-            <a className={`btn ${p.rec ? "btn-primary" : "btn-secondary"}`} href={TRIAL_URL}>Prueba 15 días gratis</a>
-          </article>
+          <PlanCard key={p.name} p={p} annual={annual} />
         ))}
       </div>
     </>

@@ -29,6 +29,150 @@ interface Summary {
   to_collect: number;
 }
 
+function ResultBanner({ result }: { result: { text: string; error?: boolean } | null }) {
+  if (!result) return null;
+  return (
+    <p
+      data-testid="toys-close-result"
+      role={result.error ? "alert" : "status"}
+      className={cn(
+        "rounded-lg px-3 py-2 text-sm",
+        result.error ? "bg-destructive/10 text-destructive" : "bg-success/10 text-success",
+      )}
+    >
+      {result.text}
+    </p>
+  );
+}
+
+function DefaultKindPicker({ ariaLabel, value, onChange }: { ariaLabel: string; value: Kind; onChange: (k: Kind) => void }) {
+  const t = useTranslations("admin.toys");
+  return (
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-2" role="radiogroup" aria-label={ariaLabel}>
+      {(["stored", "redistributed"] as const).map((k) => (
+        <label
+          key={k}
+          className={cn(
+            "flex min-h-16 cursor-pointer items-start gap-3 rounded-xl border-2 p-4",
+            value === k ? "border-primary bg-accent" : "hover:border-primary/50",
+          )}
+        >
+          <input
+            type="radio"
+            name="close-kind"
+            value={k}
+            checked={value === k}
+            onChange={() => onChange(k)}
+            data-testid={`toys-close-default-${k}`}
+            className="mt-1 size-5 accent-[#3d3fa8]"
+          />
+          <span>
+            <span className="block font-semibold">{t(`cierreGuiado.kind.${k}`)}</span>
+            <span className="block text-sm text-muted-foreground">{t(`cierreGuiado.kindAyuda.${k}`)}</span>
+          </span>
+        </label>
+      ))}
+    </div>
+  );
+}
+
+type LeftoverRow = ReturnType<typeof leftovers>[number];
+
+function LeftoverRowItem({ r, checked, kind, setInclude, setKinds }: {
+  r: LeftoverRow; checked: boolean; kind: Kind;
+  setInclude: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  setKinds: React.Dispatch<React.SetStateAction<Record<string, Kind>>>;
+}) {
+  const t = useTranslations("admin.toys");
+  return (
+    <li data-testid={`toys-close-row-${r.id}`} className="flex flex-wrap items-center gap-3 py-2.5">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => setInclude((m) => ({ ...m, [r.id]: e.target.checked }))}
+        aria-label={t("cierreGuiado.incluir", { title: r.title })}
+        data-testid={`toys-close-include-${r.id}`}
+        className="size-5 accent-[#3d3fa8]"
+      />
+      <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted">
+        {r.cover ? <img src={`${getApiBaseUrl()}${r.cover}`} alt="" className="size-full object-cover" /> : null}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate font-semibold">{r.title}</span>
+        {r.ageBand && <span className="text-xs text-muted-foreground">{t(`bandas.${r.ageBand}`)}</span>}
+      </span>
+      <span className="w-20 text-right text-sm tabular-nums">{t("cierreGuiado.unidades", { n: r.left })}</span>
+      <select
+        aria-label={t("cierreGuiado.queHacemos", { title: r.title })}
+        data-testid={`toys-close-kind-${r.id}`}
+        value={kind}
+        onChange={(e) => setKinds((m) => ({ ...m, [r.id]: e.target.value as Kind }))}
+        className="h-11 rounded-md border bg-background px-3 text-sm"
+      >
+        <option value="stored">{t("cierreGuiado.kind.stored")}</option>
+        <option value="redistributed">{t("cierreGuiado.kind.redistributed")}</option>
+      </select>
+    </li>
+  );
+}
+
+function LeftoverList({ rows, visible, isIn, kindOf, setInclude, setKinds }: {
+  rows: LeftoverRow[]; visible: LeftoverRow[]; isIn: (id: string) => boolean; kindOf: (id: string) => Kind;
+  setInclude: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  setKinds: React.Dispatch<React.SetStateAction<Record<string, Kind>>>;
+}) {
+  const t = useTranslations("admin.toys");
+  if (rows.length === 0) {
+    return (
+      <p data-testid="toys-close-empty" className="py-6 text-center text-muted-foreground">
+        {t("cierreGuiado.nadaQueCerrar")}
+      </p>
+    );
+  }
+  return (
+    <ul className="divide-y" data-testid="toys-close-list">
+      {visible.map((r) => (
+        <LeftoverRowItem key={r.id} r={r} checked={isIn(r.id)} kind={kindOf(r.id)} setInclude={setInclude} setKinds={setKinds} />
+      ))}
+    </ul>
+  );
+}
+
+function DoneList({ dispositions, items, onUndo }: {
+  dispositions: Disposition[]; items: Item[]; onUndo: (id: string) => void;
+}) {
+  const t = useTranslations("admin.toys");
+  if (dispositions.length === 0) return null;
+  return (
+    <section className="flex flex-col gap-2 rounded-xl border bg-card p-5 shadow-xs" data-testid="toys-close-done-list">
+      <h2 className="font-heading text-xl font-bold">{t("cierreGuiado.yaCerrados")}</h2>
+      <ul className="divide-y">
+        {dispositions.map((d) => (
+          <li key={d.id} data-testid={`toys-close-done-${d.id}`} className="flex flex-wrap items-center gap-3 py-2 text-sm">
+            <span className="flex-1 font-medium">
+              {items.find((i) => i.id === d.toy_id)?.title ?? t("cierreGuiado.jugueteBorrado")}
+            </span>
+            <span>{t("cierreGuiado.unidades", { n: d.quantity })}</span>
+            <span className="text-muted-foreground">
+              {t(`cierreGuiado.kind.${d.kind}`)} · {d.destination}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-11"
+              data-testid={`toys-close-undo-${d.id}`}
+              onClick={() => onUndo(d.id)}
+            >
+              <Undo2 aria-hidden="true" />
+              {t("cierreGuiado.deshacer")}
+            </Button>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export default function ToysClosingPage() {
   const t = useTranslations("admin.toys");
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -132,38 +276,14 @@ export default function ToysClosingPage() {
 
           <section className="flex flex-col gap-3 rounded-xl border bg-card p-5 shadow-xs">
             <h2 className="font-heading text-xl font-bold">{t("cierreGuiado.paso1", { n: left })}</h2>
-            <div
-              className="grid grid-cols-1 gap-3 md:grid-cols-2"
-              role="radiogroup"
-              aria-label={t("cierreGuiado.paso1", { n: left })}
-            >
-              {(["stored", "redistributed"] as const).map((k) => (
-                <label
-                  key={k}
-                  className={cn(
-                    "flex min-h-16 cursor-pointer items-start gap-3 rounded-xl border-2 p-4",
-                    defaultKind === k ? "border-primary bg-accent" : "hover:border-primary/50",
-                  )}
-                >
-                  <input
-                    type="radio"
-                    name="close-kind"
-                    value={k}
-                    checked={defaultKind === k}
-                    onChange={() => {
-                      setDefaultKind(k);
-                      setKinds({});
-                    }}
-                    data-testid={`toys-close-default-${k}`}
-                    className="mt-1 size-5 accent-[#3d3fa8]"
-                  />
-                  <span>
-                    <span className="block font-semibold">{t(`cierreGuiado.kind.${k}`)}</span>
-                    <span className="block text-sm text-muted-foreground">{t(`cierreGuiado.kindAyuda.${k}`)}</span>
-                  </span>
-                </label>
-              ))}
-            </div>
+            <DefaultKindPicker
+              ariaLabel={t("cierreGuiado.paso1", { n: left })}
+              value={defaultKind}
+              onChange={(k) => {
+                setDefaultKind(k);
+                setKinds({});
+              }}
+            />
             <Field id="close-dest" label={t("cierreGuiado.destino")} hint={t("cierreGuiado.destinoAyuda")}>
               <Input
                 id="close-dest"
@@ -202,102 +322,19 @@ export default function ToysClosingPage() {
                 </Button>
               </div>
             </div>
-            {rows.length === 0 ? (
-              <p data-testid="toys-close-empty" className="py-6 text-center text-muted-foreground">
-                {t("cierreGuiado.nadaQueCerrar")}
-              </p>
-            ) : (
-              <ul className="divide-y" data-testid="toys-close-list">
-                {visible.map((r) => (
-                  <li
-                    key={r.id}
-                    data-testid={`toys-close-row-${r.id}`}
-                    className="flex flex-wrap items-center gap-3 py-2.5"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isIn(r.id)}
-                      onChange={(e) => setInclude((m) => ({ ...m, [r.id]: e.target.checked }))}
-                      aria-label={t("cierreGuiado.incluir", { title: r.title })}
-                      data-testid={`toys-close-include-${r.id}`}
-                      className="size-5 accent-[#3d3fa8]"
-                    />
-                    <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted">
-                      {r.cover ? (
-                        <img src={`${getApiBaseUrl()}${r.cover}`} alt="" className="size-full object-cover" />
-                      ) : null}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate font-semibold">{r.title}</span>
-                      {r.ageBand && <span className="text-xs text-muted-foreground">{t(`bandas.${r.ageBand}`)}</span>}
-                    </span>
-                    <span className="w-20 text-right text-sm tabular-nums">
-                      {t("cierreGuiado.unidades", { n: r.left })}
-                    </span>
-                    <select
-                      aria-label={t("cierreGuiado.queHacemos", { title: r.title })}
-                      data-testid={`toys-close-kind-${r.id}`}
-                      value={kindOf(r.id)}
-                      onChange={(e) => setKinds((m) => ({ ...m, [r.id]: e.target.value as Kind }))}
-                      className="h-11 rounded-md border bg-background px-3 text-sm"
-                    >
-                      <option value="stored">{t("cierreGuiado.kind.stored")}</option>
-                      <option value="redistributed">{t("cierreGuiado.kind.redistributed")}</option>
-                    </select>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <LeftoverList
+              rows={rows}
+              visible={visible}
+              isIn={isIn}
+              kindOf={kindOf}
+              setInclude={setInclude}
+              setKinds={setKinds}
+            />
           </section>
 
-          {dispositions.length > 0 && (
-            <section
-              className="flex flex-col gap-2 rounded-xl border bg-card p-5 shadow-xs"
-              data-testid="toys-close-done-list"
-            >
-              <h2 className="font-heading text-xl font-bold">{t("cierreGuiado.yaCerrados")}</h2>
-              <ul className="divide-y">
-                {dispositions.map((d) => (
-                  <li
-                    key={d.id}
-                    data-testid={`toys-close-done-${d.id}`}
-                    className="flex flex-wrap items-center gap-3 py-2 text-sm"
-                  >
-                    <span className="flex-1 font-medium">
-                      {(items ?? []).find((i) => i.id === d.toy_id)?.title ?? t("cierreGuiado.jugueteBorrado")}
-                    </span>
-                    <span>{t("cierreGuiado.unidades", { n: d.quantity })}</span>
-                    <span className="text-muted-foreground">
-                      {t(`cierreGuiado.kind.${d.kind}`)} · {d.destination}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-11"
-                      data-testid={`toys-close-undo-${d.id}`}
-                      onClick={() => undo(d.id)}
-                    >
-                      <Undo2 aria-hidden="true" />
-                      {t("cierreGuiado.deshacer")}
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
+          <DoneList dispositions={dispositions} items={items} onUndo={undo} />
 
-          {result && (
-            <p
-              data-testid="toys-close-result"
-              role={result.error ? "alert" : "status"}
-              className={cn(
-                "rounded-lg px-3 py-2 text-sm",
-                result.error ? "bg-destructive/10 text-destructive" : "bg-success/10 text-success",
-              )}
-            >
-              {result.text}
-            </p>
-          )}
+          <ResultBanner result={result} />
 
           <div
             className="fixed inset-x-0 z-30 border-t bg-card/95 py-3 pl-4 pr-4 shadow-sm backdrop-blur lg:left-[var(--sidebar-width)] lg:pl-8 lg:pr-8"

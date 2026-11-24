@@ -14,9 +14,320 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowLeft, Calendar, DollarSign, FileText, CheckCircle, XCircle, Clock, Upload, Trash2, Edit, Eye, Download } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
+import { errorMessage } from '@/lib/errorMessage';
+import { attemptApi } from '@/lib/apiAttempt';
 import type { Grant, GrantDocument, GrantDocumentType, GrantStatus, GrantType } from '@/types/grant';
 import { grantApi, grantDocumentApi, grantJustificationApi } from '@/lib/api/grantApi';
 import { STATUS_COLORS, STATUS_LABELS, TYPE_LABELS, VALID_STATUS_TRANSITIONS } from '@/types/grant';
+
+type JustificationStatus = {
+  is_ready: boolean;
+  missing_documents: GrantDocumentType[];
+  completed_documents: GrantDocumentType[];
+};
+
+function JustificationCard({ justificationStatus, actionLoading, onMarkReady, getDocumentTypeLabel }: {
+  justificationStatus: JustificationStatus | null; actionLoading: string | null;
+  onMarkReady: () => void; getDocumentTypeLabel: (type: GrantDocumentType) => string;
+}) {
+  const t = useTranslations('admin.grantDetail');
+  const tCommon = useTranslations('common');
+  return (
+  <Card>
+    <CardHeader>
+      <CardTitle>{t('justification')}</CardTitle>
+      <CardDescription>{t('justificationDescription')}</CardDescription>
+    </CardHeader>
+    <CardContent className="space-y-4">
+      {justificationStatus ? (
+        <>
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-muted-foreground">{t('justificationStatus')}</p>
+            <Badge variant={justificationStatus.is_ready ? 'default' : 'secondary'}>
+              {justificationStatus.is_ready ? (
+                <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+              ) : (
+                <Clock className="h-4 w-4 mr-2 text-yellow-500" />
+              )}
+              {justificationStatus.is_ready ? t('ready') : t('notReady')}
+            </Badge>
+          </div>
+        
+          {!justificationStatus.is_ready && justificationStatus.missing_documents.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-muted-foreground">{t('missingDocuments')}</p>
+              <div className="flex flex-wrap gap-2">
+                {justificationStatus.missing_documents.map(docType => (
+                  <Badge key={docType} variant="destructive">
+                    {getDocumentTypeLabel(docType)}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+        
+          <Button
+            size="sm"
+            onClick={onMarkReady}
+            disabled={actionLoading === 'justification' || !justificationStatus.is_ready}
+          >
+            {actionLoading === 'justification' ? (
+              <>
+                <Clock className="h-4 w-4 mr-2 animate-spin" />
+                {tCommon('loading')}
+              </>
+            ) : (
+              t('markAsReady')
+            )}
+          </Button>
+        </>
+      ) : (
+        <p className="text-sm text-muted-foreground">{tCommon('loading')}</p>
+      )}
+    </CardContent>
+  </Card>
+  );
+}
+
+function DocumentsCard({ documents, uploading, file, documentType, setDocumentType, onFileChange, onUpload, onDownload, onDeleteDocument, getDocumentTypeLabel }: {
+  documents: GrantDocument[]; uploading: boolean; file: File | null; documentType: GrantDocumentType;
+  setDocumentType: (t: GrantDocumentType) => void; onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onUpload: () => void; onDownload: (id: string) => void; onDeleteDocument: (id: string) => void;
+  getDocumentTypeLabel: (type: GrantDocumentType) => string;
+}) {
+  const t = useTranslations('admin.grantDetail');
+  const tCommon = useTranslations('common');
+  return (
+  <Card>
+    <CardHeader>
+      <CardTitle>{t('documents')}</CardTitle>
+      <CardDescription>{t('documentsDescription')}</CardDescription>
+    </CardHeader>
+    <CardContent className="space-y-4">
+      {/* Document Upload */}
+      <div className="border rounded-lg p-4 space-y-4">
+        <h3 className="text-lg font-semibold">{t('uploadDocument')}</h3>
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">{tCommon('type')}</label>
+            <Select
+              value={documentType}
+              onValueChange={(value) => setDocumentType(value as GrantDocumentType)}
+              disabled={uploading}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="application">{tCommon('application')}</SelectItem>
+                <SelectItem value="justification">{tCommon('justification')}</SelectItem>
+                <SelectItem value="report">{tCommon('report')}</SelectItem>
+                <SelectItem value="receipt">{tCommon('receipt')}</SelectItem>
+                <SelectItem value="other">{tCommon('other')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">{tCommon('file')}</label>
+            <input
+              type="file"
+              onChange={onFileChange}
+              className="w-full p-2 border rounded-md"
+              disabled={uploading}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">&nbsp;</label>
+            <Button
+              onClick={onUpload}
+              disabled={!file || uploading}
+            >
+              {uploading ? (
+                <>
+                  <Clock className="h-4 w-4 mr-2 animate-spin" />
+                  {tCommon('uploading')}
+                </>
+              ) : (
+                <>
+                  <Upload className="h-4 w-4 mr-2" />
+                  {tCommon('upload')}
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Documents List */}
+      {documents.length > 0 ? (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{tCommon('type')}</TableHead>
+              <TableHead>{tCommon('filename')}</TableHead>
+              <TableHead>{tCommon('version')}</TableHead>
+              <TableHead>{tCommon('uploadedBy')}</TableHead>
+              <TableHead>{tCommon('actions')}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {documents.map((doc) => (
+              <TableRow key={doc.id}>
+                <TableCell>
+                  <Badge variant="outline">{getDocumentTypeLabel(doc.type as GrantDocumentType)}</Badge>
+                </TableCell>
+                <TableCell className="font-medium">{doc.filename}</TableCell>
+                <TableCell>v{doc.version}</TableCell>
+                <TableCell>{doc.uploaded_by || 'N/A'}</TableCell>
+                <TableCell className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onDownload(doc.id)}
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onDeleteDocument(doc.id)}
+                  >
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      ) : (
+        <Alert>
+          <AlertDescription>{t('noDocuments')}</AlertDescription>
+        </Alert>
+      )}
+    </CardContent>
+  </Card>
+  );
+}
+
+function StatusActionsCard({ statuses, actionLoading, onUpdate }: {
+  statuses: GrantStatus[]; actionLoading: string | null; onUpdate: (s: GrantStatus) => void;
+}) {
+  const t = useTranslations('admin.grantDetail');
+  const tCommon = useTranslations('common');
+  return (
+  <Card>
+    <CardHeader>
+      <CardTitle>{t('actions')}</CardTitle>
+      <CardDescription>{t('statusTransitionDescription')}</CardDescription>
+    </CardHeader>
+    <CardContent className="flex flex-wrap gap-4">
+      {statuses.map(status => (
+        <Button
+          key={status}
+          variant="outline"
+          onClick={() => onUpdate(status)}
+          disabled={actionLoading === 'status'}
+        >
+          {actionLoading === 'status' ? (
+            <>
+              <Clock className="h-4 w-4 mr-2 animate-spin" />
+              {tCommon('loading')}
+            </>
+          ) : (
+            <>
+              {STATUS_LABELS[status as GrantStatus]}
+            </>
+          )}
+        </Button>
+      ))}
+    </CardContent>
+  </Card>
+  );
+}
+
+function DeleteCard({ actionLoading, onDelete }: { actionLoading: string | null; onDelete: () => void }) {
+  const t = useTranslations('admin.grantDetail');
+  const tCommon = useTranslations('common');
+  return (
+  <Card>
+    <CardHeader>
+      <CardTitle>{t('dangerZone')}</CardTitle>
+      <CardDescription>{t('dangerZoneDescription')}</CardDescription>
+    </CardHeader>
+    <CardContent>
+      <Button
+        variant="destructive"
+        onClick={onDelete}
+        disabled={actionLoading === 'delete'}
+      >
+        {actionLoading === 'delete' ? (
+          <>
+            <Clock className="h-4 w-4 mr-2 animate-spin" />
+            {tCommon('loading')}
+          </>
+        ) : (
+          <>
+            <Trash2 className="h-4 w-4 mr-2" />
+            {t('delete')}
+          </>
+        )}
+      </Button>
+    </CardContent>
+  </Card>
+  );
+}
+
+function GrantDetailSkeleton() {
+  const block = (
+    <Card>
+      <CardHeader>
+        <Skeleton className="h-6 w-48" />
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-4 w-full" />
+        ))}
+      </CardContent>
+    </Card>
+  );
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        <Skeleton className="h-8 w-8" />
+        <Skeleton className="h-8 w-64" />
+      </div>
+      <div className="grid gap-6 md:grid-cols-2">
+        {block}
+        {block}
+      </div>
+    </div>
+  );
+}
+
+function BackToListCard({ className, backLabel, onBack, children }: {
+  className: string; backLabel: string; onBack: () => void; children: React.ReactNode;
+}) {
+  return (
+    <Card className={className}>
+      <CardContent className="pt-6">
+        {children}
+        <Button variant="outline" className="mt-4" onClick={onBack}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          {backLabel}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function MessageAlert({ message, destructive }: { message: string | null; destructive?: boolean }) {
+  if (!message) return null;
+  return (
+    <Alert variant={destructive ? 'destructive' : undefined}>
+      <AlertDescription>{message}</AlertDescription>
+    </Alert>
+  );
+}
 
 export default function GrantDetailPage() {
   const t = useTranslations('admin.grantDetail');
@@ -45,50 +356,35 @@ export default function GrantDetailPage() {
   // Fetch grant details
   const fetchGrant = useCallback(async () => {
     if (!grantId) return;
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const response = await grantApi.getById(grantId);
-      
-      if (response.success && response.data) {
-        setGrant(response.data);
-      } else {
-        setError(response.error || t('errorLoadingGrant'));
-        setGrant(null);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t('errorLoadingGrant'));
-      setGrant(null);
-    } finally {
-      setIsLoading(false);
-    }
+    setIsLoading(true);
+    setError(null);
+    await attemptApi(() => grantApi.getById(grantId), {
+      fallback: t('errorLoadingGrant'),
+      requireData: true,
+      onSuccess: (r) => setGrant(r.data as Grant),
+      onError: (msg) => { setError(msg); setGrant(null); },
+    });
+    setIsLoading(false);
   }, [grantId, t]);
 
   // Fetch grant documents
   const fetchDocuments = useCallback(async () => {
-    try {
-      const response = await grantDocumentApi.getByGrantId(grantId);
-      
-      if (response.success && response.data) {
-        setDocuments(response.data);
-      }
-    } catch (err) {
-      console.error('Error fetching documents:', err);
-    }
+    await attemptApi(() => grantDocumentApi.getByGrantId(grantId), {
+      fallback: 'Error fetching documents',
+      requireData: true,
+      onSuccess: (r) => setDocuments(r.data as GrantDocument[]),
+      onError: (msg) => console.error('Error fetching documents:', msg),
+    });
   }, [grantId]);
 
   // Fetch justification status
   const fetchJustificationStatus = useCallback(async () => {
-    try {
-      const response = await grantJustificationApi.getStatus(grantId);
-      
-      if (response.success && response.data) {
-        setJustificationStatus(response.data);
-      }
-    } catch (err) {
-      console.error('Error fetching justification status:', err);
-    }
+    await attemptApi(() => grantJustificationApi.getStatus(grantId), {
+      fallback: 'Error fetching justification status',
+      requireData: true,
+      onSuccess: (r) => setJustificationStatus(r.data as NonNullable<typeof justificationStatus>),
+      onError: (msg) => console.error('Error fetching justification status:', msg),
+    });
   }, [grantId]);
 
   // Fetch all data
@@ -109,103 +405,70 @@ export default function GrantDetailPage() {
 
   // Handle file upload
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-      setUploadError(null);
-      setUploadSuccess(null);
-    }
+    const picked = e.target.files?.[0];
+    if (!picked) return;
+    setFile(picked);
+    setUploadError(null);
+    setUploadSuccess(null);
   };
 
   // Handle document upload
   const handleUpload = useCallback(async () => {
     if (!file || !grantId) return;
-    
-    try {
-      setUploading(true);
-      setUploadError(null);
-      setUploadSuccess(null);
-      
-      const response = await grantDocumentApi.upload(grantId, file, documentType, userId);
-      
-      if (response.success && response.data) {
+    setUploading(true);
+    setUploadError(null);
+    setUploadSuccess(null);
+    await attemptApi(() => grantDocumentApi.upload(grantId, file, documentType, userId), {
+      fallback: tCommon('error'),
+      requireData: true,
+      onSuccess: async () => {
         setUploadSuccess(t('uploadSuccess'));
         setFile(null);
         setDocumentType('application');
         await fetchDocuments();
         await fetchJustificationStatus();
-      } else {
-        setUploadError(response.error || tCommon('error'));
-      }
-    } catch (err) {
-      setUploadError(err instanceof Error ? err.message : tCommon('error'));
-    } finally {
-      setUploading(false);
-    }
+      },
+      onError: setUploadError,
+    });
+    setUploading(false);
   }, [file, grantId, documentType, userId, t, tCommon, fetchDocuments, fetchJustificationStatus]);
 
   // Handle status update
   const handleStatusUpdate = useCallback(async (newStatus: GrantStatus) => {
     if (!grantId || !grant) return;
-    
-    try {
-      setActionLoading('status');
-      
-      const response = await grantApi.updateStatus(grantId, newStatus);
-      
-      if (response.success && response.data) {
-        setGrant(response.data);
-      } else {
-        setError(response.error || t('errorUpdatingStatus'));
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t('errorUpdatingStatus'));
-    } finally {
-      setActionLoading(null);
-    }
+    setActionLoading('status');
+    await attemptApi(() => grantApi.updateStatus(grantId, newStatus), {
+      fallback: t('errorUpdatingStatus'),
+      requireData: true,
+      onSuccess: (r) => setGrant(r.data as Grant),
+      onError: setError,
+    });
+    setActionLoading(null);
   }, [grantId, grant, t]);
 
   // Handle mark as ready
   const handleMarkAsReady = useCallback(async () => {
     if (!grantId) return;
-    
-    try {
-      setActionLoading('justification');
-      
-      const response = await grantJustificationApi.markReady(grantId);
-      
-      if (response.success) {
-        await fetchJustificationStatus();
-      } else {
-        setError(response.error || t('errorMarkingReady'));
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t('errorMarkingReady'));
-    } finally {
-      setActionLoading(null);
-    }
+    setActionLoading('justification');
+    await attemptApi(() => grantJustificationApi.markReady(grantId), {
+      fallback: t('errorMarkingReady'),
+      onSuccess: fetchJustificationStatus,
+      onError: setError,
+    });
+    setActionLoading(null);
   }, [grantId, t, fetchJustificationStatus]);
 
   // Handle delete
   const handleDelete = useCallback(async () => {
     if (!grantId || !grant) return;
-    
     if (!confirm(t('deleteConfirm'))) return;
-    
-    try {
-      setActionLoading('delete');
-      
-      const response = await grantApi.delete(grantId);
-      
-      if (response.success) {
-        router.push('/admin/grants');
-      } else {
-        setError(response.error || t('deleteError'));
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t('deleteError'));
-    } finally {
-      setActionLoading(null);
-    }
+    setActionLoading('delete');
+    await attemptApi(() => grantApi.delete(grantId), {
+      fallback: t('deleteError'),
+      onSuccess: () => router.push('/admin/grants'),
+      onError: setError,
+    });
+    setActionLoading(null);
   }, [grantId, grant, t, router]);
 
   // Handle document download
@@ -221,26 +484,21 @@ export default function GrantDetailPage() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (err) {
-      setError(err instanceof Error ? err.message : tCommon('error'));
+      setError(errorMessage(err, tCommon('error')));
     }
   }, [documents, tCommon]);
 
   // Handle document delete
   const handleDeleteDocument = useCallback(async (documentId: string) => {
     if (!confirm(tCommon('confirmDelete'))) return;
-    
-    try {
-      const response = await grantDocumentApi.delete(documentId);
-      
-      if (response.success) {
+    await attemptApi(() => grantDocumentApi.delete(documentId), {
+      fallback: tCommon('error'),
+      onSuccess: async () => {
         await fetchDocuments();
         await fetchJustificationStatus();
-      } else {
-        setError(response.error || tCommon('error'));
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : tCommon('error'));
-    }
+      },
+      onError: setError,
+    });
   }, [tCommon, fetchDocuments, fetchJustificationStatus]);
 
   // Get available status transitions
@@ -297,66 +555,23 @@ export default function GrantDetailPage() {
     return <div>{tCommon('notAuthenticated')}</div>;
   }
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-8 w-8" />
-          <Skeleton className="h-8 w-64" />
-        </div>
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-48" />
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-4 w-full" />
-              ))}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-48" />
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-4 w-full" />
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
+  if (isLoading) return <GrantDetailSkeleton />;
 
   if (error && !grant) {
     return (
-      <Card className="border-red-200 bg-red-50">
-        <CardContent className="pt-6">
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-          <Button variant="outline" className="mt-4" onClick={() => router.push('/admin/grants')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            {t('backToList')}
-          </Button>
-        </CardContent>
-      </Card>
+      <BackToListCard className="border-red-200 bg-red-50" backLabel={t('backToList')} onBack={() => router.push('/admin/grants')}>
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      </BackToListCard>
     );
   }
 
   if (!grant) {
     return (
-      <Card className="border-yellow-200 bg-yellow-50">
-        <CardContent className="pt-6">
-          <p className="text-yellow-600">{t('grantNotFound')}</p>
-          <Button variant="outline" className="mt-4" onClick={() => router.push('/admin/grants')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            {t('backToList')}
-          </Button>
-        </CardContent>
-      </Card>
+      <BackToListCard className="border-yellow-200 bg-yellow-50" backLabel={t('backToList')} onBack={() => router.push('/admin/grants')}>
+        <p className="text-yellow-600">{t('grantNotFound')}</p>
+      </BackToListCard>
     );
   }
 
@@ -385,25 +600,13 @@ export default function GrantDetailPage() {
       </div>
 
       {/* Error message */}
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+      <MessageAlert message={error} destructive />
 
       {/* Success message */}
-      {uploadSuccess && (
-        <Alert>
-          <AlertDescription>{uploadSuccess}</AlertDescription>
-        </Alert>
-      )}
+      <MessageAlert message={uploadSuccess} />
 
       {/* Upload error */}
-      {uploadError && (
-        <Alert variant="destructive">
-          <AlertDescription>{uploadError}</AlertDescription>
-        </Alert>
-      )}
+      <MessageAlert message={uploadError} destructive />
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* Basic Information */}
@@ -470,229 +673,30 @@ export default function GrantDetailPage() {
           </CardContent>
         </Card>
 
-        {/* Justification Status */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('justification')}</CardTitle>
-            <CardDescription>{t('justificationDescription')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {justificationStatus ? (
-              <>
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-muted-foreground">{t('justificationStatus')}</p>
-                  <Badge variant={justificationStatus.is_ready ? 'default' : 'secondary'}>
-                    {justificationStatus.is_ready ? (
-                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                    ) : (
-                      <Clock className="h-4 w-4 mr-2 text-yellow-500" />
-                    )}
-                    {justificationStatus.is_ready ? t('ready') : t('notReady')}
-                  </Badge>
-                </div>
-                
-                {!justificationStatus.is_ready && justificationStatus.missing_documents.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-muted-foreground">{t('missingDocuments')}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {justificationStatus.missing_documents.map(docType => (
-                        <Badge key={docType} variant="destructive">
-                          {getDocumentTypeLabel(docType)}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                <Button
-                  size="sm"
-                  onClick={handleMarkAsReady}
-                  disabled={actionLoading === 'justification' || !justificationStatus.is_ready}
-                >
-                  {actionLoading === 'justification' ? (
-                    <>
-                      <Clock className="h-4 w-4 mr-2 animate-spin" />
-                      {tCommon('loading')}
-                    </>
-                  ) : (
-                    t('markAsReady')
-                  )}
-                </Button>
-              </>
-            ) : (
-              <p className="text-sm text-muted-foreground">{tCommon('loading')}</p>
-            )}
-          </CardContent>
-        </Card>
+        <JustificationCard
+          justificationStatus={justificationStatus}
+          actionLoading={actionLoading}
+          onMarkReady={handleMarkAsReady}
+          getDocumentTypeLabel={getDocumentTypeLabel}
+        />
       </div>
 
-      {/* Documents Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('documents')}</CardTitle>
-          <CardDescription>{t('documentsDescription')}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Document Upload */}
-          <div className="border rounded-lg p-4 space-y-4">
-            <h3 className="text-lg font-semibold">{t('uploadDocument')}</h3>
-            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">{tCommon('type')}</label>
-                <Select
-                  value={documentType}
-                  onValueChange={(value) => setDocumentType(value as GrantDocumentType)}
-                  disabled={uploading}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="application">{tCommon('application')}</SelectItem>
-                    <SelectItem value="justification">{tCommon('justification')}</SelectItem>
-                    <SelectItem value="report">{tCommon('report')}</SelectItem>
-                    <SelectItem value="receipt">{tCommon('receipt')}</SelectItem>
-                    <SelectItem value="other">{tCommon('other')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">{tCommon('file')}</label>
-                <input
-                  type="file"
-                  onChange={handleFileChange}
-                  className="w-full p-2 border rounded-md"
-                  disabled={uploading}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">&nbsp;</label>
-                <Button
-                  onClick={handleUpload}
-                  disabled={!file || uploading}
-                >
-                  {uploading ? (
-                    <>
-                      <Clock className="h-4 w-4 mr-2 animate-spin" />
-                      {tCommon('uploading')}
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="h-4 w-4 mr-2" />
-                      {tCommon('upload')}
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </div>
+      <DocumentsCard
+        documents={documents}
+        uploading={uploading}
+        file={file}
+        documentType={documentType}
+        setDocumentType={setDocumentType}
+        onFileChange={handleFileChange}
+        onUpload={handleUpload}
+        onDownload={handleDownload}
+        onDeleteDocument={handleDeleteDocument}
+        getDocumentTypeLabel={getDocumentTypeLabel}
+      />
 
-          {/* Documents List */}
-          {documents.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{tCommon('type')}</TableHead>
-                  <TableHead>{tCommon('filename')}</TableHead>
-                  <TableHead>{tCommon('version')}</TableHead>
-                  <TableHead>{tCommon('uploadedBy')}</TableHead>
-                  <TableHead>{tCommon('actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {documents.map((doc) => (
-                  <TableRow key={doc.id}>
-                    <TableCell>
-                      <Badge variant="outline">{getDocumentTypeLabel(doc.type as GrantDocumentType)}</Badge>
-                    </TableCell>
-                    <TableCell className="font-medium">{doc.filename}</TableCell>
-                    <TableCell>v{doc.version}</TableCell>
-                    <TableCell>{doc.uploaded_by || 'N/A'}</TableCell>
-                    <TableCell className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDownload(doc.id)}
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteDocument(doc.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <Alert>
-              <AlertDescription>{t('noDocuments')}</AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
+      <StatusActionsCard statuses={getAvailableStatuses()} actionLoading={actionLoading} onUpdate={handleStatusUpdate} />
 
-      {/* Status Transition Actions */}
-      {getAvailableStatuses().length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('actions')}</CardTitle>
-            <CardDescription>{t('statusTransitionDescription')}</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-4">
-            {getAvailableStatuses().map(status => (
-              <Button
-                key={status}
-                variant="outline"
-                onClick={() => handleStatusUpdate(status)}
-                disabled={actionLoading === 'status'}
-              >
-                {actionLoading === 'status' ? (
-                  <>
-                    <Clock className="h-4 w-4 mr-2 animate-spin" />
-                    {tCommon('loading')}
-                  </>
-                ) : (
-                  <>
-                    {STATUS_LABELS[status as GrantStatus]}
-                  </>
-                )}
-              </Button>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Delete Action */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('dangerZone')}</CardTitle>
-          <CardDescription>{t('dangerZoneDescription')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={actionLoading === 'delete'}
-          >
-            {actionLoading === 'delete' ? (
-              <>
-                <Clock className="h-4 w-4 mr-2 animate-spin" />
-                {tCommon('loading')}
-              </>
-            ) : (
-              <>
-                <Trash2 className="h-4 w-4 mr-2" />
-                {t('delete')}
-              </>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
+      <DeleteCard actionLoading={actionLoading} onDelete={handleDelete} />
     </div>
   );
 }

@@ -19,6 +19,33 @@ const INTERESES_OPTS = [
   'Ofimática', 'Recogida de alimentos', 'Ropero', 'Transporte', 'Otros',
 ];
 
+type ApplicationForm = {
+  nombre: string; email: string; telefono: string; residencia: string;
+  fecha_nacimiento: string; periodicidad: string; horario_texto: string;
+};
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_RE = /^[+]?[\d\s()-]{7,}$/;
+
+/** Required text field with an optional format check; returns the error message or undefined. */
+function textError(value: string, pattern: RegExp | null, required: string, invalid: string): string | undefined {
+  if (!value.trim()) return required;
+  if (pattern && !pattern.test(value)) return invalid;
+  return undefined;
+}
+
+function validateApplication(form: ApplicationForm, t: (key: string) => string): Record<string, string> {
+  const candidates: Record<string, string | undefined> = {
+    nombre: textError(form.nombre, null, t('requerido'), ''),
+    email: textError(form.email, EMAIL_RE, t('requerido'), t('emailInvalido')),
+    telefono: textError(form.telefono, PHONE_RE, t('requerido'), t('telefonoInvalido')),
+    residencia: textError(form.residencia, null, t('requerido'), ''),
+    fecha_nacimiento: form.fecha_nacimiento ? undefined : t('requerido'),
+    periodicidad: form.periodicidad ? undefined : t('seleccionaOpcion'),
+  };
+  return Object.fromEntries(Object.entries(candidates).filter(([, msg]) => msg !== undefined)) as Record<string, string>;
+}
+
 export default function HazteVoluntarioPage() {
   const router = useRouter();
   const t = useTranslations('hazteVoluntario');
@@ -51,15 +78,7 @@ export default function HazteVoluntarioPage() {
   };
 
   const validate = (): boolean => {
-    const e: Record<string, string> = {};
-    if (!form.nombre.trim()) e.nombre = t('requerido');
-    if (!form.email.trim()) e.email = t('requerido');
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = t('emailInvalido');
-    if (!form.telefono.trim()) e.telefono = t('requerido');
-    else if (!/^[+]?[\d\s()-]{7,}$/.test(form.telefono)) e.telefono = t('telefonoInvalido');
-    if (!form.residencia.trim()) e.residencia = t('requerido');
-    if (!form.fecha_nacimiento) e.fecha_nacimiento = t('requerido');
-    if (!form.periodicidad) e.periodicidad = t('seleccionaOpcion');
+    const e = validateApplication(form, t);
     setErrors(e);
     return Object.keys(e).length === 0;
   };

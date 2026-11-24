@@ -23,6 +23,88 @@ import HolidaysSection from './HolidaysSection';
 
 function formatDate(d?: string) { return d ? new Date(d).toLocaleDateString() : '-'; }
 
+function ActivityCardHeader({ act }: { act: ActivityType }) {
+  const t = useTranslations('admin.actividades');
+  return (
+    <CardHeader className="pb-2">
+      <div className="flex items-start justify-between">
+        <CardTitle className="text-sm font-medium">{act.name}</CardTitle>
+        <Badge variant={act.is_recurring === 'true' ? 'default' : 'secondary'}>{act.is_recurring === 'true' ? t('recurrente') : t('puntual')}</Badge>
+      </div>
+    </CardHeader>
+  );
+}
+
+function ActivityCardInfo({ act }: { act: ActivityType }) {
+  const t = useTranslations('admin.actividades');
+  const showFixedDate = act.is_recurring !== 'true' && act.fixed_date;
+  return (
+    <>
+      <p className="text-xs text-muted-foreground mb-2">{act.description || act.category}</p>
+      <p className="text-xs text-muted-foreground">{t('categoria')}: {act.category} | {t('capacidad')}: {act.default_capacity}</p>
+      {act.localidad && <p className="text-xs text-muted-foreground">{t('localidad')}: {act.localidad}</p>}
+      {showFixedDate && (
+        <p className="text-xs text-muted-foreground">{t('fechaFija')}: {formatDate(act.fixed_date ?? undefined)}</p>
+      )}
+    </>
+  );
+}
+
+type CreateForm = {
+  name: string; description: string; category: string; localidad: string; capacity: string;
+  isRecurring: string; fixedDate: string; daysOfWeek: number[]; shifts: string[];
+};
+
+type PayloadResult = { payload: any; error?: undefined } | { error: string; payload?: undefined };
+
+function buildRecurrence(f: CreateForm, errMsg: string): PayloadResult {
+  const shiftNames = f.shifts.filter((s) => s.trim());
+  if (f.daysOfWeek.length === 0 || shiftNames.length === 0) return { error: errMsg };
+  return {
+    payload: {
+      recurrence_config: {
+        daysOfWeek: f.daysOfWeek,
+        shifts: shiftNames.map((s) => ({ name: s, startTime: '09:00', endTime: '14:00' })),
+      },
+    },
+  };
+}
+
+function buildCreatePayload(f: CreateForm, msgs: { recurrence: string; fixedDate: string }): PayloadResult {
+  const base: any = {
+    name: f.name, description: f.description, category: f.category, localidad: f.localidad || undefined,
+    default_capacity: Number(f.capacity), is_recurring: f.isRecurring,
+  };
+  if (f.isRecurring === 'true') {
+    const rec = buildRecurrence(f, msgs.recurrence);
+    return rec.error ? rec : { payload: { ...base, ...rec.payload } };
+  }
+  if (!f.fixedDate) return { error: msgs.fixedDate };
+  return { payload: { ...base, fixed_date: f.fixedDate } };
+}
+
+function ExceptionsList({ loading, exceptions, onDelete }: {
+  loading: boolean; exceptions: ActivityException[]; onDelete: (id: string) => void;
+}) {
+  const t = useTranslations('admin.actividades');
+  const tCommon = useTranslations('common');
+  if (loading) return <Skeleton className="h-8 w-full" />;
+  if (exceptions.length === 0) return <p className="py-2 text-sm text-muted-foreground">{t('noExcepciones')}</p>;
+  return (
+    <>
+      {exceptions.map((ex) => (
+        <div key={ex.id} className="flex items-center justify-between rounded-md border p-2 text-sm">
+          <span>
+            {new Date(ex.date).toLocaleDateString()}
+            {ex.reason ? ` — ${ex.reason}` : ''}
+          </span>
+          <Button size="sm" variant="destructive" onClick={() => onDelete(ex.id)}>{tCommon('eliminar')}</Button>
+        </div>
+      ))}
+    </>
+  );
+}
+
 const CATEGORIES = ['general', 'logística', 'acompañamiento', 'educación', 'administración', 'otro'];
 
 export default function ActividadesPage() {
@@ -96,25 +178,16 @@ export default function ActividadesPage() {
     e.preventDefault();
     setFormError(''); setSubmitting(true);
     try {
-      const payload: any = {
-        name, description, category, localidad: localidad || undefined,
-        default_capacity: Number(capacity), is_recurring: isRecurring,
-      };
-      if (isRecurring === 'true') {
-        const shiftNames = shifts.filter((s) => s.trim());
-        if (daysOfWeek.length === 0 || shiftNames.length === 0) {
-          setFormError(t('recurrenciaRequerida'));
-          setSubmitting(false);
-          return;
-        }
-        payload.recurrence_config = {
-          daysOfWeek, shifts: shiftNames.map((s) => ({ name: s, startTime: '09:00', endTime: '14:00' })),
-        };
-      } else {
-        if (!fixedDate) { setFormError(t('fechaFijaRequerida')); setSubmitting(false); return; }
-        payload.fixed_date = fixedDate;
+      const built = buildCreatePayload(
+        { name, description, category, localidad, capacity, isRecurring, fixedDate, daysOfWeek, shifts },
+        { recurrence: t('recurrenciaRequerida'), fixedDate: t('fechaFijaRequerida') },
+      );
+      if (built.error) {
+        setFormError(built.error);
+        setSubmitting(false);
+        return;
       }
-      const created = await createType(payload);
+      const created = await createType(built.payload);
       if (!created.success) {
         setFormError(created.error || tCommon('error'));
         setSubmitting(false);
@@ -236,19 +309,9 @@ export default function ActividadesPage() {
             ? <p className="col-span-full text-center text-muted-foreground py-8">{t('noHayActividades')}</p>
             : types.map((act) => (
                 <Card key={act.id}>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-start justify-between">
-                      <CardTitle className="text-sm font-medium">{act.name}</CardTitle>
-                      <Badge variant={act.is_recurring === 'true' ? 'default' : 'secondary'}>{act.is_recurring === 'true' ? t('recurrente') : t('puntual')}</Badge>
-                    </div>
-                  </CardHeader>
+                  <ActivityCardHeader act={act} />
                   <CardContent>
-                    <p className="text-xs text-muted-foreground mb-2">{act.description || act.category}</p>
-                    <p className="text-xs text-muted-foreground">{t('categoria')}: {act.category} | {t('capacidad')}: {act.default_capacity}</p>
-                    {act.localidad && <p className="text-xs text-muted-foreground">{t('localidad')}: {act.localidad}</p>}
-                    {act.is_recurring !== 'true' && act.fixed_date && (
-                      <p className="text-xs text-muted-foreground">{t('fechaFija')}: {formatDate(act.fixed_date)}</p>
-                    )}
+                    <ActivityCardInfo act={act} />
                     <div className="mt-3 flex gap-2">
                       <Button size="sm" variant="secondary" onClick={() => openExceptions(act)}>{t('excepciones')}</Button>
                       <Dialog open={editTarget?.id === act.id} onOpenChange={(o) => { if (!o) setEditTarget(null); }}>
@@ -300,21 +363,11 @@ export default function ActividadesPage() {
           {exceptionError && <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{exceptionError}</div>}
           <p className="text-xs text-muted-foreground">{t('excepcionesDesc')}</p>
           <div className="max-h-40 space-y-1 overflow-y-auto">
-            {exceptionsLoading ? (
-              <Skeleton className="h-8 w-full" />
-            ) : exceptions.length === 0 ? (
-              <p className="py-2 text-sm text-muted-foreground">{t('noExcepciones')}</p>
-            ) : (
-              exceptions.map((ex) => (
-                <div key={ex.id} className="flex items-center justify-between rounded-md border p-2 text-sm">
-                  <span>
-                    {new Date(ex.date).toLocaleDateString()}
-                    {ex.reason ? ` — ${ex.reason}` : ''}
-                  </span>
-                  <Button size="sm" variant="destructive" onClick={() => handleDeleteException(ex.id)}>{tCommon('eliminar')}</Button>
-                </div>
-              ))
-            )}
+            <ExceptionsList
+              loading={exceptionsLoading}
+              exceptions={exceptions}
+              onDelete={handleDeleteException}
+            />
           </div>
           <form onSubmit={handleAddException} className="space-y-2 border-t pt-3">
             <div className="grid grid-cols-2 gap-2">

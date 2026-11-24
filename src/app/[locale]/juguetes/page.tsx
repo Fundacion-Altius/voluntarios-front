@@ -183,6 +183,145 @@ function ChristmasFooter({ t }: { t: (k: string) => string }) {
   );
 }
 
+type Zoom = { images: string[]; index: number; alt: string; desc: string };
+
+function ZoomDialog({ zoom, setZoom }: { zoom: Zoom | null; setZoom: (z: Zoom | null) => void }) {
+  return (
+    <Dialog open={zoom !== null} onOpenChange={(open) => { if (!open) setZoom(null); }}>
+      <DialogContent data-testid="juguetes-modal" className="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>{zoom?.alt ?? ''}</DialogTitle>
+        </DialogHeader>
+        {zoom && zoom.images.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <img
+              src={`${getApiBaseUrl()}${zoom.images[zoom.index]}${zoom.images[zoom.index].includes('?') ? '&' : '?'}v=${encodeURIComponent(zoom.alt)}`}
+              alt={zoom.alt}
+              className="max-h-[70vh] w-full object-contain"
+              data-testid="juguetes-modal-img"
+            />
+            {zoom.desc && <p data-testid="juguetes-modal-desc">{zoom.desc}</p>}
+            <div className="flex items-center justify-between">
+              <Button
+                data-testid="juguetes-modal-prev"
+                disabled={zoom.images.length < 2}
+                onClick={() => setZoom({ ...zoom, index: (zoom.index - 1 + zoom.images.length) % zoom.images.length })}
+              >
+                ←
+              </Button>
+              <span data-testid="juguetes-modal-count">{zoom.index + 1} / {zoom.images.length}</span>
+              <Button
+                data-testid="juguetes-modal-next"
+                disabled={zoom.images.length < 2}
+                onClick={() => setZoom({ ...zoom, index: (zoom.index + 1) % zoom.images.length })}
+              >
+                →
+              </Button>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EntryScreen({ t, codeDraft, setCodeDraft, onEnter, error, out }: {
+  t: ReturnType<typeof useTranslations>; codeDraft: string; setCodeDraft: (v: string) => void;
+  onEnter: () => void; error: string; out: string;
+}) {
+  return (
+    <div className="jug mx-auto flex w-full max-w-[560px] flex-col gap-6 px-4 pb-24 pt-6 sm:px-6" data-testid="juguetes-console">
+      <header className="jug-hero" data-testid="juguetes-hero">
+        <Garland />
+        <div className="relative flex flex-col gap-3">
+          <span className="jug-eyebrow self-start"><Star size={14} />{t('titulo')}</span>
+          <h1>{t('codigoTitulo')}</h1>
+          <p className="jug-lead">{t('codigoAyuda')}</p>
+        </div>
+      </header>
+      <div className="jug-basket flex flex-col gap-3" data-testid="juguetes-entry">
+        <label htmlFor="juguetes-code" className="text-sm font-medium">{t('codigoEtiqueta')}</label>
+        <Input
+          id="juguetes-code"
+          data-testid="juguetes-code"
+          value={codeDraft}
+          onChange={(e) => setCodeDraft(e.target.value)}
+          placeholder={t('codigoPlaceholder')}
+          className="h-11 font-mono uppercase"
+          autoComplete="off"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') onEnter();
+          }}
+        />
+        <Button data-testid="juguetes-code-go" onClick={onEnter} className="min-h-11 w-full">
+          {t('codigoEntrar')}
+        </Button>
+        {error && <p role="alert" className="jug-error" data-testid="juguetes-error">{error}</p>}
+        {out && <p data-testid="juguetes-out" role="status" className="text-sm">{out}</p>}
+      </div>
+      <ChristmasFooter t={(k) => t(k)} />
+    </div>
+  );
+}
+
+function BasketPanel({ t, cartCount, toyQuota, slots, slotId, setSlotId, qr, qrPng, error, out, onCheckout, onLoadSlots, onBook }: {
+  t: ReturnType<typeof useTranslations>; cartCount: number; toyQuota: number; slots: any[];
+  slotId: string; setSlotId: (v: string) => void; qr: string; qrPng: string; error: string; out: string;
+  onCheckout: () => void; onLoadSlots: () => void; onBook: () => void;
+}) {
+  return (
+    <aside id="cesta" aria-labelledby="juguetes-cesta-h" className="jug-basket" data-testid="juguetes-checkout-card">
+      <h2 id="juguetes-cesta-h" className="text-xl font-semibold">{t('cesta')}</h2>
+      <p className="text-sm text-muted-foreground" data-testid="juguetes-basket-count">
+        {cartCount > 0 ? `${cartCount} / ${toyQuota} ${t('articulos')}` : t('cestaVacia')}
+      </p>
+      <Button data-testid="juguetes-checkout" onClick={onCheckout} className="min-h-11 w-full">{t('comprar')}</Button>
+      <Button data-testid="juguetes-slots" variant="outline" onClick={onLoadSlots} className="min-h-11 w-full">{t('verTurnos')}</Button>
+      {slots.length > 0 && (
+        <Select value={slotId} onValueChange={setSlotId}>
+          <SelectTrigger data-testid="juguetes-slot" className="h-11 w-full" aria-label={t('turno')}><SelectValue placeholder={t('turno')} /></SelectTrigger>
+          <SelectContent>
+            {slots.map((s: any) => (
+              <SelectItem key={s.id} value={s.id}>{s.date} — {s.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+      {slotId && <Button data-testid="juguetes-book" onClick={onBook} className="min-h-11 w-full">{t('reservar')}</Button>}
+      {qrPng && (
+        <figure className="flex flex-col items-center gap-2 rounded-lg bg-white p-3">
+          <img src={qrPng} alt={t('qrAlt')} className="h-44 w-44" data-testid="juguetes-qr-img" />
+          <figcaption className="text-center text-sm text-[#1b1d2a]">{t('qrListo')}</figcaption>
+        </figure>
+      )}
+      {qr && <p data-testid="juguetes-qr" className="break-all text-xs text-muted-foreground">QR: {qr}</p>}
+      {error && (
+        <p role="alert" className="jug-error" data-testid="juguetes-error">{t('errorGenerico')} ({error})</p>
+      )}
+      {out && <p data-testid="juguetes-out" role="status" className="text-sm">{out}</p>}
+    </aside>
+  );
+}
+
+function filterCatalog(catalog: any[], ageFilter: string | null, query: string): any[] {
+  const byAge = ageFilter === null ? catalog : catalog.filter((item) => String(item.ageBand ?? '') === ageFilter);
+  if (query === '') return byAge;
+  return byAge.filter(
+    (item) =>
+      (item.title ?? item.article ?? '').toLowerCase().includes(query) || (item.description ?? '').toLowerCase().includes(query),
+  );
+}
+
+function presentAges(catalog: any[]): string[] {
+  const present: string[] = [];
+  for (const item of catalog) {
+    const band = String(item.ageBand ?? '');
+    if (band && !present.includes(band)) present.push(band);
+  }
+  const order = (b: string) => AGE_BANDS.indexOf(b as (typeof AGE_BANDS)[number]);
+  return present.sort((a, b) => order(a) - order(b));
+}
+
 export default function JuguetesPage() {
   const t = useTranslations('juguetes');
   const api = useToys();
@@ -298,14 +437,7 @@ export default function JuguetesPage() {
     return () => clearTimeout(timer);
   }, [query]);
 
-  const byAge = ageFilter === null ? catalog : catalog.filter((item) => String(item.ageBand ?? '') === ageFilter);
-  const visibleCatalog =
-    debouncedQuery === ''
-      ? byAge
-      : byAge.filter(
-          (item) =>
-            (item.title ?? item.article ?? '').toLowerCase().includes(debouncedQuery) || (item.description ?? '').toLowerCase().includes(debouncedQuery),
-        );
+  const visibleCatalog = filterCatalog(catalog, ageFilter, debouncedQuery);
 
   useEffect(() => {
     setPage(1);
@@ -319,12 +451,7 @@ export default function JuguetesPage() {
   };
   const pt = (k: string, v?: Record<string, number>) => t(k, v);
 
-  const agesPresent: string[] = [];
-  catalog.forEach((item) => {
-    const band = String(item.ageBand ?? '');
-    if (band && !agesPresent.includes(band)) agesPresent.push(band);
-  });
-  agesPresent.sort((a, b) => AGE_BANDS.indexOf(a as (typeof AGE_BANDS)[number]) - AGE_BANDS.indexOf(b as (typeof AGE_BANDS)[number]));
+  const agesPresent = presentAges(catalog);
 
   const cardProps = (item: any) => ({
     item,
@@ -341,37 +468,14 @@ export default function JuguetesPage() {
 
   if (!household) {
     return (
-      <div className="jug mx-auto flex w-full max-w-[560px] flex-col gap-6 px-4 pb-24 pt-6 sm:px-6" data-testid="juguetes-console">
-        <header className="jug-hero" data-testid="juguetes-hero">
-          <Garland />
-          <div className="relative flex flex-col gap-3">
-            <span className="jug-eyebrow self-start"><Star size={14} />{t('titulo')}</span>
-            <h1>{t('codigoTitulo')}</h1>
-            <p className="jug-lead">{t('codigoAyuda')}</p>
-          </div>
-        </header>
-        <div className="jug-basket flex flex-col gap-3" data-testid="juguetes-entry">
-          <label htmlFor="juguetes-code" className="text-sm font-medium">{t('codigoEtiqueta')}</label>
-          <Input
-            id="juguetes-code"
-            data-testid="juguetes-code"
-            value={codeDraft}
-            onChange={(e) => setCodeDraft(e.target.value)}
-            placeholder={t('codigoPlaceholder')}
-            className="h-11 font-mono uppercase"
-            autoComplete="off"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') void enterCode();
-            }}
-          />
-          <Button data-testid="juguetes-code-go" onClick={() => void enterCode()} className="min-h-11 w-full">
-            {t('codigoEntrar')}
-          </Button>
-          {error && <p role="alert" className="jug-error" data-testid="juguetes-error">{error}</p>}
-          {out && <p data-testid="juguetes-out" role="status" className="text-sm">{out}</p>}
-        </div>
-        <ChristmasFooter t={(k) => t(k)} />
-      </div>
+      <EntryScreen
+        t={t}
+        codeDraft={codeDraft}
+        setCodeDraft={setCodeDraft}
+        onEnter={() => void enterCode()}
+        error={error}
+        out={out}
+      />
     );
   }
 
@@ -475,36 +579,21 @@ export default function JuguetesPage() {
           <Pager page={curPage} pages={pages} onGo={goPage} t={pt} />
         </section>
 
-        <aside id="cesta" aria-labelledby="juguetes-cesta-h" className="jug-basket" data-testid="juguetes-checkout-card">
-          <h2 id="juguetes-cesta-h" className="text-xl font-semibold">{t('cesta')}</h2>
-          <p className="text-sm text-muted-foreground" data-testid="juguetes-basket-count">
-            {cartCount > 0 ? `${cartCount} / ${toyQuota} ${t('articulos')}` : t('cestaVacia')}
-          </p>
-          <Button data-testid="juguetes-checkout" onClick={checkout} className="min-h-11 w-full">{t('comprar')}</Button>
-          <Button data-testid="juguetes-slots" variant="outline" onClick={loadSlots} className="min-h-11 w-full">{t('verTurnos')}</Button>
-          {slots.length > 0 && (
-            <Select value={slotId} onValueChange={setSlotId}>
-              <SelectTrigger data-testid="juguetes-slot" className="h-11 w-full" aria-label={t('turno')}><SelectValue placeholder={t('turno')} /></SelectTrigger>
-              <SelectContent>
-                {slots.map((s: any) => (
-                  <SelectItem key={s.id} value={s.id}>{s.date} — {s.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          {slotId && <Button data-testid="juguetes-book" onClick={book} className="min-h-11 w-full">{t('reservar')}</Button>}
-          {qrPng && (
-            <figure className="flex flex-col items-center gap-2 rounded-lg bg-white p-3">
-              <img src={qrPng} alt={t('qrAlt')} className="h-44 w-44" data-testid="juguetes-qr-img" />
-              <figcaption className="text-center text-sm text-[#1b1d2a]">{t('qrListo')}</figcaption>
-            </figure>
-          )}
-          {qr && <p data-testid="juguetes-qr" className="break-all text-xs text-muted-foreground">QR: {qr}</p>}
-          {error && (
-            <p role="alert" className="jug-error" data-testid="juguetes-error">{t('errorGenerico')} ({error})</p>
-          )}
-          {out && <p data-testid="juguetes-out" role="status" className="text-sm">{out}</p>}
-        </aside>
+        <BasketPanel
+          t={t}
+          cartCount={cartCount}
+          toyQuota={toyQuota}
+          slots={slots}
+          slotId={slotId}
+          setSlotId={setSlotId}
+          qr={qr}
+          qrPng={qrPng}
+          error={error}
+          out={out}
+          onCheckout={checkout}
+          onLoadSlots={loadSlots}
+          onBook={book}
+        />
       </main>
 
       <a href="#cesta" className="jug-bottombar lg:hidden" data-testid="juguetes-bottombar">
@@ -514,41 +603,7 @@ export default function JuguetesPage() {
 
       <ChristmasFooter t={(k) => t(k)} />
 
-      <Dialog open={zoom !== null} onOpenChange={(open) => { if (!open) setZoom(null); }}>
-        <DialogContent data-testid="juguetes-modal" className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>{zoom?.alt ?? ''}</DialogTitle>
-          </DialogHeader>
-          {zoom && zoom.images.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <img
-                src={`${getApiBaseUrl()}${zoom.images[zoom.index]}${zoom.images[zoom.index].includes('?') ? '&' : '?'}v=${encodeURIComponent(zoom.alt)}`}
-                alt={zoom.alt}
-                className="max-h-[70vh] w-full object-contain"
-                data-testid="juguetes-modal-img"
-              />
-              {zoom.desc && <p data-testid="juguetes-modal-desc">{zoom.desc}</p>}
-              <div className="flex items-center justify-between">
-                <Button
-                  data-testid="juguetes-modal-prev"
-                  disabled={zoom.images.length < 2}
-                  onClick={() => setZoom({ ...zoom, index: (zoom.index - 1 + zoom.images.length) % zoom.images.length })}
-                >
-                  ←
-                </Button>
-                <span data-testid="juguetes-modal-count">{zoom.index + 1} / {zoom.images.length}</span>
-                <Button
-                  data-testid="juguetes-modal-next"
-                  disabled={zoom.images.length < 2}
-                  onClick={() => setZoom({ ...zoom, index: (zoom.index + 1) % zoom.images.length })}
-                >
-                  →
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <ZoomDialog zoom={zoom} setZoom={setZoom} />
     </div>
   );
 }

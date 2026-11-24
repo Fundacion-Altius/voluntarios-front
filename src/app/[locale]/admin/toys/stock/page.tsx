@@ -17,6 +17,135 @@ import { ItemEditModal, type StockItem } from './ItemEditModal';
 
 const PAGE_SIZE = 24;
 
+function filterStock(stock: StockItem[], band: string, query: string): StockItem[] {
+  const byBand = band === 'all' ? stock : stock.filter((s) => s.ageBand === band);
+  if (query === '') return byBand;
+  return byBand.filter((s) =>
+    [s.title ?? '', s.description ?? '', s.ean ?? '', s.location ?? ''].join(' ').toLowerCase().includes(query),
+  );
+}
+
+type StockLevel = ReturnType<typeof stockLevel>;
+
+const LEVEL_TONE: Record<string, string> = {
+  ok: 'bg-success/10 text-success',
+  low: 'bg-[#fbf0d9] text-[#7a5200]',
+  out: 'bg-destructive/10 text-destructive',
+};
+
+function QtyBadge({ id, level, quantity }: { id: string; level: StockLevel; quantity: number }) {
+  const t = useTranslations('admin.toys');
+  const labels: Record<string, string> = {
+    out: t('inv.agotado'),
+    low: t('inv.quedan', { n: quantity }),
+    ok: t('inv.enStock', { n: quantity }),
+  };
+  return (
+    <span
+      data-testid={`toys-qty-${id}`}
+      className={cn('inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold', LEVEL_TONE[level])}
+    >
+      <span className="size-2 rounded-full bg-current" aria-hidden="true" />
+      {labels[level]}
+    </span>
+  );
+}
+
+function StockCard({ s, busy, onEdit, onChangeQty }: {
+  s: StockItem; busy: boolean; onEdit: () => void; onChangeQty: (item: StockItem, delta: number) => void;
+}) {
+  const t = useTranslations('admin.toys');
+  const shown = s.cover ?? s.pictures?.[0] ?? null;
+  const title = s.title ?? s.article ?? '';
+  const level = stockLevel(s.quantity ?? 0);
+  const loc = (TOY_LOCATIONS as readonly string[]).includes(s.location ?? '') ? t(`ubicaciones.${s.location}`) : (s.location ?? '');
+  return (
+    <li data-testid={`toys-row-${s.id}`} className="flex flex-col overflow-hidden rounded-xl border bg-card shadow-xs">
+      <button
+        type="button"
+        data-testid={`toys-edit-${s.id}`}
+        onClick={onEdit}
+        aria-label={t('inv.editarAria', { title })}
+        className="group flex flex-1 flex-col text-left outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring/50"
+      >
+        <span className="relative block aspect-[4/3] w-full bg-muted">
+          {shown ? (
+            <img src={`${getApiBaseUrl()}${shown}`} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <span className="flex h-full w-full flex-col items-center justify-center gap-1 text-sm text-muted-foreground">
+              <ImageOff className="size-6" aria-hidden="true" />
+              {t('inv.sinFoto')}
+            </span>
+          )}
+        </span>
+        <span className="flex flex-col gap-2 p-3">
+          <span className="font-heading text-base font-semibold leading-snug group-hover:text-primary">{title}</span>
+          <span className="flex flex-wrap items-center gap-1.5 text-xs">
+            <span className="rounded-full bg-accent px-2.5 py-0.5 font-semibold text-primary">
+              {s.ageBand ? t(`bandas.${s.ageBand}`) : s.age}
+            </span>
+            {loc && <span className="text-muted-foreground">· {loc}</span>}
+          </span>
+          {s.ean && <span className="sr-only">{t('ean')}: {s.ean}</span>}
+        </span>
+      </button>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t px-3 py-2">
+        <QtyBadge id={s.id} level={level} quantity={s.quantity} />
+        <span className="flex gap-1">
+          <Button
+            data-testid={`toys-qty-minus-${s.id}`}
+            variant="outline"
+            size="icon"
+            className="size-11"
+            disabled={busy || (s.quantity ?? 0) <= 0}
+            aria-label={t('inv.quitarUna', { title })}
+            onClick={() => onChangeQty(s, -1)}
+          >
+            <Minus aria-hidden="true" />
+          </Button>
+          <Button
+            data-testid={`toys-qty-plus-${s.id}`}
+            variant="outline"
+            size="icon"
+            className="size-11"
+            disabled={busy}
+            aria-label={t('inv.anadirUna', { title })}
+            onClick={() => onChangeQty(s, 1)}
+          >
+            <Plus aria-hidden="true" />
+          </Button>
+        </span>
+      </div>
+    </li>
+  );
+}
+
+function Pager({ page, pageCount, setPage }: { page: number; pageCount: number; setPage: (p: number) => void }) {
+  const t = useTranslations('admin.toys');
+  const tc = useTranslations('common');
+  if (pageCount <= 1) return null;
+  return (
+    <div className="flex items-center gap-2">
+      <Button data-testid="toys-prev-page" variant="outline" className="h-11" disabled={page <= 0} onClick={() => setPage(page - 1)}>
+        {tc('anterior')}
+      </Button>
+      <span data-testid="toys-page-info">{t('pagina')} {page + 1} {t('de')} {pageCount}</span>
+      <Button data-testid="toys-next-page" variant="outline" className="h-11" disabled={page >= pageCount - 1} onClick={() => setPage(page + 1)}>
+        {tc('siguiente')}
+      </Button>
+    </div>
+  );
+}
+
+function OutMessage({ out }: { out: { text: string; error: boolean } | null }) {
+  if (!out) return null;
+  return (
+    <p data-testid="toys-item-result" role={out.error ? 'alert' : 'status'} className={cn('text-sm', out.error ? 'text-destructive' : 'text-muted-foreground')}>
+      {out.text}
+    </p>
+  );
+}
+
 export default function ToysStockPage() {
   const t = useTranslations('admin.toys');
   const tc = useTranslations('common');
@@ -74,13 +203,7 @@ export default function ToysStockPage() {
   };
 
   const units = stock.reduce((acc, s) => acc + (s.quantity ?? 0), 0);
-  const byBand = band === 'all' ? stock : stock.filter((s) => s.ageBand === band);
-  const visible =
-    debouncedQuery === ''
-      ? byBand
-      : byBand.filter((s) =>
-        [s.title ?? '', s.description ?? '', s.ean ?? '', s.location ?? ''].join(' ').toLowerCase().includes(debouncedQuery),
-      );
+  const visible = filterStock(stock, band, debouncedQuery);
   const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
   const safePage = Math.min(page, pageCount - 1);
   const rows = visible.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
@@ -154,104 +277,17 @@ export default function ToysStockPage() {
             </div>
           ) : (
             <ul data-testid="toys-stock" className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
-              {rows.map((s) => {
-                const shown = s.cover ?? s.pictures?.[0] ?? null;
-                const title = s.title ?? s.article ?? '';
-                const level = stockLevel(s.quantity ?? 0);
-                const loc = (TOY_LOCATIONS as readonly string[]).includes(s.location ?? '') ? t(`ubicaciones.${s.location}`) : (s.location ?? '');
-                return (
-                  <li key={s.id} data-testid={`toys-row-${s.id}`} className="flex flex-col overflow-hidden rounded-xl border bg-card shadow-xs">
-                    <button
-                      type="button"
-                      data-testid={`toys-edit-${s.id}`}
-                      onClick={() => setModal({ item: s })}
-                      aria-label={t('inv.editarAria', { title })}
-                      className="group flex flex-1 flex-col text-left outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring/50"
-                    >
-                      <span className="relative block aspect-[4/3] w-full bg-muted">
-                        {shown ? (
-                          <img src={`${getApiBaseUrl()}${shown}`} alt="" className="h-full w-full object-cover" />
-                        ) : (
-                          <span className="flex h-full w-full flex-col items-center justify-center gap-1 text-sm text-muted-foreground">
-                            <ImageOff className="size-6" aria-hidden="true" />
-                            {t('inv.sinFoto')}
-                          </span>
-                        )}
-                      </span>
-                      <span className="flex flex-col gap-2 p-3">
-                        <span className="font-heading text-base font-semibold leading-snug group-hover:text-primary">{title}</span>
-                        <span className="flex flex-wrap items-center gap-1.5 text-xs">
-                          <span className="rounded-full bg-accent px-2.5 py-0.5 font-semibold text-primary">
-                            {s.ageBand ? t(`bandas.${s.ageBand}`) : s.age}
-                          </span>
-                          {loc && <span className="text-muted-foreground">· {loc}</span>}
-                        </span>
-                        {s.ean && <span className="sr-only">{t('ean')}: {s.ean}</span>}
-                      </span>
-                    </button>
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-t px-3 py-2">
-                      <span
-                        data-testid={`toys-qty-${s.id}`}
-                        className={cn(
-                          'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold',
-                          level === 'ok' && 'bg-success/10 text-success',
-                          level === 'low' && 'bg-[#fbf0d9] text-[#7a5200]',
-                          level === 'out' && 'bg-destructive/10 text-destructive',
-                        )}
-                      >
-                        <span className="size-2 rounded-full bg-current" aria-hidden="true" />
-                        {level === 'out' ? t('inv.agotado') : level === 'low' ? t('inv.quedan', { n: s.quantity }) : t('inv.enStock', { n: s.quantity })}
-                      </span>
-                      <span className="flex gap-1">
-                        <Button
-                          data-testid={`toys-qty-minus-${s.id}`}
-                          variant="outline"
-                          size="icon"
-                          className="size-11"
-                          disabled={busy === s.id || (s.quantity ?? 0) <= 0}
-                          aria-label={t('inv.quitarUna', { title })}
-                          onClick={() => changeQty(s, -1)}
-                        >
-                          <Minus aria-hidden="true" />
-                        </Button>
-                        <Button
-                          data-testid={`toys-qty-plus-${s.id}`}
-                          variant="outline"
-                          size="icon"
-                          className="size-11"
-                          disabled={busy === s.id}
-                          aria-label={t('inv.anadirUna', { title })}
-                          onClick={() => changeQty(s, 1)}
-                        >
-                          <Plus aria-hidden="true" />
-                        </Button>
-                      </span>
-                    </div>
-                  </li>
-                );
-              })}
+              {rows.map((s) => (
+                <StockCard key={s.id} s={s} busy={busy === s.id} onEdit={() => setModal({ item: s })} onChangeQty={changeQty} />
+              ))}
             </ul>
           )}
 
-          {pageCount > 1 && (
-            <div className="flex items-center gap-2">
-              <Button data-testid="toys-prev-page" variant="outline" className="h-11" disabled={safePage <= 0} onClick={() => setPage(safePage - 1)}>
-                {tc('anterior')}
-              </Button>
-              <span data-testid="toys-page-info">{t('pagina')} {safePage + 1} {t('de')} {pageCount}</span>
-              <Button data-testid="toys-next-page" variant="outline" className="h-11" disabled={safePage >= pageCount - 1} onClick={() => setPage(safePage + 1)}>
-                {tc('siguiente')}
-              </Button>
-            </div>
-          )}
+          <Pager page={safePage} pageCount={pageCount} setPage={setPage} />
         </>
       )}
 
-      {out && (
-        <p data-testid="toys-item-result" role={out.error ? 'alert' : 'status'} className={cn('text-sm', out.error ? 'text-destructive' : 'text-muted-foreground')}>
-          {out.text}
-        </p>
-      )}
+      <OutMessage out={out} />
 
       {modal && (
         <ItemEditModal

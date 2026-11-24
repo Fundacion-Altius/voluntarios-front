@@ -14,6 +14,47 @@ import type { GrantCalendarEvent, Grant } from '@/types/grant';
 import { grantCalendarApi, grantApi } from '@/lib/api/grantApi';
 import { STATUS_COLORS, STATUS_LABELS, TYPE_LABELS } from '@/types/grant';
 
+function CalendarEventRow({ event }: { event: GrantCalendarEvent }) {
+  const t = useTranslations('admin.grantCalendar');
+  const tCommon = useTranslations('common');
+  const days = event.days_until_deadline;
+  return (
+    <div
+      className={`flex items-center gap-4 p-4 border rounded-lg ${
+        event.is_overdue ? 'border-red-200 bg-red-50' : 'border-gray-200'
+      }`}
+    >
+      <div className="flex-1">
+        <div className="flex items-center gap-2">
+          <h4 className="font-medium">{event.grant_name}</h4>
+          {event.is_overdue && (
+            <Badge variant="destructive">
+              <AlertTriangle className="h-3 w-3 mr-1" />
+              {t('overdue')}
+            </Badge>
+          )}
+        </div>
+        <p className="text-sm text-muted-foreground">{event.event_type.replace('_', ' ')}</p>
+      </div>
+      <div className="flex items-center gap-2">
+        <Badge variant="outline">
+          {TYPE_LABELS[event.grant_type as keyof typeof TYPE_LABELS]}
+        </Badge>
+        {days !== undefined && (
+          <Badge variant={days < 0 ? 'destructive' : 'default'}>
+            {days < 0 ? `${Math.abs(days)} días atrasado` : `${days} días`}
+          </Badge>
+        )}
+        <Link href={`/admin/grants/${event.grant_id}`}>
+          <Button variant="ghost" size="sm">
+            {tCommon('view')}
+          </Button>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export default function GrantCalendarPage() {
   const t = useTranslations('admin.grantCalendar');
   const tCommon = useTranslations('common');
@@ -347,42 +388,7 @@ export default function GrantCalendarPage() {
                   <h3 className="text-lg font-semibold">{formatDate(date)}</h3>
                   <div className="space-y-2">
                     {eventsByDate[date].map(event => (
-                      <div
-                        key={event.id}
-                        className={`flex items-center gap-4 p-4 border rounded-lg ${
-                          event.is_overdue ? 'border-red-200 bg-red-50' : 'border-gray-200'
-                        }`}
-                      >
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-medium">{event.grant_name}</h4>
-                            {event.is_overdue && (
-                              <Badge variant="destructive">
-                                <AlertTriangle className="h-3 w-3 mr-1" />
-                                {t('overdue')}
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground">{event.event_type.replace('_', ' ')}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline">
-                            {TYPE_LABELS[event.grant_type as keyof typeof TYPE_LABELS]}
-                          </Badge>
-                          {event.days_until_deadline !== undefined && (
-                            <Badge variant={event.days_until_deadline < 0 ? 'destructive' : 'default'}>
-                              {event.days_until_deadline < 0
-                                ? `${Math.abs(event.days_until_deadline)} días atrasado`
-                                : `${event.days_until_deadline} días`}
-                            </Badge>
-                          )}
-                          <Link href={`/admin/grants/${event.grant_id}`}>
-                            <Button variant="ghost" size="sm">
-                              {tCommon('view')}
-                            </Button>
-                          </Link>
-                        </div>
-                      </div>
+                      <CalendarEventRow key={event.id} event={event} />
                     ))}
                   </div>
                 </div>

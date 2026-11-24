@@ -74,6 +74,125 @@ function formatChangeDescription(change: string): string {
   return change;
 }
 
+type ActionDialogProps = {
+  open: boolean;
+  selectedAction: ReportStatus | null;
+  error: string | null;
+  success: string | null;
+  comments: string;
+  isSubmitting: boolean;
+  onComments: (v: string) => void;
+  onCancel: () => void;
+  onSubmit: () => void;
+  onClosed: () => void;
+};
+
+function ActionDialog({ open, selectedAction, error, success, comments, isSubmitting, onComments, onCancel, onSubmit, onClosed }: ActionDialogProps) {
+  const t = useTranslations('impact.reportReview');
+  return (
+    <Dialog open={open} onOpenChange={(next) => {
+      if (!next) onClosed();
+    }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>
+            {selectedAction && ACTION_BUTTONS[selectedAction]?.label}
+          </DialogTitle>
+        </DialogHeader>
+
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTitle>{t('error')}</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {success && (
+          <Alert className="mb-4">
+            <AlertTitle>{t('success')}</AlertTitle>
+            <AlertDescription>{success}</AlertDescription>
+          </Alert>
+        )}
+
+        {selectedAction === 'rejected' && (
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">{t('rejectionCommentsRequired')}</p>
+            <Textarea
+              placeholder={t('enterComments')}
+              value={comments}
+              onChange={(e) => onComments(e.target.value)}
+              rows={4}
+            />
+          </div>
+        )}
+
+        {selectedAction && selectedAction !== 'rejected' && (
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">{t('optionalComments')}</p>
+            <Textarea
+              placeholder={t('enterComments')}
+              value={comments}
+              onChange={(e) => onComments(e.target.value)}
+              rows={3}
+            />
+          </div>
+        )}
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onCancel} disabled={isSubmitting}>
+            {t('cancel')}
+          </Button>
+          <Button 
+            onClick={onSubmit} 
+            disabled={isSubmitting || (selectedAction === 'rejected' && !comments.trim())}
+            className="flex items-center gap-2"
+          >
+            {isSubmitting ? t('processing') : ACTION_BUTTONS[selectedAction || 'review']?.label}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function VersionHistoryCard({ history }: { history: ImpactReport['versionHistory'] }) {
+  const t = useTranslations('impact.reportReview');
+  if (history.length === 0) return null;
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{t('versionHistory')}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {history
+            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+            .map((version, index) => (
+              <div key={version.version} className="border rounded-lg p-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h4 className="font-semibold">{t('version')} {version.version}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {formatChangeDescription(version.changeDescription)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t('by')} {version.changedBy} • {formatDate(version.timestamp)}
+                    </p>
+                  </div>
+                  {index === 0 && (
+                    <Badge variant="default" className="text-xs">
+                      {t('current')}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function ReportReview({ 
   report, 
   onApprove, 
@@ -297,40 +416,7 @@ export function ReportReview({
         ))}
       </div>
 
-      {/* Version History */}
-      {report.versionHistory.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('versionHistory')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {report.versionHistory
-                .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-                .map((version, index) => (
-                  <div key={version.version} className="border rounded-lg p-4">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="font-semibold">{t('version')} {version.version}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {formatChangeDescription(version.changeDescription)}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {t('by')} {version.changedBy} • {formatDate(version.timestamp)}
-                        </p>
-                      </div>
-                      {index === 0 && (
-                        <Badge variant="default" className="text-xs">
-                          {t('current')}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <VersionHistoryCard history={report.versionHistory} />
 
       {/* Rejection Comments */}
       {report.rejectionComments && (
@@ -370,74 +456,24 @@ export function ReportReview({
       )}
 
       {/* Action Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={(open) => {
-        if (!open) {
+      <ActionDialog
+        open={isDialogOpen}
+        selectedAction={selectedAction}
+        error={error}
+        success={success}
+        comments={comments}
+        isSubmitting={isSubmitting}
+        onComments={setComments}
+        onCancel={() => setIsDialogOpen(false)}
+        onSubmit={handleActionSubmit}
+        onClosed={() => {
           setIsDialogOpen(false);
           setSelectedAction(null);
           setComments('');
           setError(null);
           setSuccess(null);
-        }
-      }}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {selectedAction && ACTION_BUTTONS[selectedAction]?.label}
-            </DialogTitle>
-          </DialogHeader>
-          
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertTitle>{t('error')}</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          
-          {success && (
-            <Alert className="mb-4">
-              <AlertTitle>{t('success')}</AlertTitle>
-              <AlertDescription>{success}</AlertDescription>
-            </Alert>
-          )}
-          
-          {selectedAction === 'rejected' && (
-            <div className="space-y-4 py-4">
-              <p className="text-sm text-muted-foreground">{t('rejectionCommentsRequired')}</p>
-              <Textarea
-                placeholder={t('enterComments')}
-                value={comments}
-                onChange={(e) => setComments(e.target.value)}
-                rows={4}
-              />
-            </div>
-          )}
-          
-          {selectedAction && selectedAction !== 'rejected' && (
-            <div className="space-y-4 py-4">
-              <p className="text-sm text-muted-foreground">{t('optionalComments')}</p>
-              <Textarea
-                placeholder={t('enterComments')}
-                value={comments}
-                onChange={(e) => setComments(e.target.value)}
-                rows={3}
-              />
-            </div>
-          )}
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isSubmitting}>
-              {t('cancel')}
-            </Button>
-            <Button 
-              onClick={handleActionSubmit} 
-              disabled={isSubmitting || (selectedAction === 'rejected' && !comments.trim())}
-              className="flex items-center gap-2"
-            >
-              {isSubmitting ? t('processing') : ACTION_BUTTONS[selectedAction || 'review']?.label}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        }}
+      />
     </div>
   );
 }

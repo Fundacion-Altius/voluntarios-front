@@ -61,6 +61,11 @@ const paymentMethodBadgeVariant: Record<string, 'default' | 'secondary' | 'outli
   other: 'outline',
 };
 
+function contactPreferencesLabel(prefs: ContactPreferences, phoneLabel: string, mailLabel: string, emailLabel: string) {
+  if (!prefs.email && !prefs.phone && !prefs.mail) return '-';
+  return (prefs.email ? `${emailLabel}, ` : '') + (prefs.phone ? `${phoneLabel}, ` : '') + (prefs.mail ? mailLabel : '');
+}
+
 function formatDate(dateStr?: string | null) {
   if (!dateStr) return '-';
   return new Date(dateStr).toLocaleDateString();
@@ -70,6 +75,94 @@ function formatCurrency(amount: string | number | null) {
   if (!amount) return '-';
   const num = typeof amount === 'string' ? parseFloat(amount) : amount;
   return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(num);
+}
+
+function AuthLoadingSkeleton() {
+  return (
+    <div className="space-y-4">
+      <Skeleton className="h-8 w-48" />
+      <div className="space-y-2">
+        {Array.from({ length: 10 }).map((_, i) => (
+          <Skeleton key={i} className="h-12 w-full" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MemberDetailSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-10 w-32" />
+      </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Card key={i}>
+            <CardHeader>
+              <Skeleton className="h-4 w-24" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-6 w-16" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ContributionsTable({ contributions, total }: { contributions: Contribution[]; total: number }) {
+  const t = useTranslations('admin.miembros');
+  if (contributions.length === 0) {
+    return (
+      <div className="text-center text-muted-foreground py-8">
+        {t('sinContribuciones')}
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
+          {t('totalContribuciones')}: {formatCurrency(total)}
+        </div>
+      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{t('fecha')}</TableHead>
+            <TableHead>{t('cantidad')}</TableHead>
+            <TableHead>{t('moneda')}</TableHead>
+            <TableHead>{t('frecuencia')}</TableHead>
+            <TableHead>{t('metodoPago')}</TableHead>
+            <TableHead>{t('notas')}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {contributions.map((contribution) => (
+            <TableRow key={contribution.id}>
+              <TableCell>{formatDate(contribution.date)}</TableCell>
+              <TableCell>{formatCurrency(contribution.amount)}</TableCell>
+              <TableCell>{contribution.currency}</TableCell>
+              <TableCell>
+                <Badge variant={frequencyBadgeVariant[contribution.frequency] || 'outline'}>
+                  {contribution.frequency}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <Badge variant={paymentMethodBadgeVariant[contribution.payment_method] || 'outline'}>
+                  {contribution.payment_method}
+                </Badge>
+              </TableCell>
+              <TableCell>{contribution.notes || '-'}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
 }
 
 export default function MiembroDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -161,30 +254,16 @@ export default function MiembroDetailPage({ params }: { params: Promise<{ id: st
     setTimeout(() => setSuccessMsg(''), 3000);
   };
 
-  const handleEdit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const runSubmit = async (
+    call: () => Promise<{ success: boolean; error?: string }>,
+    onSuccess: () => Promise<void> | void,
+  ) => {
     setFormError('');
     setSubmitting(true);
-
     try {
-      const result = await updateMember(paramId, {
-        fullName: editFullName,
-        email: editEmail,
-        phone: editPhone || undefined,
-        tier: editTier,
-        status: editStatus,
-        contactPreferences: editContactPreferences,
-      });
-
-      if (result.success) {
-        setEditOpen(false);
-        showSuccess(t('miembroActualizado'));
-        // Refresh member data
-        const memberData = await getMemberById(paramId);
-        setMember(memberData);
-      } else {
-        setFormError(result.error);
-      }
+      const result = await call();
+      if (result.success) await onSuccess();
+      else setFormError(result.error ?? '');
     } catch (err: any) {
       setFormError(err.message);
     } finally {
@@ -192,13 +271,30 @@ export default function MiembroDetailPage({ params }: { params: Promise<{ id: st
     }
   };
 
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await runSubmit(
+      () => updateMember(paramId, {
+        fullName: editFullName,
+        email: editEmail,
+        phone: editPhone || undefined,
+        tier: editTier,
+        status: editStatus,
+        contactPreferences: editContactPreferences,
+      }),
+      async () => {
+        setEditOpen(false);
+        showSuccess(t('miembroActualizado'));
+        // Refresh member data
+        setMember(await getMemberById(paramId));
+      },
+    );
+  };
+
   const handleCreateContribution = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormError('');
-    setSubmitting(true);
-
-    try {
-      const result = await createContribution({
+    await runSubmit(
+      () => createContribution({
         memberId: paramId,
         amount: parseFloat(newAmount) || 0,
         currency: newCurrency,
@@ -206,9 +302,8 @@ export default function MiembroDetailPage({ params }: { params: Promise<{ id: st
         paymentMethod: newPaymentMethod,
         date: newDate || undefined,
         notes: newNotes || undefined,
-      });
-
-      if (result.success) {
+      }),
+      async () => {
         setContributionOpen(false);
         setNewAmount('');
         setNewCurrency('EUR');
@@ -218,16 +313,9 @@ export default function MiembroDetailPage({ params }: { params: Promise<{ id: st
         setNewNotes('');
         showSuccess(t('contribucionCreada'));
         // Refresh contributions
-        const contributionsData = await getContributionsByMember(paramId);
-        setContributions(contributionsData);
-      } else {
-        setFormError(result.error);
-      }
-    } catch (err: any) {
-      setFormError(err.message);
-    } finally {
-      setSubmitting(false);
-    }
+        setContributions(await getContributionsByMember(paramId));
+      },
+    );
   };
 
   // Calculate total contributions
@@ -235,43 +323,11 @@ export default function MiembroDetailPage({ params }: { params: Promise<{ id: st
     return sum + (parseFloat(c.amount) || 0);
   }, 0);
 
-  if (authLoading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-48" />
-        <div className="space-y-2">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <Skeleton key={i} className="h-12 w-full" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  if (authLoading) return <AuthLoadingSkeleton />;
 
   if (!isAuthenticated) return null;
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-10 w-32" />
-        </div>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i}>
-              <CardHeader>
-                <Skeleton className="h-4 w-24" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-6 w-16" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  if (isLoading) return <MemberDetailSkeleton />;
 
   if (error) {
     return (
@@ -473,10 +529,7 @@ export default function MiembroDetailPage({ params }: { params: Promise<{ id: st
             <div>
               <div className="text-sm text-muted-foreground">{t('preferenciasContacto')}</div>
               <div className="font-medium">
-                {parseContactPreferences(member).email && tCommon('email') + ', '}
-                {parseContactPreferences(member).phone && t('telefono') + ', '}
-                {parseContactPreferences(member).mail && t('correoPostal')}
-                {!parseContactPreferences(member).email && !parseContactPreferences(member).phone && !parseContactPreferences(member).mail && '-'}
+                {contactPreferencesLabel(parseContactPreferences(member), t('telefono'), t('correoPostal'), tCommon('email'))}
               </div>
             </div>
             <div>
@@ -592,51 +645,7 @@ export default function MiembroDetailPage({ params }: { params: Promise<{ id: st
           </Dialog>
         </CardHeader>
         <CardContent>
-          {contributions.length === 0 ? (
-            <div className="text-center text-muted-foreground py-8">
-              {t('sinContribuciones')}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">
-                  {t('totalContribuciones')}: {formatCurrency(totalContributions)}
-                </div>
-              </div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t('fecha')}</TableHead>
-                    <TableHead>{t('cantidad')}</TableHead>
-                    <TableHead>{t('moneda')}</TableHead>
-                    <TableHead>{t('frecuencia')}</TableHead>
-                    <TableHead>{t('metodoPago')}</TableHead>
-                    <TableHead>{t('notas')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {contributions.map((contribution) => (
-                    <TableRow key={contribution.id}>
-                      <TableCell>{formatDate(contribution.date)}</TableCell>
-                      <TableCell>{formatCurrency(contribution.amount)}</TableCell>
-                      <TableCell>{contribution.currency}</TableCell>
-                      <TableCell>
-                        <Badge variant={frequencyBadgeVariant[contribution.frequency] || 'outline'}>
-                          {contribution.frequency}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={paymentMethodBadgeVariant[contribution.payment_method] || 'outline'}>
-                          {contribution.payment_method}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{contribution.notes || '-'}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
+          <ContributionsTable contributions={contributions} total={totalContributions} />
         </CardContent>
       </Card>
     </div>

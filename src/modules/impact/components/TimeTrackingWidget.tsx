@@ -67,6 +67,187 @@ function formatPercentage(value: number): string {
   return value > 0 ? `+${value.toFixed(1)}%` : `${value.toFixed(1)}%`;
 }
 
+type Translate = ReturnType<typeof useTranslations>;
+
+function trendIndicator(pct: number, t: Translate) {
+  const value = formatPercentage(pct);
+  if (pct > 5) {
+    return { icon: <TrendingDown className="h-4 w-4" />, label: t('improving'), color: 'text-green-600', value };
+  }
+  if (pct < -5) {
+    return { icon: <TrendingUp className="h-4 w-4" />, label: t('worsening'), color: 'text-red-600', value };
+  }
+  return { icon: <Minus className="h-4 w-4" />, label: t('stable'), color: 'text-gray-600', value };
+}
+
+function signClass(pct: number): string {
+  if (pct > 0) return 'text-green-600';
+  if (pct < 0) return 'text-red-600';
+  return 'text-gray-600';
+}
+
+function changeLabelKey(pct: number): 'timeReduced' | 'timeIncreased' | 'timeStable' {
+  if (pct > 0) return 'timeReduced';
+  if (pct < 0) return 'timeIncreased';
+  return 'timeStable';
+}
+
+function TimerControls({ selectedActivity, onActivity, timerActive, onStart, onStop }: {
+  selectedActivity: ActivityType;
+  onActivity: (a: ActivityType) => void;
+  timerActive: boolean;
+  onStart: () => void;
+  onStop: () => void;
+}) {
+  const t = useTranslations('impact.timeTracking');
+  return (
+    <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
+      <Select value={selectedActivity} onValueChange={(value) => onActivity(value as ActivityType)}>
+        <SelectTrigger className="w-48">
+          <SelectValue placeholder={t('selectActivity')} />
+        </SelectTrigger>
+        <SelectContent>
+          {Object.entries(ACTIVITY_CONFIG).map(([key, config]) => (
+            <SelectItem key={key} value={key}>
+              <div className="flex items-center gap-2">
+                {config.icon}
+                <span>{config.label}</span>
+              </div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {timerActive ? (
+        <Button variant="destructive" onClick={onStop} className="flex items-center gap-2">
+          <StopCircle className="h-5 w-5" />
+          {t('stopTimer')}
+        </Button>
+      ) : (
+        <Button onClick={onStart} className="flex items-center gap-2">
+          <PlayCircle className="h-5 w-5" />
+          {t('startTimer')}
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function ActiveTimerDisplay({ timer, elapsedTime }: { timer: JustificationTimeEntry; elapsedTime: number }) {
+  const t = useTranslations('impact.timeTracking');
+  return (
+    <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
+      <div className="flex items-center justify-between">
+        <div>
+          <h4 className="font-semibold">{t('activeTimer')}</h4>
+          <p className="text-sm text-muted-foreground">
+            {ACTIVITY_CONFIG[timer.activityType as ActivityType]?.label || timer.activityType}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {t('startedAt')} {formatDate(timer.startTime)}
+          </p>
+        </div>
+        <div className="text-right">
+          <div className="text-2xl font-mono font-bold">{formatTime(elapsedTime)}</div>
+          <p className="text-sm text-muted-foreground">{formatDuration(elapsedTime)}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ActivityBreakdown({ timeByActivity }: { timeByActivity: Record<string, number> }) {
+  const t = useTranslations('impact.timeTracking');
+  const total = Object.values(timeByActivity).reduce((sum, time) => sum + time, 0);
+  if (total <= 0) return null;
+  return (
+    <div className="space-y-2">
+      <h5 className="text-sm font-medium">{t('timeByActivity')}</h5>
+      <div className="space-y-2">
+        {Object.entries(timeByActivity).map(([activity, seconds]) => {
+          const config = ACTIVITY_CONFIG[activity as ActivityType];
+          return (
+            <div key={activity} className="space-y-1">
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  {config?.icon}
+                  <span>{config?.label || activity}</span>
+                </div>
+                <span className="text-muted-foreground">{formatDuration(seconds)}</span>
+              </div>
+              <Progress value={(seconds / total) * 100} className="h-2" />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function MonthlyComparisonCard({ comparison }: { comparison: MonthlyComparison }) {
+  const t = useTranslations('impact.timeTracking');
+  const pct = comparison.improvementPercentage;
+  return (
+    <div className="p-4 bg-muted/50 rounded-lg">
+      <h5 className="font-semibold mb-3">{t('monthlyComparison')}</h5>
+
+      <div className="grid grid-cols-2 gap-4">
+        {([['currentMonth', comparison.currentMonth], ['previousMonth', comparison.previousMonth]] as const).map(
+          ([labelKey, month]) => (
+            <div key={labelKey}>
+              <p className="text-sm text-muted-foreground">{t(labelKey)}</p>
+              <p className="text-xl font-bold">{formatDuration(month.totalTimeSeconds)}</p>
+              <p className="text-xs text-muted-foreground">
+                {t('avgPerReport')}: {formatDuration(month.averageTimePerReport)}
+              </p>
+            </div>
+          ),
+        )}
+      </div>
+
+      {/* Improvement Indicator */}
+      <div className="mt-4 p-3 bg-primary/10 rounded-lg text-center">
+        <p className="text-sm text-muted-foreground">{t('improvement')}</p>
+        <p className={`text-2xl font-bold ${signClass(pct)}`}>{formatPercentage(pct)}</p>
+        <p className="text-sm text-muted-foreground">{t(changeLabelKey(pct))}</p>
+      </div>
+    </div>
+  );
+}
+
+function TimeMetricsSection({ timeMetrics, monthlyComparison }: {
+  timeMetrics: JustificationTimeMetrics;
+  monthlyComparison: MonthlyComparison | null;
+}) {
+  const t = useTranslations('impact.timeTracking');
+  const trend = monthlyComparison ? trendIndicator(monthlyComparison.improvementPercentage, t) : null;
+  return (
+    <div className="space-y-4">
+      <h4 className="font-semibold">{t('timeMetrics')}</h4>
+
+      {/* Total Time */}
+      <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+        <div>
+          <p className="text-sm text-muted-foreground">{t('totalTime')}</p>
+          <p className="text-2xl font-bold">{formatDuration(timeMetrics.totalTimeSeconds)}</p>
+        </div>
+
+        {/* Trend Indicator */}
+        {trend && (
+          <div className="flex items-center gap-2">
+            <div className={trend.color}>{trend.icon}</div>
+            <span className={`text-sm font-medium ${trend.color}`}>{trend.value}</span>
+          </div>
+        )}
+      </div>
+
+      <ActivityBreakdown timeByActivity={timeMetrics.timeByActivity ?? {}} />
+
+      {monthlyComparison && <MonthlyComparisonCard comparison={monthlyComparison} />}
+    </div>
+  );
+}
+
 export function TimeTrackingWidget({ 
   reportId, 
   userId, 
@@ -202,40 +383,6 @@ export function TimeTrackingWidget({
     }
   };
 
-  // Get trend indicator
-  const getTrendIndicator = () => {
-    if (!monthlyComparison) return null;
-    
-    if (monthlyComparison.improvementPercentage > 5) {
-      return {
-        icon: <TrendingDown className="h-4 w-4" />,
-        label: t('improving'),
-        color: 'text-green-600',
-        value: formatPercentage(monthlyComparison.improvementPercentage),
-      };
-    } else if (monthlyComparison.improvementPercentage < -5) {
-      return {
-        icon: <TrendingUp className="h-4 w-4" />,
-        label: t('worsening'),
-        color: 'text-red-600',
-        value: formatPercentage(monthlyComparison.improvementPercentage),
-      };
-    }
-    return {
-      icon: <Minus className="h-4 w-4" />,
-      label: t('stable'),
-      color: 'text-gray-600',
-      value: formatPercentage(monthlyComparison.improvementPercentage),
-    };
-  };
-
-  // Calculate total time for all reports
-  const totalTimeAllReports = timeMetrics ? timeMetrics.totalTimeSeconds : 0;
-  
-  // Get time by activity for progress display
-  const timeByActivity = timeMetrics ? timeMetrics.timeByActivity : {};
-  const totalActivityTime = Object.values(timeByActivity).reduce((sum, time) => sum + time, 0);
-
   if (loading) {
     return (
       <Card>
@@ -250,13 +397,15 @@ export function TimeTrackingWidget({
     );
   }
 
+  const timerActive = !!activeTimer?.isActive;
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>{t('timeTracking')}</CardTitle>
         <CardDescription>{t('trackJustificationTime')}</CardDescription>
       </CardHeader>
-      
+
       <CardContent className="space-y-6">
         {error && (
           <div className="p-4 bg-destructive/10 text-destructive rounded-md text-sm">
@@ -265,171 +414,24 @@ export function TimeTrackingWidget({
         )}
 
         {/* Timer Controls */}
-        <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
-          <Select value={selectedActivity} onValueChange={(value) => setSelectedActivity(value as ActivityType)}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder={t('selectActivity')} />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(ACTIVITY_CONFIG).map(([key, config]) => (
-                <SelectItem key={key} value={key}>
-                  <div className="flex items-center gap-2">
-                    {config.icon}
-                    <span>{config.label}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {activeTimer && activeTimer.isActive ? (
-            <Button 
-              variant="destructive" 
-              onClick={handleStopTimer}
-              className="flex items-center gap-2"
-              disabled={!activeTimer.isActive}
-            >
-              <StopCircle className="h-5 w-5" />
-              {t('stopTimer')}
-            </Button>
-          ) : (
-            <Button 
-              onClick={handleStartTimer}
-              className="flex items-center gap-2"
-              disabled={!!activeTimer?.isActive}
-            >
-              <PlayCircle className="h-5 w-5" />
-              {t('startTimer')}
-            </Button>
-          )}
-        </div>
+        <TimerControls
+          selectedActivity={selectedActivity}
+          onActivity={setSelectedActivity}
+          timerActive={timerActive}
+          onStart={handleStartTimer}
+          onStop={handleStopTimer}
+        />
 
         {/* Active Timer Display */}
-        {activeTimer && activeTimer.isActive && (
-          <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="font-semibold">{t('activeTimer')}</h4>
-                <p className="text-sm text-muted-foreground">
-                  {ACTIVITY_CONFIG[activeTimer.activityType as ActivityType]?.label || activeTimer.activityType}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {t('startedAt')} {formatDate(activeTimer.startTime)}
-                </p>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-mono font-bold">
-                  {formatTime(elapsedTime)}
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {formatDuration(elapsedTime)}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+        {activeTimer && timerActive && <ActiveTimerDisplay timer={activeTimer} elapsedTime={elapsedTime} />}
 
         {/* Time Metrics */}
         {showMetrics && timeMetrics && (
-          <div className="space-y-4">
-            <h4 className="font-semibold">{t('timeMetrics')}</h4>
-            
-            {/* Total Time */}
-            <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-              <div>
-                <p className="text-sm text-muted-foreground">{t('totalTime')}</p>
-                <p className="text-2xl font-bold">{formatDuration(totalTimeAllReports)}</p>
-              </div>
-              
-              {/* Trend Indicator */}
-              {monthlyComparison && (
-                <div className="flex items-center gap-2">
-                  <div className={getTrendIndicator()?.color || 'text-gray-600'}>
-                    {getTrendIndicator()?.icon}
-                  </div>
-                  <span className={`text-sm font-medium ${getTrendIndicator()?.color || 'text-gray-600'}`}>
-                    {getTrendIndicator()?.value}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Time by Activity */}
-            {totalActivityTime > 0 && (
-              <div className="space-y-2">
-                <h5 className="text-sm font-medium">{t('timeByActivity')}</h5>
-                <div className="space-y-2">
-                  {Object.entries(timeByActivity).map(([activity, seconds]) => {
-                    const config = ACTIVITY_CONFIG[activity as ActivityType];
-                    const percentage = (seconds / totalActivityTime) * 100;
-                    
-                    return (
-                      <div key={activity} className="space-y-1">
-                        <div className="flex items-center justify-between text-sm">
-                          <div className="flex items-center gap-2">
-                            {config?.icon}
-                            <span>{config?.label || activity}</span>
-                          </div>
-                          <span className="text-muted-foreground">
-                            {formatDuration(seconds)}
-                          </span>
-                        </div>
-                        <Progress value={percentage} className="h-2" />
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Monthly Comparison */}
-            {monthlyComparison && (
-              <div className="p-4 bg-muted/50 rounded-lg">
-                <h5 className="font-semibold mb-3">{t('monthlyComparison')}</h5>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">{t('currentMonth')}</p>
-                    <p className="text-xl font-bold">
-                      {formatDuration(monthlyComparison.currentMonth.totalTimeSeconds)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {t('avgPerReport')}: {formatDuration(monthlyComparison.currentMonth.averageTimePerReport)}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <p className="text-sm text-muted-foreground">{t('previousMonth')}</p>
-                    <p className="text-xl font-bold">
-                      {formatDuration(monthlyComparison.previousMonth.totalTimeSeconds)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {t('avgPerReport')}: {formatDuration(monthlyComparison.previousMonth.averageTimePerReport)}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Improvement Indicator */}
-                <div className="mt-4 p-3 bg-primary/10 rounded-lg text-center">
-                  <p className="text-sm text-muted-foreground">{t('improvement')}</p>
-                  <p className={`text-2xl font-bold ${monthlyComparison.improvementPercentage > 0 ? 'text-green-600' : monthlyComparison.improvementPercentage < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                    {formatPercentage(monthlyComparison.improvementPercentage)}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {monthlyComparison.improvementPercentage > 0 
-                      ? t('timeReduced') 
-                      : monthlyComparison.improvementPercentage < 0 
-                        ? t('timeIncreased') 
-                        : t('timeStable')}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
+          <TimeMetricsSection timeMetrics={timeMetrics} monthlyComparison={monthlyComparison} />
         )}
 
         {/* No data state */}
-        {!activeTimer && !timeMetrics && !loading && (
+        {!activeTimer && !timeMetrics && (
           <div className="text-center py-8 text-muted-foreground">
             <Clock className="h-8 w-8 mx-auto mb-2" />
             <p>{t('noTimeData')}</p>

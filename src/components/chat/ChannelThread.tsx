@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
@@ -27,6 +27,78 @@ interface ChatMessage {
   created_at: string;
   reply_to_id?: string | null;
   reads?: Array<{ user_id: string }>;
+}
+
+interface ThreadPanelProps {
+  channel: Channel;
+  basePath: string;
+  connected: boolean;
+  scrollRef: RefObject<HTMLDivElement>;
+  messages: ChatMessage[];
+  currentUserId: string | undefined;
+  typingUser: string | null;
+  sendError: string;
+  draft: string;
+  replyToId: string | null;
+  members: Array<{ user_id: string; role: string }>;
+  onlineIds: Set<string>;
+  onReply: (id: string | null) => void;
+  onDraft: (v: string) => void;
+  onSend: () => void;
+  onTyping: (typing: boolean) => void;
+  onCancelReply: () => void;
+}
+
+function ThreadPanel(props: ThreadPanelProps) {
+  const t = useTranslations('portal.chat');
+  const { channel, basePath, connected, scrollRef, messages, currentUserId, typingUser, sendError, draft, replyToId, members, onlineIds, onReply, onDraft, onSend, onTyping, onCancelReply } = props;
+  return (
+    <div className="flex min-h-0 flex-1">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="border-b px-4 py-3">
+          <Link href={basePath} className="mb-1 inline-flex items-center gap-1 text-xs text-muted-foreground md:hidden">
+            <ArrowLeft className="size-3" /> {t('conversacion')}
+          </Link>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="font-heading font-semibold">{channel.name}</h2>
+            <span
+              className={`text-[10px] uppercase tracking-wide ${connected ? 'text-emerald-600' : 'text-amber-600'}`}
+              title={connected ? t('tiempoReal') : t('sincronizando')}
+            >
+              {connected ? t('tiempoReal') : t('sincronizando')}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground">{channel.type === 'direct' ? t('directo') : t('grupal')}</p>
+        </div>
+        <div ref={scrollRef} className="flex flex-1 flex-col gap-3 overflow-y-auto p-4">
+          <MessageThread
+            messages={messages}
+            currentUserId={currentUserId}
+            emptyLabel={t('sinMensajes')}
+            onReply={onReply}
+          />
+        </div>
+        {typingUser && <p className="px-4 text-xs text-muted-foreground">{t('escribiendo')}</p>}
+        {sendError && <p className="px-4 text-xs text-destructive">{sendError}</p>}
+        <div className="border-t p-3">
+          <ComposeBox
+            value={draft}
+            placeholder={t('escribeMensaje')}
+            replyToId={replyToId}
+            onChange={onDraft}
+            onSend={onSend}
+            onTyping={onTyping}
+            onCancelReply={onCancelReply}
+          />
+        </div>
+      </div>
+      {channel.type === 'group' && (
+        <div className="hidden w-48 shrink-0 border-l md:block">
+          <MemberList members={members} onlineIds={onlineIds} title={t('miembros')} />
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function ChannelThread({ basePath }: { basePath: string }) {
@@ -126,57 +198,32 @@ export function ChannelThread({ basePath }: { basePath: string }) {
     sendTyping(false);
   }
 
-  const thread = loading ? (
-    <LoadingSkeleton rows={3} />
-  ) : !channel ? (
-    <EmptyState title={t('conversacionNoEncontrada')} />
-  ) : (
-    <div className="flex min-h-0 flex-1">
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="border-b px-4 py-3">
-          <Link href={basePath} className="mb-1 inline-flex items-center gap-1 text-xs text-muted-foreground md:hidden">
-            <ArrowLeft className="size-3" /> {t('conversacion')}
-          </Link>
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="font-heading font-semibold">{channel.name}</h2>
-            <span
-              className={`text-[10px] uppercase tracking-wide ${connected ? 'text-emerald-600' : 'text-amber-600'}`}
-              title={connected ? t('tiempoReal') : t('sincronizando')}
-            >
-              {connected ? t('tiempoReal') : t('sincronizando')}
-            </span>
-          </div>
-          <p className="text-xs text-muted-foreground">{channel.type === 'direct' ? t('directo') : t('grupal')}</p>
-        </div>
-        <div ref={scrollRef} className="flex flex-1 flex-col gap-3 overflow-y-auto p-4">
-          <MessageThread
-            messages={messages}
-            currentUserId={currentUserId}
-            emptyLabel={t('sinMensajes')}
-            onReply={setReplyToId}
-          />
-        </div>
-        {typingUser && <p className="px-4 text-xs text-muted-foreground">{t('escribiendo')}</p>}
-        {sendError && <p className="px-4 text-xs text-destructive">{sendError}</p>}
-        <div className="border-t p-3">
-          <ComposeBox
-            value={draft}
-            placeholder={t('escribeMensaje')}
-            replyToId={replyToId}
-            onChange={setDraft}
-            onSend={() => void send()}
-            onTyping={sendTyping}
-            onCancelReply={() => setReplyToId(null)}
-          />
-        </div>
-      </div>
-      {channel.type === 'group' && (
-        <div className="hidden w-48 shrink-0 border-l md:block">
-          <MemberList members={members} onlineIds={onlineIds} title={t('miembros')} />
-        </div>
-      )}
-    </div>
-  );
+  let thread: ReactNode;
+  if (loading) thread = <LoadingSkeleton rows={3} />;
+  else if (!channel) thread = <EmptyState title={t('conversacionNoEncontrada')} />;
+  else {
+    thread = (
+      <ThreadPanel
+        channel={channel}
+        basePath={basePath}
+        connected={connected}
+        scrollRef={scrollRef}
+        messages={messages}
+        currentUserId={currentUserId}
+        typingUser={typingUser}
+        sendError={sendError}
+        draft={draft}
+        replyToId={replyToId}
+        members={members}
+        onlineIds={onlineIds}
+        onReply={setReplyToId}
+        onDraft={setDraft}
+        onSend={() => void send()}
+        onTyping={sendTyping}
+        onCancelReply={() => setReplyToId(null)}
+      />
+    );
+  }
 
   return (
     <ChatWorkspace selectedId={id} basePath={basePath}>

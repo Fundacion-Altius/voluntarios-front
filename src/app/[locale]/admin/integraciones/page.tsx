@@ -30,6 +30,49 @@ interface Run {
   created_at: string;
 }
 
+async function fetchMapping(path: string): Promise<Mapping | null> {
+  const res = await apiGet(path);
+  if (!res.ok) return null;
+  return (await res.json()) as Mapping | null;
+}
+
+function ConnectionButton({ connected, busy, onConnect, onDisconnect }: {
+  connected: boolean; busy: boolean; onConnect: () => void; onDisconnect: () => void;
+}) {
+  const t = useTranslations('admin.integraciones');
+  if (connected) {
+    return (
+      <Button variant="outline" disabled={busy} onClick={onDisconnect}>
+        {t('disconnect')}
+      </Button>
+    );
+  }
+  return (
+    <Button disabled={busy} onClick={onConnect}>
+      {t('connect')}
+    </Button>
+  );
+}
+
+function RunsList({ runs }: { runs: Run[] }) {
+  const t = useTranslations('admin.integraciones');
+  if (runs.length === 0) return <p className="text-sm text-muted-foreground">{t('noRuns')}</p>;
+  return (
+    <ul className="space-y-2 text-sm">
+      {runs.map((r) => (
+        <li key={r.id} className="flex flex-wrap gap-2 border-b pb-2">
+          <span className="font-medium">
+            {r.provider}/{r.action}
+          </span>
+          <span>{r.status}</span>
+          <span className="text-muted-foreground">{JSON.stringify(r.counts)}</span>
+          <span className="text-muted-foreground">{r.created_at}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export default function IntegracionesPage() {
   const t = useTranslations('admin.integraciones');
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -50,17 +93,11 @@ export default function IntegracionesPage() {
       if (connRes.ok) setConnections(await connRes.json());
       if (runsRes.ok) setRuns(await runsRes.json());
 
-      const notionMap = await apiGet('/api/integrations/notion/mapping');
-      if (notionMap.ok) {
-        const m = (await notionMap.json()) as Mapping | null;
-        if (m?.external_target_id) setNotionDb(m.external_target_id);
-      }
-      const airMap = await apiGet('/api/integrations/airtable/mapping');
-      if (airMap.ok) {
-        const m = (await airMap.json()) as Mapping | null;
-        if (m?.external_target_id) setAirtableBase(m.external_target_id);
-        if (m?.external_table_id) setAirtableTable(m.external_table_id);
-      }
+      const notionMapping = await fetchMapping('/api/integrations/notion/mapping');
+      if (notionMapping?.external_target_id) setNotionDb(notionMapping.external_target_id);
+      const airMapping = await fetchMapping('/api/integrations/airtable/mapping');
+      if (airMapping?.external_target_id) setAirtableBase(airMapping.external_target_id);
+      if (airMapping?.external_table_id) setAirtableTable(airMapping.external_table_id);
     } catch {
       setError(t('error'));
     }
@@ -72,10 +109,18 @@ export default function IntegracionesPage() {
 
   const statusOf = (p: Provider) => connections.find((c) => c.provider === p)?.status || 'disconnected';
 
-  const connect = async (provider: Provider) => {
+  const withBusy = async (fn: () => Promise<void>) => {
     setBusy(true);
     setError('');
     try {
+      await fn();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const connect = (provider: Provider) =>
+    withBusy(async () => {
       const res = await apiPost(`/api/integrations/oauth/${provider}/start`, {});
       const body = await res.json();
       if (!res.ok) {
@@ -83,76 +128,38 @@ export default function IntegracionesPage() {
         return;
       }
       window.location.href = body.authorizationUrl;
-    } finally {
-      setBusy(false);
-    }
-  };
+    });
 
-  const disconnect = async (provider: Provider) => {
-    setBusy(true);
-    setError('');
-    try {
+  const disconnect = (provider: Provider) =>
+    withBusy(async () => {
       const res = await apiDelete(`/api/integrations/connections/${provider}`);
       if (!res.ok && res.status !== 204) {
         setError(t('error'));
         return;
       }
       await load();
-    } finally {
-      setBusy(false);
-    }
-  };
+    });
 
-  const saveNotionMapping = async () => {
-    setBusy(true);
-    setError('');
-    try {
-      const res = await apiPut('/api/integrations/notion/mapping', { database_id: notionDb });
+  const mutateAndReload = (call: () => Promise<Response>) =>
+    withBusy(async () => {
+      const res = await call();
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         setError(body.error || t('error'));
         return;
       }
       await load();
-    } finally {
-      setBusy(false);
-    }
-  };
+    });
 
-  const saveAirtableMapping = async () => {
-    setBusy(true);
-    setError('');
-    try {
-      const res = await apiPut('/api/integrations/airtable/mapping', {
-        base_id: airtableBase,
-        table_id: airtableTable,
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        setError(body.error || t('error'));
-        return;
-      }
-      await load();
-    } finally {
-      setBusy(false);
-    }
-  };
+  const saveNotionMapping = () =>
+    mutateAndReload(() => apiPut('/api/integrations/notion/mapping', { database_id: notionDb }));
 
-  const runAction = async (path: string) => {
-    setBusy(true);
-    setError('');
-    try {
-      const res = await apiPost(path, {});
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        setError(body.error || t('error'));
-        return;
-      }
-      await load();
-    } finally {
-      setBusy(false);
-    }
-  };
+  const saveAirtableMapping = () =>
+    mutateAndReload(() =>
+      apiPut('/api/integrations/airtable/mapping', { base_id: airtableBase, table_id: airtableTable }),
+    );
+
+  const runAction = (path: string) => mutateAndReload(() => apiPost(path, {}));
 
   return (
     <div className="space-y-6">
@@ -169,15 +176,12 @@ export default function IntegracionesPage() {
             <p className="text-sm">
               {t('status')}: <strong>{statusOf('notion')}</strong>
             </p>
-            {statusOf('notion') === 'connected' ? (
-              <Button variant="outline" disabled={busy} onClick={() => void disconnect('notion')}>
-                {t('disconnect')}
-              </Button>
-            ) : (
-              <Button disabled={busy} onClick={() => void connect('notion')}>
-                {t('connect')}
-              </Button>
-            )}
+            <ConnectionButton
+              connected={statusOf('notion') === 'connected'}
+              busy={busy}
+              onConnect={() => void connect('notion')}
+              onDisconnect={() => void disconnect('notion')}
+            />
             <div className="space-y-2 pt-2">
               <label className="text-sm font-medium">{t('notionDatabase')}</label>
               <Input value={notionDb} onChange={(e) => setNotionDb(e.target.value)} placeholder="database_id" />
@@ -201,15 +205,12 @@ export default function IntegracionesPage() {
             <p className="text-sm">
               {t('status')}: <strong>{statusOf('airtable')}</strong>
             </p>
-            {statusOf('airtable') === 'connected' ? (
-              <Button variant="outline" disabled={busy} onClick={() => void disconnect('airtable')}>
-                {t('disconnect')}
-              </Button>
-            ) : (
-              <Button disabled={busy} onClick={() => void connect('airtable')}>
-                {t('connect')}
-              </Button>
-            )}
+            <ConnectionButton
+              connected={statusOf('airtable') === 'connected'}
+              busy={busy}
+              onConnect={() => void connect('airtable')}
+              onDisconnect={() => void disconnect('airtable')}
+            />
             <div className="space-y-2 pt-2">
               <label className="text-sm font-medium">{t('airtableBase')}</label>
               <Input value={airtableBase} onChange={(e) => setAirtableBase(e.target.value)} placeholder="base_id" />
@@ -236,22 +237,7 @@ export default function IntegracionesPage() {
           <CardTitle className="text-base">{t('runsTitle')}</CardTitle>
         </CardHeader>
         <CardContent>
-          {runs.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{t('noRuns')}</p>
-          ) : (
-            <ul className="space-y-2 text-sm">
-              {runs.map((r) => (
-                <li key={r.id} className="flex flex-wrap gap-2 border-b pb-2">
-                  <span className="font-medium">
-                    {r.provider}/{r.action}
-                  </span>
-                  <span>{r.status}</span>
-                  <span className="text-muted-foreground">{JSON.stringify(r.counts)}</span>
-                  <span className="text-muted-foreground">{r.created_at}</span>
-                </li>
-              ))}
-            </ul>
-          )}
+          <RunsList runs={runs} />
         </CardContent>
       </Card>
     </div>

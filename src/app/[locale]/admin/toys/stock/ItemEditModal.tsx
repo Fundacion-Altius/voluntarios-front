@@ -28,6 +28,200 @@ export interface StockItem {
   cover?: string | null;
 }
 
+function PictureThumb({ pic, index, isCover, coverGroup, onZoom, onPickCover, onRemove }: {
+  pic: string; index: number; isCover: boolean; coverGroup: string;
+  onZoom: (i: number) => void; onPickCover: (pic: string) => void; onRemove: (pic: string) => void;
+}) {
+  const t = useTranslations('admin.toys');
+  const base = String(pic).split('/').pop() ?? pic;
+  return (
+    <li className="flex flex-col items-center gap-1">
+      <button
+        type="button"
+        data-testid={`toys-thumb-${base}`}
+        onClick={() => onZoom(index)}
+        className={cn('relative size-20 cursor-zoom-in overflow-hidden rounded-lg border-2 bg-card p-0 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50', isCover ? 'border-cta' : 'border-transparent')}
+        aria-label={t('inv.verFoto', { name: base })}
+      >
+        <img src={`${getApiBaseUrl()}${pic}`} alt="" className="h-full w-full object-cover" />
+        {isCover && <span className="absolute left-1 top-1 rounded-full bg-cta px-1.5 text-[10px] font-bold text-cta-foreground">{t('portada')}</span>}
+      </button>
+      <span className="flex items-center gap-1">
+        <label className="relative flex size-11 cursor-pointer items-center justify-center rounded-md hover:bg-card" title={t('inv.usarPortada')}>
+          <input
+            type="radio"
+            name={`cover-${coverGroup}`}
+            data-testid={`toys-edit-cover-${base}`}
+            checked={isCover}
+            onChange={() => onPickCover(pic)}
+            className="peer sr-only"
+          />
+          <Star aria-hidden="true" className={cn('size-5 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-primary', isCover ? 'fill-cta text-[#a8833f]' : 'text-muted-foreground')} />
+          <span className="sr-only">{t('inv.usarPortada')}</span>
+        </label>
+        <Button
+          data-testid={`toys-edit-remove-${base}`}
+          variant="ghost"
+          size="icon"
+          className="size-11 text-destructive hover:text-destructive"
+          aria-label={t('quitarFoto')}
+          onClick={() => onRemove(pic)}
+        >
+          <Trash2 aria-hidden="true" />
+        </Button>
+      </span>
+    </li>
+  );
+}
+
+function AgeBandPicker({ band, setBand }: { band: string; setBand: (b: string) => void }) {
+  const t = useTranslations('admin.toys');
+  return (
+    <fieldset className="flex flex-col gap-1.5">
+      <legend className="mb-1.5 text-sm font-semibold">{t('inv.paraEdad')}</legend>
+      <div data-testid="toys-edit-band" className="flex flex-wrap gap-2">
+        {AGE_BANDS.map((b) => (
+          <button
+            key={b}
+            type="button"
+            data-testid={`toys-edit-band-${b}`}
+            aria-pressed={band === b}
+            onClick={() => setBand(b)}
+            className={cn(
+              'min-h-11 rounded-full border px-3.5 text-sm font-medium outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
+              band === b ? 'border-primary bg-primary font-semibold text-primary-foreground' : 'bg-card hover:bg-accent',
+            )}
+          >
+            {t(`bandas.${b}`)}
+          </button>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+function LocationPicker({ loc, setLoc }: { loc: string; setLoc: (l: string) => void }) {
+  const t = useTranslations('admin.toys');
+  return (
+    <fieldset className="flex flex-col gap-1.5">
+      <legend className="mb-1.5 text-sm font-semibold">{t('inv.dondeEsta')}</legend>
+      <div data-testid="toys-edit-loc" role="radiogroup" className="flex flex-col gap-2">
+        {TOY_LOCATIONS.map((l) => (
+          <label
+            key={l}
+            className={cn(
+              'flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring/50',
+              loc === l ? 'border-2 border-primary bg-accent font-semibold' : 'bg-card',
+            )}
+          >
+            <input
+              type="radio"
+              name="toy-loc"
+              value={l}
+              data-testid={`toys-edit-loc-${l}`}
+              checked={loc === l}
+              onChange={() => setLoc(l)}
+              className="size-4 accent-[#3d3fa8]"
+            />
+            {t(`ubicaciones.${l}`)}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+function ResultMessage({ result, fallbackId }: { result: { text: string; error?: boolean; id?: string } | null; fallbackId?: string }) {
+  if (!result) return null;
+  return (
+    <p
+      data-testid="toys-edit-result"
+      data-item-id={result.id ?? fallbackId ?? ''}
+      role={result.error ? 'alert' : 'status'}
+      className={cn('rounded-lg px-3 py-2 text-sm', result.error ? 'bg-destructive/10 text-destructive' : 'bg-success/10 text-success')}
+    >
+      {result.text}
+    </p>
+  );
+}
+
+function DeleteConfirm({ title, onCancel, onConfirm }: { title: string; onCancel: () => void; onConfirm: () => void }) {
+  const t = useTranslations('admin.toys');
+  return (
+    <div data-testid="toys-delete-dialog" role="alertdialog" aria-labelledby="toy-del-title" className="flex flex-col gap-3 border-t border-destructive/30 bg-destructive/5 px-5 py-4 sm:px-6">
+      <div>
+        <p id="toy-del-title" className="font-semibold">{t('inv.borrarTitulo', { title })}</p>
+        <p className="text-sm text-muted-foreground">{t('inv.borrarTexto')}</p>
+      </div>
+      <div className="flex flex-wrap justify-end gap-2">
+        <Button data-testid="toys-delete-cancel" variant="outline" className="h-11" onClick={onCancel}>{t('cancelar')}</Button>
+        <Button data-testid="toys-delete-confirm" variant="destructive" className="h-11" onClick={onConfirm}>{t('inv.borrarSi')}</Button>
+      </div>
+    </div>
+  );
+}
+
+function Lightbox({ pictures, zoom, setZoom }: { pictures: string[]; zoom: number | null; setZoom: (z: number | null) => void }) {
+  const t = useTranslations('admin.toys');
+  if (zoom === null || !pictures[zoom] || typeof document === 'undefined') return null;
+  const index: number = zoom;
+  return createPortal(
+          <div
+            data-testid="toys-lightbox"
+            className="pointer-events-auto fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-4"
+            style={{ pointerEvents: 'auto' }}
+            onClick={() => setZoom(null)}
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label={String(pictures[index]).split('/').pop()}
+              className="flex max-h-full w-full max-w-3xl flex-col gap-2 rounded-lg bg-background p-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={`${getApiBaseUrl()}${pictures[index]}`}
+                alt={String(pictures[index]).split('/').pop()}
+                className="max-h-[70vh] w-full object-contain"
+                data-testid="toys-lightbox-img"
+              />
+              <div className="flex items-center justify-between">
+                <Button
+                  data-testid="toys-lightbox-prev"
+                  disabled={pictures.length < 2}
+                  onClick={() => setZoom((index - 1 + pictures.length) % pictures.length)}
+                >
+                  ←
+                </Button>
+                <span data-testid="toys-lightbox-count">{index + 1} / {pictures.length}</span>
+                <Button
+                  data-testid="toys-lightbox-next"
+                  disabled={pictures.length < 2}
+                  onClick={() => setZoom((index + 1) % pictures.length)}
+                >
+                  →
+                </Button>
+              </div>
+              <div className="flex justify-end">
+                <Button data-testid="toys-lightbox-close" variant="outline" onClick={() => setZoom(null)}>{t('cerrar')}</Button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        );
+}
+
+function initialForm(item: StockItem | null) {
+  return {
+    ean: item?.ean ?? '',
+    title: item?.title ?? item?.article ?? '',
+    description: item?.description ?? '',
+    band: item?.ageBand ?? 'y5_7',
+    qty: item === null ? '4' : String(item.quantity ?? 4),
+    loc: item?.location ?? 'warehouse',
+  };
+}
+
 export function ItemEditModal({
   item,
   onClose,
@@ -44,12 +238,13 @@ export function ItemEditModal({
   const t = useTranslations('admin.toys');
   const api = useToys();
   const creating = item === null;
-  const [ean, setEan] = useState(item?.ean ?? '');
-  const [title, setTitle] = useState(item?.title ?? item?.article ?? '');
-  const [description, setDescription] = useState(item?.description ?? '');
-  const [band, setBand] = useState(item?.ageBand ?? 'y5_7');
-  const [qty, setQty] = useState(creating ? '4' : String(item?.quantity ?? 4));
-  const [loc, setLoc] = useState(item?.location ?? 'warehouse');
+  const initial = initialForm(item);
+  const [ean, setEan] = useState(initial.ean);
+  const [title, setTitle] = useState(initial.title);
+  const [description, setDescription] = useState(initial.description);
+  const [band, setBand] = useState(initial.band);
+  const [qty, setQty] = useState(initial.qty);
+  const [loc, setLoc] = useState(initial.loc);
   const [current, setCurrent] = useState<StockItem | null>(item);
   const [result, setResult] = useState<{ text: string; error?: boolean; id?: string } | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -58,33 +253,32 @@ export function ItemEditModal({
   const [pending, setPending] = useState<File[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const save = async () => {
-    if (creating && !current) {
-      const r = await api.addItem(title, band, Number(qty), loc, description, ean);
-      if (!r.success) return setResult({ text: t('inv.errorGuardar', { error: r.error }), error: true });
-      const created = r.data as StockItem;
-      // Pictures picked before saving are uploaded right after creation.
-      if (pending.length > 0) {
-        const up = await api.uploadPictures(created.id, pending.slice(0, 5));
-        if (!up.success) {
-          setCurrent(created);
-          setResult({ text: t('inv.creadoSinFotos', { error: up.error }), error: true, id: created.id });
-          onChanged();
-          return;
-        }
-        setCurrent(up.data as StockItem);
-        setPending([]);
-      } else {
+  const createItem = async () => {
+    const r = await api.addItem(title, band, Number(qty), loc, description, ean);
+    if (!r.success) return setResult({ text: t('inv.errorGuardar', { error: r.error }), error: true });
+    const created = r.data as StockItem;
+    // Pictures picked before saving are uploaded right after creation.
+    if (pending.length > 0) {
+      const up = await api.uploadPictures(created.id, pending.slice(0, 5));
+      if (!up.success) {
         setCurrent(created);
+        setResult({ text: t('inv.creadoSinFotos', { error: up.error }), error: true, id: created.id });
+        onChanged();
+        return;
       }
-      setResult({ text: t('inv.creado'), id: created.id });
-      onChanged();
-      return;
+      setCurrent(up.data as StockItem);
+      setPending([]);
+    } else {
+      setCurrent(created);
     }
-    if (!current) return;
-    const r = await api.updateItem(current.id, {
+    setResult({ text: t('inv.creado'), id: created.id });
+    onChanged();
+  };
+
+  const updateExisting = async (existing: StockItem) => {
+    const r = await api.updateItem(existing.id, {
       // Only send the EAN when edited: demo seed EANs are not valid EAN-13 and would block every save.
-      ...(ean !== (current.ean ?? '') ? { ean } : {}),
+      ...(ean !== (existing.ean ?? '') ? { ean } : {}),
       title,
       description,
       ageBand: band,
@@ -92,7 +286,25 @@ export function ItemEditModal({
       location: loc,
     });
     if (!r.success) return setResult({ text: t('inv.errorGuardar', { error: r.error }), error: true });
-    setResult({ text: `${t('guardado')}: ${r.data.title}`, id: current.id });
+    setResult({ text: `${t('guardado')}: ${r.data.title}`, id: existing.id });
+    onChanged();
+  };
+
+  const save = async () => {
+    if (creating && !current) return createItem();
+    if (!current) return;
+    return updateExisting(current);
+  };
+
+  // Shared flow for every picture mutation that returns the refreshed item.
+  const applyPictureChange = async (
+    call: () => Promise<{ success: boolean; error?: string; data?: any }>,
+    message: (data: any) => string,
+  ) => {
+    const r = await call();
+    if (!r.success) return setResult({ text: t('inv.errorFotos', { error: r.error }), error: true });
+    setCurrent(r.data as StockItem);
+    setResult({ text: message(r.data) });
     onChanged();
   };
 
@@ -103,11 +315,10 @@ export function ItemEditModal({
       setPending(Array.from(files).slice(0, 5));
       return;
     }
-    const r = await api.uploadPictures(current.id, files);
-    if (!r.success) return setResult({ text: t('inv.errorFotos', { error: r.error }), error: true });
-    setCurrent(r.data as StockItem);
-    setResult({ text: `${t('fotos')}: ${(r.data.pictures as string[]).length}` });
-    onChanged();
+    await applyPictureChange(
+      () => api.uploadPictures(current.id, files),
+      (data) => `${t('fotos')}: ${(data.pictures as string[]).length}`,
+    );
   };
 
   const runDelete = async () => {
@@ -120,21 +331,13 @@ export function ItemEditModal({
 
   const pickCover = async (picture: string) => {
     if (!current) return;
-    const r = await api.setCover(current.id, picture);
-    if (!r.success) return setResult({ text: t('inv.errorFotos', { error: r.error }), error: true });
-    setCurrent(r.data as StockItem);
-    setResult({ text: t('inv.portadaCambiada') });
-    onChanged();
+    await applyPictureChange(() => api.setCover(current.id, picture), () => t('inv.portadaCambiada'));
   };
 
   const removePicture = async (picture: string) => {
     if (!current) return;
     const base = String(picture).split('/').pop() ?? picture;
-    const r = await api.removePicture(current.id, base);
-    if (!r.success) return setResult({ text: t('inv.errorFotos', { error: r.error }), error: true });
-    setCurrent(r.data as StockItem);
-    setResult({ text: t('inv.fotoQuitada') });
-    onChanged();
+    await applyPictureChange(() => api.removePicture(current.id, base), () => t('inv.fotoQuitada'));
   };
 
   const pictures = current?.pictures ?? [];
@@ -197,48 +400,18 @@ export function ItemEditModal({
               >
                 {pictures.length > 0 && (
                   <ul data-testid="toys-edit-pics" className="flex flex-wrap gap-3">
-                    {pictures.map((pic) => {
-                      const base = String(pic).split('/').pop() ?? pic;
-                      const isCover = current?.cover === pic;
-                      return (
-                        <li key={pic} className="flex flex-col items-center gap-1">
-                          <button
-                            type="button"
-                            data-testid={`toys-thumb-${base}`}
-                            onClick={() => setZoom(pictures.indexOf(pic))}
-                            className={cn('relative size-20 cursor-zoom-in overflow-hidden rounded-lg border-2 bg-card p-0 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50', isCover ? 'border-cta' : 'border-transparent')}
-                            aria-label={t('inv.verFoto', { name: base })}
-                          >
-                            <img src={`${getApiBaseUrl()}${pic}`} alt="" className="h-full w-full object-cover" />
-                            {isCover && <span className="absolute left-1 top-1 rounded-full bg-cta px-1.5 text-[10px] font-bold text-cta-foreground">{t('portada')}</span>}
-                          </button>
-                          <span className="flex items-center gap-1">
-                            <label className="relative flex size-11 cursor-pointer items-center justify-center rounded-md hover:bg-card" title={t('inv.usarPortada')}>
-                              <input
-                                type="radio"
-                                name={`cover-${current?.id ?? 'new'}`}
-                                data-testid={`toys-edit-cover-${base}`}
-                                checked={isCover}
-                                onChange={() => pickCover(pic)}
-                                className="peer sr-only"
-                              />
-                              <Star aria-hidden="true" className={cn('size-5 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-primary', isCover ? 'fill-cta text-[#a8833f]' : 'text-muted-foreground')} />
-                              <span className="sr-only">{t('inv.usarPortada')}</span>
-                            </label>
-                            <Button
-                              data-testid={`toys-edit-remove-${base}`}
-                              variant="ghost"
-                              size="icon"
-                              className="size-11 text-destructive hover:text-destructive"
-                              aria-label={t('quitarFoto')}
-                              onClick={() => removePicture(pic)}
-                            >
-                              <Trash2 aria-hidden="true" />
-                            </Button>
-                          </span>
-                        </li>
-                      );
-                    })}
+                    {pictures.map((pic) => (
+                      <PictureThumb
+                        key={pic}
+                        pic={pic}
+                        index={pictures.indexOf(pic)}
+                        isCover={current?.cover === pic}
+                        coverGroup={current?.id ?? 'new'}
+                        onZoom={setZoom}
+                        onPickCover={pickCover}
+                        onRemove={removePicture}
+                      />
+                    ))}
                   </ul>
                 )}
                 <Button
@@ -267,26 +440,7 @@ export function ItemEditModal({
               <Label htmlFor="toy-desc" className="font-semibold">{t('descripcion')} <span className="font-normal text-muted-foreground">({t('inv.opcional')})</span></Label>
               <Textarea id="toy-desc" data-testid="toys-edit-desc" value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
             </div>
-            <fieldset className="flex flex-col gap-1.5">
-              <legend className="mb-1.5 text-sm font-semibold">{t('inv.paraEdad')}</legend>
-              <div data-testid="toys-edit-band" className="flex flex-wrap gap-2">
-                {AGE_BANDS.map((b) => (
-                  <button
-                    key={b}
-                    type="button"
-                    data-testid={`toys-edit-band-${b}`}
-                    aria-pressed={band === b}
-                    onClick={() => setBand(b)}
-                    className={cn(
-                      'min-h-11 rounded-full border px-3.5 text-sm font-medium outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
-                      band === b ? 'border-primary bg-primary font-semibold text-primary-foreground' : 'bg-card hover:bg-accent',
-                    )}
-                  >
-                    {t(`bandas.${b}`)}
-                  </button>
-                ))}
-              </div>
-            </fieldset>
+            <AgeBandPicker band={band} setBand={setBand} />
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="toy-qty" className="font-semibold">{t('inv.unidades')}</Label>
@@ -296,59 +450,17 @@ export function ItemEditModal({
                   <Button variant="outline" size="icon" className="size-11" aria-label={t('inv.anadirUnaCorto')} onClick={() => step(1)}><Plus aria-hidden="true" /></Button>
                 </div>
               </div>
-              <fieldset className="flex flex-col gap-1.5">
-                <legend className="mb-1.5 text-sm font-semibold">{t('inv.dondeEsta')}</legend>
-                <div data-testid="toys-edit-loc" role="radiogroup" className="flex flex-col gap-2">
-                  {TOY_LOCATIONS.map((l) => (
-                    <label
-                      key={l}
-                      className={cn(
-                        'flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring/50',
-                        loc === l ? 'border-2 border-primary bg-accent font-semibold' : 'bg-card',
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        name="toy-loc"
-                        value={l}
-                        data-testid={`toys-edit-loc-${l}`}
-                        checked={loc === l}
-                        onChange={() => setLoc(l)}
-                        className="size-4 accent-[#3d3fa8]"
-                      />
-                      {t(`ubicaciones.${l}`)}
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
+              <LocationPicker loc={loc} setLoc={setLoc} />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="toy-ean" className="font-semibold">{t('inv.codigoBarras')} <span className="font-normal text-muted-foreground">({t('ean')})</span></Label>
               <Input id="toy-ean" data-testid="toys-edit-ean" value={ean} onChange={(e) => setEan(e.target.value)} className="h-11 font-mono" />
             </div>
-            {result && (
-              <p
-                data-testid="toys-edit-result"
-                data-item-id={result.id ?? current?.id ?? ''}
-                role={result.error ? 'alert' : 'status'}
-                className={cn('rounded-lg px-3 py-2 text-sm', result.error ? 'bg-destructive/10 text-destructive' : 'bg-success/10 text-success')}
-              >
-                {result.text}
-              </p>
-            )}
+            <ResultMessage result={result} fallbackId={current?.id} />
           </div>
 
           {confirmDelete && current && (
-            <div data-testid="toys-delete-dialog" role="alertdialog" aria-labelledby="toy-del-title" className="flex flex-col gap-3 border-t border-destructive/30 bg-destructive/5 px-5 py-4 sm:px-6">
-              <div>
-                <p id="toy-del-title" className="font-semibold">{t('inv.borrarTitulo', { title: title0 })}</p>
-                <p className="text-sm text-muted-foreground">{t('inv.borrarTexto')}</p>
-              </div>
-              <div className="flex flex-wrap justify-end gap-2">
-                <Button data-testid="toys-delete-cancel" variant="outline" className="h-11" onClick={() => setConfirmDelete(false)}>{t('cancelar')}</Button>
-                <Button data-testid="toys-delete-confirm" variant="destructive" className="h-11" onClick={runDelete}>{t('inv.borrarSi')}</Button>
-              </div>
-            </div>
+            <DeleteConfirm title={title0} onCancel={() => setConfirmDelete(false)} onConfirm={runDelete} />
           )}
           <div className="flex flex-wrap items-center gap-2 border-t bg-muted/30 px-5 py-3 sm:px-6">
             {!creating && current && (
@@ -365,50 +477,7 @@ export function ItemEditModal({
       </Sheet>
 
 
-      {zoom !== null && pictures[zoom] && typeof document !== 'undefined' && createPortal(
-        <div
-          data-testid="toys-lightbox"
-          className="pointer-events-auto fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-4"
-          style={{ pointerEvents: 'auto' }}
-          onClick={() => setZoom(null)}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label={String(pictures[zoom]).split('/').pop()}
-            className="flex max-h-full w-full max-w-3xl flex-col gap-2 rounded-lg bg-background p-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              src={`${getApiBaseUrl()}${pictures[zoom]}`}
-              alt={String(pictures[zoom]).split('/').pop()}
-              className="max-h-[70vh] w-full object-contain"
-              data-testid="toys-lightbox-img"
-            />
-            <div className="flex items-center justify-between">
-              <Button
-                data-testid="toys-lightbox-prev"
-                disabled={pictures.length < 2}
-                onClick={() => setZoom((zoom - 1 + pictures.length) % pictures.length)}
-              >
-                ←
-              </Button>
-              <span data-testid="toys-lightbox-count">{zoom + 1} / {pictures.length}</span>
-              <Button
-                data-testid="toys-lightbox-next"
-                disabled={pictures.length < 2}
-                onClick={() => setZoom((zoom + 1) % pictures.length)}
-              >
-                →
-              </Button>
-            </div>
-            <div className="flex justify-end">
-              <Button data-testid="toys-lightbox-close" variant="outline" onClick={() => setZoom(null)}>{t('cerrar')}</Button>
-            </div>
-          </div>
-        </div>,
-        document.body,
-      )}
+      <Lightbox pictures={pictures} zoom={zoom} setZoom={setZoom} />
     </>
   );
 }
