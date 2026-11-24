@@ -182,7 +182,7 @@ export default function BookingClient({ tipo }: Props) {
             </p>
           ) : (
             <>
-              <div data-testid="booking-calendar" className="w-fit rounded border">
+              <div data-testid="booking-calendar" className="w-fit rounded-lg border bg-card">
                 <Calendar
                   mode="single"
                   locale={bookingCalendarLocale}
@@ -190,6 +190,7 @@ export default function BookingClient({ tipo }: Props) {
                   onSelect={onSelectDay}
                   disabled={(date) => !availableDays.has(dayKeyFromLocalDate(date))}
                   defaultMonth={selectedDay ? dateFromDayKey(selectedDay) : undefined}
+                  className="rounded-lg [--cell-size:2.75rem]"
                 />
               </div>
 

@@ -113,7 +113,7 @@ function RescheduleInner() {
             <p className="text-sm text-neutral-600">No hay huecos disponibles.</p>
           ) : (
             <>
-              <div data-testid="booking-reschedule-calendar" className="w-fit rounded border">
+              <div data-testid="booking-reschedule-calendar" className="w-fit rounded-lg border bg-card">
                 <Calendar
                   mode="single"
                   locale={bookingCalendarLocale}
@@ -121,6 +121,7 @@ function RescheduleInner() {
                   onSelect={onSelectDay}
                   disabled={(date) => !availableDays.has(dayKeyFromLocalDate(date))}
                   defaultMonth={selectedDay ? dateFromDayKey(selectedDay) : undefined}
+                  className="rounded-lg [--cell-size:2.75rem]"
                 />
               </div>
               {selectedDay ? (

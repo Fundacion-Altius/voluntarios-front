@@ -1,5 +1,4 @@
-import type { Locale } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { es } from 'react-day-picker/locale';
 
 export type BookingSlot = { startUtc: string; endUtc: string };
 
@@ -82,4 +81,4 @@ export function bookingErrorMessage(code: unknown, fallback?: string): string {
   return code;
 }
 
-export const bookingCalendarLocale: Locale = es;
+export const bookingCalendarLocale = es;
