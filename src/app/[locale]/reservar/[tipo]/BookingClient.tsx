@@ -3,8 +3,18 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { getApiBaseUrl } from '@/lib/apiUrl';
-
-type Slot = { startUtc: string; endUtc: string };
+import { Calendar } from '@/components/ui/calendar';
+import {
+  bookingCalendarLocale,
+  bookingErrorMessage,
+  dateFromDayKey,
+  dayKeyFromLocalDate,
+  dayKeyInTz,
+  formatDayHeading,
+  formatSlotTime,
+  groupSlotsByDay,
+  type BookingSlot,
+} from '../bookingUi';
 
 type Props = {
   tipo: string;
@@ -14,7 +24,7 @@ const TRACKING_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'
 
 function buildBookingBody(f: {
   tipo: string;
-  selected: Slot;
+  selected: BookingSlot;
   visitorTz: string;
   email: string;
   name: string;
@@ -47,8 +57,9 @@ function buildBookingBody(f: {
 
 export default function BookingClient({ tipo }: Props) {
   const searchParams = useSearchParams();
-  const [slots, setSlots] = useState<Slot[]>([]);
-  const [selected, setSelected] = useState<Slot | null>(null);
+  const [slots, setSlots] = useState<BookingSlot[]>([]);
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const [selected, setSelected] = useState<BookingSlot | null>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [org, setOrg] = useState('');
@@ -64,6 +75,10 @@ export default function BookingClient({ tipo }: Props) {
     [],
   );
 
+  const slotsByDay = useMemo(() => groupSlotsByDay(slots, visitorTz), [slots, visitorTz]);
+  const availableDays = useMemo(() => new Set(slotsByDay.keys()), [slotsByDay]);
+  const daySlots = selectedDay ? (slotsByDay.get(selectedDay) ?? []) : [];
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -73,19 +88,37 @@ export default function BookingClient({ tipo }: Props) {
           { cache: 'no-store' },
         );
         if (!res.ok) throw new Error('slots_failed');
-        const data = (await res.json()) as { slots: Slot[] };
-        if (!cancelled) setSlots(data.slots ?? []);
+        const data = (await res.json()) as { slots: BookingSlot[] };
+        if (cancelled) return;
+        const next = data.slots ?? [];
+        setSlots(next);
+        const byDay = groupSlotsByDay(next, visitorTz);
+        const firstDay = Array.from(byDay.keys()).sort()[0] ?? null;
+        setSelectedDay(firstDay);
+        setSelected(null);
       } catch {
         if (!cancelled) {
           setStatus('error');
-          setMessage('No se pudieron cargar los huecos disponibles.');
+          setMessage(bookingErrorMessage('slots_failed'));
         }
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [tipo]);
+  }, [tipo, visitorTz]);
+
+  function onSelectDay(date: Date | undefined) {
+    if (!date) return;
+    const key = dayKeyFromLocalDate(date);
+    if (!availableDays.has(key)) return;
+    setSelectedDay(key);
+    setSelected(null);
+    if (status === 'error') {
+      setStatus('idle');
+      setMessage('');
+    }
+  }
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -118,7 +151,12 @@ export default function BookingClient({ tipo }: Props) {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setStatus('error');
-        setMessage(typeof data.error === 'string' ? data.error : 'No se pudo completar la reserva.');
+        setMessage(
+          bookingErrorMessage(
+            typeof data.error === 'string' ? data.error : undefined,
+            'No se pudo completar la reserva.',
+          ),
+        );
         return;
       }
       setStatus('ok');
@@ -131,37 +169,67 @@ export default function BookingClient({ tipo }: Props) {
   }
 
   return (
-    <div className="mx-auto max-w-xl px-4 py-10">
+    <div className="mx-auto max-w-xl px-4 py-10" data-testid="booking-page">
       <h1 className="mb-2 text-3xl font-semibold tracking-tight">Reservar — {tipo}</h1>
-      <p className="mb-8 text-sm opacity-80">Elige un hueco y confirma tu reunión con ShiftCitizen.</p>
+      <p className="mb-8 text-sm opacity-80">Elige un día, un hueco y confirma tu reunión con ShiftCitizen.</p>
 
-      <form onSubmit={onSubmit} className="flex flex-col gap-4">
-        <fieldset className="flex flex-col gap-2">
-          <legend className="text-sm font-medium">Huecos disponibles</legend>
+      <form onSubmit={onSubmit} className="flex flex-col gap-4" data-testid="booking-form">
+        <fieldset className="flex flex-col gap-4">
+          <legend className="mb-3 text-sm font-medium">Elige un día</legend>
           {slots.length === 0 ? (
-            <p className="text-sm opacity-70">No hay huecos en la ventana actual.</p>
+            <p className="text-sm opacity-70" data-testid="booking-no-slots">
+              No hay huecos en la ventana actual.
+            </p>
           ) : (
-            <ul className="max-h-64 space-y-2 overflow-auto rounded border p-2">
-              {slots.map((slot) => {
-                const label = new Date(slot.startUtc).toLocaleString(undefined, {
-                  timeZone: visitorTz,
-                });
-                const checked = selected?.startUtc === slot.startUtc;
-                return (
-                  <li key={slot.startUtc}>
-                    <label className="flex cursor-pointer items-center gap-2 text-sm">
-                      <input
-                        type="radio"
-                        name="slot"
-                        checked={checked}
-                        onChange={() => setSelected(slot)}
-                      />
-                      {label}
-                    </label>
-                  </li>
-                );
-              })}
-            </ul>
+            <>
+              <div data-testid="booking-calendar" className="mt-1 w-fit rounded-lg border bg-card">
+                <Calendar
+                  mode="single"
+                  locale={bookingCalendarLocale}
+                  selected={selectedDay ? dateFromDayKey(selectedDay) : undefined}
+                  onSelect={onSelectDay}
+                  disabled={(date) => !availableDays.has(dayKeyFromLocalDate(date))}
+                  defaultMonth={selectedDay ? dateFromDayKey(selectedDay) : undefined}
+                  className="rounded-lg [--cell-size:2.75rem]"
+                />
+              </div>
+
+              {selectedDay ? (
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm font-medium capitalize">
+                    Huecos del {formatDayHeading(selectedDay, visitorTz)}
+                  </p>
+                  {daySlots.length === 0 ? (
+                    <p className="text-sm opacity-70">No hay huecos ese día.</p>
+                  ) : (
+                    <ul
+                      className="max-h-64 space-y-2 overflow-auto rounded border p-2"
+                      data-testid="booking-slots"
+                    >
+                      {daySlots.map((slot) => {
+                        const checked = selected?.startUtc === slot.startUtc;
+                        return (
+                          <li key={slot.startUtc}>
+                            <label className="flex cursor-pointer items-center gap-2 text-sm">
+                              <input
+                                type="radio"
+                                name="slot"
+                                data-testid="booking-slot"
+                                data-start-utc={slot.startUtc}
+                                data-day-key={dayKeyInTz(slot.startUtc, visitorTz)}
+                                checked={checked}
+                                onChange={() => setSelected(slot)}
+                              />
+                              {formatSlotTime(slot.startUtc, visitorTz)}
+                            </label>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
+              ) : null}
+            </>
           )}
         </fieldset>
 
@@ -169,6 +237,7 @@ export default function BookingClient({ tipo }: Props) {
           Nombre
           <input
             required
+            data-testid="booking-name"
             className="rounded border px-3 py-2"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -179,6 +248,7 @@ export default function BookingClient({ tipo }: Props) {
           <input
             required
             type="email"
+            data-testid="booking-email"
             className="rounded border px-3 py-2"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -197,14 +267,16 @@ export default function BookingClient({ tipo }: Props) {
             onChange={(e) => setNotes(e.target.value)}
           />
         </label>
-        <label className="flex items-start gap-2 text-sm">
+        <label className="flex items-start gap-2 text-sm leading-snug">
           <input
             type="checkbox"
             checked={consent}
+            data-testid="booking-consent"
             onChange={(e) => setConsent(e.target.checked)}
             required
+            className="mt-0.5 size-4 shrink-0"
           />
-          Consiento el tratamiento de mis datos para gestionar esta reunión.
+          <span>Consiento el tratamiento de mis datos para gestionar esta reunión.</span>
         </label>
 
         {/* Honeypot — leave empty; bots often fill "website" */}
@@ -222,6 +294,7 @@ export default function BookingClient({ tipo }: Props) {
 
         <button
           type="submit"
+          data-testid="booking-submit"
           disabled={status === 'loading'}
           className="rounded bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
         >
@@ -230,7 +303,11 @@ export default function BookingClient({ tipo }: Props) {
       </form>
 
       {message ? (
-        <p className={`mt-4 text-sm ${status === 'error' ? 'text-red-700' : 'text-green-800'}`}>
+        <p
+          data-testid="booking-message"
+          data-status={status}
+          className={`mt-4 text-sm ${status === 'error' ? 'text-red-700' : 'text-green-800'}`}
+        >
           {message}
           {hangoutLink ? (
             <>
