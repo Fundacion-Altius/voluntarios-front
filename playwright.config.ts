@@ -11,7 +11,8 @@ const TENANT_HOST_RESOLVER =
 /** Feature-review projects use a production Next server (no cold compile). */
 const reviewProd =
   process.env.PLAYWRIGHT_FORMS_PROD === '1' ||
-  process.env.PLAYWRIGHT_SCHEDULER_PROD === '1';
+  process.env.PLAYWRIGHT_SCHEDULER_PROD === '1' ||
+  process.env.PLAYWRIGHT_COMANDERO_PROD === '1';
 
 export default defineConfig({
   testDir: './e2e',
@@ -59,6 +60,8 @@ export default defineConfig({
         '**/45-forms-*.spec.ts',
         // Owned by project `scheduler-review`
         '**/46-scheduler-*.spec.ts',
+        // Owned by project `comandero-review`
+        '**/36-comandero.spec.ts',
       ],
     },
     {
@@ -140,6 +143,23 @@ export default defineConfig({
         },
       },
       testMatch: ['**/46-scheduler-*.spec.ts'],
+    },
+    {
+      // Stakeholder review for Comandero (Carlos) — KL-E-022 human audit 10.2.
+      // Run: pnpm test:e2e:comandero-review   or   pnpm test:e2e:comandero-review:ui
+      // Needs back with `pnpm local:docker`. Open via fundacionaltius.localhost (tenant cookie).
+      name: 'comandero-review',
+      fullyParallel: false,
+      use: {
+        browserName: 'chromium',
+        video: 'retain-on-failure',
+        actionTimeout: 20000,
+        navigationTimeout: 60000,
+        launchOptions: {
+          args: [`--host-resolver-rules=${TENANT_HOST_RESOLVER}`],
+        },
+      },
+      testMatch: ['**/36-comandero.spec.ts'],
     },
   ],
 });
