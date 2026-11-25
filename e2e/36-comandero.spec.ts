@@ -4,6 +4,13 @@ import { adminLogin, authHeaders, loginAsBrowserOnHost } from './helpers';
 /**
  * Comandero (KL-E-022) end-to-end — browser stories (KL-US-037…044).
  *
+ * Playwright project: `comandero-review`
+ *   pnpm test:e2e:comandero-review
+ *   pnpm test:e2e:comandero-review:ui
+ *
+ * Runtime: back with `pnpm local:docker`; review script does `pnpm build` + `next start`.
+ * SPA on the Altius tenant host (`fundacionaltius.localhost`), never bare localhost.
+ *
  * HTTP 409/403/isolation/snapshot/reclose/non-Altius Host →
  * comanderoApi.spec.ts / comanderoRolesApi.spec.ts.
  *
